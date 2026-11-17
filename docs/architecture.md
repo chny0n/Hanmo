@@ -260,43 +260,43 @@
 
 **현재:** 기존 한모는 운영 중이고 학업 추가 기능은 미병합 개발 PR에 있습니다. 학교 전체 강의/학칙 정본, 실제 Supabase 데이터베이스와 자동 갱신은 연결되지 않았습니다. 계획과 실서비스 구현 완료를 구분해야 합니다.
 
-## 10. 미결 사항 — 세부 작업별 Issue 등록 대기
+## 10. 미결 사항 — GitHub Issues
 
 아래 항목은 현재 **미확정된 설계·권리·개발/검증·운영 계약**입니다. 상위 1~9장의 채택 목표와 별개로, 해당 범위를 실제 구현·출시하기 전에 결정해야 합니다. **작은 독립 작업 30건**으로 분해했으며, 각 항목의 배경·완료 조건은 [docs/pending-issues.md](pending-issues.md)에 있습니다.
 
-**GitHub 등록 상태:** 현재 저장소의 **Issues 기능이 비활성화**되어 있어 GitHub Issue를 생성하지 못했습니다(HTTP 410, `has_issues=false`). 아래 ID는 **문서 내부 추적용 ID**이지 실제 GitHub Issue 번호가 아닙니다. 저장소 관리자가 **Settings → General → Features → Issues**를 켠 다음 각 명세를 Issue로 등록하고 링크를 실제 이슈 URL로 교체해야 합니다. 담당자·일정·권한은 추정해 배정하지 않습니다.
+**GitHub 이슈 등록 완료:** 미결 작업 30건을 실제 GitHub Issues [#7~#36](https://github.com/ot4562-glitch/Hanmo_develop/issues)에 각각 등록했습니다. 아래 `HMD-001`~`HMD-030`은 이슈를 추적하기 위한 고정 식별자이며, 실제 이슈 번호와 URL을 함께 표기합니다. 각 이슈는 아직 **열린 상태**로, 책임자·일정·승인·구현 완료를 임의로 확정하지 않습니다.
 
 | ID | 우선순위 | 단계 | 개별 작업 |
 |---|---|---|---|
-| [HMD-001](#hmd-001) | P0 | 공통 | 1단계 필수 출시 기능과 후속 확장의 범위를 확정한다 |
-| [HMD-002](#hmd-002) | P0 | 공통 | PR #1~#5에서 파일별 선별 병합·보존/제외 기준을 만든다 |
-| [HMD-003](#hmd-003) | P0 | 공통 | GPL-3.0과 이식 코드·학사 자료의 배포 권리를 검수한다 |
-| [HMD-004](#hmd-004) | P0 | 1차 | 학생용 학업 UI와 JSON 진단 UI를 분리한다 |
-| [HMD-005](#hmd-005) | P0 | 1차 | 공식 학칙 RulePack과 판본별 졸업요건 검수 범위를 정한다 |
-| [HMD-006](#hmd-006) | P1 | 1차 | WIS 수동 HTML/CSV의 강의·분반 가져오기와 CSV 내보내기 계약을 정한다 |
-| [HMD-007](#hmd-007) | P1 | 1차 | 강의 개설 전망과 학사행사 예상 구간의 근거·보류 기준을 확정한다 |
-| [HMD-008](#hmd-008) | P0 | 1차 | 학사공지 대상·학생 마감·정정/취소·최대 2건 우선 노출 계약을 확정한다 |
-| [HMD-009](#hmd-009) | P1 | 1차 | 근거 기반 FAQ와 상담 부서 연결의 채택·검증 범위를 정한다 |
-| [HMD-010](#hmd-010) | P2 | 1차 | 교환학생·국제학생 학업 준비는 선택형 확장 범위로 판단한다 |
-| [HMD-011](#hmd-011) | P0 | 1차 | 학생 로컬 저장 스키마·키 네임스페이스·백업/복원·삭제 정책을 정한다 |
-| [HMD-012](#hmd-012) | P0 | 2차 | 원개발자 승인 범위와 기존 JavaScript 확장 지점을 합의한다 |
-| [HMD-013](#hmd-013) | P0 | 2차 | 기존 BASIC/TIME/SELECT 기준 동작·키보드·타이머 회귀 테스트를 확보한다 |
-| [HMD-014](#hmd-014) | P1 | 2차 | 마지막 과목 신청 실패 및 대체과목 선택 상태 머신을 설계한다 |
-| [HMD-015](#hmd-015) | P1 | 2차 | 가상 연결 끊김·재접속·결과 불명 시나리오 상태 머신을 설계한다 |
-| [HMD-016](#hmd-016) | P0 | 1·2차 | 학업 코어와 모의신청 간 과목 ID·상태 어댑터 계약을 확정한다 |
-| [HMD-017](#hmd-017) | P0 | 배포 | 개발 미리보기와 GitHub Pages 운영 경로·CNAME 계약을 정한다 |
-| [HMD-018](#hmd-018) | P1 | 배포 | 기능 코드 PR 승인·릴리스 체크리스트·롤백 방법을 확정한다 |
-| [HMD-019](#hmd-019) | P1 | 검증 | 단계별 CI와 브라우저 E2E 품질 게이트를 정의한다 |
-| [HMD-020](#hmd-020) | P1 | 검증 | 모바일·접근성 지원 수준과 기존 한모의 PC 전용 제약을 결정한다 |
-| [HMD-021](#hmd-021) | P0 | 데이터 | 공식 학사자료 수집 가능 범위·재사용 권리·출처 목록을 만든다 |
-| [HMD-022](#hmd-022) | P0 | 데이터 | 독립 학사자료 검수·승인·철회 권한 모델을 확정한다 |
-| [HMD-023](#hmd-023) | P0 | 3차 | Supabase 개설·소유·비용·운영 RACI 및 인수 책임을 합의한다 |
-| [HMD-024](#hmd-024) | P1 | 3차 | Supabase 스키마·판본·스냅샷·마이그레이션 설계를 확정한다 |
-| [HMD-025](#hmd-025) | P1 | 3차 | 허용된 공식 자료 수집·변경 감지·검수·정적 대체 흐름을 정의한다 |
-| [HMD-026](#hmd-026) | P1 | 3차 | Supabase API·RLS·비밀키·브라우저 읽기 권한 보안을 정한다 |
-| [HMD-027](#hmd-027) | P1 | 3차 | 개인 학업자료의 로컬 우선·선택적 동기화/인증 범위를 결정한다 |
-| [HMD-028](#hmd-028) | P0 | 3차 | Supabase 실연동·운영 모니터링·복구를 포함한 3차 인수 시험을 정의한다 |
-| [HMD-029](#hmd-029) | P2 | 4차 | 1차 TypeScript→JavaScript 소스 전환 대상·순서·의존성 목록을 정의한다 |
-| [HMD-030](#hmd-030) | P2 | 4차 | JavaScript/JSDoc 정적 검사·TS 동등성·회귀 검증 및 완료 기준을 정한다 |
+| [HMD-001 · #7](https://github.com/ot4562-glitch/Hanmo_develop/issues/7) | P0 | 공통 | 1단계 필수 출시 기능과 후속 확장의 범위를 확정한다 |
+| [HMD-002 · #8](https://github.com/ot4562-glitch/Hanmo_develop/issues/8) | P0 | 공통 | PR #1~#5에서 파일별 선별 병합·보존/제외 기준을 만든다 |
+| [HMD-003 · #9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9) | P0 | 공통 | GPL-3.0과 이식 코드·학사 자료의 배포 권리를 검수한다 |
+| [HMD-004 · #10](https://github.com/ot4562-glitch/Hanmo_develop/issues/10) | P0 | 1차 | 학생용 학업 UI와 JSON 진단 UI를 분리한다 |
+| [HMD-005 · #11](https://github.com/ot4562-glitch/Hanmo_develop/issues/11) | P0 | 1차 | 공식 학칙 RulePack과 판본별 졸업요건 검수 범위를 정한다 |
+| [HMD-006 · #12](https://github.com/ot4562-glitch/Hanmo_develop/issues/12) | P1 | 1차 | WIS 수동 HTML/CSV의 강의·분반 가져오기와 CSV 내보내기 계약을 정한다 |
+| [HMD-007 · #13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) | P1 | 1차 | 강의 개설 전망과 학사행사 예상 구간의 근거·보류 기준을 확정한다 |
+| [HMD-008 · #14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) | P0 | 1차 | 학사공지 대상·학생 마감·정정/취소·최대 2건 우선 노출 계약을 확정한다 |
+| [HMD-009 · #15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) | P1 | 1차 | 근거 기반 FAQ와 상담 부서 연결의 채택·검증 범위를 정한다 |
+| [HMD-010 · #16](https://github.com/ot4562-glitch/Hanmo_develop/issues/16) | P2 | 1차 | 교환학생·국제학생 학업 준비는 선택형 확장 범위로 판단한다 |
+| [HMD-011 · #17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) | P0 | 1차 | 학생 로컬 저장 스키마·키 네임스페이스·백업/복원·삭제 정책을 정한다 |
+| [HMD-012 · #18](https://github.com/ot4562-glitch/Hanmo_develop/issues/18) | P0 | 2차 | 원개발자 승인 범위와 기존 JavaScript 확장 지점을 합의한다 |
+| [HMD-013 · #19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) | P0 | 2차 | 기존 BASIC/TIME/SELECT 기준 동작·키보드·타이머 회귀 테스트를 확보한다 |
+| [HMD-014 · #20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | P1 | 2차 | 마지막 과목 신청 실패 및 대체과목 선택 상태 머신을 설계한다 |
+| [HMD-015 · #21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) | P1 | 2차 | 가상 연결 끊김·재접속·결과 불명 시나리오 상태 머신을 설계한다 |
+| [HMD-016 · #22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | P0 | 1·2차 | 학업 코어와 모의신청 간 과목 ID·상태 어댑터 계약을 확정한다 |
+| [HMD-017 · #23](https://github.com/ot4562-glitch/Hanmo_develop/issues/23) | P0 | 배포 | 개발 미리보기와 GitHub Pages 운영 경로·CNAME 계약을 정한다 |
+| [HMD-018 · #24](https://github.com/ot4562-glitch/Hanmo_develop/issues/24) | P1 | 배포 | 기능 코드 PR 승인·릴리스 체크리스트·롤백 방법을 확정한다 |
+| [HMD-019 · #25](https://github.com/ot4562-glitch/Hanmo_develop/issues/25) | P1 | 검증 | 단계별 CI와 브라우저 E2E 품질 게이트를 정의한다 |
+| [HMD-020 · #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | P1 | 검증 | 모바일·접근성 지원 수준과 기존 한모의 PC 전용 제약을 결정한다 |
+| [HMD-021 · #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) | P0 | 데이터 | 공식 학사자료 수집 가능 범위·재사용 권리·출처 목록을 만든다 |
+| [HMD-022 · #28](https://github.com/ot4562-glitch/Hanmo_develop/issues/28) | P0 | 데이터 | 독립 학사자료 검수·승인·철회 권한 모델을 확정한다 |
+| [HMD-023 · #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | P0 | 3차 | Supabase 개설·소유·비용·운영 RACI 및 인수 책임을 합의한다 |
+| [HMD-024 · #30](https://github.com/ot4562-glitch/Hanmo_develop/issues/30) | P1 | 3차 | Supabase 스키마·판본·스냅샷·마이그레이션 설계를 확정한다 |
+| [HMD-025 · #31](https://github.com/ot4562-glitch/Hanmo_develop/issues/31) | P1 | 3차 | 허용된 공식 자료 수집·변경 감지·검수·정적 대체 흐름을 정의한다 |
+| [HMD-026 · #32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) | P1 | 3차 | Supabase API·RLS·비밀키·브라우저 읽기 권한 보안을 정한다 |
+| [HMD-027 · #33](https://github.com/ot4562-glitch/Hanmo_develop/issues/33) | P1 | 3차 | 개인 학업자료의 로컬 우선·선택적 동기화/인증 범위를 결정한다 |
+| [HMD-028 · #34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) | P0 | 3차 | Supabase 실연동·운영 모니터링·복구를 포함한 3차 인수 시험을 정의한다 |
+| [HMD-029 · #35](https://github.com/ot4562-glitch/Hanmo_develop/issues/35) | P2 | 4차 | 1차 TypeScript→JavaScript 소스 전환 대상·순서·의존성 목록을 정의한다 |
+| [HMD-030 · #36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | P2 | 4차 | JavaScript/JSDoc 정적 검사·TS 동등성·회귀 검증 및 완료 기준을 정한다 |
 
 **진행 기준:** P0는 해당 작업·병합·실운영 시작 전 우선 결정하고, P1은 단계별 검증·출시 전에, P2는 선택 확장 또는 4차 전환 전에 결정합니다. 이슈를 만들거나 문서에 명세를 적는 행위는 원개발자 승인, 정본 자료 검수, 운영 책임 합의, 기능 개발 완료나 출시 승인을 뜻하지 않습니다. 항목이 확정되면 관련 장의 **현행 설계**에 통합하고 본 표와 상세 명세를 최신화합니다.
