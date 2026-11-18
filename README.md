@@ -1,38 +1,70 @@
-# Hanmo Develop
+<p align="center">
+  <img src="img/hanmo_color.png" alt="한모 로고" width="92" height="92">
+</p>
 
-[한모](https://github.com/dlacked/Hanmo)의 기존 모의수강신청(BASIC / TIME / SELECT)을 보호하면서, 한국외국어대학교 학생이 **수강계획부터 졸업까지** 활용할 수 있는 **비공식 학업 플랫폼**을 단계적으로 확장합니다. 취업·채용·NCS 기능과 실제 수강신청 자동화는 범위 밖입니다.
+<h1 align="center">Hanmo Develop</h1>
 
-## 한모가 내세울 세 가지 차별화 방향
+<p align="center"><strong>내 전공 공지를 찾고, 다음 학기 수강신청을 미리 준비하는 곳</strong></p>
 
-1. **실전 시나리오 다양성:** 단순한 수강신청 클릭 연습을 넘어 정원 마감·대체과목 탐색·가상 접속 단절/복구와 복합 위기 대응을 직접 훈련합니다. **2단계**에서 기존 JavaScript·HTML에 추가합니다.
-2. **강의 개설 전망:** 과거 학기별 강의 개설 이력으로 미래 학기의 개설 가능성을 참고해 수강계획 A/B/C와 대체강좌를 준비합니다. **1단계** 학업 플랫폼에 구현하며 공식 개설 보장은 하지 않습니다.
-3. **학사행사·공지 시기 전망:** 졸업시험·이중전공 신청/변경 등 반복 행사의 과거 공지를 바탕으로 **대략적인 준비 시기**를 안내합니다. **1단계**에서 공식 확정 공지/마감과 과거 기반 예상 구간을 구분합니다.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-176B5B" alt="GPL-3.0 라이선스"></a>
+  <a href="https://github.com/ot4562-glitch/Hanmo_develop/pull/5"><img src="https://img.shields.io/badge/학업_플래너-개발_미리보기-244E73" alt="학업 플래너 개발 미리보기"></a>
+</p>
 
-세 기능은 **개발·검증을 통해 완성할 차별화 목표**로, 실제 제공 완료/공식 검증을 뜻하지 않습니다. 2·3번은 기존 학업 전망 로직을 선별 검토할 수 있지만 검증된 역사적 자료·이식 권리는 별도 확보해야 합니다. 객관적 비교가 끝나기 전에는 “최초”·“유일”을 주장하지 않습니다. [차별화 전략 검증 #38](https://github.com/ot4562-glitch/Hanmo_develop/issues/38) · [시나리오 확장 #37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37)
+<p align="center">
+  <a href="#미리보기">미리보기</a> ·
+  <a href="#핵심-기능">핵심 기능</a> ·
+  <a href="#빠른-시작">빠른 시작</a> ·
+  <a href="#개발-로드맵">개발 로드맵</a> ·
+  <a href="docs/architecture.md">설계 문서</a>
+</p>
 
-## 4단계 개발 구조
+---
 
-| 단계 | 구현 기술 | 목표 및 책임 |
-|---|---|---|
-| **1단계 · 독립 학업 플랫폼** | **TypeScript 계산 코어 + 정적 HTML/CSS** (배포 시 JavaScript 빌드) | 별도 `degree-rescue/` 화면·강의·학칙·학점·공지·학사일정 기능 개발 및 검증. 기존 한모 파일 변경 금지 |
-| **2단계 · 모의수강신청 시나리오** | **기존 JavaScript + HTML/CSS** | 원개발자 **사전 승인 후**, 기존 BASIC/TIME/SELECT 화면에 선택형 수강실패·대체과목·재접속 시나리오 추가 |
-| **3단계 · Supabase 실연동** | **TypeScript/JavaScript 병행** + 승인된 Supabase DB/API | 우리 팀은 DB·수집·검수·보안·운영 **설계·인계**. 실제 프로젝트 개설·통합·운영은 **임창용 님과 책임·권한·비용 협의 후** 담당 운영자가 수행 |
-| **4단계 · JavaScript 유지보수 소스 통일** | **정적 HTML/CSS + JavaScript/JSDoc** | **3단계의 실제 DB 연동과 제품 안정화 검증 완료 후** 1단계 TypeScript 원본을 기능 동등한 JavaScript로 순차 이관 |
+**한모**는 한국외국어대학교 학생을 위한 비공식 모의수강신청 서비스입니다. 이 포크는 기존 BASIC / TIME / SELECT 연습에 더해, 학교 계정이나 성적표 없이 전공 공지와 강의 개설 이력을 찾아볼 수 있는 학업 플래너를 개발합니다.
 
-**1·2단계는 Supabase 없이 독립 실행**되어야 합니다. 3단계 설계 문서 인계와 3단계 실제 제품 통합 완료는 별개입니다. 4단계는 실통합·보안·브라우저 회귀검증을 통과한 뒤에만 진행합니다.
+## 미리보기
 
-## 구조와 개발 원칙
+[![한모 학업 플래너 개발 화면. 전공별 중요공지, 강의 개설 전망, 강의·교수 검색, 모의수강신청 메뉴가 보입니다.](docs/images/hanmo-academic-preview.png)](https://github.com/ot4562-glitch/Hanmo_develop/pull/5)
 
-- 기존 한모의 `index.html`, `html/`, `js/`, `css/`, `img/`, `CNAME`은 **1단계에서 수정하지 않습니다**.
-- 2단계 시나리오는 **기존 HTML·JavaScript 소스에 직접 구현**하고 React/TypeScript 도입을 요구하지 않습니다.
-- 1단계 화면은 정적 HTML/CSS를 사용합니다. TypeScript 원본은 빌드 시 일반 JavaScript로 변환합니다.
-- 합성 모의신청 상태는 학생의 실제 신청·취득학점과 분리하고, 확인되지 않은 학사정보는 공식 확정으로 표시하지 않습니다.
-- 원본 한모 병합·배포, 기존 화면 변경, Supabase 실운영에는 각각 책임자의 승인 절차가 필요합니다.
+위 화면은 **PR #5의 학업 플래너 개발판**입니다. 공지에는 원문·적용 근거를 연결하고, 개설 전망에는 과거 관측과 확인 필요 상태를 표시합니다. 공식 자료 사용권·검수와 운영 배포는 별도 절차를 거칩니다. [개발 PR #5](https://github.com/ot4562-glitch/Hanmo_develop/pull/5)
 
-## 기준 문서
+## 핵심 기능
 
-**[docs/architecture.md](docs/architecture.md)**가 현재 유효한 제품·기술 설계와 마지막의 **미결 사항 / GitHub Issue**를 관리합니다. 이슈는 미확정 설계를 결정·검증하기 위한 작업 단위이며, 이슈 생성만으로 구현·병합·운영 승인이 완료되지 않습니다.
+| 기능 | 학생이 할 수 있는 일 | 개발 상태 |
+| --- | --- | --- |
+| 모의수강신청 | BASIC / TIME / SELECT로 수강신청을 연습 | 기존 한모에서 제공 |
+| 전공별 공지 · 강의 개설 전망 | 내 전공의 공지 근거와 과거 학기 개설 기록을 확인 | PR #5 개발 시연. 권리와 검수가 확인된 실제 자료 연결 예정 |
+| 한국어 학사 FAQ · 행사 시기 안내 | 질문에 해당하는 학교 원문을 찾고 반복 학사행사의 준비 시기를 살펴봄 | 근거·보류 기준과 평가 이슈 확정. 학생용 공개는 평가 이후 |
+| 위기 대응 연습 | 정원 마감 때 대체 강좌를 고르고, 가상 접속 단절 뒤 신청 결과를 확인 | 포크에서 2단계 개발 예정 |
 
-현재 신규 학업 기능은 별도 개발 PR에 있으며, 공식 강의·학칙 정본과 Supabase 실연동은 미완료 상태입니다.
+첫 적용 대상은 **서울·글로벌캠퍼스의 2010학년도 입학생부터 모든 전공**입니다. 개인 졸업 진단은 입학년도·전공별 학칙과 이수 기록 입력을 검증한 범위부터 확장합니다. [현행 설계](docs/architecture.md)
 
-원본 프로젝트: [dlacked/Hanmo](https://github.com/dlacked/Hanmo) · 라이선스: [GPL-3.0](LICENSE). 이식 코드와 학사자료의 재배포 권리는 공개 병합 전에 별도 확인합니다.
+## 빠른 시작
+
+학업 플래너 개발판을 실행하려면 Node.js 22 이상과 Python 3을 사용합니다.
+
+```bash
+git clone --branch feature/degree-rescue-trust-audit-bridge --single-branch https://github.com/ot4562-glitch/Hanmo_develop.git
+cd Hanmo_develop/degree-rescue
+npm install --no-package-lock
+npm run check
+python -m http.server 8080 --directory dist
+```
+
+Windows에서 Python 실행 명령이 `py`인 경우 마지막 줄을 `py -m http.server 8080 --directory dist`로 실행합니다. [학업 플래너 로컬 열기](http://localhost:8080/degree-rescue/)
+
+## 개발 로드맵
+
+| 단계 | 개발 범위 |
+| --- | --- |
+| **1 · 학업 플래너** | TypeScript와 정적 HTML/CSS로 전공 공지, 개설 전망, 근거 FAQ를 개발합니다. |
+| **2 · 위기 대응 연습** | 승인받은 포크에서 기존 HTML·JavaScript에 선택형 시나리오를 추가합니다. |
+| **3 · Supabase 연동** | 팀이 데이터·검수·권한을 설계하고, 확정된 운영 담당자에게 실제 구축과 인수를 연결합니다. |
+| **4 · JavaScript 이관** | 실연동과 안정화 이후 계산 결과를 비교하며 TypeScript 소스를 JavaScript/JSDoc으로 옮깁니다. |
+
+## 문서와 기여
+
+- 제품 범위와 구현 기준은 [아키텍처](docs/architecture.md)에서 확인합니다.
+- 작업을 제안하거나 버그를 알릴 때는 [열린 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues)를 확인하고 [이슈 작성 규칙](agent.md#github-이슈-작성과-분류)을 따릅니다.
+- 원본 프로젝트는 [dlacked/Hanmo](https://github.com/dlacked/Hanmo)이며, 이 저장소의 라이선스는 [GPL-3.0](LICENSE)입니다.
