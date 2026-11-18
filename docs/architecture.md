@@ -21,6 +21,8 @@
 | **② 강의 개설 전망** | 과거 같은 계절의 강의 개설 이력을 근거로 다음 학기와 2~4학기 **수강계획 A/B/C**, 대체 가능 과목을 미리 준비 | **1차 · TypeScript**. 과거 관측값과 검증된 공식 개설 목록을 구분하고, 표본·관측 공백·불확실성을 보여줌. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) |
 | **③ 학사행사·공지 시기 전망** | 졸업시험·논문·졸업인증, 이중전공 신청·변경 등 반복 학사행사의 과거 일정을 분석해 **대략적인 준비 기간**과 확인할 원문 공지를 안내 | **1차 · TypeScript**. 역사적 예상 구간은 학교의 확정 신청기간·학생 마감과 엄격히 구분. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) · [#14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) |
 
+**대외 안내의 사실성 계약 (#38):** 첫 소개는 “내 전공 공지를 찾고, 다음 학기 수강신청을 미리 준비하는 곳”으로 통일합니다. 세 차별점은 **현재 제공 / 합성 시연 / 예정 / 검수 자료 필요** 중 한 상태를 기능별로 명시하고, 과거 개설 횟수는 미래 확률로, 행사 예상 구간은 공식 접수일로, 가상 복구 훈련은 실제 학교 네트워크 장애로 표현하지 않습니다. 외부 비교표는 기능·확인일·공식 링크·실제로 확인한 사용 흐름이 있는 경우에만 작성하고 “최초/유일/무조건 성공” 표현은 객관적 증거 전까지 금지합니다. 학생 사용성 과제는 (A) 확정/전망/검수 필요를 구별하는가, (B) 근거를 실제로 열어보는가, (C) 실패 후 대안·재접속을 판단하는가로 나누어 성공률과 오해 사례를 기록합니다. 경쟁 기능 미확인은 ‘없음’이 아닌 ‘확인 안 됨’으로 둡니다.
+
 **연결된 사용 흐름:** ② 과거 개설 관측 → 다음 학기 수강계획과 대안 작성 → ③ 예상 학사행사 구간에서 준비할 일 확인 → ① 가상 실패·재접속 훈련으로 계획을 점검합니다. 학사공지 **예측**은 공식 공지가 발표되기 전의 대비 수단이며, 공식 정정·취소/확정 공지가 있으면 항상 이를 우선합니다.
 
 **구현 자산과 대외 주장:** ②·③은 앞서 HUFS One AI 학업 모듈에서 개발된 개설·행사 전망 접근법을 **선별 검토·재사용할 수 있는 후보**입니다. 한모에 검증된 과거 전수 자료, 출시 가능한 UI, 공식 데이터 승인 및 소스 재배포 권리가 모두 확보되었다는 의미는 아닙니다. 현재 조사만으로 “국내 최초”, “유일”, “학교·비공식 어디에도 없는 기능”을 객관적으로 확정할 수 없으므로, 외부 홍보에서는 구체적 기능 차별화를 설명하고 절대적 독점 표현은 별도 비교 검증 후에만 사용합니다. [#38](https://github.com/ot4562-glitch/Hanmo_develop/issues/38)
@@ -251,6 +253,35 @@
 **시뮬레이션과 실제 강의의 경계:** 가상 수강신청 과목 코드와 공식 과목/분반 ID 사이의 연결은 명시적인 변환 계약으로만 수행합니다. 연습의 성공·취소·대기열은 실제 수강 확정이나 학점 취득을 뜻하지 않으며 이수 원장에 반영하거나 학교 시스템으로 전송하지 않습니다.
 
 변환은 버전이 있는 표에 근거한 조회로 한정합니다. 가상 과목 ID에 대응하는 확인된 학교 과목·분반 ID가 없으면 `UNMAPPED`를 반환합니다. 1차 코어와 연결할 때는 브라우저용으로 빌드된 JavaScript 공개 계약만 사용합니다. [#22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
+
+### 5.3 시나리오 런타임 계약·회귀 기준 (#19·#20·#21·#22·#37)
+
+**공통 계약:** 기존 한모의 `practiceSetter=1/2/3`은 각각 BASIC/TIME/SELECT입니다(`js/practice.js`). 원래 `js/practice.js`는 `TIMEtime`, `SELECTtime`, `SELECTWaitTime`을 초기화하고, `js/selectZone.js`의 `registerClick(val)`→대기열→`saveSugang(val)`이 모의신청을 처리하며, `js/result.js`가 시간을 요약합니다. **상태를 변경하는 훅은 승인된 실습 이벤트에만 두고, 시나리오가 OFF이면 기존 함수·키보드·타이머·결과 저장 경로와 호출 순서를 보존합니다.** 별도 시나리오 상태 저장 키는 `hanmo.practice.scenario.v1.*`처럼 학업 키와도 분리합니다. 합성 이벤트와 실제 신청·학점 원장은 연결하지 않습니다.
+
+| 시나리오 | 시작·입력/상태 전이 | 종료/금지 |
+|---|---|---|
+| `LAST_COURSE_FAIL` | `READY → N_MINUS_1_CONFIRMED → LAST_REJECTED → SEARCH_ALTERNATIVE → REPLACED / NO_VALID_ALTERNATIVE / UNRESOLVED` | 마지막 **가상** 1건만 정해진 시드에서 실패. 학생이 직접 찾아 선택한 대체 분반이 시간·학점·선수·중복·이수영역 제약을 통과해야 `REPLACED`. 대안이 정말 없는 경우 `NO_VALID_ALTERNATIVE`도 올바른 판단; 자동 대체 성공 금지 |
+| `RECONNECT_RECOVERY` | `ACTIVE → REQUEST_SENT → VIRTUAL_DROP → RECONNECT_QUEUE → RECONCILE → CONFIRMED / NOT_APPLIED / UNKNOWN` | 첫 버전 단절점은 **모의 신청 직후**. `UNKNOWN`은 수강 성공도 실패도 아니며 중복 재신청·자동 성공 금지. 합성 재입장·대기열만 사용하고 실제 네트워크·학교 인증·SSO를 조작하지 않음 |
+| `COMPOSITE` (후속) | `LAST_COURSE_FAIL` 및 `RECONNECT_RECOVERY`의 종료 상태가 명시된 조합만 허용 | 상호 모순 상태·무한 재시도·상태 덮어쓰기 금지. 기본 두 시나리오 안정화 전에는 출시 선택지에 넣지 않음 |
+
+**고정 시나리오 입력 DTO(설계):** `{schemaVersion:1,scenarioId,scenarioSeed,mode,syntheticCourseIds,virtualClockStart,scenarioEnabled}`. 결과는 `{scenarioId,scenarioSeed,terminalState,actions,errors,elapsedVirtualMs,duplicateAttempts,source:'SYNTHETIC'}`이며 학업 원장 API/학교 네트워크로 전달하지 않습니다. 고정 시드와 입력은 **동일한 사건·상태 전이·결과**를 생성해야 합니다. 기존 대기열의 `Math.random()` 표현 및 실제 벽시계 UI를 그대로 통제했다고 가정하지 말고, 신규 시나리오의 의사난수·가상 시간만 분리해 주입합니다. 테스트에서는 랜덤 애니메이션 프레임을 비교하지 않고 정규화한 이벤트·저장 키·결과 상태를 비교합니다.
+
+**난이도 및 평가:** 초급=한 번의 위기와 유효 대안 있음, 중급=시간압박 또는 유효 대안 없음, 고급=검증된 복합 위기(후속)입니다. 합격 판정은 **(1) 중복·잘못된 대체·알 수 없는 결과의 오판 방지, (2) 유효한 복구/정확한 '대안 없음' 판단, (3) 필요한 확인 행동, (4) 소요 시간** 순서로 평가합니다. 클릭이 빠르더라도 무효 대체나 미확인 신청을 성공으로 처리하면 성공 점수를 주지 않습니다. 난이도별 시간 기준은 합성 회귀와 학생 시험 후 정하고 근거 없이 숫자 가중치를 고정하지 않습니다.
+
+**1·2차 과목 ID 어댑터 v1:** `{version:1,syntheticCourseId,courseId?,sectionId?,term?,campus?,catalogSnapshotId?,mappingStatus:'MAPPED'|'UNMAPPED'|'STALE'}`의 **명시적으로 승인된 읽기 전용 변환표**를 사용합니다. 제목 유사도나 문자열 조작으로 분반을 자동 결합하지 않습니다. 출처/학기·캠퍼스·판본이 맞지 않으면 `UNMAPPED` 또는 `STALE`. 1차 TypeScript의 공개 어댑터는 JavaScript 번들로 제공하되 기존 HTML/JS에서 TypeScript 소스를 직접 읽지 않습니다. 매핑은 수강신청 성공 또는 이수학점 인정의 증거가 아니고, 실습 `rc`/대기열/결과값을 `hanmo.academic.v1.*`이나 학교로 복사하지 않습니다.
+
+**원본 회귀 시험표 (#19, 작성 후 구현·실기기 확인 별도):**
+
+| 비교 대상 | 고정해야 할 관측값 | 실패 조건 |
+|---|---|---|
+| BASIC (`practiceSetter=1`) | 설정→practice→selectZone→result, 신청/중복/삭제, 완료 시간·저장 키·키보드 이동 | 시나리오 OFF에서 원본 대비 클릭/포커스·신청 수·결과 경로 변화 |
+| TIME (`practiceSetter=2`) | 10시 진입 전·후 조작, `TIMEtime` 저장과 result 경로, 단축키/포커스 | 기존 시간 측정·전환·경고 동작 변화 |
+| SELECT (`practiceSetter=3`) | 기존 대기/검색/신청·취소, `SELECTtime/SELECTWaitTime`, 결과 합계 | 대기시간 계산·중복 등록 방어·저장 동작 변화 |
+| 시나리오 ON | 같은 시드의 상태전이/종료/오류, 대기열 취소·새로고침·중복 클릭·결과 불명 | 자동 재신청, 합성 결과의 실제 원장 유입, 무한 루프, OFF 설정 후 잔존 개입 |
+
+시험은 **기존 `main`/원본 버전에서 먼저 기대 상태·이벤트 로그를 채집하고**, 신규 시나리오 OFF 빌드에서 동일 입력과 테스트 시계를 비교합니다. 실제 Windows Chrome/Edge 키보드·타이머 재현도 기록합니다. 테스트를 아직 실행하지 않았다면 ‘설계 확정’일 뿐 ‘회귀 통과’가 아닙니다. [#19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) · [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
+
+**대안 평가:** (A) 기존 `registerClick`을 전면 개조하는 안은 회귀 면적이 크므로 보류합니다. (B) **시나리오 ON에만 별도 이벤트 제어 계층을 끼우고 OFF에서 기존 경로로 즉시 통과시키는 안을 채택**합니다. 프레임워크 전환·실제 접속 중단은 채택하지 않습니다.
 
 ## 6. 1·2차 자료·검증·배포 원칙
 
