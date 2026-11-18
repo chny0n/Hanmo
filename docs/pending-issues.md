@@ -18,7 +18,6 @@
 | [HMD-007 · #13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) | P1 | 1차 | 강의 개설 전망과 학사행사 예상 구간의 근거·보류 기준을 확정한다 |
 | [HMD-009 · #15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) | P1 | 1차 | 근거 기반 FAQ와 상담 부서 연결의 채택·검증 범위를 정한다 |
 | [HMD-011 · #17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) | P0 | 1차 | 학생 로컬 저장 스키마·키 네임스페이스·백업/복원·삭제 정책을 정한다 |
-| [HMD-012 · #18](https://github.com/ot4562-glitch/Hanmo_develop/issues/18) | P0 | 2차 | 원개발자 승인 범위와 기존 JavaScript 확장 지점을 합의한다 |
 | [HMD-013 · #19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) | P0 | 2차 | 기존 BASIC/TIME/SELECT 기준 동작·키보드·타이머 회귀 테스트를 확보한다 |
 | [HMD-014 · #20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | P1 | 2차 | 마지막 과목 신청 실패 및 대체과목 선택 상태 머신을 설계한다 |
 | [HMD-015 · #21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) | P1 | 2차 | 가상 연결 끊김·재접속·결과 불명 시나리오 상태 머신을 설계한다 |
@@ -71,8 +70,8 @@
 ### HMD-003 · [P0][공통] GPL-3.0과 이식 코드·학사 자료의 배포 권리를 검수한다
 
 - **GitHub Issue:** [#9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9) · 상태: 열림
-- **재검토 결과:** GPL-3.0 LICENSE와 저장소에 기록된 사용자 본인 저작분의 이식 승인을 확인했습니다. 타인 기여분과 학교 자료별 재배포 근거는 기록이 필요합니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §3.1, 6:** 허락이 확인된 자료만 공개합니다. 이식 코드·기여자·학사자료의 출처별 권리 증빙, GPL-3.0 고지·수정·크레딧 확인이 남았습니다.
+- **승인 상태:** 2026-11-18 사용자 확인으로 이식 코드 사용 승인을 기록했습니다. 기존 GPL-3.0 `LICENSE`와 이식 원본·변경 기록을 유지합니다.
+- **현행 설계 §3.1, 6:** 학교 학사자료의 사용·재배포 회신은 #27에 연결합니다. 공개 묶음의 라이선스·변경 고지·크레딧과 학교 자료별 출처 대조가 남았습니다.
 - **연결 작업:** [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) · [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42)
 - **대상 단계:** 공통
 - **문제/결정:** 한모 GPL-3.0 고지 및 이식된 HUFS One AI 기여 코드의 원본별 재배포 허용 범위, 참고용 235개 아카이브 필요성을 확인한다.
@@ -101,7 +100,7 @@
 
 - **GitHub Issue:** [#11](https://github.com/ot4562-glitch/Hanmo_develop/issues/11) · 상태: 열림
 - **재검토 결과:** PR #5의 학칙 승인·변경 비교 테스트를 확인했습니다. 캠퍼스·입학년도·전공별 학칙 정본과 독립 검수 표본이 필요합니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §4.1–4.2:** 좁은 학생 범위에서 시작하고 맞는 학칙이 없으면 보류합니다. 첫 캠퍼스·학번·전공과 승인된 조항·예외·소급 검수 표본이 남았습니다.
+- **현행 설계 §4.1–4.2:** 서울·글로벌캠퍼스, 2010학년도 입학생부터, 모든 전공으로 첫 적용 대상을 확정했습니다. 각 조합의 공식 원문·예외·소급 검수 표본, 독립 검수·승인이 남았습니다.
 - **연결 작업:** [#47](https://github.com/ot4562-glitch/Hanmo_develop/issues/47)
 - **대상 단계:** 1차
 - **문제/결정:** 캠퍼스·학번·전공·이중전공/부전공·학적·비학점 조건에 대한 검수 우선 범위와 학칙 개정 처리 책임을 확정한다.
@@ -202,16 +201,16 @@
 <a id="hmd-012"></a>
 ### HMD-012 · [P0][2차] 원개발자 승인 범위와 기존 JavaScript 확장 지점을 합의한다
 
-- **GitHub Issue:** [#18](https://github.com/ot4562-glitch/Hanmo_develop/issues/18) · 상태: 열림
-- **재검토 결과:** 기존 한모 경로 변경 0건을 확인했습니다. 사용자가 직접 사용한 기존 연습 UI의 파일·이벤트에 대한 원작자 승인 및 운영 공개 범위가 필요합니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §5, 6.1:** 사전 승인된 기존 HTML·JavaScript 확장점만 사용합니다. 원작자의 승인 여부·허용 파일과 조작·공개 범위를 확인해야 합니다.
+- **GitHub Issue:** [#18](https://github.com/ot4562-glitch/Hanmo_develop/issues/18) · 상태: 개발 승인·설계 완료
+- **승인 상태:** 2026-11-18 사용자 확인으로 원개발자의 포크 내 고도화 개발 승인을 기록했습니다.
+- **현행 설계 §5, 6.1:** `practice`의 진입, `selectZone`의 모의 신청·대기열, `result`의 결과 복기를 기존 HTML·JavaScript 확장 경계로 정했습니다. 원본 운영 사이트에 반영할 때는 별도 운영 승인·검증 절차를 적용합니다.
 - **연결 작업:** [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
 - **대상 단계:** 2차
 - **문제/결정:** 기존 연습 페이지의 BASIC/TIME/SELECT에만 HTML·JavaScript로 시나리오를 붙인다.
 - **완료 조건:**
-  - [ ] 수정 허용 파일·UI·핸들러·배포 승인 절차 기록
-  - [ ] 기존 practice.js/selectZone.js/result.js 연동 위치 검토
-  - [ ] React/TypeScript로 기존 페이지를 재구축하지 않음
+  - [x] 포크 내 수정 범위와 UI·핸들러·운영 반영 승인 절차 기록
+  - [x] 기존 practice.js/selectZone.js/result.js 연동 위치 검토
+  - [x] 기존 HTML·JavaScript의 선택형 확장으로 설계
 - **공통 전제:** 원개발자 승인·학사자료 권리/검수·Supabase 운영권한을 이 명세가 대신하지 않음
 
 <a id="hmd-013"></a>
@@ -337,7 +336,7 @@
 
 - **GitHub Issue:** [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) · 상태: 열림
 - **재검토 결과:** 학교 공개 공지·편람·강의시간표의 확인 경로와 후보 출처 목록을 확인했습니다. 재배포·정기 수집 허락과 담당 부서의 확인 기록은 확보가 필요합니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §6, 7.2:** 수집과 공개는 출처별 허용 범위 안에서 진행합니다. 공개 접근·재사용·자동 수집 권한과 관리 부서·원문 URL을 적은 근거표가 남았습니다.
+- **현행 설계 §6, 7.2:** 한국외대 학사종합지원센터에 공지·개설 이력·학칙·FAQ 원문의 링크, 인용·요약, 구조화 자료 배포, 자동 수집 허용 여부를 문의합니다. 자료별 관리 부서·원문 URL·회신을 적은 근거표가 남았습니다.
 - **연결 작업:** [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) · [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) · [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)
 - **대상 단계:** 1·3차
 - **문제/결정:** 학칙, 공지, 강의, 학사력의 공개 접근 권한과 자동 수집 허가를 출처별로 확인한다. 로그인·SSO 우회는 금지한다.
@@ -366,7 +365,7 @@
 
 - **GitHub Issue:** [#29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) · 상태: 열림
 - **재검토 결과:** 운영 연결을 위한 프로젝트 소유자·비용 담당·관리자·장애 대응·자료 승인자가 합의됐다는 기록이 필요합니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §2, 7, 7.3:** 정적 버전을 먼저 확인하고 팀 인계와 실제 운영 책임을 분리합니다. 프로젝트 소유자·비용·장애 대응·데이터 승인 담당의 실제 합의가 남았습니다.
+- **현행 설계 §2, 7, 7.3:** Supabase 프로젝트 소유 우선 후보는 임창용 님입니다. 본인의 수락과 비용·관리·장애 대응·자료 승인 담당의 합의가 남았습니다. 정적 버전을 먼저 확인하고 팀 인계와 실제 운영 책임을 분리합니다.
 - **연결 작업:** [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64) · [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
 - **대상 단계:** 3차
 - **문제/결정:** 우리 팀의 설계 인계와 실제 DB 구축/운영 책임은 별도다. 임창용 님, 원개발자, 학사자료 검수 역할을 합의한다.
@@ -484,8 +483,8 @@
 ### HMD-031 · [P0][2차] 위기 대응 시나리오 다양성·난이도·조합형 훈련 체계 설계
 
 - **GitHub Issue:** [#37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) · 상태: 열림
-- **재검토 결과:** 합성 전망 회귀와 원본 보호는 통과했습니다. 두 가상 위기와 복합 시나리오의 실행·회귀, 원작자 승인이 남았습니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §5:** 기존 모드 기본 OFF에서 두 기본 위기를 먼저 출시하고 복합 위기는 후속으로 둡니다. 상태도·시드·난이도 세부화와 테스트·원개발자 승인 기록이 남았습니다.
+- **재검토 결과:** 합성 전망 회귀와 원본 보호는 통과했습니다. 포크 내 개발 승인 근거는 #18입니다. [시험과 자료 확인](pr-stack-review.md)
+- **현행 설계 §5:** 기존 모드 기본 OFF에서 두 기본 위기를 먼저 출시하고 복합 위기는 후속으로 둡니다. 상태도·시드·난이도 세부화와 실행·회귀 시험, 운영 반영 확인이 남았습니다.
 - **연결 작업:** [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
 - **대상 단계:** 2차
 - **문제/결정:** 단순한 클릭 연습을 넘어 실패·대안 탐색·가상 연결 복구 훈련을 핵심 차별화 기능으로 확장. 기존 두 시나리오 외 난이도·합성 복합 위기의 체계적 추가 기준이 필요함.
