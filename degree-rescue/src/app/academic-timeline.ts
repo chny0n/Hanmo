@@ -4,6 +4,7 @@ import {
   type AcademicAgendaItem,type AcademicEvent,type AcademicGroup,type AcademicProfile,type GraduationStepId,
 } from '../core/academic-schedule.js';
 import {importantNotices} from '../core/important-notices.js';
+import {academicSourceLink,selectedMajors,studentDeadlineDisplay} from '../core/academic-display.js';
 
 const KEY='hanmo:degree-rescue:academic-roadmap:v1';
 type StepStatus='UNREVIEWED'|'IN_PROGRESS'|'DONE'|'NOT_APPLICABLE';
@@ -31,7 +32,7 @@ const create=(tag:keyof HTMLElementTagNameMap,cls='',message=''):HTMLElement=>{
 function setMessage(id:string,message:string):void{element<HTMLElement>(id).textContent=message;}
 function readProfile():AcademicProfile{
   const campus=value('profile-campus'),year=value('profile-cohort');
-  const majors=[value('profile-major'),value('profile-double')].filter(Boolean);
+  const majors=selectedMajors(value('profile-major'),value('profile-double'));
   const requirements=value('profile-requirements');
   const target=value('profile-term');
   return AcademicProfileSchema.parse({
@@ -112,8 +113,11 @@ function renderOne(item:AcademicAgendaItem):HTMLElement{
   const dates=create('p');
   if(e.opensAt)dates.append(create('span','', '신청 시작(입력 기준): '+when(e.opensAt)+' · '));
   if(item.studentDeadline){
-    const due=item.daysLeft===0?'오늘':item.daysLeft!==null&&item.daysLeft>0?'D-'+item.daysLeft:'마감 시점 경과';
-    dates.append(create('strong','', '학생 신청 마감(입력 기준): '+when(item.studentDeadline)+' · '+due));
+    const display=studentDeadlineDisplay(item);
+    const caption=display.kind==='VERIFIED'?'검수된 학생 신청 마감'
+      :display.kind==='SYNTHETIC'?'가상 마감 · 연습용'
+      :'입력된 날짜 · 공식 마감 미검증';
+    dates.append(create('strong','',caption+': '+when(item.studentDeadline)+' · '+display.status));
   }else if(e.eventAt){
     dates.append(create('strong','', '행사·시험 날짜(입력 기준): '+when(e.eventAt)));
   }else{
@@ -143,8 +147,11 @@ function renderOne(item:AcademicAgendaItem):HTMLElement{
   citation.append(create('p','tiny','자료에 기재된 조건(독립 검수 전일 수 있음): '+conditions.join(' · ')));
   if(item.scopeUnknown.length)citation.append(create('p','tiny','추가 확인할 조건: '+item.scopeUnknown.join(', ')));
   if(e.requirementRefs?.length)citation.append(create('p','tiny','연결 요건 ID: '+e.requirementRefs.join(', ')));
-  if(e.source.url){
-    const link=create('a','', '학교 공지 원문 또는 게시목록 확인');
+  const sourceLink=academicSourceLink(e.source.url);
+  if(e.source.url&&sourceLink!=='NONE'){
+    const link=create('a','',sourceLink==='HUFS_DOMAIN'
+      ?'학교 도메인의 자료 링크 · 원문/최신성 확인'
+      :'외부 참고 링크 · 학교 공식 사이트가 아닐 수 있음');
     link.setAttribute('href',e.source.url);link.setAttribute('target','_blank');
     link.setAttribute('rel','noopener noreferrer');
     citation.append(link);
