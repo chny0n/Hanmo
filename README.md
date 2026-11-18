@@ -40,20 +40,6 @@
 
 첫 적용 대상은 **서울·글로벌캠퍼스의 2010학년도 입학생부터 모든 전공**입니다. 개인 졸업 진단은 입학년도·전공별 학칙과 이수 기록 입력을 검증한 범위부터 확장합니다. [현행 설계](docs/architecture.md)
 
-## 빠른 시작
-
-학업 플래너 개발판을 실행하려면 Node.js 22 이상과 Python 3을 사용합니다.
-
-```bash
-git clone --branch feature/degree-rescue-trust-audit-bridge --single-branch https://github.com/ot4562-glitch/Hanmo_develop.git
-cd Hanmo_develop/degree-rescue
-npm install --no-package-lock
-npm run check
-python -m http.server 8080 --directory dist
-```
-
-Windows에서 Python 실행 명령이 `py`인 경우 마지막 줄을 `py -m http.server 8080 --directory dist`로 실행합니다. [학업 플래너 로컬 열기](http://localhost:8080/degree-rescue/)
-
 ## 개발 로드맵
 
 | 단계 | 개발 범위 |
