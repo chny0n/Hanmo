@@ -8,7 +8,7 @@ import type {AcademicAuditVNext} from '../contracts/academics/vnext.js';
  * dependency. Explicit asOf, source dates and applicability are mandatory.
  */
 const Iso=z.iso.datetime({offset:true});
-const Id=z.string().trim().min(1).max(120).regex(/^[A-Za-z0-9._:-]+$/);
+const Id=z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/);
 const Label=z.string().trim().min(1).max(240);
 const Major=z.string().trim().min(1).max(100);
 export const CampusSchema=z.enum(['SEOUL','GLOBAL']);
@@ -110,6 +110,18 @@ export function parseAcademicSchedule(source:unknown):AcademicScheduleImport{
   }
   return {events,invalid};
 }
+/** Same-origin, tab-scoped, untrusted hints from the standalone ledger calculator.
+ * Never move the complete student ledger into the timeline or treat this as school evidence. */
+export const ACADEMIC_AUDIT_BRIDGE_KEY='hanmo:degree-rescue:local-audit-hints:v1';
+export const AcademicAuditHintSchema=z.strictObject({
+  schemaVersion:z.literal(1),
+  origin:z.literal('LOCAL_CALCULATOR'),
+  generatedAt:Iso,
+  asOf:Iso,
+  rulePackVersion:Id,
+  state:z.enum(['READY','NEEDS_REVIEW','INSUFFICIENT_DATA']),
+  candidateOpenRequirementIds:z.array(Id).max(200).nullable(),
+});
 export const AcademicProfileSchema=z.strictObject({
   campus:CampusSchema.optional(),
   cohort:z.number().int().min(1900).max(2100).optional(),
@@ -117,7 +129,10 @@ export const AcademicProfileSchema=z.strictObject({
   targetGraduationTerm:Term.optional(),
   enrollmentState:z.enum(['ENROLLED','LEAVE','RETURNING','GRADUATION_PENDING']).optional(),
   /** null is unknown; [] is a verified no-open-requirements state, not the same thing. */
+  /** Independently confirmed results only; never populated from student-entered JSON. */
   openRequirementIds:z.array(Id).max(200).nullable().optional(),
+  /** Student/locally computed hints; may prioritize but MUST NOT prove applicability or completion. */
+  candidateOpenRequirementIds:z.array(Id).max(200).optional(),
 });
 export type AcademicProfile=z.infer<typeof AcademicProfileSchema>;
 export type Applies='YES'|'NO'|'UNKNOWN';
@@ -125,6 +140,7 @@ export type Evidence='SYNTHETIC'|'SOURCE_REVIEWED'|'NEEDS_SOURCE_CHECK';
 export type Priority='DUE_SOON'|'UPCOMING'|'OVERDUE'|'DATE_UNKNOWN'|'INFORMATION';
 export interface AcademicAgendaItem{
   event:AcademicEvent;group:AcademicGroup;appliesTo:Applies;scopeUnknown:readonly string[];
+  candidateRequirementMatch:boolean;
   evidence:Evidence;priority:Priority;studentDeadline:string|null;daysLeft:number|null;sortTimestamp:number;
 }
 export interface AcademicAgenda{
@@ -138,7 +154,7 @@ const one=(required:readonly string[]|undefined,actual:string|undefined,field:st
   return !required.includes(actual);
 };
 /** Missing student attributes are UNKNOWN, never inferred from the person's other fields. */
-export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent):{state:Applies;unknown:string[]}{
+export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent,independentlyReviewed=false):{state:Applies;unknown:string[]}{
   const scope=event.scope;const unknown:string[]=[];
   let mismatch=false;
   if(scope){
@@ -157,9 +173,13 @@ export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent)
   }
   // A title-only notice cannot prove which students actually qualify.
   if(event.source.review==='REFERENCE_ONLY')unknown.push('noticeDetails');
+  // SOURCE_REVIEWED inside a JSON file is self-asserted. It is not an operator attestation.
+  if(event.source.review==='SOURCE_REVIEWED'&&!independentlyReviewed)unknown.push('sourceVerification');
   if(event.requiresOpenRequirement){
-    if(profile.openRequirementIds===null||profile.openRequirementIds===undefined)unknown.push('graduationRequirement');
-    else if(!event.requirementRefs?.some(ref=>profile.openRequirementIds!.includes(ref)))mismatch=true;
+    if(profile.openRequirementIds===null||profile.openRequirementIds===undefined){
+      const candidateMatch=event.requirementRefs?.some(ref=>profile.candidateOpenRequirementIds?.includes(ref));
+      unknown.push(candidateMatch?'localRequirementCandidate':'graduationRequirement');
+    }else if(!event.requirementRefs?.some(ref=>profile.openRequirementIds!.includes(ref)))mismatch=true;
   }
   return {state:mismatch?'NO':unknown.length?'UNKNOWN':'YES',unknown:mismatch?[]:unknown};
 }
@@ -172,19 +192,21 @@ const anyTimestamp=(e:AcademicEvent):number=>{
   const v=e.deadlineAt??e.eventAt??e.opensAt;
   return v?Date.parse(v):Number.POSITIVE_INFINITY;
 };
-function sourceEvidence(event:AcademicEvent,now:number):Evidence{
+function sourceEvidence(event:AcademicEvent,independentlyReviewed:boolean):Evidence{
   if(event.source.review==='SYNTHETIC')return 'SYNTHETIC';
-  if(event.source.review==='SOURCE_REVIEWED'&&event.source.reviewedAt
-    &&Date.parse(event.source.reviewedAt)<=now)return 'SOURCE_REVIEWED';
-  return 'NEEDS_SOURCE_CHECK';
+  return independentlyReviewed?'SOURCE_REVIEWED':'NEEDS_SOURCE_CHECK';
 }
 /** Local viewer, no live institution lookup, no fabricated or inferred deadlines. */
 export function buildAcademicAgenda(request:{
   asOf:string;profile:AcademicProfile;events:readonly AcademicEvent[];
+  /** In-memory references supplied ONLY by the operator-reviewed bundled-data loader.
+   * Never populate from a user-uploaded JSON field, URL, timestamp, or event ID. */
+  trustedReviewedEvents?:readonly AcademicEvent[];
 }):AcademicAgenda{
   if(!Iso.safeParse(request.asOf).success)throw new RangeError('asOf needs offset-aware ISO time');
   const profile=AcademicProfileSchema.parse(request.profile);
   const now=Date.parse(request.asOf);
+  const reviewedObjects=new Set(request.trustedReviewedEvents??[]);
   const counts=new Map<string,number>();
   request.events.forEach(e=>counts.set(e.id,(counts.get(e.id)||0)+1));
   const items:AcademicAgendaItem[]=[];const excluded:AcademicAgenda['excluded']=[];
@@ -199,7 +221,12 @@ export function buildAcademicAgenda(request:{
     if(times.some(v=>v!==undefined&&!Number.isFinite(Date.parse(v)))){
       excluded.push({id:event.id,reason:'INVALID_TIME'});continue;
     }
-    const applicability=noticeApplicability(profile,event);
+    const independentlyReviewed=event.source.review==='SOURCE_REVIEWED'
+      &&!!event.source.reviewedAt&&Date.parse(event.source.reviewedAt)<=now
+      &&reviewedObjects.has(event);
+    const applicability=noticeApplicability(profile,event,independentlyReviewed);
+    const candidateRequirementMatch=!!event.requirementRefs?.some(ref=>
+      profile.candidateOpenRequirementIds?.includes(ref));
     const due=event.deadlineAt?Date.parse(event.deadlineAt):null;
     const daysLeft=due===null?null:kstDateNumber(event.deadlineAt!)-kstDateNumber(request.asOf);
     const priority:Priority=due!==null
@@ -207,12 +234,14 @@ export function buildAcademicAgenda(request:{
       :(event.eventAt||event.opensAt)?'INFORMATION':'DATE_UNKNOWN';
     items.push({
       event,group:academicGroupFor(event.type),appliesTo:applicability.state,scopeUnknown:applicability.unknown,
-      evidence:sourceEvidence(event,now),priority,studentDeadline:event.deadlineAt??null,
+      candidateRequirementMatch,evidence:sourceEvidence(event,independentlyReviewed),priority,studentDeadline:event.deadlineAt??null,
       daysLeft,sortTimestamp:anyTimestamp(event),
     });
   }
   const rank:Record<Applies,number>={YES:0,UNKNOWN:1,NO:2};
-  items.sort((a,b)=>rank[a.appliesTo]-rank[b.appliesTo]||a.sortTimestamp-b.sortTimestamp||
+  items.sort((a,b)=>rank[a.appliesTo]-rank[b.appliesTo]
+    ||Number(b.candidateRequirementMatch)-Number(a.candidateRequirementMatch)
+    ||a.sortTimestamp-b.sortTimestamp||
     a.event.id.localeCompare(b.event.id));
   return {
     asOf:request.asOf,items,excluded,

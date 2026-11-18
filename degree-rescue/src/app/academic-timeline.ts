@@ -1,8 +1,9 @@
 import {
-  AcademicEventSchema,AcademicProfileSchema,GRADUATION_STEPS,
+  AcademicEventSchema,AcademicProfileSchema,AcademicAuditHintSchema,ACADEMIC_AUDIT_BRIDGE_KEY,GRADUATION_STEPS,
   buildAcademicAgenda,parseAcademicSchedule,
   type AcademicAgendaItem,type AcademicEvent,type AcademicGroup,type AcademicProfile,type GraduationStepId,
 } from '../core/academic-schedule.js';
+import {importantNotices} from '../core/important-notices.js';
 
 const KEY='hanmo:degree-rescue:academic-roadmap:v1';
 type StepStatus='UNREVIEWED'|'IN_PROGRESS'|'DONE'|'NOT_APPLICABLE';
@@ -38,7 +39,9 @@ function readProfile():AcademicProfile{
     ...(year?{cohort:Number(year)}:{}),
     ...(majors.length?{majors}:{}),
     ...(target?{targetGraduationTerm:target}:{}),
-    openRequirementIds:requirements?requirements.split(',').map(x=>x.trim()).filter(Boolean):null,
+    // Self-reported or calculator-derived IDs are hints, never independently verified audit results.
+    openRequirementIds:null,
+    candidateOpenRequirementIds:requirements?requirements.split(',').map(x=>x.trim()).filter(Boolean):[],
   });
 }
 function fillProfile(p:AcademicProfile):void{
@@ -48,7 +51,7 @@ function fillProfile(p:AcademicProfile):void{
     'profile-major':p.majors?.[0]??'',
     'profile-double':p.majors?.[1]??'',
     'profile-term':p.targetGraduationTerm??'',
-    'profile-requirements':p.openRequirementIds?.join(', ')??'',
+    'profile-requirements':(p.candidateOpenRequirementIds??p.openRequirementIds)?.join(', ')??'',
   };
   for(const id of profileIds)(inputs[id] as HTMLInputElement|HTMLSelectElement).value=data[id];
 }
@@ -83,6 +86,7 @@ function save():void{
 }
 function clearSaved():void{
   try{localStorage.removeItem(KEY);}catch{/* browser may block storage */}
+  try{sessionStorage.removeItem(ACADEMIC_AUDIT_BRIDGE_KEY);}catch{/* storage disabled */}
   fillProfile({openRequirementIds:null});progress={};renderSteps();render();
   setMessage('profile-message','이 브라우저의 저장된 학업 설정과 체크 상태를 삭제했습니다.');
 }
@@ -98,9 +102,11 @@ function renderOne(item:AcademicAgendaItem):HTMLElement{
   const tags=create('div','meta');
   tags.append(tag(GROUP_LABELS[item.group]));
   tags.append(item.evidence==='SYNTHETIC'?tag('가상 일정','demo')
-    :item.evidence==='SOURCE_REVIEWED'?tag('제공자 원문 검토 표시'):tag('원문 확인 필요','review'));
+    :item.evidence==='SOURCE_REVIEWED'?tag('운영 검수된 원문'):tag('출처·검수 확인 필요','review'));
   if(item.appliesTo==='UNKNOWN')tags.append(tag('적용 대상 확인 필요','unknown'));
-  if(item.priority==='DUE_SOON')tags.append(tag('마감 7일 이내','urgent'));
+  if(item.candidateRequirementMatch)tags.append(tag('내 미충족 요건 후보와 연결','unknown'));
+  if(item.priority==='DUE_SOON')tags.append(item.evidence==='SOURCE_REVIEWED'&&item.appliesTo==='YES'
+    ?tag('확인된 마감 7일 이내','urgent'):tag('입력된 마감 7일 이내 · 미확정','review'));
   else if(item.priority==='OVERDUE')tags.append(tag('입력된 마감 시점 경과','review'));
   card.append(tags);
   const dates=create('p');
@@ -114,17 +120,36 @@ function renderOne(item:AcademicAgendaItem):HTMLElement{
     dates.append(create('strong','', '신청·마감일 미확인 — 공지 원문 확인 필요'));
   }
   card.append(dates);
-  const source=create('p','tiny','게시 출처: '+e.source.title
-    +(e.source.publishedDate?' · 게시일 '+e.source.publishedDate:''));
-  card.append(source);
   if(e.memo)card.append(create('p','',e.memo));
-  if(item.scopeUnknown.length)card.append(create('p','tiny','확인해야 할 대상 조건: '+item.scopeUnknown.join(', ')));
-  if(e.requirementRefs?.length)card.append(create('p','tiny','연결된 졸업요건 ID: '+e.requirementRefs.join(', ')));
+  const citation=create('details','source-footnote');
+  citation.append(create('summary','', '근거 주석 · 출처와 적용 조건 확인'));
+  citation.append(create('p','tiny','자료: '+e.source.title
+    +(e.source.publishedDate?' · 게시일 '+e.source.publishedDate:' · 게시일 미확인')
+    +' · 판본 '+e.revision));
+  const evidenceText=item.evidence==='SOURCE_REVIEWED'
+    ?'독립 운영 검수된 자료입니다. 해당 대상·마감의 검수 범위를 원문에서 확인하세요.'
+    :item.evidence==='SYNTHETIC'
+    ?'한모가 생성한 가상 사례입니다. 실제 학교 일정이 아닙니다.'
+    :'공식 목록의 제목만 참조했거나 검수되지 않은 자료입니다. 원문·학생 대상·날짜를 확인해야 합니다.';
+  citation.append(create('p','tiny','자료 상태: '+evidenceText));
+  const sc=e.scope;
+  const conditions=[
+    sc?.campuses?.length?'캠퍼스 '+sc.campuses.join(', '):'캠퍼스 적용 범위 미확인',
+    sc?.majors?.length?'전공 '+sc.majors.join(', '):'전공별 대상 미확인',
+    sc?.cohortFrom!==undefined||sc?.cohortTo!==undefined
+      ?'입학년도 '+String(sc.cohortFrom??'미상')+'~'+String(sc.cohortTo??'미상')
+      :'학번별 대상 미확인',
+  ];
+  citation.append(create('p','tiny','자료에 기재된 조건(독립 검수 전일 수 있음): '+conditions.join(' · ')));
+  if(item.scopeUnknown.length)citation.append(create('p','tiny','추가 확인할 조건: '+item.scopeUnknown.join(', ')));
+  if(e.requirementRefs?.length)citation.append(create('p','tiny','연결 요건 ID: '+e.requirementRefs.join(', ')));
   if(e.source.url){
-    const link=create('a','', '학교 공지 원문·목록 열기');
+    const link=create('a','', '학교 공지 원문 또는 게시목록 확인');
     link.setAttribute('href',e.source.url);link.setAttribute('target','_blank');
-    link.setAttribute('rel','noopener noreferrer');card.append(link);
+    link.setAttribute('rel','noopener noreferrer');
+    citation.append(link);
   }
+  card.append(citation);
   return card;
 }
 function render():void{
@@ -133,6 +158,32 @@ function render():void{
     element('profile-message').textContent||'':'');}
   catch(e){setMessage('profile-message','학업 조건 형식을 확인하세요: '+(e instanceof Error?e.message:String(e)));return;}
   const summary=buildAcademicAgenda({asOf:new Date().toISOString(),profile,events:records});
+  const focus=importantNotices(profile,summary.items);
+  const focusList=element<HTMLElement>('focus-list');
+  focusList.replaceChildren();
+  if(focus.mode==='CHOOSE_MAJOR'){
+    setMessage('focus-status','주전공을 입력하면 졸업시험·이중전공·수강신청 등 중요공지 후보를 먼저 보여줍니다. 해당 여부는 공식 원문에서 확인해야 합니다.');
+    focusList.append(create('p','empty-state','주전공을 선택하거나 입력해 시작하세요. 성적표·학번·학교 계정이 필요하지 않습니다.'));
+  }else{
+    const hasVerifiedMajorTag=[...focus.confirmed,...focus.toCheck].some(item=>
+      !!item.event.scope?.majors?.some(major=>profile.majors?.includes(major)));
+    setMessage('focus-status','독립 검수된 확정 마감 '+focus.confirmed.length+
+      '건 · 공식 확인이 필요한 공지 후보 '+focus.toCheck.length+'건. '+
+      (hasVerifiedMajorTag?'전공 조건이 표시된 자료와 일반 공지가 함께 나옵니다. '
+        :'현재 기본 참고 목록에는 전공별 적용 태그가 없어 일반 중요공지 후보를 보여줍니다. ')+
+      '후보는 본인 대상이거나 실제 접수 중임을 뜻하지 않습니다.');
+    if(focus.confirmed.length){
+      focusList.append(create('h3','focus-subtitle','운영 검수된 중요 신청 마감 (최대 2건)'));
+      for(const item of focus.confirmed)focusList.append(renderOne(item));
+    }
+    if(focus.toCheck.length){
+      focusList.append(create('h3','focus-subtitle','먼저 확인할 참고 공지 · 적용 대상과 날짜 미확정'));
+      for(const item of focus.toCheck)focusList.append(renderOne(item));
+    }
+    if(!focus.confirmed.length&&!focus.toCheck.length){
+      focusList.append(create('p','empty-state','해당 조건으로 우선 표시할 공지 후보가 없습니다. 아래 전체 목록과 공식 학교 공지를 확인하세요.'));
+    }
+  }
   const onlyUnknown=element<HTMLInputElement>('include-unknown').checked;
   const group=element<HTMLSelectElement>('group-filter').value;
   const search=element<HTMLInputElement>('agenda-search').value.trim().toLocaleLowerCase('ko');
@@ -209,6 +260,21 @@ async function officialTitles():Promise<void>{
       ' · 정적 파일 서버에서 페이지를 열었는지 확인하세요.');
   }
 }
+/** Explicit user action only. A calculator response can suggest links but never close an official requirement. */
+function applyLocalAuditHints():void{
+  try{
+    const raw=sessionStorage.getItem(ACADEMIC_AUDIT_BRIDGE_KEY);
+    if(!raw)throw new Error('이 탭에서 먼저 학업 플래너의 학점·졸업요건 계산을 실행하세요.');
+    const hint=AcademicAuditHintSchema.parse(JSON.parse(raw) as unknown);
+    if(hint.candidateOpenRequirementIds===null)throw new Error(
+      '원장의 기준이 부족해 연결할 요건을 판단하지 못했습니다. 학점·학칙 데이터를 확인하세요.');
+    element<HTMLInputElement>('profile-requirements').value=hint.candidateOpenRequirementIds.join(', ');
+    render();
+    setMessage('profile-message','로컬 계산 요건 후보 '+hint.candidateOpenRequirementIds.length+'건 반영 · 규정 판본 '
+      +hint.rulePackVersion+' · 계산 기준 '+when(hint.asOf)
+      +'. 공식 자료 검수나 졸업 충족 확정이 아닙니다. 저장하려면 위의 저장 버튼을 누르세요.');
+  }catch(e){setMessage('profile-message','계산 결과 연결 실패: '+(e instanceof Error?e.message:String(e)));}
+}
 function exportJson():void{
   const json=JSON.stringify({schemaVersion:1,events:records},null,2);
   const blob=new Blob([json],{type:'application/json;charset=utf-8'});
@@ -228,12 +294,13 @@ async function importJson():Promise<void>{
     if(!events.length&&invalid.length)throw new Error('유효한 공지 항목이 없습니다. 첫 오류: '+invalid[0]?.reason);
     records=events;currentMode='imported';
     setMessage('data-message','이 기기의 JSON '+events.length+'건 불러옴. 형식 오류 '+invalid.length+
-      '건 제외. SOURCE_REVIEWED 표시를 포함한 자료의 실제 출처는 사용자가 다시 확인해야 합니다.');
+      '건 제외. JSON 안의 SOURCE_REVIEWED 자기선언은 운영 검수로 인정하지 않습니다. 모든 기한은 원문을 재확인하세요.');
     render();
   }catch(e){setMessage('data-message','JSON 가져오기 실패: '+(e instanceof Error?e.message:String(e)));}
 }
 for(const id of profileIds)inputs[id]?.addEventListener('input',render);
 element<HTMLButtonElement>('profile-save').addEventListener('click',save);
+element<HTMLButtonElement>('audit-transfer').addEventListener('click',applyLocalAuditHints);
 element<HTMLButtonElement>('profile-clear').addEventListener('click',clearSaved);
 element<HTMLButtonElement>('data-official').addEventListener('click',()=>{void officialTitles();});
 element<HTMLButtonElement>('data-demo').addEventListener('click',()=>{

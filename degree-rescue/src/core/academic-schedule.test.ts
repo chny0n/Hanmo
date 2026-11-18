@@ -1,6 +1,6 @@
 import {describe,expect,it} from 'vitest';
 import {
-  AcademicEventSchema,AcademicEventTypeSchema,AcademicProfileSchema,
+  AcademicEventSchema,AcademicEventTypeSchema,AcademicProfileSchema,AcademicAuditHintSchema,
   GRADUATION_STEPS,academicGroupFor,buildAcademicAgenda,noticeApplicability,
   openRequirementsFromAudit,parseAcademicSchedule,
   type AcademicEvent,type AcademicEventInput,
@@ -20,8 +20,8 @@ const event=(over:Partial<AcademicEventInput>={}):AcademicEvent=>AcademicEventSc
   studentActionRequired:true,
   ...over,
 });
-const agenda=(events:AcademicEvent[],user=profile,asOf=NOW)=>
-  buildAcademicAgenda({asOf,profile:user,events});
+const agenda=(events:AcademicEvent[],user:typeof profile=profile,asOf=NOW,trustedReviewedEvents:AcademicEvent[]=[])=>
+  buildAcademicAgenda({asOf,profile:user,events,trustedReviewedEvents});
 
 describe('academic calendar + graduation continuity',()=>{
   it('classifies every declared event and all graduation milestones',()=>{
@@ -71,10 +71,45 @@ describe('academic calendar + graduation continuity',()=>{
       url:'https://www.hufs.ac.kr/hufs/11377/subview.do',
       reviewedAt:'2026-11-16T12:00:00+09:00',
     }});
-    const result=agenda([n]);expect(result.items[0]?.evidence).toBe('SOURCE_REVIEWED');
+    const result=agenda([n],profile,NOW,[n]);expect(result.items[0]?.evidence).toBe('SOURCE_REVIEWED');
     expect(result.dueSoonCount).toBe(1);
-    const premature=agenda([n],profile,'2026-11-16T09:00:00+09:00');
+    const premature=agenda([n],profile,'2026-11-16T09:00:00+09:00',[n]);
     expect(premature.items[0]?.evidence).toBe('NEEDS_SOURCE_CHECK');
+  });
+  it('never upgrades self-attested JSON review metadata into independent verification',()=>{
+    const uploaded=event({source:{
+      title:'자체 검토 주장',review:'SOURCE_REVIEWED',
+      url:'https://www.hufs.ac.kr/hufs/11377/subview.do',
+      reviewedAt:'2026-11-16T12:00:00+09:00',
+    }});
+    const result=agenda([uploaded]);
+    expect(result.items[0]?.evidence).toBe('NEEDS_SOURCE_CHECK');
+    expect(result.items[0]?.appliesTo).toBe('UNKNOWN');
+    expect(result.items[0]?.scopeUnknown).toContain('sourceVerification');
+    expect(result.dueSoonCount).toBe(0);
+    // An operator's in-memory reference cannot be spoofed by copying the same JSON.
+    const copied=AcademicEventSchema.parse(JSON.parse(JSON.stringify(uploaded)));
+    expect(agenda([copied],profile,NOW,[uploaded]).items[0]?.evidence).toBe('NEEDS_SOURCE_CHECK');
+  });
+  it('treats locally computed missing requirements as priority hints, not official eligibility',()=>{
+    const linked=event({requirementRefs:['GRAD-EXAM'],requiresOpenRequirement:true});
+    const local={...profile,openRequirementIds:null,candidateOpenRequirementIds:['GRAD-EXAM']};
+    const found=agenda([linked],local);
+    expect(found.items[0]?.candidateRequirementMatch).toBe(true);
+    expect(found.items[0]?.appliesTo).toBe('UNKNOWN');
+    expect(found.items[0]?.scopeUnknown).toContain('localRequirementCandidate');
+    const noMatch=agenda([linked],{...local,candidateOpenRequirementIds:['OTHER']});
+    expect(noMatch.items[0]?.appliesTo).toBe('UNKNOWN');
+    expect(noMatch.items[0]?.candidateRequirementMatch).toBe(false);
+  });
+  it('rejects raw personal ledger fields from the minimal cross-page audit hint contract',()=>{
+    const minimal={
+      schemaVersion:1,origin:'LOCAL_CALCULATOR',
+      generatedAt:NOW,asOf:NOW,rulePackVersion:'SYN-PACK',
+      state:'NEEDS_REVIEW',candidateOpenRequirementIds:['GRAD-EXAM'],
+    };
+    expect(AcademicAuditHintSchema.safeParse(minimal).success).toBe(true);
+    expect(AcademicAuditHintSchema.safeParse({...minimal,attempts:[{grade:'A+'}]}).success).toBe(false);
   });
   it('rejects a falsely reviewed record without source and reviewedAt',()=>{
     expect(()=>event({source:{title:'미상',review:'SOURCE_REVIEWED'}})).toThrow();
