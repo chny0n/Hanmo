@@ -19,8 +19,16 @@ await copyFile(join(here,'index.html'),join(degree,'index.html'));
 await copyFile(join(here,'style.css'),join(degree,'style.css'));
 await copyFile(join(here,'catalog.html'),join(degree,'catalog.html'));
 await copyFile(join(here,'catalog.css'),join(degree,'catalog.css'));
+await copyFile(join(here,'academic-timeline.html'),join(degree,'academic-timeline.html'));
+await copyFile(join(here,'academic-timeline.css'),join(degree,'academic-timeline.css'));
+await mkdir(join(degree,'data'),{recursive:true});
+await copyFile(join(here,'data/academic-notices-reference.json'),join(degree,'data/academic-notices-reference.json'));
 await copyFile(join(here,'public/app.js'),join(degree,'public/app.js'));
 await copyFile(join(here,'public/catalog.js'),join(degree,'public/catalog.js'));
+await copyFile(join(here,'public/academic-timeline.js'),join(degree,'public/academic-timeline.js'));
 if(await exists(join(dist,'CNAME'))) throw new Error('Custom domain leaked into preview');
 if(!(await exists(join(degree,'public/app.js')))) throw new Error('Missing browser bundle');
+for(const name of ['academic-timeline.html','academic-timeline.css','public/academic-timeline.js','data/academic-notices-reference.json']){
+  if(!(await exists(join(degree,name))))throw new Error('Missing academic timeline asset: '+name);
+}
 console.log('Static preview staged in degree-rescue/dist (no CNAME).');

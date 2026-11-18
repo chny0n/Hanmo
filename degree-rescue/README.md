@@ -30,3 +30,11 @@ npm run check
 모든 `SYN-*` 예시는 합성 데이터입니다. 학교 공지·학칙·과목 이력 원본을 검수하지 않았고, HUFS One AI 팀 기여 코드의 공개 재배포 권리와 Hanmo GPL-3.0 호환성도 **병합 전에 별도 확인**해야 합니다.
 
 [세부 이식 및 누락 현황](docs/ACADEMIC_SOURCE_HANDOFF.md) · [자산/권리 검토표](docs/ACADEMIC_ASSET_AUDIT.md)
+
+## 학사공지·전공 신청 참고 페이지 (PR #4)
+
+- `academic-timeline.html`: 캠퍼스·입학년도·전공(주/이중)과 목표 졸업학기를 명시적으로 입력해 참고 학사 공지 목록을 필터링합니다. 기본 제공 자료 10개는 **공지 제목과 게시일만** 검토한 것으로 신청·마감일은 제공하지 않습니다.
+- `src/core/academic-schedule.ts`: 학교 학사사건 유형, 범위 미확인 UNKNOWN 처리, Asia/Seoul 날짜 경계, 취소·중복 격리, 학생 접수 마감과 행정부서 보고 시한을 분리하는 순수 로직.
+- 14개 졸업 체크 항목은 **개인 메모**이자 보조 기능이며, 공식 졸업 사정이 아닙니다. 학교 성적표를 자동으로 불러오는 기능은 없습니다.
+- 합성 D-day 시연은 모두 SYNTHETIC으로 표시하며 실제 학사 일정·신청기간을 예측하지 않습니다.
+- [학사일정 학생용 계약/검증 상세](docs/ACADEMIC_GRADUATION_RELATIONSHIPS.md) 참고.
