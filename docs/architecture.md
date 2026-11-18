@@ -87,7 +87,7 @@
 - **학생 정보:** 학번 대신 입학년도·캠퍼스·전공·적용 교육과정 등 필요한 조건만 입력합니다. 개별 성적/이수/학적 파일은 사용자가 로컬에서 불러와 관리하며 원격 전송·공개 Git 기록·서버 기본 동기화가 없습니다. 브라우저 데이터 삭제·내보내기·공유 PC 주의를 제공합니다.
 - **재사용 자산:** `degree-rescue/src/`에는 선택된 브라우저 실행 코어와 테스트만 둡니다. `legacy-academic/`의 React·Fastify·PostgreSQL·공용 비학업 타입은 참조용이며 **번들/정적 공개 파일에 포함하지 않습니다**. 235개 보존 소스 전체는 병합 대상이 아닌 선택·권리 검토 후보입니다.
 - **원본 보호:** 1차 동안 한모 루트 `index.html`, `html/`, `js/`, `css/`, `img/`, `CNAME` 수정 0건. 루트 원본 한모의 커스텀 도메인을 미병합 학업 기능의 미리보기로 사용하지 않습니다.
-- **PR 선별:** PR #1~#5에서 실행에 필요한 학업 화면·계산 코어·테스트를 파일별로 채택·수정·제외합니다. 검토표에 출처·권리·선택 사유와 원본 변경 0건 및 CI 결과를 남기고, 옛 참조 파일·권리 미확인 코드·개인정보 샘플은 공개 묶음에서 제외합니다. [#8](https://github.com/ot4562-glitch/Hanmo_develop/issues/8) · [#9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9)
+- **PR 선별:** PR #1~#5에서 실행에 필요한 학업 화면·계산 코어·테스트를 파일별로 채택·수정·제외합니다. 옛 참조 파일·권리 미확인 코드·개인정보 샘플은 공개 묶음에서 제외합니다. [파일별 선별과 검증](pr-stack-review.md) · [권리 확인 #9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9)
 
 ### 3.2 제품 기능 상태의 별도 판정
 
@@ -232,7 +232,7 @@
 ### 6.1 미리보기, 공개, 복구
 
 1. 기능 PR의 자동 검사를 통과하고 변경 영역의 실무 담당 검토를 받습니다. 작성자와 검토자는 분리합니다. 기존 원본 변경과 운영 주소 변경에는 원개발자 승인이 필요합니다.
-2. 운영 CNAME이 빠진 별도 미리보기에서 경로·이미지·스크립트·새로고침·404, 자료 판본·권리·신뢰 표시, 모바일·키보드, 기존 모드를 확인합니다. 승인된 운영 배포 담당자가 공개 여부를 결정합니다.
+2. 운영 CNAME이 빠진 별도 미리보기에서 경로·이미지·스크립트·새로고침·404, 자료 판본·권리·신뢰 표시, 모바일·키보드, 기존 모드를 확인합니다. 전체 한모 미리보기는 별도 호스트의 루트에 놓습니다. 기존 시뮬레이터에는 `/`로 이동하는 코드가 있으므로 `/Hanmo_develop/` 접두어에서는 상대경로를 사용하는 학업 화면만 검증합니다. 원본 주소 `vsugangpractice.com`과 포크의 기본 Pages 주소 `ot4562-glitch.github.io/Hanmo_develop/`는 별도이며, 포크 Pages에 사용자 도메인은 연결돼 있지 않습니다. 승인된 운영 배포 담당자가 공개 여부를 결정합니다. [경로 확인 기록](pr-stack-review.md#미리보기-경로와-개인-자료)
 3. 공개 전 변경 범위·검증 결과·승인과 되돌릴 안정 태그 또는 SHA를 기록합니다. 장애 시 이전 안정 배포본으로 복구하고, 2차 시나리오는 기본 OFF 또는 비활성화로 기본 모드를 사용할 수 있게 합니다. 복구 후 주소·핵심 경로와 기존 모드를 다시 확인하고 결과를 릴리스 기록에 남깁니다.
 
 | 차수 | 공개·인수 전에 통과할 검사 |
@@ -281,7 +281,7 @@
 
 학교가 공식 API 또는 자동 수집 권한을 제공하지 않는 경우 **실시간 자동 갱신을 보장하지 않습니다**. 오류·누락·취소·정정에 대비해 확인 시각, 보류 표시, 재시도와 **정적 JSON 대체 경로**를 둡니다.
 
-허용된 출처만 정해진 주기로 확인하며 재시도 후에도 실패하면 운영자가 처리합니다. 학생은 로그인 없이 **승인된 공통 학사자료만** 읽습니다. 수집·검수·승인 쓰기 권한을 분리하고 관리 키는 운영 환경에만 둡니다. 지연·장애 시 마지막으로 검수한 자료가 여전히 유효하면 확인 날짜와 함께 제공하고, 유효한 자료가 없으면 ‘확인 필요’와 확인 가능한 원문을 안내합니다. 개인 이수 원장·성적·수강계획은 공개 자료 DB에 보내지 않습니다.
+허용된 출처만 정해진 주기로 확인하며 재시도 후에도 실패하면 운영자가 처리합니다. 학생은 로그인 없이 **승인된 공통 학사자료만** 읽습니다. 수집·검수·승인 쓰기 권한을 분리하고 관리 키는 운영 환경에만 둡니다. 지연·장애 시 마지막으로 검수한 자료가 여전히 유효하면 확인 날짜와 함께 제공하고, 유효한 자료가 없으면 ‘확인 필요’와 확인 가능한 원문을 안내합니다. 개인 캠퍼스·전공 선택, 이수 원장, 성적, 수강계획과 체크 상태는 브라우저에 보관합니다. 학교 계정·인증 정보 및 학생의 원본 입력을 공통 자료 DB에 전송하는 경로는 두지 않습니다. 개인 동기화는 이 범위에서 제외하며 로컬 백업·내보내기·삭제는 §4.8을 따릅니다. [실연동 재검증 #65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) · [인수 #67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
 
 ### 7.3 인계에 반드시 포함할 산출물
 
@@ -323,10 +323,8 @@
 | ID | 우선순위 | 단계 | 개별 작업 |
 |---|---|---|---|
 | [HMD-001 · #7](https://github.com/ot4562-glitch/Hanmo_develop/issues/7) | P0 | 공통 | §1.2의 첫 출시 범위에 맞춰 화면별 인수 조건을 확정한다 |
-| [HMD-002 · #8](https://github.com/ot4562-glitch/Hanmo_develop/issues/8) | P0 | 공통 | PR #1~#5에서 파일별 선별 병합·보존/제외 기준을 만든다 |
 | [HMD-003 · #9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9) | P0 | 공통 | GPL-3.0과 이식 코드·학사 자료의 배포 권리를 검수한다 |
 | [HMD-005 · #11](https://github.com/ot4562-glitch/Hanmo_develop/issues/11) | P0 | 1차 | 공식 학칙 RulePack과 판본별 졸업요건 검수 범위를 정한다 |
-| [HMD-006 · #12](https://github.com/ot4562-glitch/Hanmo_develop/issues/12) | P1 | 1차 | WIS 수동 HTML/CSV의 강의·분반 가져오기와 CSV 내보내기 계약을 정한다 |
 | [HMD-007 · #13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) | P1 | 1차 | 강의 개설 전망과 학사행사 예상 구간의 근거·보류 기준을 확정한다 |
 | [HMD-009 · #15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) | P1 | 1차 | 근거 기반 FAQ와 상담 부서 연결의 채택·검증 범위를 정한다 |
 | [HMD-011 · #17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) | P0 | 1차 | 학생 로컬 저장 스키마·키 네임스페이스·백업/복원·삭제 정책을 정한다 |
@@ -335,14 +333,12 @@
 | [HMD-014 · #20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | P1 | 2차 | 마지막 과목 신청 실패 및 대체과목 선택 상태 머신을 설계한다 |
 | [HMD-015 · #21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) | P1 | 2차 | 가상 연결 끊김·재접속·결과 불명 시나리오 상태 머신을 설계한다 |
 | [HMD-016 · #22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | P0 | 1·2차 | 학업 코어와 모의신청 간 과목 ID·상태 어댑터 계약을 확정한다 |
-| [HMD-017 · #23](https://github.com/ot4562-glitch/Hanmo_develop/issues/23) | P0 | 배포 | 개발 미리보기와 GitHub Pages 운영 경로·CNAME 계약을 정한다 |
 | [HMD-020 · #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | P1 | 검증 | 모바일·접근성 지원 수준과 기존 한모의 PC 전용 제약을 결정한다 |
 | [HMD-021 · #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) | P0 | 데이터 | 공식 학사자료 수집 가능 범위·재사용 권리·출처 목록을 만든다 |
 | [HMD-023 · #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | P0 | 3차 | Supabase 개설·소유·비용·운영 RACI 및 인수 책임을 합의한다 |
 | [HMD-024 · #30](https://github.com/ot4562-glitch/Hanmo_develop/issues/30) | P1 | 3차 | Supabase 스키마·판본·스냅샷·마이그레이션 설계를 확정한다 |
 | [HMD-025 · #31](https://github.com/ot4562-glitch/Hanmo_develop/issues/31) | P1 | 3차 | 허용된 공식 자료 수집·변경 감지·검수·정적 대체 흐름을 정의한다 |
 | [HMD-026 · #32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) | P1 | 3차 | Supabase API·RLS·비밀키·브라우저 읽기 권한 보안을 정한다 |
-| [HMD-027 · #33](https://github.com/ot4562-glitch/Hanmo_develop/issues/33) | P1 | 3차 | 개인 학업자료의 로컬 우선·선택적 동기화/인증 범위를 결정한다 |
 | [HMD-028 · #34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) | P0 | 3차 | Supabase 실연동·운영 모니터링·복구를 포함한 3차 인수 시험을 정의한다 |
 | [HMD-030 · #36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | P2 | 4차 | JavaScript/JSDoc 정적 검사·TS 동등성·회귀 검증 및 완료 기준을 정한다 |
 | [HMD-031 · #37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) | P0 | 2차 | 위기 대응 시나리오 다양성·난이도·조합형 훈련 체계 설계 |
