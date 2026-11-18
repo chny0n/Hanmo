@@ -6,7 +6,7 @@
 ## 1. 코드·브랜치 검사
 
 - PR 스택: [#1](https://github.com/ot4562-glitch/Hanmo_develop/pull/1) → [#2](https://github.com/ot4562-glitch/Hanmo_develop/pull/2) → [#3](https://github.com/ot4562-glitch/Hanmo_develop/pull/3) → [#4](https://github.com/ot4562-glitch/Hanmo_develop/pull/4) → [#5](https://github.com/ot4562-glitch/Hanmo_develop/pull/5).
-- 각 PR은 독립된 검토 가능한 변경 파일 42 / 35 / 23 / 12 / 16개로 정리했으며, 스택 브랜치를 **원본 235개 아카이브의 과거 커밋 이력을 포함하지 않는 새 계보**로 재구성했습니다.
+- 각 PR은 독립된 검토 가능한 변경 파일 42 / 35 / 23 / 12 / 19개로 정리했으며, 스택 브랜치를 **원본 235개 아카이브의 과거 커밋 이력을 포함하지 않는 새 계보**로 재구성했습니다.
 - 공개 HEAD에는 React/서버·PostgreSQL 원본 235개, 활동·경력 증빙 연결, 사용하지 않는 개인 적격성 화면이 없습니다. 실제 TypeScript 순수 코어·테스트는 유지했습니다.
 - 1차 변경은 `degree-rescue/**`와 관련 CI만 포함; 기존 한모 `index.html`, `html/**`, `js/**`, `css/**`, `img/**`, `CNAME`을 수정하지 않았습니다.
 - 원본 라이선스는 리포지토리 `LICENSE`의 **GPL-3.0**입니다. 사용자(이전 HUFS One AI 프로젝트 소유자)는 **자기 프로젝트 소스의 이식·재사용을 승인**했습니다. 다른 사람이 저작권을 가진 기여가 포함되어 있다면 그 기여분의 허가는 별도로 확인해야 하며, 리포지토리 소유 자체가 타인의 권리를 자동 이전하지는 않습니다.
