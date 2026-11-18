@@ -11,3 +11,5 @@ export * from './rule-diff.js';
 export * from './study-plan.js';
 export * from './wis-timetable.js';
 export * from './wis-timetable-csv.js';
+export * from './faculty-directory.js';
+export * from './curriculum-csv.js';
