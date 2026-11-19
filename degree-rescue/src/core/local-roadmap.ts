@@ -16,6 +16,7 @@ function iso(value:unknown):boolean{
   return typeof value==='string'&&/^\d{4}-\d\d-\d\dT/.test(value)&&
     /(Z|[+-]\d\d:\d\d)$/.test(value)&&Number.isFinite(Date.parse(value));
 }
+// 문자열 글자 수가 아닌 UTF-8 바이트로 크기를 검사해 한글이 포함된 백업도 1MiB 한도를 지킨다.
 function bounded(raw:string):void{
   if(new TextEncoder().encode(raw).length>ROADMAP_MAX_BYTES)throw new Error('백업/저장 자료는 1MiB 이하만 허용됩니다.');
 }
@@ -23,6 +24,7 @@ function bounded(raw:string):void{
 export function parseRoadmap<T>(raw:string,parseProfile:(value:unknown)=>T,
   allowedSteps:ReadonlySet<string>):RoadmapPayload<T>{
   bounded(raw);
+  // 외부 JSON은 신뢰하지 않는다. 판본·시각·프로필·허용된 체크 항목을 모두 검증한 뒤 사용한다.
   const envelope=object(JSON.parse(raw) as unknown);
   if(envelope.schemaVersion!==1||!iso(envelope.updatedAt))throw new Error('지원되지 않는 저장 버전/시각입니다.');
   const payload=object(envelope.payload);
@@ -53,11 +55,13 @@ export function readRoadmap<T>(storage:RoadmapStorage,parseProfile:(value:unknow
 export function saveRoadmap<T>(storage:RoadmapStorage,value:RoadmapPayload<T>,
   parseProfile:(value:unknown)=>T,allowedSteps:ReadonlySet<string>,
   timestamp=new Date().toISOString()):void{
+  // 검증이 끝난 한 개의 전용 키만 갱신하여 기존 모의수강신청 저장값을 보존한다.
   const raw=encode(value,parseProfile,allowedSteps,timestamp,false);
   storage.setItem(ROADMAP_KEY,raw);
 }
 export function exportRoadmap<T>(value:RoadmapPayload<T>,parseProfile:(value:unknown)=>T,
   allowedSteps:ReadonlySet<string>,timestamp=new Date().toISOString()):string{
+  // 파일용 들여쓰기 때문에 실제 백업 용량이 커지므로 직렬화 후 다시 크기를 확인한다.
   const pretty=JSON.stringify(JSON.parse(encode(value,parseProfile,allowedSteps,timestamp,true)),null,2)+'\n';
   // A pretty printed export can be larger than the compact saved payload.
   bounded(pretty);
@@ -67,6 +71,7 @@ export function parseRoadmapBackup<T>(raw:string,parseProfile:(value:unknown)=>T
   allowedSteps:ReadonlySet<string>):RoadmapPayload<T>{
   bounded(raw);
   const obj=object(JSON.parse(raw) as unknown);
+  // 다른 앱의 JSON이나 미래/알 수 없는 출처의 백업은 자동 이관하지 않고 복원을 거부한다.
   if(obj.sourceRevision!==ROADMAP_SOURCE||!iso(obj.exportedAt)){
     throw new Error('한모 학업 설정 백업 파일이 아니거나 판본을 알 수 없습니다.');
   }

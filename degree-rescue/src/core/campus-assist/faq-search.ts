@@ -17,6 +17,7 @@ const K1=1.2,B=0.75;
 export function searchFaqParagraphs(question:string,items:readonly FaqSearchItem[],opts:FaqSearchOptions={}):FaqSearchHit[]{
   const {limit=6,minMatchedShare=0.5}=opts;
   if(items.length===0)return [];
+  // 제목은 주제를 특정하므로 본문보다 높은 가중치를 주되, 제목 유사도만으로 근거를 확정하지 않는다.
   // The title is counted twice: FAQ titles name the topic, paragraphs carry the detail.
   const docs=items.map(item=>{
     const grams=[...textBigrams(item.title),...textBigrams(item.title),...textBigrams(item.text)];
@@ -32,12 +33,14 @@ export function searchFaqParagraphs(question:string,items:readonly FaqSearchItem
   const best=new Map<string,FaqSearchHit>();
   for(const words of clauses){
     const terms=[...new Set(words.flatMap(w=>synonymsOf(w).flatMap(wordBigrams)))];
+    // 여러 절로 나뉜 질문마다 내용어를 확인해 무관한 문단의 단순 문자열 일치를 배제한다.
     const topical=words.filter(w=>!isGenericFaqWord(w));
     if(topical.length===0)continue;
     // One or two topic words must all match ("주차 등록" is not "4주차까지"); longer questions need the share.
     const needed=topical.length<=2?topical.length:Math.ceil(topical.length*minMatchedShare);
     for(const d of docs){
       const matchedWords=topical.filter(w=>wordMatches(w,d.set)).length;
+      // BM25 점수가 높아도 필수 주제어가 부족하면 답변 근거 후보에 포함하지 않는다.
       if(matchedWords<needed)continue;
       let score=0;
       for(const g of terms){
@@ -48,5 +51,6 @@ export function searchFaqParagraphs(question:string,items:readonly FaqSearchItem
       if(!prev||score>prev.score)best.set(d.key,{key:d.key,score,matchedWords});
     }
   }
+  // 점수가 같으면 문단 키로 정렬해 같은 입력에서 검색 결과 순서를 재현한다.
   return [...best.values()].sort((a,b)=>b.score-a.score||a.key.localeCompare(b.key)).slice(0,limit);
 }

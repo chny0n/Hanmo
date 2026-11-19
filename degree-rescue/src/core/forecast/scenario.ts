@@ -72,6 +72,7 @@ export function applyOfferingAssumptions(input:OfferingScenarioRequest):Offering
   if (input.base.length > MAX_BASE) throw new RangeError(`more than ${MAX_BASE} base outlooks`);
   if (input.assumptions.length > MAX_ASSUMPTIONS) throw new RangeError(`more than ${MAX_ASSUMPTIONS} assumptions`);
 
+  // 공식·과거 개설 전망(base)과 학생의 가정(scenario)을 섞지 않도록 스키마로 복사해 분리한다.
   // Parsing makes independent copies, so neither the input nor the returned base can be changed through the other.
   const base = input.base.map(outlook => OfferingOutlookVNextSchema.parse(outlook));
   const outlooks = new Map<string, OfferingOutlookVNext>();
@@ -101,13 +102,16 @@ export function applyOfferingAssumptions(input:OfferingScenarioRequest):Offering
     const at = key(assumption.courseId, assumption.targetTerm);
     const outlook = outlooks.get(at);
     if (!outlook) throw new TypeError(`no base outlook for ${String(assumption.courseId)} ${String(assumption.targetTerm)}`);
+    // 한 과목·한 학기에 여러 가정이 있으면 입력 순서에 따라 결과가 달라지므로 명시적으로 거부한다.
     // Two assumptions about one course and term would leave the answer to list order.
     if (assumed.has(at)) throw new TypeError(`two assumptions for ${assumption.courseId} ${assumption.targetTerm}`);
     assumed.add(at);
 
+    // 학생 가정이 공식 확정과 충돌해도 원본 결과를 덮어쓰지 않고 충돌 표시만 추가한다.
     const contradictsOfficial = assumption.assume === 'NOT_OFFERED'
       ? outlook.signal === 'CONFIRMED_OFFERED'
       : outlook.signal === 'CONFIRMED_NOT_OFFERED';
+    // 대체과목은 원본 전망이 공식 승인 및 출처를 확인한 경우에만 노출한다.
     const officialAlternatives = assumption.assume === 'NOT_OFFERED'
       ? outlook.alternatives.flatMap(alternative =>
         alternative.status === 'OFFICIALLY_APPROVED' && alternative.evidenceRef !== undefined

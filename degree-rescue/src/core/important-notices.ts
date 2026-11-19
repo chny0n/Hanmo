@@ -42,6 +42,7 @@ function order(a:AcademicAgendaItem,b:AcademicAgendaItem,profile:AcademicProfile
   return sourceDate(b).localeCompare(sourceDate(a))||a.event.id.localeCompare(b.event.id);
 }
 export function importantNotices(profile:AcademicProfile,items:readonly AcademicAgendaItem[]):ImportantNoticeSummary{
+  // 전공이 비어 있으면 임의의 공지를 개인 맞춤 대상으로 추천하지 않는다.
   if(!profile.majors?.some(x=>x.trim().length>0)){
     return {mode:'CHOOSE_MAJOR',confirmed:[],toCheck:[]};
   }
@@ -49,13 +50,16 @@ export function importantNotices(profile:AcademicProfile,items:readonly Academic
     item.appliesTo!=='NO'&&item.event.studentActionRequired&&
     ACTION_TYPES.has(item.event.type)&&item.priority!=='OVERDUE'
   );
+  // 상단 확정 공지는 출처 검토·학생 적용 여부·실제 학생 마감이 모두 확인된 경우만 통과한다.
   const verified=eligible.filter(item=>
     item.evidence==='SOURCE_REVIEWED'&&item.appliesTo==='YES'&&
     item.studentDeadline!==null
   ).sort((a,b)=>a.sortTimestamp-b.sortTimestamp||order(a,b,profile));
+  // 학생 화면의 고정 중요공지는 최대 두 건만 노출하고 나머지는 전체 목록에 둔다.
   const confirmed=verified.slice(0,2);
   // Other independently reviewed notices remain in the full feed, not in the unverified group.
   const trustedIds=new Set(verified.map(item=>item.event.id));
+  // 검수 또는 대상 판단이 불충분한 자료는 확정 공지와 섞지 않고 확인 후보로 분리한다.
   const toCheck=eligible.filter(item=>!trustedIds.has(item.event.id))
     .sort((a,b)=>order(a,b,profile)).slice(0,4);
   return {mode:'MAJOR_SELECTED',confirmed,toCheck};
