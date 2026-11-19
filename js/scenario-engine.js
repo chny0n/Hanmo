@@ -1,6 +1,6 @@
-/* Hanmo practice-only deterministic scenario engine. Does not touch original UI,
- * localStorage, real network requests, university account data, or school APIs.
- * v1 is deliberately unconnected to BASIC/TIME/SELECT until baseline QA (#71).
+/* 한모 모의수강신청 전용 결정적 시나리오 엔진이다.
+ * 원본 UI, localStorage, 실제 네트워크 요청, 학교 계정·API에는 접근하지 않는다.
+ * 기본 동작 회귀 검증(#71) 전까지 BASIC/TIME/SELECT 화면과 연결하지 않는다.
  */
 (function (root, factory) {
   const api = factory();
@@ -37,7 +37,7 @@
     if (!Number.isSafeInteger(input.seed) || input.seed < 0 || input.seed > 0xffffffff) {
       throw new TypeError('A valid 32-bit integer seed is required');
     }
-    // No explicit opt-in means the scenario cannot interfere with legacy modes.
+    // 명시적인 활성화 동의가 없으면 가상 시나리오를 꺼서 기존 연습 모드를 간섭하지 않는다.
     const enabled = input.enabled ?? false;
     if (typeof enabled !== 'boolean') {
       throw new TypeError('Scenario enabled must be boolean');
