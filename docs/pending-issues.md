@@ -24,7 +24,7 @@
 | [HMD-016 · #22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | P0 | 1·2차 | 학업 코어와 모의신청 간 과목 ID·상태 어댑터 계약을 확정한다 |
 | [HMD-020 · #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | P1 | 검증 | PC 전용 지원 범위·접근성 및 모바일 안내 기준을 검증한다 |
 | [HMD-021 · #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) | P0 | 데이터 | 공식 학사자료 수집 가능 범위·재사용 권리·출처 목록을 만든다 |
-| [HMD-023 · #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | P0 | 3차 | Supabase 개설·소유·비용·운영 RACI 및 인수 책임을 합의한다 |
+| [HMD-023 · #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | P0 | 3차 | Supabase Free 운영·관리 권한과 공동 장애 대응 인수를 검증한다 |
 | [HMD-024 · #30](https://github.com/ot4562-glitch/Hanmo_develop/issues/30) | P1 | 3차 | Supabase 스키마·판본·스냅샷·마이그레이션 설계를 확정한다 |
 | [HMD-025 · #31](https://github.com/ot4562-glitch/Hanmo_develop/issues/31) | P1 | 3차 | 허용된 공식 자료 수집·변경 감지·검수·정적 대체 흐름을 정의한다 |
 | [HMD-026 · #32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) | P1 | 3차 | Supabase API·RLS·비밀키·브라우저 읽기 권한 보안을 정한다 |
@@ -361,7 +361,7 @@
 - **공통 전제:** 원개발자 승인·학사자료 권리/검수·Supabase 운영권한을 이 명세가 대신하지 않음
 
 <a id="hmd-023"></a>
-### HMD-023 · [P0][3차] Supabase 개설·소유·비용·운영 RACI 및 인수 책임을 합의한다
+### HMD-023 · [P0][3차] Supabase Free 운영·관리 권한과 공동 장애 대응 인수를 검증한다
 
 - **GitHub Issue:** [#29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) · 상태: 열림
 - **2026-11-19 결정:** Supabase는 **Free 플랜($0)만 사용**합니다. 임창용 님이 프로젝트 운영을 관리하고 장애는 개발팀이 함께 신속히 진단·복구합니다. 유료 업그레이드·애드온은 도입하지 않습니다. 실제 계정 권한, 수동 백업/복원과 장애 대응 연결 시험은 아직 남았습니다. [이전 시험 기록](pr-stack-review.md)
