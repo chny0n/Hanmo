@@ -1,24 +1,25 @@
 import {faqClauses,faqWords,isGenericFaqWord,synonymsOf,textBigrams,wordBigrams,wordMatches} from './faq-text.js';
 
-/** One searchable paragraph. Rights, revision and asOf filtering happen before this, in faq.ts. */
+/** 검색 가능한 문단 한 건이다. 출처 이용권·판본·asOf 필터는 먼저 faq.ts에서 수행한다. */
 export interface FaqSearchItem{key:string;title:string;text:string;}
 export interface FaqSearchHit{key:string;score:number;matchedWords:number;}
 export interface FaqSearchOptions{
   limit?:number;
-  /** Share of a clause's content words that must occur in the paragraph (title included). */
+  /** 문단 제목을 포함해 질문 절의 내용어가 최소한 이 비율 이상 일치해야 한다. */
   minMatchedShare?:number;
 }
 const K1=1.2,B=0.75;
 
-/** Deterministic lexical retrieval for Korean FAQ text: BM25 over character bigrams,
- * gated by how many of the question's content words the paragraph actually contains.
- * The gate is what turns "학교 식당 메뉴" into NOT_FOUND instead of six weak paragraphs
- * as if they were sufficient evidence. Each clause of a multi-part question is gated on its own. */
+/**
+ * 한국어 FAQ 문단을 문자 2그램 BM25와 질문 내용어 일치 문턱값으로 결정적으로 검색한다.
+ * '학교 식당 메뉴'처럼 주제와 맞지 않는 질문은 약한 후보 여러 개를 근거인 것처럼 제시하지 않고 NOT_FOUND로 처리한다.
+ * 복합 질문은 절마다 별도로 문턱값을 검사한다.
+ */
 export function searchFaqParagraphs(question:string,items:readonly FaqSearchItem[],opts:FaqSearchOptions={}):FaqSearchHit[]{
   const {limit=6,minMatchedShare=0.5}=opts;
   if(items.length===0)return [];
-  // 제목은 주제를 특정하므로 본문보다 높은 가중치를 주되, 제목 유사도만으로 근거를 확정하지 않는다.
-  // The title is counted twice: FAQ titles name the topic, paragraphs carry the detail.
+  // FAQ 제목은 주제를 나타내므로 두 배 가중하고 본문은 상세 정보를 제공한다.
+  // 제목 유사도만으로 충분한 근거라고 판단하지 않는다.
   const docs=items.map(item=>{
     const grams=[...textBigrams(item.title),...textBigrams(item.title),...textBigrams(item.text)];
     const tf=new Map<string,number>();
@@ -36,7 +37,8 @@ export function searchFaqParagraphs(question:string,items:readonly FaqSearchItem
     // 여러 절로 나뉜 질문마다 내용어를 확인해 무관한 문단의 단순 문자열 일치를 배제한다.
     const topical=words.filter(w=>!isGenericFaqWord(w));
     if(topical.length===0)continue;
-    // One or two topic words must all match ("주차 등록" is not "4주차까지"); longer questions need the share.
+    // 주제어가 한두 개면 모두 일치해야 한다. 예를 들어 '주차 등록'은 '4주차까지'와 다르다.
+    // 긴 질문은 내용어 일치 비율을 사용한다.
     const needed=topical.length<=2?topical.length:Math.ceil(topical.length*minMatchedShare);
     for(const d of docs){
       const matchedWords=topical.filter(w=>wordMatches(w,d.set)).length;

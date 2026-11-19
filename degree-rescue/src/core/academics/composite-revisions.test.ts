@@ -17,7 +17,7 @@ describe('#133 revision comparisons preserve new rule meanings',()=>{
         requirements:[{...refs,...last}]});
       const rows=[{attemptToken:'G1',canonicalCourseId:'G1',creditUnits:6,areaIds:['A'],ledger:'EARNED' as const,
         recognition:'RECOGNIZED' as const,term:'2025-2'}];
-      // Same rows for both versions: area membership is stated as unchanged.
+      // 두 판본에 같은 행을 사용해 영역 배정이 바뀌지 않았음을 명시한다.
       const result=compareRulePackRevisions({asOf:SYNTHETIC_AS_OF,previous,next,attempts:rows,nextAttempts:rows});
       expect(result).toMatchObject({state:'READY',requirements:[{definition:'CHANGED',stateChange:'LOST'}]});
       expect(result.requirements[0]?.changedFields).toContain(field);

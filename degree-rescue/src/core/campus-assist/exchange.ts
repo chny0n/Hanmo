@@ -3,12 +3,9 @@ import {ExchangeApplicantSchema,ExchangePolicySchema,ExchangeResultSchema,
 type Status=ExchangeCheck['status'];
 const DISCLAIMER='제시된 기준에 대한 참고 결과이며 공식 지원 자격·선발 결과가 아닙니다.' as const;
 /**
- * School exchange policy dates (`YYYY-MM-DD`) are calendar days in the school's
- * administrative time zone, Asia/Seoul (UTC+09:00, no daylight saving).
- * `effectiveFrom` applies from 00:00 KST of that day; `effectiveUntil` is
- * inclusive through the end of that KST day. `asOf` may carry any offset; the
- * comparison is on the absolute instant. Use this single helper for both
- * the partner list and the evaluation so they never disagree at a day boundary.
+ * 교환학생 정책 날짜(YYYY-MM-DD)는 학교 행정시간대인 한국시간(UTC+09:00, 서머타임 없음) 달력 날짜다.
+ * effectiveFrom은 당일 00:00부터, effectiveUntil은 당일 끝까지 포함한다.
+ * asOf의 입력 시간대는 달라도 절대 시각으로 비교한다. 교류 대학 목록과 평가 함수는 같은 헬퍼를 사용해 일 경계가 달라지지 않게 한다.
  */
 export const EXCHANGE_POLICY_TIME_ZONE='Asia/Seoul' as const;
 export function exchangePolicyInEffect(
@@ -27,13 +24,10 @@ export type ExchangePolicyResolution={
   reason:'CURRENT'|'NONE_IN_EFFECT'|'REVOKED_OR_BLOCKED_IN_EFFECT'|'CONFLICTING_IN_EFFECT';
 };
 /**
- * The one policy row that governs `partnerId`+`track` at `asOf`.
- * Rows not yet published or verified at `asOf` are ignored; among the rows in
- * effect at `asOf` (KST day rule above): any REVOKED/BLOCKED row quarantines
- * the pair (a revocation never falls back to an older approval), two or more
- * approved rows are a conflict, and exactly one approved row is current.
- * Old and new editions with non-overlapping windows therefore no longer hide
- * each other. The partner list and the evaluation must both use this.
+ * asOf 시점에 partnerId와 track에 적용되는 유일한 정책 행을 선택한다.
+ * 그때 게시·검증되지 않은 행은 제외한다. 유효한 REVOKED·BLOCKED 행이 하나라도 있으면 조합을 격리하며 이전 승인판으로 되돌리지 않는다.
+ * 승인판이 두 개 이상이면 충돌, 정확히 하나면 현재판이다. 유효기간이 겹치지 않는 옛 판본은 영향을 주지 않는다.
+ * 교류 대학 목록과 평가에서 같은 판정 함수를 사용한다.
  */
 export function resolveExchangePolicy(
   rules:readonly ExchangePolicy[],partnerId:string,track:ExchangePolicy['track'],asOf:string,

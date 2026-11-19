@@ -7,9 +7,8 @@ import {
 } from './rule-approval.js';
 
 /**
- * Synthetic clauses only, shaped like a department notice: a credit rule, a required
- * course rule, a ※ retake exception that covers 이중전공 but not 부전공, an exam rule,
- * and a form procedure. No real regulation text or student data.
+ * 학과 공지처럼 만든 합성 조항만 시험한다. 학점 규칙·필수 과목·이중전공에는 적용하고 부전공에는 미적용하는 재수강 예외·시험 규칙·서식 절차를 포함한다.
+ * 실제 학칙 원문과 학생 자료는 사용하지 않는다.
  */
 const AS_OF = '2026-11-01T00:00:00.000Z';
 const SHA = 'b'.repeat(64);
@@ -92,7 +91,7 @@ const request = (candidate:unknown, over:Partial<RulePackActivationRequest> = {}
   ...over,
 });
 
-/** A pack whose own JSON is consistent, so only the independent inventory can catch it. */
+/** JSON 내부는 일관되지만 독립적인 원문 조항 목록과 대조해야만 문제를 찾는 규칙집이다. */
 const withoutRetake = ():Pack => pack({
   requirements:requirements().map(req => req.id === 'REQ-CORE' ? {...req, exceptionClauseIds:[]} : req),
   clauseInventory:clauses().filter(clause => clause.clauseId !== RETAKE),
@@ -295,7 +294,7 @@ describe('versions and time', () => {
 
   it('holds a pack approved after asOf', () => {
     const result = decideRulePackActivation(request(pack(), {asOf:'2026-01-25T00:00:00.000Z'}));
-    // This asOf is also before effectiveFrom 2026-03-01.
+    // 이 기준 시각은 적용 시작일인 2026-03-01보다도 이르다.
     expect(result.issues).toEqual([{code:'NOT_APPROVED_BY_AS_OF'}, {code:'NOT_YET_EFFECTIVE'}]);
   });
 

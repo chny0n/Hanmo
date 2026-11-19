@@ -3,13 +3,13 @@ import {AcademicAuditVNextSchema} from '../../contracts/index.js';
 import {buildDoubleMajorAudit, type DoubleMajorAttempt, type DoubleMajorRequest, type MajorRulePack} from './double-major.js';
 import {buildAcademicLedger, type LedgerRequirement} from './ledger.js';
 
-/** Synthetic only. 1 unit = 0.5학점, so a 3학점 course is 6 units. */
+/** 합성 데이터만 사용한다. 1단위는 0.5학점이므로 3학점은 6단위다. */
 const AS_OF = '2026-11-01T00:00:00.000Z';
 const course = (canonicalCourseId:string, over:Partial<DoubleMajorAttempt> = {}):DoubleMajorAttempt => ({
   attemptToken:`${canonicalCourseId}-T`, canonicalCourseId, creditUnits:6, ledger:'EARNED', recognition:'RECOGNIZED', term:'2025-2', ...over,
 });
 
-/** P = primary only, D = double major only, S = shared by both, G = general education. */
+/** P는 주전공 전용, D는 이중전공 전용, S는 양쪽 공유, G는 교양 과목이다. */
 const ATTEMPTS:DoubleMajorAttempt[] = [
   course('SYN-P1', {term:'2025-1'}), course('SYN-P2'), course('SYN-D1', {term:'2025-1'}),
   course('SYN-D2', {ledger:'IN_PROGRESS', term:'2026-2'}), course('SYN-S1'), course('SYN-G1'),
@@ -82,7 +82,7 @@ describe('buildDoubleMajorAudit', () => {
     const result = buildDoubleMajorAudit(request(selected()));
     expect(result.overlap).toMatchObject({status:'NO_APPROVED_RULE',
       heldRequirementIds:{primary:[], doubleMajor:['SYN-D-MAJOR-MIN', 'SYN-D-ONE-OF']}});
-    // The primary major area is met even without the shared course, so it keeps its result.
+    // 공유 과목을 제외해도 주전공 영역이 충족돼 기존 결과를 유지한다.
     expect(stateOf(result.primary)).toEqual({'SYN-P-TOTAL':'UNSATISFIED', 'SYN-P-MAJOR-MIN':'SATISFIED', 'SYN-P-REQ':'SATISFIED'});
     expect(result.overlap.rowImpacts).toEqual({
       primary:[{requirementId:'SYN-P-MAJOR-MIN', decided:true, metWithShared:true, metWithoutShared:true,
@@ -138,7 +138,7 @@ describe('buildDoubleMajorAudit', () => {
       .toEqual([['SYN-P2', ['SYN-P-MAJOR'], []], ['SYN-S1', ['SYN-P-MAJOR'], ['SYN-D-MAJOR']]]);
     expect(result.overlap.heldRequirementIds.doubleMajor).toContain('SYN-D-REQ-P2');
     expect(result.overlap.sharedCreditUnits).toBe(12);
-    // Without both shared courses the primary major area falls to 6 units, below its 12.
+    // 공유 과목 둘을 모두 제외하면 주전공 영역은 6단위가 되어 요구 12단위보다 부족하다.
     expect(result.overlap.heldRequirementIds.primary).toEqual(['SYN-P-MAJOR-MIN']);
     const primary = {...PRIMARY, requirements:[...PRIMARY.requirements,
       {id:'SYN-P-REQ-D1', kind:'REQUIRED_COURSE', canonicalCourseId:'SYN-D1', evidenceRefs:['SYN-EV-P']} as LedgerRequirement]};

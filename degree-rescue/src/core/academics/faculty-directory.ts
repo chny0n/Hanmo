@@ -1,12 +1,9 @@
 import {importWisTimetable,withoutBlocks,type TimetableImport,type TimetableImportRequest,type TimetableRow} from './wis-timetable.js';
 
 /**
- * The original HUFS One AI WIS parser discards the publicly displayed 담당교수 cell.
- * This add-on preserves only that display label, bound to the verified saved-page
- * course row. It does NOT establish a faculty identity, employment status,
- * enrollment capacity, professor review, or university endorsement.
- *
- * The HTML is supplied by the user and processed locally; nothing is fetched.
+ * 원본 WIS 파서는 공개된 담당교수 표시를 버리지만 이 확장은 검증된 저장 페이지 강좌 행에 연결된 화면 표기만 보존한다.
+ * 교수의 신원·재직 여부·정원·교수 본인 검토 또는 대학 인증을 증명하지 않는다.
+ * 사용자가 제공한 HTML만 브라우저에서 처리하며 외부에서 수집하지 않는다.
  */
 export type FacultyTimetableRow=TimetableRow&{instructor:string|null};
 export type FacultyTimetableImport=Omit<TimetableImport,'rows'>&{rows:FacultyTimetableRow[]};
@@ -35,8 +32,7 @@ const undecided=/^(?:미정|미배정|담당교수\s*미정|tba|unknown|–|-|)$
 
 export function extractFacultyFromSavedTimetable(input:TimetableImportRequest):FacultyTimetableImport{
   if(input.html.length>5_000_000)throw new RangeError('Saved timetable is too large');
-  // The original strict parser first validates the save-source URL, header,
-  // completeness of table/card listing, course links, and term.
+  // 원본 엄격 파서는 저장 출처 URL·헤더·표와 카드의 일치·강의 링크·학기부터 검증한다.
   const verified=importWisTimetable(input);
   const page=withoutBlocks(withoutBlocks(input.html,'script'),'comment');
   const cellRows=[...page.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)]

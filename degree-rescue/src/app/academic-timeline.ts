@@ -7,7 +7,7 @@ import {importantNotices} from '../core/important-notices.js';
 import {academicSourceLink,selectedMajors,studentDeadlineDisplay} from '../core/academic-display.js';
 import {readRoadmap,saveRoadmap,clearRoadmap,exportRoadmap,parseRoadmapBackup,ROADMAP_MAX_BYTES} from '../core/local-roadmap.js';
 
-// Previous pre-release settings are never migrated without a separate user action.
+// 이전 개발판 설정은 사용자가 별도로 실행하지 않는 한 자동 이관하지 않는다.
 const LEGACY_KEY='hanmo:degree-rescue:academic-roadmap:v1';
 const ALLOWED_STEPS=new Set<string>(GRADUATION_STEPS.map(step=>step.id));
 const parseProfile=(source:unknown):AcademicProfile=>AcademicProfileSchema.parse(source);
@@ -43,7 +43,7 @@ function readProfile():AcademicProfile{
     ...(year?{cohort:Number(year)}:{}),
     ...(majors.length?{majors}:{}),
     ...(target?{targetGraduationTerm:target}:{}),
-    // Self-reported or calculator-derived IDs are hints, never independently verified audit results.
+    // 학생 자가 입력·계산기 요건 ID는 참고 힌트이며 독립적으로 확인된 학사 감사 결과가 아니다.
     openRequirementIds:null,
     candidateOpenRequirementIds:requirements?requirements.split(',').map(x=>x.trim()).filter(Boolean):[],
   });
@@ -95,7 +95,7 @@ function exportProfile():void{
     const raw=exportRoadmap({profile:readProfile(),progress},parseProfile,ALLOWED_STEPS);
     const url=URL.createObjectURL(new Blob([raw],{type:'application/json;charset=utf-8'}));
     const a=document.createElement('a');a.href=url;a.download='hanmo-academic-profile-v1.json';a.click();
-    // Allow the browser to resolve the download before discarding the object URL.
+    // 브라우저가 다운로드를 시작할 수 있도록 처리한 뒤 객체 URL을 해제한다.
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     setMessage('profile-message','현재 입력한 개인 설정의 백업 JSON을 저장했습니다. 공유 PC에는 백업 파일을 남기지 마세요.');
   }catch(e){setMessage('profile-message','백업 실패: '+(e instanceof Error?e.message:String(e)));}
@@ -111,7 +111,7 @@ async function importProfile():Promise<void>{
       +(payload.profile.majors?.[0]??'미입력')+' · 캠퍼스: '+(payload.profile.campus??'미입력'))){
       setMessage('profile-message','설정 복원을 취소했습니다. 현재 저장 자료는 유지됩니다.');return;
     }
-    // One validated key write occurs before any in-memory UI changes.
+    // 메모리의 화면 상태를 바꾸기 전에 검증된 저장 키 하나를 먼저 갱신한다.
     saveRoadmap(localStorage,payload,parseProfile,ALLOWED_STEPS);
     fillProfile(payload.profile);progress=payload.progress;renderSteps();render();
     setMessage('profile-message','백업을 이 브라우저에 복원했습니다. 출처 검수나 공식 학적 확정이 아닙니다.');
@@ -322,7 +322,7 @@ async function officialTitles():Promise<void>{
       ' · 정적 파일 서버에서 페이지를 열었는지 확인하세요.');
   }
 }
-/** Explicit user action only. A calculator response can suggest links but never close an official requirement. */
+/** 사용자가 명시적으로 실행할 때만 반영한다. 계산기 결과는 링크를 제안해도 공식 요건의 완료를 확정하지 않는다. */
 function applyLocalAuditHints():void{
   try{
     const raw=sessionStorage.getItem(ACADEMIC_AUDIT_BRIDGE_KEY);

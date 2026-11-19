@@ -16,11 +16,9 @@ import {
 } from './ledger.js';
 
 /**
- * One-term plan check (A08.4, A08.5 CREDIT-07..CREDIT-09).
- * Checks the approved credit cap, official prerequisites, and officially verified sections.
- * It reports plan issues only. The credit ledger is computed by buildAcademicLedger and
- * is never changed here. No timetable is produced and no section is invented.
- * The detailed timetable solver stays P2.
+ * 한 학기 수강계획을 검증한다(A08.4, A08.5 CREDIT-07~09).
+ * 승인된 학점 상한, 공식 선수요건, 검증된 분반만 확인하며 학점 원장 자체는 수정하지 않는다.
+ * 시간표나 존재하지 않는 분반을 생성하지 않는다. 상세 시간표 최적화는 후속 P2 범위다.
  */
 
 type PlanIssue = AcademicAuditVNext['planIssues'][number];
@@ -29,24 +27,24 @@ export type Weekday = 'MON'|'TUE'|'WED'|'THU'|'FRI'|'SAT'|'SUN';
 
 export interface SectionMeeting {
   day:Weekday;
-  /** Minutes after local midnight. A meeting covers [startMinute, endMinute). */
+  /** 현지 자정부터 지난 분 단위 시간. 수업 시간은 시작 포함, 종료 미포함 구간이다. */
   startMinute:number;
   endMinute:number;
 }
 
-/** A section only as the official timetable published it. */
+/** 공식 시간표에 공시된 분반만 나타낸다. */
 export interface VerifiedSection {
   canonicalCourseId:string;
   sectionId:string;
   term:string;
-  /** Empty means no fixed meeting time, so it never overlaps. */
+  /** 고정 수업 시간이 없으면 빈 목록이며 다른 분반과 시간 충돌을 일으키지 않는다. */
   meetings:readonly SectionMeeting[];
   evidenceRefs:readonly string[];
-  /** A section verified after asOf is not used. */
+  /** asOf 이후에 검증된 분반 정보는 이 기준 시점 계산에 사용하지 않는다. */
   verifiedAt:string;
 }
 
-/** Every listed course must be earned before the course is planned. */
+/** 선수과목은 계획 중인 강좌보다 먼저 취득 완료되어야 한다. */
 export interface PrerequisiteRule {
   canonicalCourseId:string;
   requiresCourseIds:readonly string[];
@@ -54,13 +52,13 @@ export interface PrerequisiteRule {
 }
 
 export interface TermPlan {
-  /** Term being planned, `YYYY-1|S|2|W`. It must not have ended by asOf. */
+  /** 계획 대상 학기(YYYY-1|S|2|W)이며 asOf 시점에 종료된 학기는 허용하지 않는다. */
   term:string;
-  /** Approved per-term cap. 1 unit = 0.5학점. */
+  /** 승인된 학기당 최대 학점. 1단위는 0.5학점이다. */
   creditCapUnits:number;
   capEvidenceRefs:readonly string[];
   prerequisites?:readonly PrerequisiteRule[];
-  /** Omitted or empty: no course has a verified section, so each is held for review. */
+  /** 분반 목록이 없으면 검증된 분반이 없는 것으로 취급하고 각 과목을 검토 보류한다. */
   sections?:readonly VerifiedSection[];
 }
 
@@ -70,16 +68,16 @@ export interface AcademicPlanRequest extends AcademicLedgerRequest {
 
 const WEEKDAYS:ReadonlySet<string> = new Set(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']);
 const MINUTES_PER_DAY = 24 * 60;
-/** Matches the #103 wire, which shows at most 60 course refs per check. */
+/** 통신 계약 #103에서 한 검사당 최대 60개 과목 참조를 허용한다. */
 const MAX_TERM_COURSES = 60;
-/** AcademicPlanIssueVNext carries at most 20 course refs; longer lists are split. */
+/** AcademicPlanIssueVNext에는 최대 20개 과목 참조만 담을 수 있으므로 더 길면 나눈다. */
 const MAX_ISSUE_COURSES = 20;
 const MAX_PREREQUISITES = 100;
 const MAX_SECTIONS = 200;
 const MAX_MEETINGS = 10;
 const MAX_PLAN_ISSUES = 100;
 const MAX_EVIDENCE = 30;
-/** A08.4 search bound. Hitting it is reported, not hidden. */
+/** A08.4 탐색 상한이다. 상한에 도달했다면 조용히 누락하지 않고 결과에 기록한다. */
 export const MAX_ALLOCATION_STATES = 50_000;
 
 function assertRefs(refs:readonly string[], label:string):string[] {
@@ -107,7 +105,7 @@ function union(lists:readonly (readonly string[])[]):string[] {
   return refs;
 }
 
-/** Sorted course refs in groups the wire accepts, so a long list becomes several issues of one kind. */
+/** 정렬된 과목 참조를 통신 계약 허용 크기로 묶는다. 목록이 길면 같은 유형의 문제를 여러 건으로 나눈다. */
 function chunks(courseRefs:readonly string[]):string[][] {
   const groups:string[][] = [];
   for (let i = 0; i < courseRefs.length; i += MAX_ISSUE_COURSES) groups.push(courseRefs.slice(i, i + MAX_ISSUE_COURSES));
@@ -120,7 +118,7 @@ interface TermCourse {
   planned:boolean;
 }
 
-/** PLANNED or IN_PROGRESS rows in the plan term, one entry per course. */
+/** 계획 학기의 PLANNED 또는 IN_PROGRESS 행으로, 과목당 항목 하나다. */
 function termLoad(attempts:readonly LedgerAttempt[], term:string, issues:PlanIssue[]):TermCourse[] {
   const byCourse = new Map<string, TermCourse>();
   const repeated = new Set<string>();
@@ -147,7 +145,7 @@ function termLoad(attempts:readonly LedgerAttempt[], term:string, issues:PlanIss
   return [...byCourse.values()].sort((a, b) => byCodeUnit(a.courseId, b.courseId));
 }
 
-/** Returns the term load in units so a caller can show it next to the cap. */
+/** 학기 신청 학점 단위를 반환해 상한과 함께 표시하도록 한다. */
 function checkCap(plan:TermPlan, load:readonly TermCourse[], packApproved:boolean, issues:PlanIssue[]):number {
   assertPositiveUnits(plan.creditCapUnits, 'creditCapUnits');
   const evidenceRefs = assertRefs(plan.capEvidenceRefs, 'capEvidenceRefs');
@@ -165,9 +163,8 @@ function checkCap(plan:TermPlan, load:readonly TermCourse[], packApproved:boolea
 type PrerequisiteState = 'EARNED'|'REVIEW'|'MISSING';
 
 /**
- * EARNED: a counted earned attempt exists.
- * REVIEW: an earlier-term attempt is still in progress or planned, or an attempt is held.
- * MISSING: nothing else. A same-term attempt is not treated as a co-requisite.
+ * EARNED는 인정된 취득 기록이 있는 경우, REVIEW는 이전 학기 진행·계획·보류 기록이 있는 경우다.
+ * 그 밖에는 MISSING이다. 같은 학기 수강은 선수과목으로 인정하지 않는다.
  */
 function prerequisiteState(
   courseId:string,
@@ -298,7 +295,7 @@ function overlaps(a:Section, b:Section):boolean {
 
 type Fit = 'FITS'|'NO_FIT'|'LIMIT';
 
-/** Depth-first search for one non-overlapping choice of verified sections. */
+/** 공식 검증 분반 중 시간이 겹치지 않는 조합 하나를 깊이 우선 탐색한다. */
 function anyFit(courses:readonly Section[][]):Fit {
   let states = 0;
   const chosen:Section[] = [];
@@ -319,8 +316,8 @@ function anyFit(courses:readonly Section[][]):Fit {
 }
 
 /**
- * Courses in order, grouped so each issue stays within 20 course refs and 30 evidence refs.
- * A single course whose own sections cite more than 30 refs is still refused by union().
+ * 요건별로 과목 참조 20개, 근거 참조 30개 이내로 나눠 보고한다.
+ * 분반 하나의 근거가 30개를 넘으면 union 검사에서 거부한다.
  */
 function evidenceGroups(courseIds:readonly string[], sections:ReadonlyMap<string, Section[]>):{courseRefs:string[]; evidenceRefs:string[]}[] {
   const groups:{courseRefs:string[]; evidenceRefs:string[]}[] = [];
@@ -364,8 +361,8 @@ function checkTimetable(plan:TermPlan, load:readonly TermCourse[], asOfMs:number
   }
 
   if (!pairConflict && timed.length > MAX_ISSUE_COURSES) {
-    // A NO_FIT over every course cannot be split honestly: a group of 20 may still fit.
-    // Report the search as not done, each group with its own section evidence.
+    // 전체 과목의 NO_FIT을 20개씩 쪼개면 의미가 달라질 수 있다. 작은 그룹은 배치가 가능할 수도 있다.
+    // 따라서 전체 탐색 미수행으로 표시하고 그룹별 분반 근거를 함께 기록한다.
     for (const group of evidenceGroups(timed, sections)) {
       issues.push({code:'SEARCH_LIMIT_REVIEW', reasonCode:'ALLOCATION_SEARCH_LIMIT', ...group});
     }
@@ -386,19 +383,15 @@ function checkTimetable(plan:TermPlan, load:readonly TermCourse[], asOfMs:number
 }
 
 /**
- * Build the credit ledger, then add plan issues for one term (CREDIT-07..CREDIT-09).
- * Every credit figure, area, exclusion, and requirement row equals buildAcademicLedger's
- * result for the same request. Only planIssues and caveats differ.
- * Without an APPROVED pack, cap and prerequisite blockers are held as NEEDS_REVIEW.
+ * 먼저 학점 원장을 계산하고 한 학기 계획 문제(CREDIT-07~09)를 덧붙인다.
+ * 학점·영역·제외·요건 결과는 동일 입력의 buildAcademicLedger와 일치해야 한다.
+ * 승인된 RulePack이 없으면 상한·선수요건 차단은 NEEDS_REVIEW로 보류한다.
  */
 export function buildAcademicPlan(input:AcademicPlanRequest):AcademicAuditVNext {
   return checkAcademicPlan(input).audit;
 }
 
-/**
- * Same check as buildAcademicPlan, also returning the term load: the unique PLANNED +
- * IN_PROGRESS units of the plan term, counted once per course (CREDIT-07).
- */
+/** buildAcademicPlan과 같은 검사를 수행하면서 학기별 PLANNED·IN_PROGRESS 고유 학점 단위를 함께 반환한다. */
 export function checkAcademicPlan(input:AcademicPlanRequest):{audit:AcademicAuditVNext; termLoadCreditUnits:number} {
   const {termPlan:plan, ...ledgerRequest} = input;
   const audit = buildAcademicLedger(ledgerRequest);

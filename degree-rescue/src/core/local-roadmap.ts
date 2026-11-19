@@ -1,4 +1,4 @@
-/** Browser-only, no-network academic settings. Never reads the original Hanmo keys. */
+/** 학업 설정은 브라우저에서만 보관하며 네트워크를 사용하지 않는다. 기존 한모 연습 설정 키는 읽지 않는다. */
 export const ROADMAP_KEY='hanmo.academic.v1.roadmap';
 export const ROADMAP_MAX_BYTES=1024*1024;
 export const ROADMAP_SOURCE='hanmo-degree-rescue-v1';
@@ -20,7 +20,7 @@ function iso(value:unknown):boolean{
 function bounded(raw:string):void{
   if(new TextEncoder().encode(raw).length>ROADMAP_MAX_BYTES)throw new Error('백업/저장 자료는 1MiB 이하만 허용됩니다.');
 }
-/** A profile parser should reject unknown/invalid fields, e.g. AcademicProfileSchema.parse. */
+/** 프로필 파서는 알 수 없거나 잘못된 필드를 거부해야 한다. 예: AcademicProfileSchema.parse. */
 export function parseRoadmap<T>(raw:string,parseProfile:(value:unknown)=>T,
   allowedSteps:ReadonlySet<string>):RoadmapPayload<T>{
   bounded(raw);
@@ -33,7 +33,7 @@ export function parseRoadmap<T>(raw:string,parseProfile:(value:unknown)=>T,
   const progress:RoadmapProgress={};
   for(const [key,value] of Object.entries(progressRaw)){
     if(!allowedSteps.has(key)||!STATUSES.has(value as string))throw new Error('알 수 없는 체크 항목 또는 상태: '+key);
-    // Unknown keys are rejected by the explicit allowedSteps set.
+    // 허용된 체크 항목 키 목록(allowedSteps)에 없는 항목은 거부한다.
     progress[key]=value as RoadmapProgress[string];
   }
   return {profile,progress};
@@ -51,7 +51,7 @@ export function readRoadmap<T>(storage:RoadmapStorage,parseProfile:(value:unknow
   const raw=storage.getItem(ROADMAP_KEY);
   return raw===null?null:parseRoadmap(raw,parseProfile,allowedSteps);
 }
-/** Exactly one localStorage key is written; a failure cannot partially update multiple keys. */
+/** localStorage 키 하나만 갱신한다. 기록 실패 시 여러 키가 일부만 변경되는 상태를 만들지 않는다. */
 export function saveRoadmap<T>(storage:RoadmapStorage,value:RoadmapPayload<T>,
   parseProfile:(value:unknown)=>T,allowedSteps:ReadonlySet<string>,
   timestamp=new Date().toISOString()):void{
@@ -63,7 +63,7 @@ export function exportRoadmap<T>(value:RoadmapPayload<T>,parseProfile:(value:unk
   allowedSteps:ReadonlySet<string>,timestamp=new Date().toISOString()):string{
   // 파일용 들여쓰기 때문에 실제 백업 용량이 커지므로 직렬화 후 다시 크기를 확인한다.
   const pretty=JSON.stringify(JSON.parse(encode(value,parseProfile,allowedSteps,timestamp,true)),null,2)+'\n';
-  // A pretty printed export can be larger than the compact saved payload.
+  // 들여쓰기를 적용한 내보내기 파일은 압축된 저장 JSON보다 커질 수 있으므로 실제 크기를 다시 검증한다.
   bounded(pretty);
   return pretty;
 }

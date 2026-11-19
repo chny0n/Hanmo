@@ -1,21 +1,19 @@
 import {OfferingOutlookVNextSchema, type OfferingOutlookVNext} from '../../contracts/index.js';
 
 /**
- * Offering outlook for one courseId + targetTerm.
- * Pure: the caller supplies asOf. No clock, network, or randomness.
- * Same-season history is a past count. It is not a probability and not a guarantee.
- * History looks back at most 8 regular semesters before the target term (#11 TASK-17),
- * so at most 4 same-season terms count. Older rows are left out, not counted as closed.
- * A row whose course code or equivalence is not confirmed (#11) is not counted anywhere: not as
- * offered, not as closed, not in n. A target course that is itself unconfirmed gives UNKNOWN.
- * Decision order follows Architecture.md A09.2.
+ * 한 과목·대상 학기의 개설 전망 계산이다.
+ * asOf는 호출자가 지정하며 시계·네트워크·난수에 의존하지 않는다.
+ * 과거 같은 계절 학기 개설 횟수는 확률이나 개설 보장이 아니다.
+ * 목표 이전 최대 8개 정규 학기 중 같은 계절 최대 4개만 사용하며 더 오래된 기록은 미개설로 세지 않는다.
+ * 학수번호·동일과목 여부가 검증되지 않은 기록은 개설·미개설·분모 어디에도 세지 않는다. 대상 과목이 미확정이면 UNKNOWN으로 둔다.
+ * 판정 순서는 현행 설계 A09.2를 따른다.
  */
 export const FORECAST_OFFERING_MODEL_VERSION = 'forecast-offering-v3';
 
 const TERM = /^(19|20|21)\d{2}-[12]$/;
 const REF = /^[A-Za-z0-9_.:-]{1,128}$/;
 const OFFSET = /(?:Z|[+-]\d{2}:\d{2})$/;
-/** Regular semesters before the target term that history may use. */
+/** 개설 전망의 과거 기록에 사용할 수 있는 목표 학기 이전 정규 학기 수다. */
 const HISTORY_LOOKBACK_TERMS = 8;
 const MAX_OBSERVATIONS = 20;
 const MAX_EVENTS = 30;
@@ -31,22 +29,21 @@ export interface OfferingObservation {
   publishedAt:string;
   verifiedAt:string;
   /**
-   * Whether this row is known to be the same course as courseId (#11). Absent keeps the existing
-   * meaning: the caller already matched the row to this course. Rows are checked one by one,
-   * since an older term may have used another code.
+   * 이 관측 행이 지정 과목과 동일한지 확인한 상태다.
+   * 생략 시 호출자가 이미 과목을 매칭했다고 간주한다. 이전 학기에는 다른 학수번호를 쓸 수 있으므로 행별 확인이 필요하다.
    */
   courseIdentity?:ObservationCourseIdentity;
 }
 
 /**
- * RESOLVED names the mapping revision that matched the row and when it was checked. A row checked
- * after asOf is treated as unverified at that asOf. Not an official equivalence decision.
+ * RESOLVED에는 과목 매칭 규칙의 판본과 확인 시각을 기록한다.
+ * asOf 이후에 검증된 행은 기준 시점에 미검증으로 간주한다. 공식 동일교과목 인정과는 다르다.
  */
 export type ObservationCourseIdentity =
   | {state:'RESOLVED'; revisionRef:string; checkedAt:string}
   | {state:'EQUIVALENCE_UNVERIFIED'};
 
-/** Absent keeps the existing meaning: courseId is a confirmed code. */
+/** 생략하면 대상 과목의 코드가 검증된 기존 동작을 유지한다. */
 export type TargetCourseIdentity = 'RESOLVED'|'EQUIVALENCE_UNVERIFIED';
 
 export interface OfficialAcademicEvent {
@@ -59,14 +56,11 @@ export interface OfficialAcademicEvent {
   impact:'POTENTIAL_ASSIGNMENT_CHANGE'|'EXPLICIT_COURSE_STATUS';
   affectedCourseIds:readonly string[];
   effectiveUntil?:string;
-  /**
-   * REPLACEMENT_CONFIRMED only: substitutes the official source names for the
-   * affected courses. Without it no alternative is approved.
-   */
+  /** REPLACEMENT_CONFIRMED 사건에서 공식 출처가 지정한 과목만 대체과목으로 제시한다. 사건 근거가 없으면 승인하지 않는다. */
   replacementCourseIds?:readonly string[];
 }
 
-/** Caller-supplied substitute only. This function never invents one. */
+/** 대체과목은 호출자가 제공해야 하며 함수가 임의로 생성하지 않는다. */
 export interface OfferingAlternative {
   courseId:string;
   status:'OFFICIALLY_APPROVED'|'NEEDS_REVIEW';
@@ -126,7 +120,7 @@ export function forecastOffering(input:ForecastOfferingInput):OfferingOutlookVNe
 
   const season = input.targetTerm.slice(-1);
   const visible = (input.observations ?? []).filter(row => observationVisible(row, asOfMs));
-  // Every row's identity is checked, even rows this outlook does not read.
+  // 실제 전망 계산에서 사용하지 않는 행도 모두 과목 식별 검증을 수행한다.
   for (const row of input.observations ?? []) sameCourseAt(row, asOfMs);
   const relevant = visible.filter(row => row.term === input.targetTerm || (
     row.term < input.targetTerm
@@ -178,8 +172,8 @@ export function forecastOffering(input:ForecastOfferingInput):OfferingOutlookVNe
 }
 
 /**
- * The row may be counted for this course at asOf. Absent identity keeps the caller's match.
- * Exported for the rolling-origin evaluator, so answers follow the same rule.
+ * 이 행이 asOf 시점에 동일 과목의 관측으로 계산 가능한지 확인한다.
+ * 과목 식별 정보가 없으면 호출자의 매칭을 유지한다. 이동 기준 평가도 같은 함수로 판정한다.
  */
 export function sameCourseAt(row:OfferingObservation, asOfMs:number):boolean {
   const identity = row.courseIdentity;
@@ -193,8 +187,8 @@ export function sameCourseAt(row:OfferingObservation, asOfMs:number):boolean {
 }
 
 /**
- * Forecasts at most 20 courses. A 21st id is refused.
- * READY only when every item is confirmed or a historical pattern.
+ * 개설 전망은 한 번에 최대 20개 과목을 처리한다.
+ * 모든 항목이 공식 확정 또는 과거 패턴이면 READY, 그 외에는 INSUFFICIENT_DATA다.
  */
 export function forecastOfferings(input:{asOf:string; courses:readonly ForecastCourseInput[]}):ForecastOfferingsResult {
   if (input.courses.length > MAX_COURSES) throw new RangeError('forecastOfferings refuses more than 20 course ids');
@@ -216,7 +210,7 @@ function decide(args:{
   targetRows:readonly OfferingObservation[];
   history:readonly OfferingObservation[];
   events:OfferingOutlookVNext['officialEvents'];
-  /** Target-term rows with a stated status that are not confirmed to be this course. */
+  /** 대상 학기의 상태가 기재돼 있지만 동일 과목인지 확인되지 않은 관측 행이다. */
   unverifiedTarget:readonly OfferingObservation[];
 }):Decision {
   const confirming = args.targetRows.filter(supportsConfirmation);
@@ -318,10 +312,9 @@ function decide(args:{
 }
 
 /**
- * An alternative is returned only when a REPLACEMENT_CONFIRMED event that passed
- * eventApplies (published and verified by asOf, effective in the target term, naming
- * this course) has evidenceRef as its source and lists this substitute in
- * replacementCourseIds. A matching source alone does not prove the substitute.
+ * 기준 시점까지 공개·검증된 REPLACEMENT_CONFIRMED 사건이 대상 학기에 적용되고,
+ * 해당 과목과 근거 출처를 일치시키며 대체과목 ID를 직접 명시한 경우만 대체과목을 반환한다.
+ * 같은 출처 ID만 일치해서는 충분하지 않다.
  */
 function officialAlternatives(
   courseId:string,
@@ -343,7 +336,7 @@ function officialAlternatives(
   return kept;
 }
 
-/** Complete same-season rows with a known state. Partials, notices, and UNKNOWN do not count. */
+/** 같은 계절의 전체 개설 목록 중 상태가 확정된 행만 센다. 부분 목록·공지·UNKNOWN은 제외한다. */
 function countsToward(row:OfferingObservation, season:string):boolean {
   return row.coverage === 'COMPLETE_TERM_CATALOG' && row.state !== 'UNKNOWN' && row.term.endsWith(`-${season}`);
 }
@@ -381,10 +374,9 @@ function eventApplies(event:OfficialAcademicEvent, targetTerm:string, asOfMs:num
 }
 
 /**
- * Asia/Seoul regular-semester bounds. Used to test whether an official event's effective
- * period meets the target term, and to count a past term only after it has ended by asOf.
- * Season 1 is March–June; season 2 is September–December.
- * Also used by the rolling-origin evaluation, so both read the same calendar.
+ * 한국시간 정규 학기 범위로 사건 유효기간과 대상 학기의 교집합을 확인한다.
+ * 과거 학기가 asOf까지 종료된 경우에만 횟수에 포함한다.
+ * 1학기는 3~6월, 2학기는 9~12월이며 이동 기준 평가에서도 같은 달력을 사용한다.
  */
 export function termWindow(term:string):{start:number; end:number} {
   const year = Number(term.slice(0, 4));
@@ -400,7 +392,7 @@ export function termWindow(term:string):{start:number; end:number} {
   };
 }
 
-/** How many regular semesters `term` is before `target` (2025-2 → 2026-1 is 1). */
+/** term이 target보다 몇 개 정규 학기 앞서는지 계산한다(예: 2025-2 → 2026-1은 1). */
 function termsBefore(term:string, target:string):number {
   const index = (value:string) => Number(value.slice(0, 4)) * 2 + Number(value.slice(-1)) - 1;
   return index(target) - index(term);

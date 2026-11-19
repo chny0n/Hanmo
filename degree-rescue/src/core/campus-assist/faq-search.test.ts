@@ -18,7 +18,7 @@ describe('#341 Korean FAQ retrieval (synthetic regression, not human Gold)',()=>
     expect(FAQ_EVAL_CASES.length).toBeGreaterThanOrEqual(100);
     expect(FAQ_EVAL_CASES.filter(k=>k.split==='HOLDOUT').length).toBeGreaterThanOrEqual(25);
   });
-  // Floors are the values measured on 2026-11-08; they guard regressions and are not a quality claim.
+  // 문턱값은 2026-11-08에 측정된 회귀 기준치다. 검색 품질에 대한 보증이나 주장으로 사용하지 않는다.
   it('tuned split: finds the paragraph for particles, typos, synonyms and multi-part questions',()=>{
     const s=score(FAQ_EVAL_CASES.filter(k=>k.split==='TUNED'));
     expect(s).toMatchObject({pos:75,neg:30});
@@ -44,7 +44,7 @@ describe('#341 Korean FAQ retrieval (synthetic regression, not human Gold)',()=>
   it('a newer revocation with a negative UTC offset still quarantines the older approved revision',()=>{
     const base=FAQ_EVAL_DOCUMENTS[0]!;
     const approved:FaqDocument={...base,publishedAt:'2026-04-01T05:00:00Z',verifiedAt:'2026-04-01T05:00:00Z'};
-    // 01:00-08:00 is 09:00Z, four hours after the approved head, though it sorts first as a string.
+    // 01:00-08:00는 09:00Z로 승인 최신판보다 4시간 늦지만 문자열 정렬에서는 앞서 나오는 사례다.
     const revoked:FaqDocument={...base,revisionId:base.revisionId+'-revoked',rights:'REVOKED',
       publishedAt:'2026-04-01T01:00:00-08:00',verifiedAt:'2026-04-01T01:00:00-08:00'};
     expect(retrieveFaqEvidence('교환학생 평점',[approved,revoked],NOW)).toEqual([]);

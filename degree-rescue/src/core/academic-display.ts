@@ -1,6 +1,6 @@
 import type {AcademicAgendaItem} from './academic-schedule.js';
 
-/** Explicit primary-major selection is needed before optional double-major data is considered. */
+/** 선택적 이중전공 정보를 처리하기 전에 주전공을 사용자가 명시적으로 선택해야 한다. */
 export function selectedMajors(primary:string,secondary:string):string[]{
   const main=primary.trim();
   if(!main)return [];
@@ -8,7 +8,7 @@ export function selectedMajors(primary:string,secondary:string):string[]{
   return double&&double!==main?[main,double]:[main];
 }
 
-/** HTTPS under hufs.ac.kr is a domain clue, not an attestation of notice contents. */
+/** hufs.ac.kr 아래의 HTTPS 주소는 학교 도메인 단서일 뿐 공지 내용의 검수·승인을 증명하지 않는다. */
 export type AcademicSourceLink='NONE'|'HUFS_DOMAIN'|'OTHER_HTTPS';
 export function academicSourceLink(raw:string|undefined):AcademicSourceLink{
   if(!raw)return 'NONE';
@@ -23,7 +23,7 @@ export function academicSourceLink(raw:string|undefined):AcademicSourceLink{
 }
 
 export type DeadlineDisplay={kind:'NONE'|'VERIFIED'|'SYNTHETIC'|'UNVERIFIED';status:string};
-/** Never turn self-declared JSON deadlines into official-looking D-day claims. */
+/** JSON에서 자가 선언한 마감일을 공식 확정처럼 보이는 D-day 안내로 만들지 않는다. */
 export function studentDeadlineDisplay(item:AcademicAgendaItem):DeadlineDisplay{
   if(!item.studentDeadline)return {kind:'NONE',status:'신청 마감일 미확인'};
   const trusted=item.evidence==='SOURCE_REVIEWED'&&item.appliesTo==='YES';

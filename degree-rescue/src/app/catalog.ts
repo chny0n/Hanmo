@@ -2,7 +2,7 @@ import {extractFacultyFromSavedTimetable,type FacultyTimetableImport} from '../c
 import {searchFacultyTimetable} from '../core/academics/faculty-search.js';
 import {toSavedCurriculumCsv} from '../core/academics/wis-timetable-csv.js';
 
-/** Resolve a required HTML control once, preserving its type in callbacks. */
+/** 필수 HTML 컨트롤을 한 번 조회하고 콜백 안에서도 구체적인 타입을 보존한다. */
 function requireControl<T extends HTMLElement>(id:string,ctor:{new():T}):T{
   const node=document.getElementById(id);
   if(!(node instanceof ctor))throw new Error('Missing static catalog control: '+id);
