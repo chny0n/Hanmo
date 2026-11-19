@@ -50,6 +50,12 @@ function createHarness(seed={}) {
   class Clock extends Date {
     constructor(...args){super(...(args.length?args:[time]));}
     static now(){return time;}
+    // Simulate a Korean user's browser regardless of the CI runner's TZ.
+    koreanDate(){return new Date(this.getTime()+9*3600000);}
+    getHours(){return this.koreanDate().getUTCHours();}
+    getMinutes(){return this.koreanDate().getUTCMinutes();}
+    getMonth(){return this.koreanDate().getUTCMonth();}
+    getFullYear(){return this.koreanDate().getUTCFullYear();}
   }
   const doc={
     activeElement:element('button'),
