@@ -4,14 +4,14 @@ export const CourseStateSchema = z.enum(['이수완료', '수강중']);
 export const COURSE_CSV_HEADERS = [
   '학기', '학수번호', '과목명', '학점', '이수구분', '이수상태',
 ] as const;
-export const CreditUnitsSchema = z.number().int().nonnegative(); // 1 unit = 0.5 credit
+export const CreditUnitsSchema = z.number().int().nonnegative(); // 1단위는 0.5학점이다.
 export const LedgerSchema = z.enum(['EARNED', 'IN_PROGRESS', 'PLANNED']);
 export const CourseRecordSchema = z.strictObject({
   term: z.string().trim().min(1),
-  courseCode: z.string().trim(), // the source may omit the course number
+  courseCode: z.string().trim(), // 출처에 학수번호가 없을 수 있다.
   courseName: z.string().trim().min(1),
   creditUnits: CreditUnitsSchema,
-  category: z.string().trim(), // preserve original category; mapping requires rule review
+  category: z.string().trim(), // 원본 영역을 보존한다. 공식 규칙 검토 후에만 변환한다.
   ledger: LedgerSchema,
 });
 export type CourseRecord = z.infer<typeof CourseRecordSchema>;

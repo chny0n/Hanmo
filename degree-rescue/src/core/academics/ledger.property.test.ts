@@ -220,7 +220,7 @@ function spreadModel(r:Extract<LedgerRequirement, {kind:'AREA_SPREAD'}>, winners
   let earned = 0, projected = 0;
   const choices:string[][] = [];
   for (const w of winners.values()) {
-    if (w.creditUnits === 0) continue; // a zero-credit course spreads nothing
+    if (w.creditUnits === 0) continue; // 학점이 0인 과목은 영역 수에 영향을 주지 않는다.
     const eligible = w.areaIds.filter(area => allowed.has(area));
     if (eligible.length === 0) continue;
     projected += w.creditUnits;

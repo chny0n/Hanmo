@@ -1,5 +1,5 @@
 import {z} from 'zod';
-const CreditUnitsSchema=z.number().int().nonnegative(); // 1 unit = 0.5 credit
+const CreditUnitsSchema=z.number().int().nonnegative(); // 1단위는 0.5학점이다.
 
 /**
  * 병합된 TASK-00 PR #13의 후속 검토 결과다.
