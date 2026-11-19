@@ -146,7 +146,7 @@ describe('importWisTimetable', () => {
 
   it('flags cells it cannot read instead of dropping the row', () => {
     const odd = importWisTimetable(request(page([
-      {code:'SYN-BAD', title:'가상 A', credits:'세 학점', time:'추후공지', area:'교양', attrs:['원격']},  // class attr--x
+      {code:'SYN-BAD', title:'가상 A', credits:'세 학점', time:'추후공지', area:'교양', attrs:['원격']},  // CSS 클래스 attr--x 사례.
       {no:5, code:'SYN040101', title:'가상 B', time:''},
     ])));
     expect(odd.rows).toHaveLength(2);
