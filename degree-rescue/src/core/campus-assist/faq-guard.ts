@@ -16,7 +16,7 @@ export const FAQ_MIN_SUPPORT=0.6;
 const POLARITY_MIN_OVERLAP=0.3;
 
 // Predicate negation only: adverbial "없이" ("신청서 없이 할 수 있습니다") states a positive rule.
-// "못" covers both "못 해요" and the fused "못합니다/못해요/못했/못함" (#341 follow-up). "안 되다" is a
+// "못" covers both "못 해요" and the fused "못합니다/못해요/못했/못함". "안 되다" is a
 // negation only as a standalone word: "보안 됩니다" and "안내됩니다" must stay positive.
 const NEGATION=/아니|아닙|아님|않|없(?!이|는)|불가|못(?:\s|하|해|했|합|함)|(?<![가-힣])안\s*(?:되|돼|됐|됩|됨)|금지|제외/;
 /** Keep modal predicate polarity distinct from incidental adjectives such as "기간 제한 없는".
@@ -50,8 +50,7 @@ function bestSupport(sentence:string,sources:readonly string[]):string|undefined
   return best;
 }
 
-/** Code-side grounding for an HCX-007 FAQ candidate (#341). The prompt asks for the same rules,
- * but only this check decides; an empty result means every claim was bound to quoted evidence.
+/** Code-side grounding for an HCX-007 FAQ candidate. The deterministic check decides; an empty result means every claim was bound to quoted evidence.
  * Numbers and Korean-numeral amounts or counts must be inside a verified quote. Wording and relative
  * dates must come from the cited paragraphs, and each answer sentence must keep the negation polarity
  * of its supporting quote/source sentence. A personal eligibility verdict is never allowed. */
