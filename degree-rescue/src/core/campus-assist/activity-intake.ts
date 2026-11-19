@@ -1,4 +1,4 @@
-/** #339: synthetic, pre-NCP manual intake gate. No HTTP, crawler, file access,
+/** Synthetic, offline manual intake gate. No HTTP, crawler, file access,
  * persistence, RLS bypass or trusted real-school attestation is implemented.
  * Production source rights must be independently recorded by an operator. */
 import {z} from 'zod';
