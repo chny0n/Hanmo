@@ -116,6 +116,10 @@ if(timelineDeveloperPos<0||timelineJsonPos<timelineDeveloperPos
   throw Error('Schedule JSON input must stay inside a closed developer-only section');
 }
 const progressPage=await readFile(join(site,'academic-progress.html'),'utf8');
+if(!noticeEntry.includes('id="graduation-checklist"')
+  ||!progressPage.includes('href="./academic-timeline.html#graduation-checklist"')){
+  throw Error('Existing 14-item student graduation checklist must be reachable from progress');
+}
 if(!progressPage.includes('id="scenario-comparison"')
   ||!progressPage.includes('입력한 내용은 이 페이지에서만 임시 사용')
   ||progressPage.includes('id="ledger-input"')
