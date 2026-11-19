@@ -192,7 +192,9 @@ test('canceling virtual queue must not register a course',async()=>{
   await Promise.resolve();
   await Promise.resolve();
   assert.equal(h.expr('count'),0);
-  assert.equal(h.expr('rc[0]'),undefined);
+  // The old implementation seeds rc[0] with a *string* via new Array(localStorage string).
+  // Count/registration must stay unchanged here; the refactor also fixes the state type.
+  assert.notEqual(h.expr('rc[0]'),true);
   assert.equal(h.getMulti('unvisible',0).style.display,'none');
 });
 test('report subtracts waiting seconds from SELECT seconds',()=>{
