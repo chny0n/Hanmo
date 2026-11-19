@@ -290,3 +290,21 @@ test('home renders semester/notice and shows PC-only message when device is unsu
   assert.equal(h.get('container').style.display,'none');
   assert.equal(h.get('button').classList.contains('noDisplay'),true);
 });
+
+test('each actual HTML page loads classic scripts in order without global collisions',()=>{
+  const pages=['index.html','html/vsugang.html','html/practice.html',
+    'html/selectZone.html','html/result.html'];
+  for(const page of pages){
+    const html=fs.readFileSync(path.join(ROOT,page),'utf8');
+    const scripts=[...html.matchAll(/<script\s+src=['"](?:\.\/|\.\.\/)js\/([^'"]+\.js)['"]/g)]
+      .map(match=>match[1]);
+    assert.equal(scripts.length,page==='index.html'?2:3,page+' script count');
+    const h=createHarness({deviceInfo:'true',practiceSetter:1,psubjectValue:2,
+      subjectValue:2,waitingValue:'no',TIMEtime:'1',SELECTtime:'1',SELECTWaitTime:'0'});
+    h.now('2026-11-19T10:11:00+09:00');
+    for(const script of scripts){
+      assert.doesNotThrow(()=>h.load(script),page+' loading '+script);
+    }
+    assert.equal(h.location.href,'/',page+' must not navigate to external site');
+  }
+});
