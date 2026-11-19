@@ -18,7 +18,7 @@
   <main class="container">
     <section class="home-intro" aria-label="이용 안내">
       <p class="home-notice" role="note"><strong>NOTICE</strong><span>한모 학업 플래너 · 비공식 개발용 시연</span></p>
-      <p class="home-guidance">공식 학사 일정과 적용 대상은 학교 공지에서 확인하세요. 전망과 고급 진단의 기본값은 합성 자료입니다. 공유 PC에서는 실제 성적표와 개인정보를 입력하지 마세요.</p>
+      <p class="home-guidance">공식 학사 일정과 적용 대상은 학교 공지에서 확인하세요. 현재 강의 개설 전망은 공식 원장과 연결되지 않았으며, 가상 예시는 실제 자료가 아닙니다. 공유 PC에서는 실제 성적표와 개인정보를 입력하지 마세요.</p>
     </section>
     <nav class="value-grid" aria-label="학업 플래너 메뉴">
       <a class="value-card tile-notices" href="./academic-timeline.html"><strong>전공별 중요공지</strong><span>캠퍼스와 전공에 맞는 공지 후보와 원문 근거를 확인하세요.</span></a>
@@ -28,10 +28,52 @@
     </nav>
     <section class="workspace" aria-labelledby="forecast-heading">
       <div class="heading"><div><h2 id="forecast-heading" tabindex="-1">다음 학기 강의 개설 전망</h2><p>공식 확정 정보와 과거 같은 학기 개설 이력을 분리합니다. 과거 빈도는 예측 확률이 아닙니다.</p></div></div>
-      <div class="work-grid"><div><label for="forecast-input">강의 전망 요청 · JSON</label><textarea id="forecast-input" spellcheck="false" aria-describedby="forecast-help"></textarea><small id="forecast-help">과목코드, 목표 학기, 과거 개설 원장과 근거 판본을 입력하세요.</small><div class="actions"><button id="forecast-run">전망 계산</button><button class="secondary" id="forecast-reset">합성 예시 복원</button></div></div><div><h3>학생용 결과 요약 · 가상 데이터</h3><div id="forecast-summary" class="forecast-summary" aria-live="polite">전망 계산 후 관측 근거와 주의사항을 보여줍니다.</div><details class="developer-json"><summary>개발용 계산 결과(JSON) 보기</summary><pre id="forecast-result" aria-live="polite">데이터 준비 중</pre></details></div></div>
+      <div class="work-grid">
+        <form id="forecast-form" class="forecast-student-form" aria-describedby="forecast-form-help">
+          <div class="forecast-fields">
+            <label for="forecast-course-id">확인할 과목의 학수번호
+              <input id="forecast-course-id" type="text" placeholder="예: ABC1234" autocomplete="off" maxlength="80" required>
+            </label>
+            <div class="forecast-term-fields">
+              <label for="forecast-year">학년도
+                <input id="forecast-year" type="number" min="2020" max="2099" step="1" value="2027" required>
+              </label>
+              <label for="forecast-semester">학기
+                <select id="forecast-semester" required>
+                  <option value="1">1학기</option>
+                  <option value="2">2학기</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <p id="forecast-form-help" class="small-note">학수번호를 입력하고 학기를 선택하세요. <a href="./catalog.html">강의·교수 검색</a>에서 저장된 시간표의 과목 정보를 참고할 수 있습니다. 학교 공식 개설 원장이 연결되기 전까지 실제 개설 전망은 보류됩니다.</p>
+          <div class="actions">
+            <button id="forecast-run" type="submit">개설 전망 확인</button>
+            <button id="forecast-reset" type="button" class="secondary">가상 예시 보기</button>
+          </div>
+        </form>
+        <div class="forecast-result-panel">
+          <h3>조회 결과</h3>
+          <p id="forecast-data-status" class="forecast-source-note" role="status">학교 공식 개설 원장 미연결 · 실제 개설 여부는 판단할 수 없습니다.</p>
+          <div id="forecast-summary" class="forecast-summary" aria-live="polite">학수번호와 학기를 입력한 뒤 ‘개설 전망 확인’을 누르세요.</div>
+        </div>
+      </div>
+      <details class="developer-json forecast-developer" id="forecast-developer">
+        <summary>개발자용 자료 검증 열기</summary>
+        <p class="small-note">이 영역은 기능 검사 전용입니다. 여기에서 직접 작성한 근거·확정 플래그는 학교 승인이나 공식 확인으로 간주하지 않습니다.</p>
+        <label for="forecast-input">개발용 강의 개설 자료 (JSON)</label>
+        <textarea id="forecast-input" spellcheck="false" aria-describedby="forecast-json-help"></textarea>
+        <p id="forecast-json-help" class="small-note">과목, 목표 학기, 과거 개설 이력, 근거 판본을 JSON 형식으로 직접 검사합니다. 일반 이용자는 입력할 필요가 없습니다.</p>
+        <div class="actions">
+          <button id="forecast-json-run" type="button">개발용 자료 검사</button>
+          <button id="forecast-json-reset" type="button" class="secondary">가상 데이터 복원</button>
+        </div>
+        <h3>검사 상세 출력 (JSON)</h3>
+        <pre id="forecast-result" aria-live="polite">개발자용 자료를 검사하면 결과를 표시합니다.</pre>
+      </details>
     </section>
     <details class="advanced-tools" id="advanced-diagnostics">
-      <summary>고급 진단 도구 · 학점 원장 및 수강계획 JSON 시연 펼치기</summary>
+      <summary>개발자용 고급 분석 도구 열기 (일반 이용자는 건너뛸 수 있습니다)</summary>
       <p class="small-note">성적·이수 기록을 학교에서 자동으로 가져오는 기능은 아직 없습니다. 아래 계산은 합성 자료를 사용한 개발자용 검사이며 공식 졸업진단이나 독립 시간표 편집기를 제공하지 않습니다.</p>
       <section class="workspace" aria-labelledby="ledger-heading">
       <div class="heading"><div><h2 id="ledger-heading">학점·졸업요건 검증</h2><p>취득·수강 중·계획 학점을 분리하고, 출처가 불확실한 규칙은 확정하지 않습니다. 계산 후 <a href="./academic-timeline.html">학사 일정에서 이 탭의 요건 후보를 연결</a>할 수 있습니다. 이는 공식 졸업 판정이 아닙니다.</p></div></div>
