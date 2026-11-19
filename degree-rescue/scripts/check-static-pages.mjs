@@ -4,10 +4,11 @@ import {resolve,join,relative,sep} from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const site=join(dist,'degree-rescue');
-const pages=['index.html','catalog.html','academic-timeline.html'];
+const pages=['index.html','catalog.html','academic-timeline.html','academic-progress.html'];
 const expected=[
   'index.html','style.css','catalog.html','catalog.css','academic-timeline.html',
-  'academic-timeline.css','public/app.js','public/catalog.js',
+  'academic-timeline.css','academic-progress.html','academic-progress.css',
+  'public/academic-progress.js','public/app.js','public/catalog.js',
   'public/academic-timeline.js','data/academic-notices-reference.json',
 ];
 const expectedSet=new Set(expected);
@@ -33,7 +34,8 @@ if(!await isFile(join(dist,'html/pc-only.html')))throw Error('PC-only notice not
 if(!await isFile(join(dist,'js/pc-only.js')))throw Error('PC-only guard not deployed');
 for(const entry of ['index.html','html/developer.html','html/vsugang.html',
   'html/practice.html','html/selectZone.html','html/result.html',
-  'degree-rescue/index.html','degree-rescue/catalog.html','degree-rescue/academic-timeline.html']){
+  'degree-rescue/index.html','degree-rescue/catalog.html','degree-rescue/academic-timeline.html',
+  'degree-rescue/academic-progress.html']){
   const source=await readFile(join(dist,entry),'utf8');
   const guard=entry==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
   const position=source.indexOf('<script src="'+guard+'"></script>');
@@ -77,6 +79,9 @@ const scriptRequirements={
   'academic-timeline.html':['timeline-devtools','entry-journey-note','profile-campus','profile-major','profile-double','profile-save','profile-clear',
     'focus-status','focus-list','agenda-list','graduation-steps','data-message','data-official','data-demo',
     'timeline-file','template-export','group-filter','agenda-search','include-unknown','audit-transfer'],
+  'academic-progress.html':['record-form','record-course','record-credits','record-term','record-slot',
+    'record-message','record-help','record-rows','credit-overview','scenario-choice','plan-form',
+    'plan-term','plan-course','plan-credits','plan-message','plan-help','plan-rows','scenario-comparison'],
 };
 for(const [page,needed] of Object.entries(scriptRequirements)){
   const contents=await readFile(join(site,page),'utf8');
@@ -109,6 +114,13 @@ if(timelineDeveloperPos<0||timelineJsonPos<timelineDeveloperPos
   ||timelineJsonPos>timelineDeveloperEnd
   ||noticeEntry.slice(timelineDeveloperPos,timelineJsonPos).includes('<details class="timeline-devtools" open')){
   throw Error('Schedule JSON input must stay inside a closed developer-only section');
+}
+const progressPage=await readFile(join(site,'academic-progress.html'),'utf8');
+if(!progressPage.includes('id="scenario-comparison"')
+  ||!progressPage.includes('입력한 내용은 이 페이지에서만 임시 사용')
+  ||progressPage.includes('id="ledger-input"')
+  ||!studentHome.includes('href="./academic-progress.html"')){
+  throw Error('Student progress must be a non-JSON local-only comparison screen');
 }
 console.log('Static smoke: '+pages.length+' pages, '+found.length+' allowlisted assets, '
   +checkedLinks+' internal links, '+checkedAria+' ARIA references; no CNAME.');
