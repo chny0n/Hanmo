@@ -10,10 +10,10 @@ export interface FaqSearchOptions{
 }
 const K1=1.2,B=0.75;
 
-/** Deterministic lexical retrieval for Korean FAQ text (#341): BM25 over character bigrams,
+/** Deterministic lexical retrieval for Korean FAQ text: BM25 over character bigrams,
  * gated by how many of the question's content words the paragraph actually contains.
  * The gate is what turns "학교 식당 메뉴" into NOT_FOUND instead of six weak paragraphs
- * and a billable model call. Each clause of a multi-part question is gated on its own. */
+ * as if they were sufficient evidence. Each clause of a multi-part question is gated on its own. */
 export function searchFaqParagraphs(question:string,items:readonly FaqSearchItem[],opts:FaqSearchOptions={}):FaqSearchHit[]{
   const {limit=6,minMatchedShare=0.5}=opts;
   if(items.length===0)return [];
