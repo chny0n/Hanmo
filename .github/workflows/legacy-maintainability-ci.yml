@@ -7,6 +7,8 @@ on:
       - 'js/result.js'
       - 'js/vsugang.js'
       - 'js/gnb.js'
+      - 'js/hanmoSys.js'
+      - 'js/index.js'
       - 'tests/legacy-baseline.test.cjs'
       - '.github/workflows/legacy-maintainability-ci.yml'
 
@@ -31,5 +33,7 @@ jobs:
           node --check js/result.js
           node --check js/vsugang.js
           node --check js/gnb.js
+          node --check js/hanmoSys.js
+          node --check js/index.js
       - name: Behavioral contract
         run: node --test tests/legacy-baseline.test.cjs
