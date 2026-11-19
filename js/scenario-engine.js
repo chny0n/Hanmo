@@ -37,8 +37,10 @@
     if (!Number.isSafeInteger(input.seed) || input.seed < 0 || input.seed > 0xffffffff) {
       throw new TypeError('A valid 32-bit integer seed is required');
     }
-    if (input.enabled !== true && input.enabled !== false) {
-      throw new TypeError('Scenario enabled must be explicit');
+    // No explicit opt-in means the scenario cannot interfere with legacy modes.
+    const enabled = input.enabled ?? false;
+    if (typeof enabled !== 'boolean') {
+      throw new TypeError('Scenario enabled must be boolean');
     }
     if (typeof input.virtualClockStart !== 'string' ||
         !/^\d{4}-\d\d-\d\dT/.test(input.virtualClockStart) ||
@@ -58,7 +60,8 @@
     const seen = new Set();
     const parsed = alternatives.map(item => {
       if (!item || typeof item !== 'object' || !validId(item.syntheticCourseId) ||
-          !ids.includes(item.syntheticCourseId) || seen.has(item.syntheticCourseId)) {
+          !ids.includes(item.syntheticCourseId) || seen.has(item.syntheticCourseId) ||
+          (input.scenarioId === LAST && item.syntheticCourseId === ids[0])) {
         throw new TypeError('Alternative course must be an existing unique synthetic ID');
       }
       seen.add(item.syntheticCourseId);
@@ -73,7 +76,7 @@
     }
     return Object.freeze({
       schemaVersion: 1, scenarioId: input.scenarioId, seed: input.seed,
-      mode: input.mode, enabled: input.enabled,
+      mode: input.mode, enabled,
       virtualClockStart: input.virtualClockStart,
       syntheticCourseIds: Object.freeze([...ids]),
       alternatives: Object.freeze(parsed),
