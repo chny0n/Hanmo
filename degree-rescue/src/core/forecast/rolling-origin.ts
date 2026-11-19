@@ -5,17 +5,12 @@ import {
 } from './offering.js';
 
 /**
- * Rolling-origin evaluation of the offering outlook (Architecture A09, TASK-17).
- *
- * An origin is a past instant plus a later target term. At each origin the outlook and every
- * baseline see only rows published and verified by that instant. The answer comes from the
- * complete term catalogs visible at `truthAsOf`, counting only rows confirmed to be the course by
- * then (#11). Every method is scored on the same items.
- *
- * The report holds counts only: no probability, no rounded rate and no IoU. Overlap between
- * two terms' course lists is not forecast accuracy. To score a HISTORICAL_PATTERN outlook, the
- * evaluator reads the shown k/n as a majority. The product still shows k/n as a past count.
- * Pure: no clock, network or randomness.
+ * 개설 전망의 이동 기준 평가다(설계 A09, TASK-17).
+ * 각 과거 평가 시각에는 그때까지 공개·검증된 자료만 사용한다. 정답은 truthAsOf 시점의 전체 개설 목록 중 과목 동일성이 확인된 행에서 가져온다.
+ * 모든 방법을 같은 평가 대상에서 비교한다.
+ * 보고서는 건수만 제공하며 확률·반올림된 비율·IoU를 제시하지 않는다.
+ * HISTORICAL_PATTERN의 k/n은 평가할 때만 다수결로 읽고 학생 화면에는 과거 횟수로 표시한다.
+ * 시계·네트워크·난수에 의존하지 않는다.
  */
 export const ROLLING_ORIGIN_EVALUATOR_VERSION = 'forecast-offering-rolling-origin-v1';
 
@@ -35,7 +30,7 @@ type Truth = 'OFFERED'|'NOT_OFFERED';
 
 export interface EvaluationCourse {
   courseId:string;
-  /** Every collected row, including rows published after some origins. */
+  /** 평가 기준 시각 이후에 게시된 기록까지 포함한 전체 수집 행이다. */
   observations:readonly OfferingObservation[];
   officialEvents?:readonly OfficialAcademicEvent[];
 }
@@ -46,13 +41,13 @@ export interface EvaluationOrigin {
 }
 
 export interface RollingOriginRequest {
-  /** When the answers are read. Not earlier than any origin. */
+  /** 정답을 확인하는 시각이며 모든 평가 기준 시각보다 이르지 않아야 한다. */
   truthAsOf:string;
   origins:readonly EvaluationOrigin[];
   courses:readonly EvaluationCourse[];
 }
 
-/** Positive class is OFFERED. answered + abstained equals the scored item count. */
+/** 양성 클래스는 OFFERED다. 답변 수와 보류 수의 합은 전체 채점 대상 수와 같아야 한다. */
 export interface MethodScore {
   truePositive:number;
   falsePositive:number;
@@ -66,19 +61,19 @@ export interface MethodScore {
 export interface HistoryCount {
   offeredTerms:number;
   observedTerms:number;
-  /** Scored items whose outlook showed this k/n. */
+  /** 그 전망에서 k/n이 표시된 채점 대상의 수다. */
   shown:number;
-  /** How many of those were then offered. */
+  /** 그 대상 중 실제로 개설된 항목 수다. */
   thenOffered:number;
 }
 
 export interface EvaluationTally {
   courses:number;
-  /** Not scored: the target term's own status was already published at the origin. */
+  /** 평가 시작 당시 이미 목표 학기의 개설 상태가 공개됐으므로 채점하지 않는다. */
   alreadyPublished:number;
-  /** Not scored: no complete catalog with a known state for the target term at truthAsOf. */
+  /** 정답 시각까지 목표 학기의 확정 상태를 가진 전체 목록이 없으므로 채점하지 않는다. */
   truthUnavailable:number;
-  /** Not scored: complete catalogs disagree about the target term. */
+  /** 목표 학기의 전체 목록들이 서로 충돌하므로 채점하지 않는다. */
   truthConflicting:number;
   scored:number;
   truth:{offered:number; notOffered:number};
@@ -96,7 +91,7 @@ export interface RollingOriginReport {
   evaluatorVersion:typeof ROLLING_ORIGIN_EVALUATOR_VERSION;
   modelVersion:typeof FORECAST_OFFERING_MODEL_VERSION;
   truthAsOf:string;
-  /** READY needs at least two distinct origin instants that each scored an item. */
+  /** READY가 되려면 서로 다른 평가 기준 시각 두 개 이상에서 각각 채점 대상이 있어야 한다. */
   status:'READY'|'INSUFFICIENT_DATA';
   origins:OriginReport[];
   total:EvaluationTally;
@@ -141,7 +136,7 @@ function emptyTally():EvaluationTally {
   };
 }
 
-/** The target term's own status was public at the origin, even if not yet verified there. */
+/** 평가 기준 시각에 목표 학기 상태가 공개됐지만 당시 아직 검증되지 않은 경우도 포함한다. */
 function publishedBy(rows:readonly OfferingObservation[], term:string, originMs:number):boolean {
   return rows.some(row => row.term === term && row.state !== 'UNKNOWN' && Date.parse(row.publishedAt) <= originMs);
 }
@@ -156,14 +151,14 @@ function answerAt(rows:readonly OfferingObservation[], term:string, truthMs:numb
   return states.has('OFFERED') ? 'OFFERED' : 'NOT_OFFERED';
 }
 
-/** A tie, including 0/0, is no answer. */
+/** 0/0을 포함한 동률은 답변 불가로 처리한다. */
 function majority(offered:number, observed:number):Answer {
   if (2 * offered > observed) return 'OFFERED';
   if (2 * offered < observed) return 'NOT_OFFERED';
   return 'ABSTAIN';
 }
 
-/** Every baseline reads the same-season history the outlook itself kept at this origin. */
+/** 모든 기준 비교 방법은 같은 시각에 전망이 보유한 동일 계절 과거 기록만 사용한다. */
 function predict(method:EvaluationMethod, outlook:OfferingOutlookVNext):Answer {
   switch (method) {
     case 'OUTLOOK':
@@ -231,7 +226,7 @@ function evaluateOrigin(origin:EvaluationOrigin, originMs:number, courses:readon
       tally.truthConflicting += 1;
       continue;
     }
-    // The outlook gets every row and filters by origin itself; the evaluator does not pre-filter for it.
+    // 평가기는 관측 행을 사전에 잘라내지 않고 전망 함수에 전부 전달한다. 전망 함수가 평가 시각으로 필터링한다.
     const outlook = forecastOffering({
       courseId:course.courseId, targetTerm:origin.targetTerm, asOf:origin.asOf,
       observations:course.observations, officialEvents:course.officialEvents ?? [],
@@ -281,9 +276,8 @@ function addTally(total:EvaluationTally, part:EvaluationTally):void {
 }
 
 /**
- * Scores the outlook and three naive baselines at each origin on the same items.
- * Items whose target term was already published at the origin, or whose answer is unknown or
- * contradictory at truthAsOf, are counted and left out of every method alike.
+ * 전망 모델과 단순 기준선 세 가지를 동일한 이동 평가 대상에서 채점한다.
+ * 목표 상태가 당시 이미 공개됐거나 정답 시각에도 불명확·충돌인 항목은 모든 방법에서 똑같이 제외하고 건수만 기록한다.
  */
 export function evaluateOfferingOutlook(input:RollingOriginRequest):RollingOriginReport {
   const truthMs = instant('truthAsOf', input.truthAsOf);

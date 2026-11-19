@@ -10,7 +10,7 @@ import {
   type VerifiedSection,
 } from './plan.js';
 
-/** Integer credit units only. 1 unit = 0.5학점, so 3학점 is 6 units. */
+/** 학점은 정수 단위만 허용한다. 1단위는 0.5학점이므로 3학점은 6단위다. */
 const CREDIT_3 = 6;
 const CREDIT_18 = 36;
 const AS_OF = '2026-11-01T00:00:00.000Z';
@@ -55,7 +55,7 @@ const section = (
   ...over,
 });
 
-/** One section per course, each in its own hour, so no timetable issue appears. */
+/** 과목별 분반이 하나이고 서로 다른 시간에 배치되어 시간표 충돌이 발생하지 않는다. */
 const separateSections = (courseIds:readonly string[]):VerifiedSection[] =>
   courseIds.map((courseId, index) => section(courseId, `${courseId}-01`, [at('TUE', 8 + index)]));
 
@@ -291,7 +291,7 @@ describe('buildAcademicPlan CREDIT-09 verified sections', () => {
 describe('buildAcademicPlan with more than 20 courses in a term', () => {
   const many = (count:number) => Array.from({length:count}, (_, i) => `SYN-M${String(i + 1).padStart(2, '0')}`);
   const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
-  /** One section per course, each in its own day and hour, so no pair overlaps. */
+  /** 과목별 분반이 서로 다른 요일·시간에 배치되어 어떤 두 분반도 겹치지 않는다. */
   const spread = (courseIds:readonly string[]) =>
     courseIds.map((courseId, i) => section(courseId, `${courseId}-01`, [at(DAYS[i % 7]!, 8 + Math.floor(i / 7))]));
   const twentyFive = many(25);

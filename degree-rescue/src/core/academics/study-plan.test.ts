@@ -4,7 +4,7 @@ import type {LedgerAttempt} from './ledger.js';
 import type {VerifiedSection} from './plan.js';
 import {simulateStudyPlan, type StudyPlanCheck, type StudyPlanCheckRequest} from './study-plan.js';
 
-/** Synthetic only. 1 unit = 0.5학점, so 3학점 is 6 units and an 18학점 cap is 36 units. */
+/** 합성 자료만 사용한다. 1단위는 0.5학점이므로 3학점은 6단위, 상한 18학점은 36단위다. */
 const AS_OF = '2026-11-01T00:00:00.000Z';
 const TERM = '2027-1';
 const CAP_REF = 'SYN-SEMESTER-CAP';
@@ -18,13 +18,13 @@ const TRANSCRIPT:LedgerAttempt[] = [
 ];
 
 const SEVEN = ['SYN-P1', 'SYN-P2', 'SYN-P3', 'SYN-P4', 'SYN-P5', 'SYN-P6', 'SYN-P7'];
-/** More courses than one plan issue can carry. */
+/** 하나의 수강계획 문제 항목에 담을 수 있는 과목 수를 넘는 경우다. */
 const MANY = Array.from({length:25}, (_, i) => `SYN-M${String(i + 1).padStart(2, '0')}`);
 const CATALOG:Record<string, number> = Object.fromEntries(
   [...SEVEN, 'SYN-ADV', 'SYN-ADV2', 'SYN-ADV3', 'SYN-X', 'SYN-Y', 'SYN-C', 'SYN-D'].map(id => [id, 6]),
 );
 
-/** One verified section per course, each in its own hour, so no timetable issue appears. */
+/** 과목마다 검증된 분반이 하나씩 있고 시간이 서로 달라 시간표 문제는 발생하지 않는다. */
 const sections = (courseIds:readonly string[]):VerifiedSection[] => courseIds.map((courseId, index) => ({
   canonicalCourseId:courseId, sectionId:`${courseId}-01`, term:TERM,
   meetings:[{day:'TUE', startMinute:(8 + index) * 60, endMinute:(9 + index) * 60}],
@@ -55,10 +55,7 @@ const clashing = (courseIds:readonly string[]):VerifiedSection[] => courseIds.ma
   evidenceRefs:['SYN-CATALOG-2027-1'], verifiedAt:'2026-10-15T00:00:00.000Z',
 }));
 
-/**
- * Adds the parts the server owns (evidence links, disclosure, approval receipt) the way the
- * #103 route would, then parses the result as OwnerStudyPlanCheckResponse.
- */
+/** 서버 책임 정보(출처 링크·공개 범위·승인 확인서)를 #103 경로처럼 더한 뒤 OwnerStudyPlanCheckResponse로 파싱한다. */
 const onTheWire = (check:StudyPlanCheck) => {
   const approved = check.creditCapUnits !== undefined;
   const refs = [...new Set([...check.planIssues.flatMap(issue => issue.evidenceRefs), ...(approved ? [CAP_REF] : [])])];

@@ -1,9 +1,8 @@
 import Papa from 'papaparse';
 
 /**
- * Browser-only variant of HUFS One AI's permitted-curriculum CSV normalizer.
- * Unlike the original server action, it has NO trusted operator authority;
- * all imported rows remain UNVERIFIED even when they resemble school data.
+ * HUFS One AI의 강의 요건 CSV 정규화 로직을 브라우저용으로 옮긴 것이다.
+ * 원본 서버 처리와 달리 운영자 승인 권한이 없으므로 가져온 행이 학교 자료처럼 보여도 모두 UNVERIFIED로 둔다.
  */
 export const LOCAL_CURRICULUM_CSV_HEADERS=[
   'courseCode','courseName','credits','category','major','semester','campus','cohort'

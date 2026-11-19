@@ -4,7 +4,7 @@ import {checkFaqCandidate} from './faq-guard.js';
 import {maskFaqQuestion} from './faq-privacy.js';
 import {faqWords} from './faq-text.js';
 import {retrieveFaqEvidence} from './faq.js';
-// Counterexamples from the PR #361 reviews (심민성, 박준영), synthetic values only.
+// PR #361 검토(심민성·박준영)에서 나온 반례로, 모든 값은 합성 자료다.
 const NOW='2026-11-08T00:00:00Z';
 const make=(documentId:string,title:string,text:string,patch:Partial<FaqDocument>={}):FaqDocument=>({
   documentId,revisionId:'r1',title,sourceUrl:'https://example.org/synthetic-faq',category:'ACADEMICS',

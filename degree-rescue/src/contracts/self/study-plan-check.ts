@@ -2,8 +2,9 @@ import {z} from 'zod';
 import {AcademicPlanIssueVNextSchema,AcademicTermVNextSchema,
   CreditUnitsSchema} from '../academics/index.js';
 
-/** Owner plan validation is a server-only computation. Browsers may select a
- * regular term but must never send transcript rows, RulePacks, proof, or actorId.
+/**
+ * 개인 수강계획 검사는 서버에서만 수행한다.
+ * 브라우저는 정규 학기를 선택할 수 있지만 성적표 행, RulePack, 증빙, actorId를 전송하면 안 된다.
  */
 const Ref=z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/);
 const Utc=z.iso.datetime({offset:true});
@@ -28,8 +29,9 @@ export const OwnerPlanCheckUnavailableReasonSchema=z.enum([
   'OWNER_CONSENT_REQUIRED','SECTION_SOURCE_UNVERIFIED','VERSION_STALE',
 ]);
 
-/** A private server receipt, not a claim made by a browser or a public
- * independent confirmation of enrollment, an application, or graduation.
+/**
+ * 서버에서 발급한 비공개 확인 기록이며 브라우저 주장이 아니다.
+ * 실제 수강·신청·졸업에 대한 공적 또는 독립적인 확인을 뜻하지 않는다.
  */
 export const OwnerPlanCheckApprovalReceiptSchema=z.strictObject({
   rulePackState:z.literal('APPROVED'),
@@ -46,8 +48,9 @@ const Versions=z.strictObject({
 });
 const Disclosure=z.strictObject({
   mode:z.enum(['REDACTED','OWNER_VERIFIED','GRANT_SCOPED']),
-  /** The API must derive this list from current owner/grant policy.
-   * Never use a browser-provided allowlist or the raw transcript rows.
+  /**
+   * 이 목록은 서버가 현재 사용자 및 접근 권한 정책으로 산출해야 한다.
+   * 브라우저가 보낸 허용 목록이나 성적표 원본을 그대로 사용하지 않는다.
    */
   visibleCourseRefs:z.array(Ref).max(60),
   grantVersion:Ref.optional(),
@@ -76,8 +79,8 @@ export const OwnerStudyPlanCheckResponseSchema=z.strictObject({
     if(!v.caveats.includes(required))problem(['caveats'],'Missing '+required);
   if(v.creditCapUnits!==undefined&&!v.approval)
     problem(['creditCapUnits'],'Unverified term cap must not be shown');
-  // Confirmed cap/prerequisite/section warnings cannot be attributed to an
-  // unreviewed RulePack. Needs-review findings may still be displayed.
+  // 검증되지 않은 RulePack을 근거로 확정 학점 상한·선수과목·분반 경고를 내지 않는다.
+  // 검토가 필요한 발견 사항은 별도로 표시할 수 있다.
   const officialCodes=new Set([
     'CREDIT_CAP_EXCEEDED','PREREQUISITE_MISSING',
     'TIMETABLE_CONFLICT','REQUIRED_COURSE_UNOFFERED',
@@ -124,8 +127,8 @@ export const OwnerStudyPlanCheckResponseSchema=z.strictObject({
   const visible=new Set(v.disclosure.visibleCourseRefs);
   if(visible.size!==v.disclosure.visibleCourseRefs.length)
     problem(['disclosure','visibleCourseRefs'],'Repeated course references');
-  // Avoid sending the whole owner-grant allowlist as metadata: disclose only
-  // course IDs actually referenced by this response and separately authorized.
+  // 메타데이터에 사용자의 전체 허용 과목 목록을 싣지 않는다.
+  // 해당 응답이 참조하고 별도로 권한 확인된 과목 ID만 공개한다.
   const used=new Set([
     ...v.planIssues.flatMap(issue=>issue.courseRefs),
     ...v.unchecked.flatMap(item=>item.courseId?[item.courseId]:[]),

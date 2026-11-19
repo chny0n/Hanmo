@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {AcademicAuditVNextSchema} from '../../contracts/index.js';
 import {buildAcademicLedger, type AcademicLedgerRequest, type LedgerAttempt, type LedgerRequirement} from './ledger.js';
 
-/** Integer credit units only. 1 unit = 0.5학점, so 3학점 is 6 units. */
+/** 학점은 정수 단위만 허용한다. 1단위는 0.5학점이므로 3학점은 6단위다. */
 const HALF = 1;
 const CREDIT_3 = 6;
 const CREDIT_6 = 12;

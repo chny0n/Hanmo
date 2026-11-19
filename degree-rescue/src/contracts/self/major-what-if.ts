@@ -1,9 +1,9 @@
 import {z} from 'zod';
 import {CreditUnitsSchema} from '../academics/index.js';
 
-/** #82 major What-if is NOT #90's RulePack revision-diff operation.
- * This request supplies only a hypothetical change. The owner's actual
- * major, cohort, transcript and approval context must be loaded on server.
+/**
+ * 전공 변경 가정(#82)은 RulePack 판본 간 차이 계산(#90)과 다르다.
+ * 요청에는 가상의 변경안만 담으며 실제 전공, 입학년도, 성적표, 승인 정보는 서버가 조회해야 한다.
  */
 const Ref=z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/);
 const Utc=z.iso.datetime({offset:true});
@@ -54,7 +54,7 @@ const Projection=z.strictObject({
   asOf:Utc,
   role:z.enum(['CURRENT','HYPOTHETICAL']),
   rulePackVersion:Ref,
-  /** Same immutable owner ledger, regardless of hypothetical major. */
+  /** 가상 전공이 달라져도 사용자 자신의 원장은 동일한 불변 입력을 사용한다. */
   earnedCreditUnits:CreditUnitsSchema.max(2000),
   remainingCreditUnits:CreditUnitsSchema.max(2000),
   requirements:z.array(RequirementProgress).max(200),
@@ -69,9 +69,9 @@ export type MajorWhatIfDeltaRow={
   change:'NEW_REQUIREMENT'|'ALREADY_SATISFIED'|'REMOVED_REQUIREMENT'
     |'UNCHANGED'|'PROGRESS_CHANGED';
 };
-/** Sanity-check a proposed delta; this is not a course recognition,
- * major-program calculation, or a substitute for an approved academic core.
- * Every current/virtual requirement must appear exactly once in the diff.
+/**
+ * 변경안의 형식과 일관성만 확인한다. 과목 인정·전공별 요건 계산 또는 승인된 학사 코어를 대체하지 않는다.
+ * 현재와 가상 상태의 모든 요건은 차이 결과에 각각 정확히 한 번 나타나야 한다.
  */
 export function isConsistentMajorWhatIfDelta(input:{
   current:readonly MajorWhatIfRequirementProgress[];

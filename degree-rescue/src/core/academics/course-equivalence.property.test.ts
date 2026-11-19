@@ -5,19 +5,14 @@ import {applySameCourseRules, type SameCourseRule} from './course-equivalence.js
 import {buildAcademicLedger, type LedgerAttempt, type LedgerRequirement} from './ledger.js';
 
 /**
- * Seeded properties for 동일 교과목 rules composed with the credit ledger (#202, #189). Synthetic only.
- *
- * Reproduce one seed:  SAME_COURSE_PROP_SEED=<seed> npx vitest run packages/core/src/academics/course-equivalence.property.test.ts
- * (repro mode runs every property on that one seed; the coverage guard and report self-test keep the 300 exploration seeds)
- *
- * Spec the reference model encodes (S1-S4), written from the #189 contract, not from its code:
- * S1 an attempt whose course no rule names as an old course is unchanged.
- * S2 if the rules naming it point to more than one target course (approved or not), it is held AMBIGUOUS.
- * S3 else if none of them is APPROVED, it is held RULE_NOT_APPROVED.
- * S4 else it is rewritten to that single target, recorded under the lowest approved rule id.
- * The result is NEEDS_REVIEW exactly when something is held. Inputs are never modified.
- * Precondition for S1-S4: no approved rule maps to a course another approved rule maps away (a chain);
- * such input must be refused (P9). Nothing here says one course "should" lower or raise credits.
+ * 동일 교과목 규칙과 학점 원장 조합의 재현 가능한 속성 테스트다(#202, #189). 합성 데이터만 사용한다.
+ * 한 시드 재현: SAME_COURSE_PROP_SEED=<seed> npx vitest run packages/core/src/academics/course-equivalence.property.test.ts
+ * 재현 모드는 지정 시드 하나로 모든 속성을 검사하며 적용 범위·실패 보고 자체 검사는 300개 탐색 시드를 유지한다.
+ * 기준 모델(S1~S4)은 코드가 아니라 계약 #189를 바탕으로 작성했다.
+ * S1 규칙이 언급하지 않은 과목 기록은 변경하지 않는다. S2 서로 다른 목표를 지정하면 AMBIGUOUS로 보류한다.
+ * S3 승인된 규칙이 없으면 RULE_NOT_APPROVED로 보류한다. S4 그 외에는 유일한 목표로 바꾸고 가장 작은 승인 규칙 ID를 기록한다.
+ * 보류 행이 있으면 NEEDS_REVIEW이며 입력은 변경하지 않는다.
+ * S1~S4의 전제는 승인 규칙 연결 사슬이 없어야 한다는 것이다. 사슬은 P9에서 거부한다. 과목명 변경만으로 학점이 늘거나 줄어야 한다는 가정은 없다.
  */
 
 type Rng = () => number;
@@ -41,12 +36,12 @@ const OTHER = ['SYN-OTHER1', 'SYN-OTHER2'];
 const COURSES = [...OLD, ...NEW, ...OTHER];
 const TERMS = ['2024-1', '2024-2', '2025-1', '2025-2', '2026-2'];
 const AREAS = ['SYN-AREA-A', 'SYN-AREA-B'];
-const AS_OF = '2026-08-01T00:00:00+09:00'; // 2026-2 has not ended; earlier terms have
+const AS_OF = '2026-08-01T00:00:00+09:00'; // 2026-2 학기는 아직 종료되지 않았고 이전 학기들은 종료됐다.
 const STATES:readonly SameCourseRule['state'][] = ['APPROVED', 'APPROVED', 'DRAFT', 'NEEDS_REVIEW'];
 
 interface Case { attempts:LedgerAttempt[]; rules:SameCourseRule[] }
 
-/** Rules map old courses to new ones only, so approved rules never chain (the S1-S4 precondition). */
+/** 규칙은 이전 과목에서 새 과목으로만 매핑하므로 승인 규칙의 연쇄가 생기지 않는다(S1~S4 전제). */
 function genCase(rng:Rng, size:number):Case {
   const rules:SameCourseRule[] = [];
   const ruleCount = Math.floor(rng() * 4);
@@ -67,7 +62,7 @@ function genCase(rng:Rng, size:number):Case {
     if (ledger === 'EARNED' || chance(rng, 0.5)) attempt.term = pick(rng, TERMS);
     attempts.push(attempt);
   }
-  // A cross-rename retake now and then: an old course earned, then its new course earned later and approved.
+  // 확률적으로 학수번호가 바뀐 재수강을 생성한다. 이전 과목 취득 후 새 과목을 나중에 취득하고 재수강을 승인한 상황이다.
   if (n >= 2 && chance(rng, 0.4)) {
     const [a, b] = [attempts[0]!, attempts[1]!];
     Object.assign(a, {canonicalCourseId:pick(rng, OLD), ledger:'EARNED', recognition:'RECOGNIZED', term:'2024-1'});
@@ -77,7 +72,7 @@ function genCase(rng:Rng, size:number):Case {
   return {attempts, rules};
 }
 
-/** S1-S4, written straight from the contract text. */
+/** 계약 본문에서 가져온 S1~S4 조건을 구현과 독립적으로 확인한다. */
 function referenceApply(c:Case) {
   const applied:{attemptToken:string; fromCourseId:string; toCourseId:string; ruleId:string}[] = [];
   const held:{attemptToken:string; courseId:string; ruleIds:string[]; reason:'RULE_NOT_APPROVED'|'AMBIGUOUS'}[] = [];
@@ -108,14 +103,13 @@ const requirementsFor = (courseIds:readonly string[]):LedgerRequirement[] => [
 const ledger = (attempts:readonly LedgerAttempt[]) => buildAcademicLedger({asOf:AS_OF, rulePackVersion:'SYN-PACK', rulePackState:'APPROVED',
   attempts, requirements:requirementsFor(COURSES)});
 
-// ---------------------------------------------------------------------------------------------
-// Runner: seeds, shrinking, and a reproducible report
+// 실행기: 시드 선택, 실패 사례 축소, 재현 가능한 보고서 생성.
 
 const CODE_SHA = createHash('sha256').update(readFileSync(new URL('./course-equivalence.ts', import.meta.url))).digest('hex').slice(0, 12);
 const hash = (v:unknown) => createHash('sha256').update(JSON.stringify(v)).digest('hex').slice(0, 12);
-/** The default exploration run. The coverage guard and the report self-test always use these. */
+/** 기본 탐색 실행이다. 범위 검사와 보고서 자체 검사는 항상 이 시드들을 사용한다. */
 const EXPLORATION_SEEDS:readonly number[] = Array.from({length:300}, (_, i) => 20261105 + i);
-/** Repro mode runs the properties on exactly the requested seed; anything that is not a safe integer is refused. */
+/** 재현 모드는 요청한 정확히 하나의 시드만 검사하며 안전한 정수가 아니면 거부한다. */
 export function seedsFrom(env:Readonly<Record<string, string|undefined>>):readonly number[] {
   const raw = env.SAME_COURSE_PROP_SEED;
   if (raw === undefined) return EXPLORATION_SEEDS;
@@ -132,7 +126,7 @@ function shrink(c:Case, fails:(x:Case) => boolean):Case {
     for (const key of ['attempts', 'rules'] as const) {
       for (let i = 0; i < cur[key].length; i++) {
         const next = {...cur, [key]:cur[key].filter((_, j) => j !== i)} as Case;
-        // Keep retake links pointing at a token that still exists, or the case changes meaning.
+        // 재수강 연결 대상 토큰이 남아 있어야 한다. 대상이 사라지면 시험 사례의 의미가 달라진다.
         if (key === 'attempts') next.attempts = next.attempts.map(a =>
           a.supersedesAttemptToken && !next.attempts.some(b => b.attemptToken === a.supersedesAttemptToken)
             ? (({supersedesAttemptToken:_s, retakeApprovalRef:_r, ...rest}) => rest)(a) as LedgerAttempt : a);
@@ -169,8 +163,7 @@ const byToken = (list:readonly {attemptToken:string}[]) => [...list].sort((a, b)
 
 describe('applySameCourseRules + ledger properties (#202)', () => {
   it('the generator reaches every branch it should exercise', () => {
-    // A property of the generator, not of one case: always measured on the exploration seeds, so the
-    // single-seed repro mode does not turn it into a false failure (#218 review).
+    // 개별 사례가 아니라 생성기의 속성이므로 단일 시드 재현 모드가 아닌 전체 탐색 시드에서 항상 측정한다(#218).
     const seen = {applied:0, ambiguous:0, notApproved:0, untouched:0, renameRetake:0};
     for (const seed of EXPLORATION_SEEDS) {
       const c = genCase(mulberry32(seed), 8);
@@ -195,7 +188,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     });
   });
 
-  // Precondition: none.
+  // 전제 조건 없음.
   it('P2 never modifies its inputs', () => {
     forAll('inputs untouched', 8, c => {
       const before = JSON.stringify(c);
@@ -205,7 +198,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     });
   });
 
-  // Precondition: none. Output follows attempt order; per-attempt results do not depend on any order.
+  // 전제 조건 없음. 결과는 수강 시도 순서를 따르지만 각 시도의 판정은 입력 순서와 무관하다.
   it('P3 per-attempt results do not depend on the order of attempts or rules', () => {
     forAll('order independence', 8, (c, rng) => {
       const a = applySameCourseRules(c.attempts, c.rules);
@@ -217,7 +210,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     });
   });
 
-  // Precondition: S1-S4 (no approved chain). Targets are never an approved rule's old course.
+  // 전제는 S1~S4(승인된 사슬 없음)다. 승인 규칙의 목표 과목은 다른 승인 규칙의 이전 과목이 될 수 없다.
   it('P4 a second application changes nothing more', () => {
     forAll('idempotent', 8, c => {
       const once = applySameCourseRules(c.attempts, c.rules);
@@ -228,7 +221,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     });
   });
 
-  // Precondition: no rule is APPROVED.
+  // 전제: 승인된 규칙이 하나도 없다.
   it('P5 unapproved rules leave every ledger figure as it was and hold every attempt they name', () => {
     forAll('unapproved is a no-op', 8, c => {
       const rules = c.rules.map(r => ({...r, state:r.state === 'APPROVED' ? 'DRAFT' as const : r.state}));
@@ -241,7 +234,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     });
   });
 
-  // Precondition: S1-S4. The ledger sees exactly the transcript the model rewrote, field for field.
+  // 전제: S1~S4. 학점 원장에는 기준 모델이 변경한 성적표의 모든 필드를 그대로 전달한다.
   it('P6 the ledger after the rules equals the ledger of the model-rewritten transcript', () => {
     forAll('ledger composition', 8, c => {
       const got = ledger(applySameCourseRules(c.attempts, c.rules).attempts);
@@ -250,8 +243,8 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     });
   });
 
-  // Precondition: one approved, unambiguous rule old -> new; exactly one attempt of either course, on the
-  // old course, EARNED, RECOGNIZED, term ended by asOf, no retake link. Then the new course's required row is met.
+  // 전제: 유일하고 모호하지 않은 이전→새 과목 승인 규칙과 한 번의 이전 과목 취득 기록이 있다.
+  // 이전 학기의 EARNED·RECOGNIZED이고 재수강 연결이 없으면 새 과목의 필수 요건을 충족한다.
   it('P7 one earned old course meets the requirement on its new course', () => {
     const gen = (rng:Rng):Case => {
       const from = pick(rng, OLD), to = pick(rng, NEW);
@@ -271,8 +264,8 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     }, gen);
   });
 
-  // Precondition: old course earned in an ended term, its new course earned in a later ended term with an
-  // approved retake link to the old attempt, one approved rule old -> new, nothing else on either course.
+  // 전제: 이전 과목을 종료 학기에 취득하고 더 나중 학기에 새 과목을 취득했으며 이전 시도에 대한 승인된 재수강 링크가 있다.
+  // 그 외 해당 두 과목 기록은 없고 이전→새 과목 승인 규칙은 하나다.
   it('P8 an approved retake across the rename is recognized only after the rule', () => {
     const gen = (rng:Rng):Case => {
       const from = pick(rng, OLD), to = pick(rng, NEW), i = Math.floor(rng() * 3);
@@ -292,7 +285,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     }, gen);
   });
 
-  // Precondition: an approved rule maps to a course another approved rule maps away.
+  // 전제: 어떤 승인 규칙의 목표 과목이 다른 승인 규칙의 이전 과목이 되는 연쇄가 존재한다.
   it('P9 approved chains are refused; the same chain with one rule unapproved is accepted', () => {
     forAll('chains', 6, (c, rng) => {
       const [a, b] = [pick(rng, OLD), pick(rng, NEW)];
@@ -310,8 +303,8 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
   });
 
   it('a failure report carries the seed, hashes, code SHA, repro command and a shrunk case that still fails', () => {
-    // Deliberately false property: "no attempt is ever rewritten". The runner must report and shrink it.
-    // It runs on the exploration seeds whatever SAME_COURSE_PROP_SEED says, so repro mode cannot skip it.
+    // 의도적으로 틀리게 만든 '수강 시도는 절대 다시 쓰이지 않는다' 속성이다.
+    // 탐색·축소 보고 기능을 검증하며 단일 시드 재현 모드에서도 이 검사를 생략하지 않는다.
     let message = '';
     try {
       forAll('demo: nothing rewritten', 8, c => (applySameCourseRules(c.attempts, c.rules).applied.length > 0 ? 'rewritten' : null),
@@ -324,10 +317,10 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     expect(message).toContain(`repro: SAME_COURSE_PROP_SEED=${seed} npx vitest run`);
     const small = JSON.parse(/^shrunk case: (.*)$/m.exec(message)![1]!) as Case;
     expect(message).toContain(`ruleHash=${hash(small.rules)} shrunkHash=${hash(small)}`);
-    // Minimal: one attempt and one approved rule, and it still fails.
+    // 최소 반례는 한 수강 시도와 한 승인 규칙뿐인데도 실패한다.
     expect([small.attempts.length, small.rules.length]).toEqual([1, 1]);
     expect(applySameCourseRules(small.attempts, small.rules).applied).toHaveLength(1);
-    // The repro seed alone rebuilds the same failure: same case, same shrunk case.
+    // 재현 시드 하나만으로 동일 실패 사례와 동일 축소 반례를 다시 만들 수 있다.
     let again = '';
     try {
       forAll('demo: nothing rewritten', 8, c => (applySameCourseRules(c.attempts, c.rules).applied.length > 0 ? 'rewritten' : null),
@@ -350,8 +343,8 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
       ({attemptToken, canonicalCourseId, creditUnits:6, ledger:'EARNED', areaIds:[], recognition:'RECOGNIZED', term:'2025-1'});
     const rule = (id:string, from:string[], to:string, state:SameCourseRule['state'] = 'APPROVED'):SameCourseRule =>
       ({id, fromCourseIds:from, toCourseId:to, state, evidenceRefs:['EV-SYN-H']});
-    // OLD1 -> NEW1 by two approved rules (lowest id wins), OLD2 named by rules to NEW1 and NEW2 (ambiguous),
-    // OLD3 only by a draft rule, OTHER1 by none.
+    // OLD1→NEW1은 두 승인 규칙 중 ID가 작은 것을 택한다.
+    // OLD2는 NEW1·NEW2 목표가 충돌해 AMBIGUOUS, OLD3은 초안만 있어 보류하며 OTHER1에는 규칙이 없다.
     const c:Case = {attempts:[at('SYN-A', 'SYN-OLD1'), at('SYN-B', 'SYN-OLD2'), at('SYN-C', 'SYN-OLD3'), at('SYN-D', 'SYN-OTHER1')],
       rules:[rule('SYN-R2', ['SYN-OLD1'], 'SYN-NEW1'), rule('SYN-R1', ['SYN-OLD1', 'SYN-OLD2'], 'SYN-NEW1'),
         rule('SYN-R3', ['SYN-OLD2'], 'SYN-NEW2', 'DRAFT'), rule('SYN-R4', ['SYN-OLD3'], 'SYN-NEW2', 'NEEDS_REVIEW')]};

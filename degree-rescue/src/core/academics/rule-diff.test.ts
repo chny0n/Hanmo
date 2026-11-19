@@ -3,7 +3,7 @@ import {selectAcademicRulePackAsOfVNext, type AcademicRulePackVNext} from '../..
 import {buildAcademicLedger, type LedgerAttempt} from './ledger.js';
 import {compareRulePackRevisions, type RulePackRevisionRequest} from './rule-diff.js';
 
-/** Synthetic rule packs and ledger only. 1 unit = 0.5학점, so 3학점 is 6 units. */
+/** 합성 규칙집·원장만 사용한다. 1단위는 0.5학점이므로 3학점은 6단위다. */
 const AS_OF = '2026-11-01T00:00:00.000Z';
 type Pack = AcademicRulePackVNext;
 type Req = Pack['requirements'][number];
@@ -32,7 +32,7 @@ const gpa = ():Req => ({
 
 const baseRequirements = ():Req[] => [total(12), area('REQ-MAJOR', 'MAJOR', 12), area('REQ-GENERAL', 'GENERAL', 6), choice(2)];
 
-/** Builds a reciprocal clause inventory from the requirements; spans can be overridden to model re-wording. */
+/** 요건에서 조항 목록을 역으로 만들어 일관성을 시험한다. 원문 구간은 문구 수정 시나리오를 위해 덮어쓸 수 있다. */
 function inventory(requirements:readonly Req[], spans:Record<string, string>):Clause[] {
   const byClause = new Map<string, {kind:Clause['kind']; ids:string[]}>();
   for (const req of requirements) {
@@ -97,7 +97,7 @@ const attempt = (token:string, courseId:string, over:Partial<LedgerAttempt> = {}
   attemptToken:token, canonicalCourseId:courseId, creditUnits:6, ledger:'EARNED',
   areaIds:['MAJOR'], recognition:'RECOGNIZED', term:'2025-2', ...over,
 });
-/** SYN-A is recognized in two areas; the unique total still counts it once. SYN-C is planned. */
+/** SYN-A는 두 영역에서 인정되지만 총학점에는 한 번만 세고 SYN-C는 계획 상태다. */
 const ATTEMPTS:LedgerAttempt[] = [
   attempt('SYN-T-A', 'SYN-A', {areaIds:['MAJOR', 'GENERAL']}),
   attempt('SYN-T-B', 'SYN-B'),
@@ -105,7 +105,7 @@ const ATTEMPTS:LedgerAttempt[] = [
 ];
 
 const request = (previous:unknown, next:unknown, over:Partial<RulePackRevisionRequest> = {}):RulePackRevisionRequest =>
-  // The same rows for both versions: area membership is stated as unchanged (see nextAttempts).
+  // 두 판본에 같은 원장 행을 사용해 영역 배정이 변경되지 않았음을 명시한다(nextAttempts).
   ({asOf:AS_OF, previous, next, attempts:ATTEMPTS, nextAttempts:ATTEMPTS, ...over});
 const row = (diff:ReturnType<typeof compareRulePackRevisions>, id:string) => diff.requirements.find(r => r.requirementId === id);
 
