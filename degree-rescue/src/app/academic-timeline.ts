@@ -5,8 +5,12 @@ import {
 } from '../core/academic-schedule.js';
 import {importantNotices} from '../core/important-notices.js';
 import {academicSourceLink,selectedMajors,studentDeadlineDisplay} from '../core/academic-display.js';
+import {readRoadmap,saveRoadmap,clearRoadmap,exportRoadmap,parseRoadmapBackup,ROADMAP_MAX_BYTES} from '../core/local-roadmap.js';
 
-const KEY='hanmo:degree-rescue:academic-roadmap:v1';
+// Previous pre-release settings are never migrated without a separate user action.
+const LEGACY_KEY='hanmo:degree-rescue:academic-roadmap:v1';
+const ALLOWED_STEPS=new Set<string>(GRADUATION_STEPS.map(step=>step.id));
+const parseProfile=(source:unknown):AcademicProfile=>AcademicProfileSchema.parse(source);
 type StepStatus='UNREVIEWED'|'IN_PROGRESS'|'DONE'|'NOT_APPLICABLE';
 const STATUSES:readonly StepStatus[]=['UNREVIEWED','IN_PROGRESS','DONE','NOT_APPLICABLE'];
 const STATUS_TEXT:Record<StepStatus,string>={
@@ -58,38 +62,89 @@ function fillProfile(p:AcademicProfile):void{
 }
 function loadSaved():void{
   try{
-    const raw=localStorage.getItem(KEY);
-    if(!raw)return;
-    const stored=JSON.parse(raw) as {profile?:unknown;progress?:unknown};
-    const parsed=AcademicProfileSchema.safeParse(stored.profile);
-    if(parsed.success)fillProfile(parsed.data);
-    if(stored.progress&&typeof stored.progress==='object'&&!Array.isArray(stored.progress)){
-      const result=stored.progress as Record<string,unknown>;
-      progress={};
-      for(const step of GRADUATION_STEPS){
-        const status=result[step.id];
-        if(typeof status==='string'&&STATUSES.some(s=>s===status))progress[step.id]=status as StepStatus;
-      }
+    const stored=readRoadmap(localStorage,parseProfile,ALLOWED_STEPS);
+    if(stored){
+      fillProfile(stored.profile);
+      progress=stored.progress;
+      setMessage('profile-message','저장한 개인 설정을 이 기기에서 불러왔습니다.');
+    }else if(localStorage.getItem(LEGACY_KEY)){
+      element<HTMLButtonElement>('profile-legacy').hidden=false;
+      setMessage('profile-message','이전 테스트 버전의 저장 설정이 있습니다. 자동 이전하지 않으며 아래 버튼으로 직접 옮길 수 있습니다.');
     }
-    setMessage('profile-message','이 브라우저에 이전에 저장한 설정을 불러왔습니다.');
   }catch{
-    setMessage('profile-message','저장된 설정을 읽을 수 없습니다. 브라우저 데이터 상태를 확인하세요.');
+    setMessage('profile-message','저장된 설정을 읽을 수 없습니다. 기존 값을 덮어쓰지 않았습니다.');
   }
 }
 function save():void{
   try{
-    const profile=readProfile();
-    localStorage.setItem(KEY,JSON.stringify({profile,progress}));
-    setMessage('profile-message','저장 완료: 이 브라우저에만 보관됩니다. 공식 학적 확인을 대신하지 않습니다.');
+    saveRoadmap(localStorage,{profile:readProfile(),progress},parseProfile,ALLOWED_STEPS);
+    setMessage('profile-message','이 브라우저에 개인 설정을 저장했습니다. 학교의 공식 학적 확인은 아닙니다.');
   }catch(e){
     setMessage('profile-message','저장 실패: '+(e instanceof Error?e.message:String(e)));
   }
 }
 function clearSaved():void{
-  try{localStorage.removeItem(KEY);}catch{/* browser may block storage */}
+  if(!confirm('이 기기의 현재 버전 학업 설정과 체크 상태를 삭제하시겠습니까? 예전 테스트 저장이나 기존 모의수강신청 자료는 삭제하지 않습니다.'))return;
+  try{clearRoadmap(localStorage);}
+  catch(e){setMessage('profile-message','설정 삭제 실패: '+(e instanceof Error?e.message:String(e)));return;}
   try{sessionStorage.removeItem(ACADEMIC_AUDIT_BRIDGE_KEY);}catch{/* storage disabled */}
   fillProfile({openRequirementIds:null});progress={};renderSteps();render();
-  setMessage('profile-message','이 브라우저의 저장된 학업 설정과 체크 상태를 삭제했습니다.');
+  setMessage('profile-message','현재 버전의 학업 설정을 삭제했습니다. 기존 모의수강신청 데이터는 변경하지 않았습니다.');
+}
+function exportProfile():void{
+  try{
+    const raw=exportRoadmap({profile:readProfile(),progress},parseProfile,ALLOWED_STEPS);
+    const url=URL.createObjectURL(new Blob([raw],{type:'application/json;charset=utf-8'}));
+    const a=document.createElement('a');a.href=url;a.download='hanmo-academic-profile-v1.json';a.click();
+    URL.revokeObjectURL(url);
+    setMessage('profile-message','현재 입력한 개인 설정의 백업 JSON을 저장했습니다. 공유 PC에는 백업 파일을 남기지 마세요.');
+  }catch(e){setMessage('profile-message','백업 실패: '+(e instanceof Error?e.message:String(e)));}
+}
+async function importProfile():Promise<void>{
+  const input=element<HTMLInputElement>('profile-import');
+  const file=input.files?.[0];
+  if(!file)return;
+  try{
+    if(file.size>ROADMAP_MAX_BYTES)throw new Error('1MiB를 넘는 백업 파일은 불러올 수 없습니다.');
+    const payload=parseRoadmapBackup(await file.text(),parseProfile,ALLOWED_STEPS);
+    if(!confirm('이 기기의 현재 학업 설정과 체크 상태를 백업 내용으로 바꾸시겠습니까? 전공: '
+      +(payload.profile.majors?.[0]??'미입력')+' · 캠퍼스: '+(payload.profile.campus??'미입력'))){
+      setMessage('profile-message','설정 복원을 취소했습니다. 현재 저장 자료는 유지됩니다.');return;
+    }
+    // One validated key write occurs before any in-memory UI changes.
+    saveRoadmap(localStorage,payload,parseProfile,ALLOWED_STEPS);
+    fillProfile(payload.profile);progress=payload.progress;renderSteps();render();
+    setMessage('profile-message','백업을 이 브라우저에 복원했습니다. 출처 검수나 공식 학적 확정이 아닙니다.');
+  }catch(e){
+    setMessage('profile-message','복원 실패 · 기존 설정 보존: '+(e instanceof Error?e.message:String(e)));
+  }finally{input.value='';}
+}
+function importLegacy():void{
+  try{
+    const raw=localStorage.getItem(LEGACY_KEY);
+    if(!raw)throw new Error('이전 버전 설정이 없습니다.');
+    const old=JSON.parse(raw) as unknown;
+    if(!old||typeof old!=='object'||Array.isArray(old))throw new Error('예전 저장 형식이 올바르지 않습니다.');
+    const fields=old as Record<string,unknown>;
+    const profile=parseProfile(fields.profile);
+    if(!fields.progress||typeof fields.progress!=='object'||Array.isArray(fields.progress)){
+      throw new Error('예전 체크 상태가 올바르지 않습니다.');
+    }
+    const migrated:Partial<Record<GraduationStepId,StepStatus>>={};
+    for(const [key,value] of Object.entries(fields.progress)){
+      if(!ALLOWED_STEPS.has(key)||!STATUSES.includes(value as StepStatus)){
+        throw new Error('알 수 없는 예전 체크 상태: '+key);
+      }
+      migrated[key as GraduationStepId]=value as StepStatus;
+    }
+    if(!confirm('이전 테스트 버전의 설정을 새 형식으로 복사하시겠습니까? 원본 예전 설정은 남겨둡니다.'))return;
+    saveRoadmap(localStorage,{profile,progress:migrated},parseProfile,ALLOWED_STEPS);
+    fillProfile(profile);progress=migrated;renderSteps();render();
+    element<HTMLButtonElement>('profile-legacy').hidden=true;
+    setMessage('profile-message','이전 테스트 설정을 새 학업 저장 형식에 복사했습니다. 예전 설정은 그대로 유지했습니다.');
+  }catch(e){
+    setMessage('profile-message','이전 설정을 옮기지 못했습니다. 원본은 유지됩니다: '+(e instanceof Error?e.message:String(e)));
+  }
 }
 const kst=new Intl.DateTimeFormat('ko-KR',{
   timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',
@@ -307,6 +362,9 @@ async function importJson():Promise<void>{
 }
 for(const id of profileIds)inputs[id]?.addEventListener('input',render);
 element<HTMLButtonElement>('profile-save').addEventListener('click',save);
+element<HTMLButtonElement>('profile-export').addEventListener('click',exportProfile);
+element<HTMLInputElement>('profile-import').addEventListener('change',()=>{void importProfile();});
+element<HTMLButtonElement>('profile-legacy').addEventListener('click',importLegacy);
 element<HTMLButtonElement>('audit-transfer').addEventListener('click',applyLocalAuditHints);
 element<HTMLButtonElement>('profile-clear').addEventListener('click',clearSaved);
 element<HTMLButtonElement>('data-official').addEventListener('click',()=>{void officialTitles();});
