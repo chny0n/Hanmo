@@ -36,11 +36,11 @@ function checkDevice(){
 }
 
 const noticeOffsets=[81,137,25];
-let noticeIndex=0;
+let headerNoticeIndex=0;
 /** Preserve the original three-step, five-second notice animation. */
 function rotateHeaderNotice(){
-  $HEADERNOTICELIST.style.bottom=noticeOffsets[noticeIndex]+'px';
-  noticeIndex=(noticeIndex+1)%noticeOffsets.length;
+  $HEADERNOTICELIST.style.bottom=noticeOffsets[headerNoticeIndex]+'px';
+  headerNoticeIndex=(headerNoticeIndex+1)%noticeOffsets.length;
 }
 checkDevice();
 setInterval(rotateHeaderNotice,5000);
