@@ -16,6 +16,12 @@ function element(tag='div') {
     get children(){return this.childNodes.filter(x=>typeof x.tagName==='string');},
     get firstElementChild(){return this.children[0]??null;},
     innerText:'', textContent:'', innerHTML:'', value:'', disabled:false,
+    classList:{
+      values:new Set(),
+      add(name){this.values.add(name);},
+      remove(name){this.values.delete(name);},
+      contains(name){return this.values.has(name);},
+    },
     attributes:{},htmls:[],focusCount:0,
     appendChild(child){this.childNodes.push(child);return child;},
     insertAdjacentHTML(where,html){this.htmls.push({where,html});this.innerHTML+=html;},
@@ -47,6 +53,7 @@ function createHarness(seed={}) {
   }
   const doc={
     activeElement:element('button'),
+    getElementsByTagName:key=>[get(key)],
     getElementsByClassName:(key)=>key==='unvisible'?[
       getMulti('unvisible',0),getMulti('unvisible',1)]:[get(key)],
     querySelector:(key)=>key==='input[name="waitingYN"]:checked'
@@ -234,4 +241,46 @@ test('queue cancellation keeps a simulated course available for retry',async()=>
   assert.equal(h.expr('rc[0]'),false);
   h.expr('registerClick(1)');
   assert.equal(h.getMulti('unvisible',0).style.display,'flex');
+});
+
+test('navigation header detects a supported Windows PC without clobbering other keys',()=>{
+  const h=createHarness();
+  h.load('gnb.js');
+  assert.equal(h.map.get('deviceInfo'),'true');
+  assert.equal(h.get('deviceCheck').style.background,'#038003');
+  assert.equal(h.events.timeouts[0].delay,1500);
+  assert.equal(h.events.intervals[0].delay,5000);
+  h.events.intervals[0].fn();
+  assert.equal(h.get('headerNoticeList').style.bottom,'81px');
+});
+test('navigation header rejects unsupported mobile browser with original redirect',()=>{
+  const h=createHarness();
+  h.context.navigator.userAgent='Mozilla/5.0 (Linux; Android 13)';
+  h.load('gnb.js');
+  assert.equal(h.map.get('deviceInfo'),'false');
+  assert.equal(h.get('deviceCheck').style.background,'#800309');
+  assert.equal(h.location.href,'/');
+});
+test('hanmo system blocks practice navigation during original 09:58-10:10 window',()=>{
+  const h=createHarness({deviceInfo:true});
+  h.location.href='/html/practice.html';
+  h.load('hanmoSys.js');
+  assert.equal(h.location.href,'/');
+  assert.match(h.get('title').innerText,/2026-2학기/);
+});
+test('hanmo system keeps PC user on practice outside restricted window',()=>{
+  const h=createHarness({deviceInfo:true});
+  h.now('2026-11-19T10:11:00+09:00');
+  h.location.href='/html/practice.html';
+  h.load('hanmoSys.js');
+  assert.equal(h.location.href,'/html/practice.html');
+});
+test('home renders semester/notice and shows PC-only message when device is unsupported',()=>{
+  const h=createHarness({deviceInfo:false});
+  h.load('index.js');
+  assert.match(h.get('noticeList').innerHTML,/업데이트/);
+  assert.match(h.get('title').innerText,/2026-2학기/);
+  assert.equal(h.get('phoneContainer').style.display,'flex');
+  assert.equal(h.get('container').style.display,'none');
+  assert.equal(h.get('button').classList.contains('noDisplay'),true);
 });
