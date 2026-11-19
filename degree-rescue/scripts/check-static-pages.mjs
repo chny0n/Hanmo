@@ -74,7 +74,7 @@ const scriptRequirements={
     'forecast-json-reset','forecast-data-status','forecast-result','forecast-summary',
     'ledger-input','ledger-run','ledger-reset','ledger-result','plan-input','plan-run','plan-reset','plan-result'],
   'catalog.html':['wis-file','department','load-wis','export-csv','catalog-status','catalog-rows','catalog-count','course-search'],
-  'academic-timeline.html':['entry-journey-note','profile-campus','profile-major','profile-double','profile-save','profile-clear',
+  'academic-timeline.html':['timeline-devtools','entry-journey-note','profile-campus','profile-major','profile-double','profile-save','profile-clear',
     'focus-status','focus-list','agenda-list','graduation-steps','data-message','data-official','data-demo',
     'timeline-file','template-export','group-filter','agenda-search','include-unknown','audit-transfer'],
 };
@@ -101,6 +101,14 @@ if(!homeEntry.includes('id="student-entry-form"')
 const noticeEntry=await readFile(join(site,'academic-timeline.html'),'utf8');
 if(!noticeEntry.includes('href="./index.html#forecast-heading"')) {
   throw Error('Notices must offer the next course forecast step');
+}
+const timelineDeveloperPos=noticeEntry.indexOf('<details class="timeline-devtools"');
+const timelineJsonPos=noticeEntry.indexOf('id="timeline-file"');
+const timelineDeveloperEnd=noticeEntry.indexOf('</details>',timelineDeveloperPos);
+if(timelineDeveloperPos<0||timelineJsonPos<timelineDeveloperPos
+  ||timelineJsonPos>timelineDeveloperEnd
+  ||noticeEntry.slice(timelineDeveloperPos,timelineJsonPos).includes('<details class="timeline-devtools" open')){
+  throw Error('Schedule JSON input must stay inside a closed developer-only section');
 }
 console.log('Static smoke: '+pages.length+' pages, '+found.length+' allowlisted assets, '
   +checkedLinks+' internal links, '+checkedAria+' ARIA references; no CNAME.');
