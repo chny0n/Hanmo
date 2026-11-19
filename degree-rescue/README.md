@@ -37,4 +37,4 @@ npm run check
 - `src/core/academic-schedule.ts`: 학교 학사사건 유형, 범위 미확인 UNKNOWN 처리, Asia/Seoul 날짜 경계, 취소·중복 격리, 학생 접수 마감과 행정부서 보고 시한을 분리하는 순수 로직.
 - 14개 졸업 체크 항목은 **개인 메모**이자 보조 기능이며, 공식 졸업 사정이 아닙니다. 학교 성적표를 자동으로 불러오는 기능은 없습니다.
 - 합성 D-day 시연은 모두 SYNTHETIC으로 표시하며 실제 학사 일정·신청기간을 예측하지 않습니다.
-- [학사일정 학생용 계약/검증 상세](docs/ACADEMIC_GRADUATION_RELATIONSHIPS.md) 참고.
+- 학사일정·전공/졸업 적용 정책은 저장소의 [현행 아키텍처](../docs/architecture.md) §4.4–4.8을 기준으로 합니다.
