@@ -100,6 +100,7 @@ export const AcademicScheduleSchema=z.strictObject({
   schemaVersion:z.literal(1),events:z.array(z.unknown()).max(1000),
 });
 export type AcademicScheduleImport={events:AcademicEvent[];invalid:{index:number;reason:string}[]};
+// 일정 파일 전체 형식은 먼저 확인하되, 개별 공지 오류는 격리하여 정상 공지까지 폐기하지 않는다.
 export function parseAcademicSchedule(source:unknown):AcademicScheduleImport{
   const parsed=AcademicScheduleSchema.parse(source);
   const events:AcademicEvent[]=[];const invalid:{index:number;reason:string}[]=[];
@@ -166,6 +167,7 @@ export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent)
 export function openRequirementsFromAudit(audit:AcademicAuditVNext|null|undefined):string[]|null{
   return openRequirementIdsFromAudit(audit);
 }
+// 남은 일수는 브라우저 지역 설정이 아니라 한국 표준시의 달력 날짜 경계로 계산한다.
 const KST=9*3600000,DAY=86400000;
 const kstDateNumber=(iso:string):number=>Math.floor((Date.parse(iso)+KST)/DAY);
 const anyTimestamp=(e:AcademicEvent):number=>{
@@ -185,6 +187,7 @@ export function buildAcademicAgenda(request:{
   if(!Iso.safeParse(request.asOf).success)throw new RangeError('asOf needs offset-aware ISO time');
   const profile=AcademicProfileSchema.parse(request.profile);
   const now=Date.parse(request.asOf);
+  // 동일 ID 공지의 임의 선택을 피하기 위해 중복 ID는 모두 제외 사유로 남긴다.
   const counts=new Map<string,number>();
   request.events.forEach(e=>counts.set(e.id,(counts.get(e.id)||0)+1));
   const items:AcademicAgendaItem[]=[];const excluded:AcademicAgenda['excluded']=[];
@@ -200,6 +203,7 @@ export function buildAcademicAgenda(request:{
       excluded.push({id:event.id,reason:'INVALID_TIME'});continue;
     }
     const applicability=noticeApplicability(profile,event);
+    // 학생용 마감(deadlineAt)만 남은 일수에 쓰며 행정용 마감은 학생 마감으로 대체하지 않는다.
     const due=event.deadlineAt?Date.parse(event.deadlineAt):null;
     const daysLeft=due===null?null:kstDateNumber(event.deadlineAt!)-kstDateNumber(request.asOf);
     const priority:Priority=due!==null
