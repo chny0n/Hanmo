@@ -2,25 +2,20 @@ import {extractFacultyFromSavedTimetable,type FacultyTimetableImport} from '../c
 import {searchFacultyTimetable} from '../core/academics/faculty-search.js';
 import {toSavedCurriculumCsv} from '../core/academics/wis-timetable-csv.js';
 
-const file=document.getElementById('wis-file');
-const label=document.getElementById('department');
-const search=document.getElementById('course-search');
-const currentStatus=document.getElementById('catalog-status');
-const rowsElement=document.getElementById('catalog-rows');
-const rowCount=document.getElementById('catalog-count');
-const csvButton=document.getElementById('export-csv');
-const loadButton=document.getElementById('load-wis');
-// Fail loudly if the HTML and the code are out of sync; no silent dead button.
-if(!(file instanceof HTMLInputElement)
- || !(label instanceof HTMLInputElement)
- || !(search instanceof HTMLInputElement)
- || !(currentStatus instanceof HTMLElement)
- || !(rowsElement instanceof HTMLTableSectionElement)
- || !(rowCount instanceof HTMLElement)
- || !(csvButton instanceof HTMLButtonElement)
- || !(loadButton instanceof HTMLButtonElement)){
-  throw new Error('Missing static catalog controls');
+/** Resolve a required HTML control once, preserving its type in callbacks. */
+function requireControl<T extends HTMLElement>(id:string,ctor:{new():T}):T{
+  const node=document.getElementById(id);
+  if(!(node instanceof ctor))throw new Error('Missing static catalog control: '+id);
+  return node;
 }
+const file=requireControl('wis-file',HTMLInputElement);
+const label=requireControl('department',HTMLInputElement);
+const search=requireControl('course-search',HTMLInputElement);
+const currentStatus=requireControl('catalog-status',HTMLElement);
+const rowsElement=requireControl('catalog-rows',HTMLTableSectionElement);
+const rowCount=requireControl('catalog-count',HTMLElement);
+const csvButton=requireControl('export-csv',HTMLButtonElement);
+const loadButton=requireControl('load-wis',HTMLButtonElement);
 let imported:FacultyTimetableImport|null=null;
 
 function addCell(tr:HTMLTableRowElement,value:string):void{
