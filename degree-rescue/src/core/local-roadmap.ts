@@ -63,7 +63,6 @@ export function exportRoadmap<T>(value:RoadmapPayload<T>,parseProfile:(value:unk
   allowedSteps:ReadonlySet<string>,timestamp=new Date().toISOString()):string{
   // 파일용 들여쓰기 때문에 실제 백업 용량이 커지므로 직렬화 후 다시 크기를 확인한다.
   const pretty=JSON.stringify(JSON.parse(encode(value,parseProfile,allowedSteps,timestamp,true)),null,2)+'\n';
-  // 들여쓰기를 적용한 내보내기 파일은 압축된 저장 JSON보다 커질 수 있으므로 실제 크기를 다시 검증한다.
   bounded(pretty);
   return pretty;
 }
