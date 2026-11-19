@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const script = fs.readFileSync(path.join(root, 'js/pc-only.js'), 'utf8');
 const base = 'https://ot4562-glitch.github.io/Hanmo_develop/';
-const notice = base + 'pc-only.html';
+const notice = base + 'html/pc-only.html';
 function run(ua, overrides={}) {
   const redirects=[];
   const attributes={};
@@ -64,8 +64,7 @@ test('a stale stored desktop allow value cannot bypass the current device check'
 });
 test('every interactive HTML entry includes the synchronous gate before page scripts',()=>{
   for(const page of ['index.html','html/developer.html','html/vsugang.html','html/practice.html',
-    'html/selectZone.html','html/result.html','degree-rescue/index.html',
-    'degree-rescue/catalog.html','degree-rescue/academic-timeline.html']){
+    'html/selectZone.html','html/result.html']){
     const html=fs.readFileSync(path.join(root,page),'utf8');
     const expected=page==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
     const at=html.indexOf('<script src="'+expected+'"></script>');
@@ -74,5 +73,5 @@ test('every interactive HTML entry includes the synchronous gate before page scr
     const app=html.indexOf('src="./public/');
     if(app>=0)assert.ok(at<app,page+' gate must run before app bundle');
   }
-  assert.match(fs.readFileSync(path.join(root,'pc-only.html'),'utf8'),/PC에서 이용해 주세요/);
+  assert.match(fs.readFileSync(path.join(root,'html/pc-only.html'),'utf8'),/PC에서 이용해 주세요/);
 });

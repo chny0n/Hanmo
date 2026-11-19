@@ -17,6 +17,6 @@
   style.textContent = 'html[data-hanmo-pc-only="blocked"] { visibility: hidden !important; }';
   document.head.appendChild(style);
   const source = document.currentScript?.src;
-  const destination = new URL('../pc-only.html', source || window.location.href);
+  const destination = new URL('../html/pc-only.html', source || window.location.href);
   window.location.replace(destination.href);
 })();

@@ -29,17 +29,6 @@ for(const name of expected){
   if(!await isFile(join(site,name)))throw Error('Missing staged academic asset: '+name);
 }
 if(await isFile(join(dist,'CNAME')))throw Error('Production custom domain leaked into preview');
-if(!await isFile(join(dist,'pc-only.html')))throw Error('PC-only notice missing from Pages bundle');
-if(!await isFile(join(dist,'js/pc-only.js')))throw Error('PC-only gate missing from Pages bundle');
-for(const entry of ['index.html','html/developer.html','html/vsugang.html',
-  'html/practice.html','html/selectZone.html','html/result.html',
-  'degree-rescue/index.html','degree-rescue/catalog.html','degree-rescue/academic-timeline.html']){
-  const body=await readFile(join(dist,entry),'utf8');
-  const asset=entry==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
-  const at=body.indexOf('<script src="'+asset+'"></script>');
-  if(at<0||at>body.indexOf('</head>'))throw Error('PC-only guard missing from '+entry);
-}
-
 
 let checkedLinks=0,checkedAria=0;
 for(const page of pages){

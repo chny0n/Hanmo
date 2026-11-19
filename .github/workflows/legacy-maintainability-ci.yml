@@ -4,7 +4,7 @@ on:
     paths:
       - 'js/practice.js'
       - 'js/pc-only.js'
-      - 'pc-only.html'
+      - 'html/pc-only.html'
       - 'index.html'
       - 'html/**'
       - 'degree-rescue/*.html'

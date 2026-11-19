@@ -6,7 +6,7 @@ on:
     paths:
       - 'degree-rescue/**'
       - 'index.html'
-      - 'pc-only.html'
+      - 'html/pc-only.html'
       - 'tests/device-gate.test.cjs'
       - 'tests/legacy-baseline.test.cjs'
       - 'html/**'

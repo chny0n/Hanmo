@@ -10,7 +10,6 @@ if(!(await exists(join(here,'public/app.js')))) throw new Error('Run esbuild bef
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 await copyFile(join(root,'index.html'),join(dist,'index.html'));
-await copyFile(join(root,'pc-only.html'),join(dist,'pc-only.html'));
 for(const directory of ['css','js','html','img']){
   await cp(join(root,directory),join(dist,directory),{recursive:true});
 }
