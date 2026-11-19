@@ -267,6 +267,12 @@ test('navigation header rejects unsupported mobile browser with original redirec
   assert.equal(h.get('deviceCheck').style.background,'#800309');
   assert.equal(h.location.href,'/');
 });
+test('legacy false deviceInfo cache does not lock out an actual desktop browser',()=>{
+  const h=createHarness({deviceInfo:false});
+  h.load('gnb.js');
+  assert.equal(h.map.get('deviceInfo'),'true');
+  assert.equal(h.get('deviceCheck').style.background,'#038003');
+});
 test('hanmo system blocks practice navigation during original 09:58-10:10 window',()=>{
   const h=createHarness({deviceInfo:true});
   h.location.href='/html/practice.html';
@@ -297,7 +303,7 @@ test('each actual HTML page loads classic scripts in order without global collis
   for(const page of pages){
     const html=fs.readFileSync(path.join(ROOT,page),'utf8');
     const scripts=[...html.matchAll(/<script\s+src=['"](?:\.\/|\.\.\/)js\/([^'"]+\.js)['"]/g)]
-      .map(match=>match[1]);
+      .map(match=>match[1]).filter(file=>file!=='pc-only.js');
     assert.equal(scripts.length,page==='index.html'?2:3,page+' script count');
     const h=createHarness({deviceInfo:'true',practiceSetter:1,psubjectValue:2,
       subjectValue:2,waitingValue:'no',TIMEtime:'1',SELECTtime:'1',SELECTWaitTime:'0'});

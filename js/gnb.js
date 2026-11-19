@@ -25,6 +25,10 @@ function showDeviceCheck(){
 }
 
 function checkDevice(){
+  // 예전 모바일 판정이 남아 있어도 현재 PC라면 정상 이용할 수 있게 다시 검사한다.
+  if(!isUnsupportedDevice() && localStorage.getItem('deviceInfo')==='false'){
+    localStorage.removeItem('deviceInfo');
+  }
   if(localStorage.getItem('deviceInfo')===null){
     $header.style.top='0px';
     if(isEarlyNotice)$headerNotice.style.display='flex';
