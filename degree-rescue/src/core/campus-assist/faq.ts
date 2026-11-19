@@ -24,7 +24,7 @@ function canonical(value:unknown):string{
 /**
  * Newest revision per documentId that was both published and verified by `asOf`.
  * If several copies share that newest revision position but differ in any field (rights,
- * paragraphs, dates, URL), the whole document is quarantined (#373): input order must never
+ * paragraphs, dates, URL), the whole document is quarantined: input order must never
  * decide whether an APPROVED or a REVOKED/BLOCKED copy survives, and there is no fallback to
  * an older approved revision. Identical copies collapse to one.
  */

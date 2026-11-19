@@ -2,24 +2,20 @@ import {extractFacultyFromSavedTimetable,type FacultyTimetableImport} from '../c
 import {searchFacultyTimetable} from '../core/academics/faculty-search.js';
 import {toSavedCurriculumCsv} from '../core/academics/wis-timetable-csv.js';
 
-const fileInput=document.getElementById('wis-file');
-const labelInput=document.getElementById('department');
-const searchInput=document.getElementById('course-search');
-const status=document.getElementById('catalog-status');
-const tableBody=document.getElementById('catalog-rows');
-const count=document.getElementById('catalog-count');
-const exportButton=document.getElementById('export-csv');
-if(!(fileInput instanceof HTMLInputElement)
- || !(labelInput instanceof HTMLInputElement)
- || !(searchInput instanceof HTMLInputElement)
- || !(status instanceof HTMLElement)
- || !(tableBody instanceof HTMLTableSectionElement)
- || !(count instanceof HTMLElement)
- || !(exportButton instanceof HTMLButtonElement)){
-  throw new Error('Missing static catalog controls');
+/** Resolve a required HTML control once, preserving its type in callbacks. */
+function requireControl<T extends HTMLElement>(id:string,ctor:{new():T}):T{
+  const node=document.getElementById(id);
+  if(!(node instanceof ctor))throw new Error('Missing static catalog control: '+id);
+  return node;
 }
-const file=fileInput,label=labelInput,search=searchInput;
-const currentStatus=status,rowsElement=tableBody,rowCount=count,csvButton=exportButton;
+const file=requireControl('wis-file',HTMLInputElement);
+const label=requireControl('department',HTMLInputElement);
+const search=requireControl('course-search',HTMLInputElement);
+const currentStatus=requireControl('catalog-status',HTMLElement);
+const rowsElement=requireControl('catalog-rows',HTMLTableSectionElement);
+const rowCount=requireControl('catalog-count',HTMLElement);
+const csvButton=requireControl('export-csv',HTMLButtonElement);
+const loadButton=requireControl('load-wis',HTMLButtonElement);
 let imported:FacultyTimetableImport|null=null;
 
 function addCell(tr:HTMLTableRowElement,value:string):void{
@@ -47,7 +43,7 @@ function render():void{
     rowsElement.append(tr);
   }
 }
-document.getElementById('load-wis')?.addEventListener('click',async()=>{
+loadButton.addEventListener('click',async()=>{
   const chosen=file.files?.[0];
   if(!chosen){currentStatus.textContent='HTML 파일을 선택해 주세요.';return;}
   if(chosen.size>5_000_000){

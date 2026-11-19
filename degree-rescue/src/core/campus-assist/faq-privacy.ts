@@ -1,5 +1,5 @@
 /** Personal identifiers a student may paste into an FAQ question. None of them helps answer a
- * public FAQ, so they are replaced before the question leaves the server for a model (#341 D).
+ * public FAQ, so they must be masked before any future optional model transmission.
  * A bare "저는 …입니다" is not masked: by rule it is too often a status ("휴학생"), so the screen
  * must still tell students not to type personal data. */
 import {FaqPublicContactsSchema} from '../../contracts/campus-assist/index.js';

@@ -8,7 +8,7 @@ function epoch(iso:string):number{
 }
 function year(day:string):number{return Number(day.slice(0,4));}
 /** Publication instants without an eventDate belong to the Asia/Seoul calendar
- * day, never the raw UTC/foreign-offset text date (#339). This is only a
+ * day, never the raw UTC/foreign-offset text date. This is only a
  * grouping/filtering date: it must not be used as a fabricated eventDate. */
 export function publishedDayKst(iso:string):string{
   return new Date(epoch(iso)+9*60*60*1000).toISOString().slice(0,10);
@@ -21,7 +21,7 @@ function dayOfYear(day:string):number{
 /**
  * `day` is an offset in the common (non-leap) reference year 2001. Rebuild its
  * month/day inside the *target* year's own calendar before applying the margin,
- * so a leap target year does not shift dates after February by one day (#370),
+ * so a leap target year does not shift dates after February by one day,
  * then clamp to that target year's January 1 – December 31.
  */
 function windowDate(targetYear:number,day:number,marginDays:number):string{
@@ -47,7 +47,7 @@ function canonical(row:ActivityRecord):string{
  * Newest revision per sourceId that was both published and verified by asOf
  * (newest publishedAt instant, then revisionId). If several rows carry that
  * same newest revision but disagree in any field (rights, status, dates,
- * text), the whole source is quarantined and has no head (#373): input order
+ * text), the whole source is quarantined and has no head: input order
  * must never decide which copy survives. Identical copies collapse to one.
  */
 function sourceHeadsAt(parsed:readonly ActivityRecord[],time:number):Map<string,ActivityRecord>{
@@ -80,7 +80,7 @@ export function currentActivityRecords(raw:readonly ActivityRecord[],asOf:string
     const order=!prev?1:epoch(item.publishedAt)-epoch(prev.publishedAt)
       ||(item.revisionId<prev.revisionId?-1:item.revisionId>prev.revisionId?1:0);
     if(order>0){events.set(key,item);tied.delete(key);}
-    // Same instant and revision from two sources but different content: no winner (#373).
+    // Same instant and revision from two sources but different content: no winner.
     else if(order===0&&canonical(item)!==canonical(prev!))tied.add(key);
   }
   for(const key of tied)events.delete(key);
@@ -117,7 +117,7 @@ export function forecastActivity(raw:readonly ActivityRecord[],asOf:string,targe
     evidenceRefs:leading?[leading.revisionId,...evidence]:evidence,reason,
     ...(from?{from}:{}),...(to?{to}:{}),
   });
-  // #371: a verified cancellation may omit the exact event date. It is checked
+  // a verified cancellation may omit the exact event date. It is checked
   // *before* a dated target-year record is returned, because the two can sit
   // under different archive years (e.g. confirmation posted 2026-10 for a 2027
   // event, cancellation posted 2026-12). A `supersedes` link is trusted only
