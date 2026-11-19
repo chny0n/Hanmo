@@ -6,6 +6,9 @@ on:
     paths:
       - 'degree-rescue/**'
       - 'index.html'
+      - 'pc-only.html'
+      - 'tests/device-gate.test.cjs'
+      - 'tests/legacy-baseline.test.cjs'
       - 'html/**'
       - 'js/**'
       - 'css/**'
@@ -41,6 +44,8 @@ jobs:
       - name: Install browser-only planner dependencies
         working-directory: degree-rescue
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Check PC-only policy and original practice behavior
+        run: node --test tests/device-gate.test.cjs tests/legacy-baseline.test.cjs
       - name: Run TypeScript, synthetic regression and static-site checks
         working-directory: degree-rescue
         run: npm run check

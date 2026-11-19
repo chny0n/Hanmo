@@ -3,6 +3,12 @@ on:
   pull_request:
     paths:
       - 'js/practice.js'
+      - 'js/pc-only.js'
+      - 'pc-only.html'
+      - 'index.html'
+      - 'html/**'
+      - 'degree-rescue/*.html'
+      - 'tests/device-gate.test.cjs'
       - 'js/selectZone.js'
       - 'js/result.js'
       - 'js/vsugang.js'
@@ -29,6 +35,7 @@ jobs:
       - name: Syntax check
         run: |
           node --check js/practice.js
+          node --check js/pc-only.js
           node --check js/selectZone.js
           node --check js/result.js
           node --check js/vsugang.js
@@ -36,4 +43,4 @@ jobs:
           node --check js/hanmoSys.js
           node --check js/index.js
       - name: Behavioral contract
-        run: node --test tests/legacy-baseline.test.cjs
+        run: node --test tests/legacy-baseline.test.cjs tests/device-gate.test.cjs
