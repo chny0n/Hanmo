@@ -13,6 +13,8 @@ const ROOT=path.join(__dirname,'..');
 function element(tag='div') {
   return {
     tagName:tag.toUpperCase(), childNodes:[], style:{}, className:'',
+    get children(){return this.childNodes.filter(x=>typeof x.tagName==='string');},
+    get firstElementChild(){return this.children[0]??null;},
     innerText:'', textContent:'', innerHTML:'', value:'', disabled:false,
     attributes:{},htmls:[],focusCount:0,
     appendChild(child){this.childNodes.push(child);return child;},
@@ -194,7 +196,7 @@ test('canceling virtual queue must not register a course',async()=>{
   assert.equal(h.expr('count'),0);
   // The old implementation seeds rc[0] with a *string* via new Array(localStorage string).
   // Count/registration must stay unchanged here; the refactor also fixes the state type.
-  assert.notEqual(h.expr('rc[0]'),true);
+  assert.equal(h.expr('rc[0]'),false);
   assert.equal(h.getMulti('unvisible',0).style.display,'none');
 });
 test('report subtracts waiting seconds from SELECT seconds',()=>{
@@ -211,4 +213,25 @@ test('TIME-only report remains TIME-only even with a stored SELECT amount',()=>{
   h.load('result.js');
   assert.match(h.get('result').innerHTML,/8\.750/);
   assert.match(h.get('time').innerHTML,/TIME 부분/);
+});
+
+test('registered row keeps 13 columns and safe display text',()=>{
+  const h=createHarness({practiceSetter:3,psubjectValue:2,subjectValue:2,waitingValue:'no'});
+  h.load('selectZone.js');
+  h.expr('registerClick(1)');
+  assert.equal(h.get('done').children[0].children.length,13);
+  assert.equal(h.get('done').children[0].children[5].textContent,
+    '한국외국어대학교 모의수강신청1');
+});
+test('queue cancellation keeps a simulated course available for retry',async()=>{
+  const h=createHarness({practiceSetter:3,psubjectValue:2,subjectValue:2,waitingValue:'yes'});
+  h.load('selectZone.js');
+  h.expr('registerClick(1)');
+  h.get('waitingCloseBtn').onclick();
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(h.expr('count'),0);
+  assert.equal(h.expr('rc[0]'),false);
+  h.expr('registerClick(1)');
+  assert.equal(h.getMulti('unvisible',0).style.display,'flex');
 });
