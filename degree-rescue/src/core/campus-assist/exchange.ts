@@ -7,7 +7,7 @@ const DISCLAIMER='제시된 기준에 대한 참고 결과이며 공식 지원 �
  * administrative time zone, Asia/Seoul (UTC+09:00, no daylight saving).
  * `effectiveFrom` applies from 00:00 KST of that day; `effectiveUntil` is
  * inclusive through the end of that KST day. `asOf` may carry any offset; the
- * comparison is on the absolute instant (#365). Use this single helper for both
+ * comparison is on the absolute instant. Use this single helper for both
  * the partner list and the evaluation so they never disagree at a day boundary.
  */
 export const EXCHANGE_POLICY_TIME_ZONE='Asia/Seoul' as const;
@@ -27,7 +27,7 @@ export type ExchangePolicyResolution={
   reason:'CURRENT'|'NONE_IN_EFFECT'|'REVOKED_OR_BLOCKED_IN_EFFECT'|'CONFLICTING_IN_EFFECT';
 };
 /**
- * The one policy row that governs `partnerId`+`track` at `asOf` (#379).
+ * The one policy row that governs `partnerId`+`track` at `asOf`.
  * Rows not yet published or verified at `asOf` are ignored; among the rows in
  * effect at `asOf` (KST day rule above): any REVOKED/BLOCKED row quarantines
  * the pair (a revocation never falls back to an older approval), two or more
