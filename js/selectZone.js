@@ -1,6 +1,6 @@
-// SELECT/BASIC registration page. Keep registerClick, pyoDisplay and
-// deleteDone global: the original HTML invokes them from inline handlers.
-// All courses, queue events and timings on this page are simulated only.
+// SELECT/BASIC 모의신청 화면. 기존 HTML의 인라인 이벤트가 호출하므로
+// registerClick, pyoDisplay, deleteDone은 전역 함수로 유지한다.
+// 과목·대기열·처리 시간은 모두 가상 데이터다.
 const practiceValue=Number(localStorage.getItem('practiceSetter'));
 const preselectedCount=Number(localStorage.getItem('psubjectValue'));
 const targetCount=Number(localStorage.getItem('subjectValue'));
@@ -18,8 +18,8 @@ const waitingBarFillEl=document.querySelector('.waitingBarFill');
 const waitingBehindEl=document.querySelector('.waitingBehind');
 const waitingCloseBtn=document.querySelector('.waitingCloseBtn');
 
-// The number-to-course map and boolean registration flags are intentionally
-// local to this practice page; do not sync them with academic course records.
+// 번호별 과목 매핑과 신청 여부 플래그는 이 연습 페이지에서만 사용한다.
+// 이를 실제 학업 과목 기록과 동기화하지 않는다.
 const noObject={};
 const rc=Array(Math.max(0,targetCount)).fill(false);
 const processingRegistrations=new Set();
@@ -33,7 +33,7 @@ document.addEventListener('click',event=>{
   if(button)button.focus();
 },true);
 
-/** Render the synthetic preselected list, never the real HUFS timetable. */
+/** 실제 학교 시간표가 아닌 가상의 사전 선택 목록만 표시한다. */
 function renderPracticeCourses(){
   for(let index=1;index<=preselectedCount;index++){
     subjectTable.insertAdjacentHTML('beforeend',
@@ -62,7 +62,7 @@ function showWaiting(show){
   searchButton.disabled=show;
 }
 
-/** One simulation owns its close button and interval; completion is idempotent. */
+/** 각 가상 대기열은 닫기 버튼과 타이머를 독립적으로 소유하며 종료 처리는 중복 호출해도 안전하다. */
 function waitingFunc(){
   const triggerElement=document.activeElement;
   const durationMs=Math.floor(Math.random()*10000)+1000;
@@ -109,7 +109,7 @@ function waitingFunc(){
   });
 }
 
-/** The HTML Search button keeps its original inline entry point. */
+/** HTML 검색 버튼이 호출하는 기존 인라인 진입점을 유지한다. */
 async function pyoDisplay(){
   if(subjectTable.style.display==='none')return;
   if(waitingValue==='yes'){
@@ -120,7 +120,7 @@ async function pyoDisplay(){
   }
 }
 
-/** The data/ordering of registered rows matches the original 13-column table. */
+/** 신청 내역의 값과 열 순서는 기존 13열 테이블 계약을 따른다. */
 function makeRegisteredRow(courseId,position){
   const row=document.createElement('tr');
   row.setAttribute('id',String(position));
@@ -155,7 +155,7 @@ function done(courseId){
   registeredTable.appendChild(makeRegisteredRow(courseId,cnt));
 }
 
-/** Local-only registration; the original flow ends at the requested count. */
+/** 신청은 브라우저 안에서만 처리하며 요청한 과목 수에 도달하면 기존 흐름을 종료한다. */
 function saveSugang(courseId){
   showWaiting(false);
   if(rc[courseId-1]===true){
@@ -169,7 +169,7 @@ function saveSugang(courseId){
   if(count===targetCount)stopStopwatch();
 }
 
-/** Registered by inline HTML; avoid concurrent registrations during a queue. */
+/** 인라인 HTML에서 호출된다. 대기열이 진행 중일 때 중복 신청을 막는다. */
 function registerClick(courseId){
   if(processingRegistrations.has(courseId))return;
   if(!confirm('한국외국어대학교 모의수강신청'+courseId+'과목을 수강신청 하시겠습니까?'))return;
@@ -186,14 +186,14 @@ function registerClick(courseId){
   }
 }
 
-/** Keep result.js storage names and the existing result.html navigation. */
+/** result.js와 공유하는 저장 키, result.html로 이동하는 기존 경로를 유지한다. */
 function stopStopwatch(){
   localStorage.setItem('SELECTtime',(new Date()-selectStartedAt)/1000);
   localStorage.setItem('SELECTWaitTime',totalWaitedMs/1000);
   location.replace('result.html');
 }
 
-/** Delete a simulated row and reindex only its visible numbering/handlers. */
+/** 가상 신청 항목을 제거한 뒤 화면 표시 번호와 이벤트 연결만 다시 매긴다. */
 function deleteDone(position){
   if(!confirm('해당 과목을 삭제 하시겠습니까?'))return;
   const courseId=noObject[position];
@@ -205,7 +205,7 @@ function deleteDone(position){
   cnt--;
   count--;
 
-  // Use element children, not childNodes (which can include whitespace nodes).
+  // 공백 텍스트 노드까지 포함하는 childNodes 대신 실제 요소 자식만 사용한다.
   for(let index=0;index<registeredTable.children.length;index++){
     const row=registeredTable.children[index];
     row.setAttribute('id',String(index+1));

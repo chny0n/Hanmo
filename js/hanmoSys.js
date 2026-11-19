@@ -1,5 +1,5 @@
-// Secondary pages share the original practice restriction (09:58–10:10).
-// The home page applies its own notice state in index.js instead.
+// 하위 페이지의 모의수강신청 이용 제한(09:58~10:10)을 공유한다.
+// 홈 화면은 index.js에서 별도로 알림 상태를 처리한다.
 const now=new Date();
 const title=document.getElementsByClassName('title')[0];
 
@@ -11,7 +11,7 @@ function restrictHanmo(){
   }
 }
 
-/** Preserve the displayed semester convention: Jan–Jun=1, Jul–Dec=2. */
+/** 기존 학기 표시 규칙을 유지한다. 1~6월은 1학기, 7~12월은 2학기로 표시한다. */
 function setSemester(){
   const semester=now.getMonth()>=6?2:1;
   title.innerText=now.getFullYear()+'-'+semester+'학기';

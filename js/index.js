@@ -1,5 +1,5 @@
-// Landing page notice and availability state; BASIC/TIME/SELECT logic
-// lives on the practice pages. All timestamps are local browser time.
+// 홈 화면은 알림과 이용 가능 상태만 다룬다. BASIC/TIME/SELECT의 실제 연습 로직은 각 연습 페이지에 있다.
+// 모든 시각은 사용자 브라우저의 로컬 시간을 기준으로 한다.
 const $NOTICELIST=document.getElementsByClassName('noticeList')[0];
 const $SUGANGBUTTON=document.getElementsByClassName('button')[0];
 const $GANEUNG=document.getElementsByClassName('ganeung')[0];
@@ -11,7 +11,7 @@ const $CONTAINER=document.getElementsByClassName('container')[0];
 const $PHONECONTAINER=document.getElementsByClassName('phoneContainer')[0];
 const nowTime=new Date();
 
-// Trusted static notices only. Never interpolate user-entered HTML here.
+// 검증된 정적 공지만 사용한다. 사용자 입력 HTML을 이 영역에 직접 삽입하지 않는다.
 const noticeList=[
   '<a href="https://everytime.kr/374012/v/415946307">한모 업데이트 내용은 여기를 눌러 확인해주세요.</a>',
   '1년간 4만 명의 학우가 사용한 한모 (2025)',
@@ -34,7 +34,7 @@ function check(){
     $PHONECONTAINER.style.display='flex';
     $ADFIT.style.display='none';
   }
-  // Preserve the original mock-registration blackout, 09:58–10:10.
+  // 기존 모의수강신청의 이용 제한 시간(09:58~10:10)을 유지한다.
   if((nowTime.getHours()===9&&nowTime.getMinutes()>=58)
     ||(nowTime.getHours()===10&&nowTime.getMinutes()<=10)){
     $SUGANGBUTTON.classList.add('noDisplay');

@@ -1,5 +1,5 @@
-// Settings page: keep these functions globally callable from vsugang.html
-// until its inline onclick handlers are converted in a separately tested PR.
+// 설정 페이지의 함수는 vsugang.html의 인라인 onclick에서 호출하므로 전역으로 유지한다.
+// 이벤트 연결 방식을 바꿀 때는 별도 PR에서 회귀 테스트를 수행한다.
 const printValue=document.getElementsByClassName('printValue')[0];
 const setting=document.getElementsByClassName('setting')[0];
 const settingSection=document.getElementsByClassName('settingSection')[0];
@@ -8,7 +8,7 @@ const vsugangInput=document.getElementsByClassName('vsugangVal')[0];
 
 let isSettedValue=false;
 
-/** These keys are part of the legacy page-to-page contract; never rename them. */
+/** 이 저장 키들은 기존 페이지 간 계약이므로 이름을 변경하지 않는다. */
 function validSetting(preselected,requested,waiting){
   return Number.isInteger(preselected)&&preselected>=1&&preselected<=15
     &&Number.isInteger(requested)&&requested>=1&&requested<=preselected
@@ -27,7 +27,7 @@ function setValue(){
   }
 }
 
-/** Inline HTML mode IDs: BASIC=1, TIME=2, SELECT=3. */
+/** 인라인 HTML의 모드 식별값: BASIC=1, TIME=2, SELECT=3. */
 function goPractice(mode){
   if(!isSettedValue){
     alert('SETTING에서 과목 수를 지정해주세요.');

@@ -1,4 +1,4 @@
-// Shared PC-only header status. Keep deviceInfo as the existing storage key.
+// PC 전용 공통 헤더 상태. 다른 페이지와 공유하는 기존 deviceInfo 저장 키는 유지한다.
 const $headerNotice=document.getElementsByClassName('headerNotice')[0];
 const $HEADERNOTICELIST=document.getElementsByClassName('headerNoticeList')[0];
 const $deviceCheck=document.getElementsByClassName('deviceCheck')[0];
@@ -13,7 +13,7 @@ function isUnsupportedDevice(){
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
-/** One-time local device check; no user identifier is transmitted. */
+/** 최초 한 번만 기기 유형을 로컬에서 확인한다. 사용자 식별 정보는 전송하지 않는다. */
 function showDeviceCheck(){
   const unsupported=isUnsupportedDevice();
   $deviceCheck.style.background=unsupported?'#800309':'#038003';
@@ -37,7 +37,7 @@ function checkDevice(){
 
 const noticeOffsets=[81,137,25];
 let headerNoticeIndex=0;
-/** Preserve the original three-step, five-second notice animation. */
+/** 기존 알림의 3단계 표시와 각 5초 전환 동작을 보존한다. */
 function rotateHeaderNotice(){
   $HEADERNOTICELIST.style.bottom=noticeOffsets[headerNoticeIndex]+'px';
   headerNoticeIndex=(headerNoticeIndex+1)%noticeOffsets.length;

@@ -1,9 +1,9 @@
-// BASIC/TIME/SELECT report. All values come from this browser's practice,
-// never from the university system. Preserve the storage keys and 3 decimals.
+// BASIC/TIME/SELECT 결과는 이 브라우저에서 수행한 가상 연습만 집계하며 학교 시스템 데이터를 사용하지 않는다.
+// 페이지 사이에 공유하는 저장 키와 소수 셋째 자리 표시를 유지한다.
 const $timeBox=document.querySelector('.time');
 const $resultBox=document.querySelector('.result');
 
-/** Pure extraction/rounding; TIME mode intentionally has no SELECT portion. */
+/** 저장된 시간 값을 순수하게 읽고 반올림한다. TIME 모드에는 SELECT 측정 구간이 없다. */
 function readPracticeReport(){
   const preselected=localStorage.getItem('psubjectValue');
   const mode=Number(localStorage.getItem('practiceSetter'));
@@ -17,7 +17,7 @@ function readPracticeReport(){
   return {preselected,requested,waiting,timeSeconds,selectSeconds,totalSeconds};
 }
 
-/** Keep the original callable name and report wording for compatibility. */
+/** 기존 HTML 호출명과 결과 문구는 하위 호환을 위해 변경하지 않는다. */
 function timeCheck(){
   const value=readPracticeReport();
   $timeBox.insertAdjacentHTML('afterbegin',

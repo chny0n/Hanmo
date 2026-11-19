@@ -1,17 +1,16 @@
-// Practice entry: preserve the original BASIC/TIME/SELECT routes, timers and
-// browser storage keys. The real university registration system is not used.
+// BASIC/TIME/SELECT의 페이지 이동, 시계, 브라우저 저장 계약을 보존한다. 실제 학교 수강신청 서버와 통신하지 않는다.
 // 기존 페이지와 결과 화면이 공유하는 모드 키이므로 이름과 숫자(1/2/3)를 변경하지 않는다.
 const practiceValue=Number(localStorage.getItem('practiceSetter'));
 const practiceMode=document.getElementsByClassName('practiceMode')[0];
 const timer=document.getElementsByClassName('timer')[0];
 
-// Starting any practice mode resets these report values.
+// 새 연습을 시작할 때 이전 측정 결과를 초기화한다.
 localStorage.setItem('TIMEtime','0.000');
 localStorage.setItem('SELECTtime','0.000');
 localStorage.setItem('SELECTWaitTime','0.000');
 
 if(practiceValue===3){
-  // SELECT mode has no TIME gate on this page.
+  // SELECT 모드는 이 화면의 TIME 진입 대기 단계를 거치지 않는다.
   practiceMode.innerText='연습 모드: SELECT MODE';
   timer.innerHTML='<span>10:00:00</span>';
 }else{
@@ -28,7 +27,7 @@ if(practiceValue===3){
   const registerButton=document.getElementsByClassName('sugang')[0];
   let startTime;
 
-  /** Displayed 09:59:50 clock: independent of the measured elapsed wall time. */
+  /** 화면에 표시되는 09:59:50 시계는 실제 경과 시간 측정과 독립적이다. */
   function tickClock(){
     clock.seconds++;
     if(clock.seconds>=60){
@@ -49,7 +48,7 @@ if(practiceValue===3){
   }
 
   function enterRegistration(){
-    // Original 10-second entry gate; no actual server time/SSO dependency.
+    // 기존 10초 진입 제한만 재현하며 학교 서버 시각이나 통합 인증(SSO)에 의존하지 않는다.
     if(!startTime){
       alert('수강신청 기간이 아닙니다.');
       return;
@@ -59,8 +58,8 @@ if(practiceValue===3){
     location.replace(practiceValue===1?'./selectZone.html':'./result.html');
   }
 
-  // Keep original page-load scheduling and route contracts.
-  // 기존 DOM과 이벤트 연결에 의존하므로 초기화 순서를 바꿀 때 TIME/SELECT 회귀를 확인한다.
+  // 기존 페이지 로드 시점, 예약 실행과 이동 경로를 유지한다.
+  // DOM과 이벤트 연결의 초기화 순서를 바꿀 경우 TIME/SELECT 회귀를 확인한다.
   window.onload=function startPractice(){
     setInterval(tickClock,1000);
     setTimeout(()=>{startTime=new Date();},10000);

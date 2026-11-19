@@ -1,8 +1,8 @@
 'use strict';
 
-// Browser contract tests for the legacy BASIC/TIME/SELECT pages.
-// The fake DOM records only the APIs used by the original code. No school API,
-// external script, real clock, browser storage or production site is accessed.
+// 기존 BASIC/TIME/SELECT 화면의 브라우저 계약을 검증한다.
+// 가상 DOM은 원본 코드가 쓰는 API만 구현한다. 학교 API·외부 스크립트·실제 시계·
+// 브라우저 실저장소·운영 사이트에는 접근하지 않는다.
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const vm=require('node:vm');
@@ -50,7 +50,7 @@ function createHarness(seed={}) {
   class Clock extends Date {
     constructor(...args){super(...(args.length?args:[time]));}
     static now(){return time;}
-    // Simulate a Korean user's browser regardless of the CI runner's TZ.
+    // CI 실행 환경의 시간대와 관계없이 한국 사용자의 브라우저 시간을 재현한다.
     koreanDate(){return new Date(this.getTime()+9*3600000);}
     getHours(){return this.koreanDate().getUTCHours();}
     getMinutes(){return this.koreanDate().getUTCMinutes();}
@@ -207,8 +207,8 @@ test('canceling virtual queue must not register a course',async()=>{
   await Promise.resolve();
   await Promise.resolve();
   assert.equal(h.expr('count'),0);
-  // The old implementation seeds rc[0] with a *string* via new Array(localStorage string).
-  // Count/registration must stay unchanged here; the refactor also fixes the state type.
+  // 이전 구현은 localStorage 문자열을 new Array에 전달해 rc[0]을 문자열로 초기화했다.
+  // 리팩터링 후 내부 자료형은 바로잡되 신청 건수와 결과 동작은 동일해야 한다.
   assert.equal(h.expr('rc[0]'),false);
   assert.equal(h.getMulti('unvisible',0).style.display,'none');
 });
