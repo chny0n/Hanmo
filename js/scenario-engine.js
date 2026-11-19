@@ -48,6 +48,7 @@
         !Number.isFinite(Date.parse(input.virtualClockStart))) {
       throw new TypeError('Valid ISO virtual clock with time zone is required');
     }
+    // 실제 학수번호와 혼동하지 않도록 SYN- 접두어가 있는 가상 과목만 허용한다.
     const ids = input.syntheticCourseIds;
     if (!Array.isArray(ids) || !ids.length || ids.length > 40 ||
         ids.some(id => !validId(id)) || new Set(ids).size !== ids.length) {
@@ -108,6 +109,7 @@
          event.elapsedVirtualMs > 3600000)) {
       throw new TypeError('Virtual elapsed milliseconds must be within one hour');
     }
+    // 비활성화 또는 종료된 세션의 이벤트는 무시한다. 기존 연습 상태를 다시 활성화하지 않는다.
     if (session.state === 'OFF' || TERMINAL.has(session.state)) return session;
     const {config,state} = session;
     let next = null;
@@ -131,9 +133,11 @@
       else if (state === 'REQUEST_SENT' && event.type === 'VIRTUAL_DROP') next = 'VIRTUAL_DROP';
       else if (state === 'VIRTUAL_DROP' && event.type === 'RECONNECT') next = 'RECONNECT_QUEUE';
       else if (state === 'RECONNECT_QUEUE' && event.type === 'QUEUE_FINISHED') next = 'RECONCILE';
+      // 결과는 재현 가능한 고정 시드의 가상 상태다. 실제 수강신청 서버 응답이 아니다.
       else if (state === 'RECONCILE' && event.type === 'VERIFY') next = OUTCOMES[config.seed % OUTCOMES.length];
       if (event.type === 'SUBMIT' && state !== 'ACTIVE') duplicateAttempts++;
     }
+    // 허용되지 않은 전이는 상태를 옮기지 않고 오류 이력에만 기록한다.
     if (next === null && error === null) error = 'INVALID_TRANSITION';
     const elapsed = event.elapsedVirtualMs ?? 0;
     const previous = session.elapsedVirtualMs;
