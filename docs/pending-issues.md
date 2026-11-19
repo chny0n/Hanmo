@@ -22,7 +22,7 @@
 | [HMD-014 · #20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | P1 | 2차 | 마지막 과목 신청 실패 및 대체과목 선택 상태 머신을 설계한다 |
 | [HMD-015 · #21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) | P1 | 2차 | 가상 연결 끊김·재접속·결과 불명 시나리오 상태 머신을 설계한다 |
 | [HMD-016 · #22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | P0 | 1·2차 | 학업 코어와 모의신청 간 과목 ID·상태 어댑터 계약을 확정한다 |
-| [HMD-020 · #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | P1 | 검증 | 모바일·접근성 지원 수준과 기존 한모의 PC 전용 제약을 결정한다 |
+| [HMD-020 · #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | P1 | 검증 | PC 전용 지원 범위·접근성 및 모바일 안내 기준을 검증한다 |
 | [HMD-021 · #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) | P0 | 데이터 | 공식 학사자료 수집 가능 범위·재사용 권리·출처 목록을 만든다 |
 | [HMD-023 · #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | P0 | 3차 | Supabase 개설·소유·비용·운영 RACI 및 인수 책임을 합의한다 |
 | [HMD-024 · #30](https://github.com/ot4562-glitch/Hanmo_develop/issues/30) | P1 | 3차 | Supabase 스키마·판본·스냅샷·마이그레이션 설계를 확정한다 |
@@ -317,18 +317,18 @@
 - **공통 전제:** 원개발자 승인·학사자료 권리/검수·Supabase 운영권한을 이 명세가 대신하지 않음
 
 <a id="hmd-020"></a>
-### HMD-020 · [P1][검증] 모바일·접근성 지원 수준과 기존 한모의 PC 전용 제약을 결정한다
+### HMD-020 · [P1][검증] PC 전용 지원 범위·접근성 및 모바일 안내 기준을 검증한다
 
 - **GitHub Issue:** [#26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) · 상태: 열림
-- **재검토 결과:** Edge 390px의 학업 화면 이동·표, 키보드 조작과 접근성 역할 트리를 확인했습니다. 실제 화면낭독기와 달력 조작을 포함한 보조 기술 검증은 남았습니다. [시험과 자료 확인](pr-stack-review.md)
-- **현행 설계 §4.8, 6.1:** 학업 화면은 모바일·PC, 기존 연습은 PC 기준입니다. 대상 기기·브라우저와 실제 화면낭독기·키보드·달력 시험 결과가 남았습니다.
+- **기존 참고 기록:** 과거 Edge 390px 반응형 실험은 진행했으나 모바일 지원 결정은 폐기됐습니다. 2026-11-19부터 **PC 전용**을 제품 정책으로 적용하며 실제 화면낭독기와 PC 안내/달력 조작 검증은 남았습니다. [이전 시험 기록](pr-stack-review.md)
+- **2026-11-19 확정 §4.8, 6.1:** 기존 BASIC/TIME/SELECT와 신규 학업 화면 모두 **PC 전용**입니다. Windows PC Chrome/Edge를 우선 검증하며 모바일·태블릿 지원을 출시 범위에서 제외합니다. PC에서 키보드·화면낭독기·달력과 작은 PC 창의 오류 처리, 비지원 기기 안내 시험은 남았습니다.
 - **연결 작업:** [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39) · [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) · [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58)
 - **대상 단계:** 1·2차
-- **문제/결정:** 기존 한모 페이지는 모바일 진입을 제한한다. 신규 학업 페이지에 이를 적용할지, 반응형 단독 지원할지 정책이 필요하다.
+- **문제/결정:** 전체 한모를 PC 전용으로 통일하고 모바일·태블릿은 공식 지원하지 않습니다. 모바일 접속에는 PC 이용 안내를 제공하되 사용자 에이전트·창 너비만으로 정상 PC 접속을 오인 차단하지 않습니다.
 - **완료 조건:**
-  - [ ] 1차 모바일 사용 범위와 2차 기존 연습의 PC 전용 정책 구분
-  - [ ] 키보드·스크린리더·상태 알림·달력 조작 테스트
-  - [ ] 기기 제한을 허용할 경우 학생 안내 및 예외 처리 확정
+  - [x] 1·2차 및 후속 전체 서비스의 **PC 전용 정책** 확정(2026-11-19 사용자 결정)
+  - [ ] Windows PC Chrome/Edge에서 키보드·스크린리더·상태 알림·달력 조작 시험 기록
+  - [ ] 모바일/태블릿 미지원 안내 및 작은 PC 창 예외 처리의 실제 화면·브라우저 검증
 - **공통 전제:** 원개발자 승인·학사자료 권리/검수·Supabase 운영권한을 이 명세가 대신하지 않음
 
 <a id="hmd-021"></a>
