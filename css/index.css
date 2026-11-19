@@ -114,3 +114,50 @@ main {
 .noDisplay {
 	display: none;
 }
+
+/* 새 메뉴는 모바일에서 숨겨지는 기존 모의수강신청 .container 바깥에 둔다. */
+.f-dirt-down { width: 100%; align-items: center; }
+.academic-entry {
+  box-sizing: border-box;
+  width: min(900px, calc(100% - 32px));
+  margin: 88px auto 0;
+  padding: 28px;
+  border: 1px solid #477d96;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #071827 0%, #12354b 100%);
+  box-shadow: 0 12px 36px rgba(0,0,0,.28);
+  color: #f2f8fd;
+  text-align: left;
+}
+.academic-entry-head { display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.academic-entry-kicker { margin:0 0 8px; color:#9ed2ee; font-size:13px; font-weight:700; letter-spacing:.05em; }
+.academic-entry h2 { margin:0 0 10px; font-size:30px; line-height:1.3; }
+.academic-entry-description { margin:0; color:#cedee9; font-size:15px; line-height:1.7; }
+.academic-entry-primary {
+  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+  padding:15px 20px; border-radius:12px; background:#f6cc74;
+  color:#132536; font-weight:800; text-decoration:none; white-space:nowrap;
+}
+.academic-entry-links {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:20px;
+}
+.academic-entry-links a {
+  display:flex; flex-direction:column; gap:7px; padding:17px;
+  border:1px solid rgba(175,211,231,.25); border-radius:12px;
+  background:rgba(255,255,255,.07); color:#f3f8fd; text-decoration:none;
+}
+.academic-entry-links a strong { font-size:17px; }
+.academic-entry-links a span { color:#c9dce9; font-size:13px; line-height:1.5; }
+.academic-entry a:hover { filter:brightness(1.16); }
+.academic-entry a:focus-visible { outline:3px solid #f6cc74; outline-offset:3px; }
+.academic-entry-caveat { margin:17px 0 0; color:#bdd0dc; font-size:12px; line-height:1.7; }
+.academic-entry + .container { margin-top:24px; }
+.buttonContainer { flex-wrap:wrap; justify-content:center; }
+@media (max-width:720px) {
+  .academic-entry { width:calc(100% - 24px); margin-top:28px; padding:20px; }
+  .academic-entry-head { flex-direction:column; align-items:stretch; gap:18px; }
+  .academic-entry h2 { font-size:25px; }
+  .academic-entry-primary { white-space:normal; text-align:center; }
+  .academic-entry-links { grid-template-columns:1fr; }
+  .phoneContainer { height:auto; padding:24px; }
+}
