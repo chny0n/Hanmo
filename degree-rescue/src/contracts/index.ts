@@ -1,4 +1,4 @@
-// Minimal academic-only contract surface. No owner account, server, or personal record contracts.
+// 학사 기능만 위한 최소 계약 진입점이다. 계정 소유자·서버·개인 기록 계약은 포함하지 않는다.
 export * from './academics/index.js';
 export * from './self/major-what-if.js';
 export * from './self/study-plan-check.js';

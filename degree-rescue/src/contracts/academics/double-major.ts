@@ -6,7 +6,7 @@ const Time=z.iso.datetime({offset:true});
 const Units=z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const Refs=z.array(Ref).max(200);
 const {excludedAttempts:_attempts,planIssues:_issues,...AuditFields}=AcademicAuditVNextSchema.shape;
-/** Browser projection: no transcript rows, attempt tokens, grades or raw identity. */
+/** 브라우저에 노출하는 요약 데이터. 성적표 원본, 수강 시도 토큰, 성적, 원시 식별정보를 포함하지 않는다. */
 export const OwnerDoubleMajorRoleAuditSchema=z.strictObject(AuditFields).superRefine((value,ctx)=>{
   if(!AcademicAuditVNextSchema.safeParse({...value,excludedAttempts:[],planIssues:[]}).success)
     ctx.addIssue({code:'custom',message:'Inconsistent role ledger'});

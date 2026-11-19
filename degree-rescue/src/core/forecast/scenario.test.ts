@@ -4,7 +4,7 @@ import {forecastOffering, type OfferingObservation, type OfficialAcademicEvent} 
 import {applyOfferingAssumptions, OFFERING_SCENARIO_CORE_VERSION, type OfferingAssumption} from './scenario.js';
 import * as forecastIndex from './index.js';
 
-// Synthetic course ids only (SYN-*). Every base outlook below is real forecastOffering output.
+// SYN-* 합성 학수번호만 사용한다. 아래 원본 전망은 모두 forecastOffering이 실제 산출한 값이다.
 const ASOF = '2026-02-15T00:00:00.000Z';
 const TERM = '2026-1';
 const catalog = (term:string, state:OfferingObservation['state']):OfferingObservation => ({
@@ -139,7 +139,7 @@ describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
     const pick = <T>(values:readonly T[]):T => values[Math.floor(random() * values.length)]!;
-    // A schema-valid base row that mixes an approved substitute with one still under review.
+    // 스키마상 유효하지만 승인된 대체과목과 검토 중 대체과목이 섞인 원본 행이다.
     const mixed = {...HIST, courseId:'SYN-MIXED', alternatives:[
       {courseId:'SYN-SUB2', status:'OFFICIALLY_APPROVED' as const, evidenceRef:'SYN-SRC-SUB2'},
       {courseId:'SYN-GUESS2', status:'NEEDS_REVIEW' as const},
@@ -172,7 +172,7 @@ describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
       }
       expect(run([...assumptions].reverse(), base)).toEqual(result);
     }
-    // The random cases reach every branch, not only the easy one.
+    // 무작위 사례는 쉬운 경로뿐 아니라 모든 분기를 실제로 거치도록 구성한다.
     expect(Math.min(rows, contradictions, substitutes)).toBeGreaterThan(20);
   });
 

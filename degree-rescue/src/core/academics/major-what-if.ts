@@ -7,37 +7,20 @@ import {buildDoubleMajorAudit, type DoubleMajorAttempt, type MajorRulePack, type
 import {assertId, type LedgerRequirement} from './ledger.js';
 
 /**
- * buildMajorWhatIf (#11, #82): one student's transcript checked against the programs they have
- * now and against one hypothetical change (primary major, double major or minor). The result is
- * the calculation the #107 owner What-if contract carries: two projections and a requirement diff.
- *
- * - Each side runs the double-major core (#144) on the same attempts, so the unique earned total
- *   is the same on both sides and every course still counts once.
- * - A primary major can have a different pack per degree path (double major, 전공심화, 전공심화 +
- *   minor), so dropping or adding a second program can switch the primary pack too.
- * - A second program's pack can be approved for one primary major (primaryProgramId). Changing the
- *   primary major then switches the second program's pack too, instead of reusing the old one.
- * - Only earned credit counts. A row the core cannot decide is reported as MISSING with the
- *   conservative figures and listed in reviewRequirementIds, so a caller never shows it as a settled
- *   shortfall: a shared course without an approved overlap rule, a non-credit check, or an unmet row
- *   that an attempt the ledger set aside undecided could feed (pending recognition, a term not ended
- *   by asOf, an unapproved or forked retake, crowded duplicates).
- * - Every pack used must be APPROVED; otherwise the result is BLOCKED_DEPENDENCY. A target the
- *   catalog does not have, or a change that does not fit the current programs, is
- *   TARGET_PROGRAM_UNAVAILABLE. Nothing here is an official graduation or program decision.
- * - The caller (server) adds cohort, overlap-policy, transcript and approval versions, evidence
- *   links, consent and rights checks. This module never builds an approval proof.
- * Pure: the caller supplies asOf. No clock, network, or storage.
+ * 같은 학생의 성적표로 현재 전공 구성과 한 가지 가상 변경(주전공·이중전공·부전공)을 비교한다(#11, #82).
+ * 두 쪽 모두 같은 수강 기록을 사용하므로 총 취득 학점에서 과목을 중복 계산하지 않는다.
+ * 전공 경로나 주전공에 따라 다른 RulePack을 선택할 수 있으며, 승인된 조합이 없으면 임의로 대체하지 않는다.
+ * 결과는 현재·가상 상태의 투영과 요건 차이이며 실제 전공 변경이나 졸업 판정이 아니다.
  */
 
 export const MAJOR_WHAT_IF_CORE_VERSION = 'hufs-major-what-if-2';
 
 export type WhatIfScenario = OwnerMajorWhatIfRequest['scenario'];
 export type DegreePath = AcademicDegreePathVNext;
-/** Input compatibility only; never emitted into the current shared contract. */
+/** 이전 입력과의 호환을 위한 필드이며 현재 공유 계약의 결과에는 내보내지 않는다. */
 type LegacyDegreePath = 'MAJOR_DEEPENING'|'MAJOR_DEEPENING_MINOR';
 function canonicalDegreePath(value:unknown,programId:string):DegreePath {
-  // Exact, finite aliases: unknown values cannot silently become a degree path.
+  // 허용된 별칭만 정확히 정규화한다. 알 수 없는 값이 다른 학위 경로로 조용히 바뀌어서는 안 된다.
   if(value==='MAJOR_DEEPENING')return 'ADVANCED_SINGLE';
   if(value==='MAJOR_DEEPENING_MINOR')return 'ADVANCED_PLUS_MINOR';
   const parsed=AcademicDegreePathVNextSchema.safeParse(value);
@@ -46,21 +29,20 @@ function canonicalDegreePath(value:unknown,programId:string):DegreePath {
 }
 export type SecondaryRole = 'DOUBLE_MAJOR'|'MINOR';
 
-/** The programs a student is enrolled in. At most one second program: a double major or a minor. */
+/** 학생이 현재 등록한 전공 구성. 이중전공 또는 부전공 중 두 번째 전공은 최대 하나다. */
 export interface ProgramEnrollment {
   primaryProgramId:string;
   secondary?:{role:SecondaryRole; programId:string};
 }
 
-/** One approved (or not yet approved) pack in the caller's catalog for this student's cohort. */
+/** 해당 학생의 입학년도에 적용되는 승인 또는 승인 대기 RulePack 하나다. */
 export type ProgramOffer =
   | {role:'PRIMARY_MAJOR'; programId:string; degreePath:DegreePath|LegacyDegreePath; pack:MajorRulePack}
   | {
     role:SecondaryRole; programId:string;
     /**
-     * The primary major this pack was approved for. Omit it only when one pack serves this second
-     * program under every primary major. A second program has either one pack without it, or at
-     * most one pack per primary major with it; the catalog refuses a mix.
+     * 이 RulePack이 승인된 주전공을 가리킨다.
+     * 모든 주전공에서 공통 사용 가능한 경우에만 생략한다. 하나의 두 번째 전공에 대해 공통판과 주전공별 판본을 혼합하지 않는다.
      */
     primaryProgramId?:string;
     pack:MajorRulePack & {overlapRule?:OverlapRule};
@@ -81,14 +63,14 @@ export interface WhatIfProjection {
   asOf:string;
   enrollment:ProgramEnrollment;
   degreePath:DegreePath;
-  /** Primary pack first, then the second program's pack. The caller registers their combined version. */
+  /** 주전공 규칙집을 먼저, 두 번째 전공 규칙집을 나중에 배치한다. 호출자는 두 규칙의 합성 판본을 등록한다. */
   rulePackVersions:string[];
-  /** Same unique earned ledger on both sides. */
+  /** 현재와 가정 변경 후 모두 동일한 고유 취득 학점 원장을 사용한다. */
   earnedCreditUnits:number;
-  /** Earned-only shortfall of the primary pack's graduation credit total. */
+  /** 주전공 졸업 요건까지 부족한 학점이며 실제 취득 학점만 반영한다. */
   remainingCreditUnits:number;
   requirements:MajorWhatIfRequirementProgress[];
-  /** Rows reported as MISSING because the core could not decide them; a person must review them. */
+  /** 코어가 판정하지 못해 MISSING으로 표시한 요건은 담당자 검토가 필요하다. */
   reviewRequirementIds:string[];
 }
 
@@ -118,7 +100,7 @@ function checkEnrollment(enrollment:ProgramEnrollment, label:string):void {
   }
 }
 
-/** The enrollment after the scenario, or undefined when the change does not fit the current programs. */
+/** 가정이 적용된 전공 구성이며 현재 구성과 양립할 수 없으면 undefined다. */
 function applyScenario(current:ProgramEnrollment, scenario:WhatIfScenario):ProgramEnrollment|undefined {
   const second = current.secondary;
   const target = 'targetMajorId' in scenario ? scenario.targetMajorId : undefined;
@@ -147,7 +129,7 @@ function applyScenario(current:ProgramEnrollment, scenario:WhatIfScenario):Progr
 interface Resolved {
   primary?:Extract<ProgramOffer, {role:'PRIMARY_MAJOR'}>;
   secondary?:Extract<ProgramOffer, {role:SecondaryRole}>;
-  /** A program the enrollment needs has no pack in the catalog. */
+  /** 선택한 전공에 필요한 RulePack이 카탈로그에 없다. */
   unavailable:boolean;
 }
 
@@ -156,7 +138,7 @@ function resolve(enrollment:ProgramEnrollment, programs:readonly ProgramOffer[])
   const primaries = programs.filter((offer):offer is Extract<ProgramOffer, {role:'PRIMARY_MAJOR'}> =>
     offer.role === 'PRIMARY_MAJOR' && offer.programId === enrollment.primaryProgramId && canonicalDegreePath(offer.degreePath,offer.programId) === path);
   const second = enrollment.secondary;
-  // A pack approved for another primary major never stands in for this one.
+  // 다른 주전공에 승인된 규칙집은 현재 주전공의 규칙을 대신할 수 없다.
   const secondaries = second ? programs.filter((offer):offer is Extract<ProgramOffer, {role:SecondaryRole}> =>
     offer.role === second.role && offer.programId === second.programId
     && (offer.primaryProgramId === undefined || offer.primaryProgramId === enrollment.primaryProgramId)) : [];
@@ -185,7 +167,7 @@ function checkCatalog(programs:readonly ProgramOffer[]):void {
       if ((offer as {primaryProgramId?:unknown}).primaryProgramId !== undefined) {
         throw new TypeError(`primary pack ${offer.programId} cannot name a primaryProgramId`);
       }
-      // Canonical and legacy spellings of the same offer must not create two candidates.
+      // 동일한 선택지를 뜻하는 정식·이전 표기를 서로 다른 후보로 중복 계산하지 않는다.
       scope = canonicalDegreePath(offer.degreePath, offer.programId);
     } else {
       scope = offer.primaryProgramId ?? null;
@@ -235,10 +217,9 @@ function project(role:WhatIfProjection['role'], input:MajorWhatIfRequest, enroll
   const impacts = new Map<string, OverlapRowImpact>();
   for (const impact of [...audit.overlap.rowImpacts.primary, ...audit.overlap.rowImpacts.doubleMajor]) impacts.set(impact.requirementId, impact);
 
-  // Attempts the ledger set aside without deciding them (pending recognition, a term not ended by asOf,
-  // an unapproved or forked retake, crowded duplicates). An unmet row they could feed is not a settled
-  // shortfall: it stays MISSING but is listed for review. Settled exclusions (official exclusion,
-  // duplicate, superseded retake) do not flag anything.
+  // 원장이 인정 보류, 미종료 학기, 미승인·분기 재수강, 중복 충돌 등으로 판정을 보류한 시도다.
+  // 이 기록이 충족시킬 수 있는 요건은 확정된 부족 학점이 아니므로 MISSING 표시는 유지하되 검토 대상으로 표시한다.
+  // 공식 제외, 중복, 승인 재수강으로 확정 제외된 기록은 경고 대상으로 삼지 않는다.
   const byToken = new Map(input.attempts.map(attempt => [attempt.attemptToken, attempt]));
   const undecided = audit.primary.excludedAttempts
     .filter(row => row.reason === 'PENDING_RECOGNITION' || row.reason === 'NEEDS_REVIEW')
@@ -273,7 +254,7 @@ function project(role:WhatIfProjection['role'], input:MajorWhatIfRequest, enroll
     }
     const progress:MajorWhatIfRequirementProgress = {requirementId:row.requirementId, state:'MISSING'};
     if (definition.kind === 'CREDIT_TOTAL' || definition.kind === 'CATEGORY_MINIMUM') {
-      // A row held over a shared course uses the figures without it: the reading if the overlap is not allowed.
+      // 공유 과목 때문에 보류된 요건은 중복 인정 불허를 가정한 보수적 수치를 보여준다.
       const impact = impacts.get(row.requirementId);
       const missing = impact && !impact.decided && impact.remainingCreditUnitsWithoutShared !== undefined
         ? impact.remainingCreditUnitsWithoutShared : row.remainingCreditUnits;
@@ -314,7 +295,7 @@ export function buildMajorWhatIf(input:MajorWhatIfRequest):MajorWhatIfResult {
     then = resolve(next, input.programs);
     if (then.unavailable) blockers.add('TARGET_PROGRAM_UNAVAILABLE');
     else {
-      // A pack both sides use is already reported as CURRENT_RULEPACK_NOT_APPROVED.
+      // 양쪽에서 같은 규칙집을 쓰는 경우는 CURRENT_RULEPACK_NOT_APPROVED로 이미 보고했다.
       const used = new Set([now.primary, now.secondary].flatMap(offer => (offer ? [offer.pack.rulePackVersion] : [])));
       const fresh = [then.primary!, ...(then.secondary ? [then.secondary] : [])].filter(offer => !used.has(offer.pack.rulePackVersion));
       if (fresh.some(offer => offer.pack.rulePackState !== 'APPROVED')) blockers.add('RULEPACK_NOT_APPROVED');

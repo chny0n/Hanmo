@@ -1,16 +1,10 @@
 import {OfferingOutlookVNextSchema, type OfferingOutlookVNext} from '../../contracts/index.js';
 
 /**
- * Student assumptions laid over the offering outlook (Architecture A09, #11 TASK-17).
- *
- * A student can ask "what if this course is not offered (research leave, no replacement section,
- * cancellation)?" or "what if it is offered?". The answer is a separate HYPOTHETICAL layer:
- * - The base outlooks are returned unchanged, so the official and historical picture stays visible.
- * - Every hypothetical row names the one assumption that produced it. No assumption, no row.
- * - A row whose assumption goes against an official confirmation in the base says so.
- * - Substitutes come only from the base outlook's officially approved alternatives.
- * A hypothetical row is not an OfferingOutlookVNext and never feeds credits, plans or
- * recommendations as if it were one. Pure: no clock, network, storage or randomness.
+ * 학생이 가정한 과목 개설·미개설 시나리오를 공식/과거 전망과 별도 계층으로 계산한다(설계 A09).
+ * 원본 전망은 변경하지 않고 각 가정은 해당 가정의 ID와 사유를 가진 HYPOTHETICAL 행으로 출력한다.
+ * 공식 확정과 충돌하는 가정은 충돌 표시를 남기며 공식 승인 대체과목만 제시한다.
+ * 가상 결과를 실제 학점·계획·추천이나 공식 확정으로 사용하지 않는다. 시계·네트워크·저장소·난수에 의존하지 않는다.
  */
 export const OFFERING_SCENARIO_CORE_VERSION = 'forecast-offering-scenario-v1';
 
@@ -25,7 +19,7 @@ export type OfferingAssumption =
   | {assumptionId:string; courseId:string; targetTerm:string; assume:'OFFERED'; reason:typeof OFFERED_REASONS[number]};
 
 export interface OfferingScenarioRequest {
-  /** Outlooks exactly as forecastOffering produced them, one per course and target term. */
+  /** forecastOffering이 산출한 원본 전망이며 과목·대상 학기당 한 건이다. */
   base:readonly OfferingOutlookVNext[];
   assumptions:readonly OfferingAssumption[];
 }
@@ -37,20 +31,20 @@ export interface OfferingScenarioRow {
   targetTerm:string;
   assume:'OFFERED'|'NOT_OFFERED';
   reason:OfferingAssumption['reason'];
-  /** The base outlook's own reading, shown next to the assumption. */
+  /** 학생 가정 옆에 보여줄 원본 전망의 상태다. */
   baseSignal:OfferingOutlookVNext['signal'];
-  /** The assumption is the opposite of an official confirmation for this term. */
+  /** 가정이 대상 학기의 공식 확정 상태와 반대인지 나타낸다. */
   contradictsOfficial:boolean;
-  /** Officially approved substitutes from the base outlook. Listed only when the course is assumed not offered. */
+  /** 원본 전망에서 공식 승인된 대체과목만 담는다. 미개설 가정일 때에만 표시한다. */
   officialAlternatives:{courseId:string; evidenceRef:string}[];
   caveat:string;
 }
 
 export interface OfferingScenarioResult {
   coreVersion:typeof OFFERING_SCENARIO_CORE_VERSION;
-  /** Unchanged copies of the input outlooks, in input order. */
+  /** 입력 전망을 변경하지 않은 복사본으로 입력 순서를 유지한다. */
   base:OfferingOutlookVNext[];
-  /** One row per assumption, sorted by course, term and assumption id. */
+  /** 가정마다 결과 한 행을 만들고 과목·학기·가정 ID 순으로 정렬한다. */
   scenario:OfferingScenarioRow[];
 }
 
@@ -72,8 +66,7 @@ export function applyOfferingAssumptions(input:OfferingScenarioRequest):Offering
   if (input.base.length > MAX_BASE) throw new RangeError(`more than ${MAX_BASE} base outlooks`);
   if (input.assumptions.length > MAX_ASSUMPTIONS) throw new RangeError(`more than ${MAX_ASSUMPTIONS} assumptions`);
 
-  // 공식·과거 개설 전망(base)과 학생의 가정(scenario)을 섞지 않도록 스키마로 복사해 분리한다.
-  // Parsing makes independent copies, so neither the input nor the returned base can be changed through the other.
+  // 스키마 검증으로 원본과 출력 데이터를 독립적으로 복사한다. 어느 한쪽을 수정해도 다른 쪽에 영향을 주지 않는다.
   const base = input.base.map(outlook => OfferingOutlookVNextSchema.parse(outlook));
   const outlooks = new Map<string, OfferingOutlookVNext>();
   for (const outlook of base) {
@@ -102,8 +95,7 @@ export function applyOfferingAssumptions(input:OfferingScenarioRequest):Offering
     const at = key(assumption.courseId, assumption.targetTerm);
     const outlook = outlooks.get(at);
     if (!outlook) throw new TypeError(`no base outlook for ${String(assumption.courseId)} ${String(assumption.targetTerm)}`);
-    // 한 과목·한 학기에 여러 가정이 있으면 입력 순서에 따라 결과가 달라지므로 명시적으로 거부한다.
-    // Two assumptions about one course and term would leave the answer to list order.
+    // 같은 과목·학기에 두 가정을 허용하면 목록 순서가 결과를 결정하므로 거부한다.
     if (assumed.has(at)) throw new TypeError(`two assumptions for ${assumption.courseId} ${assumption.targetTerm}`);
     assumed.add(at);
 

@@ -5,7 +5,7 @@ import {
   type EvaluationCourse, type EvaluationMethod, type RollingOriginReport,
 } from './rolling-origin.js';
 
-// Synthetic course ids only (SYN-*). Spring catalogs are published on 1/25 and verified on 1/26.
+// SYN-* 합성 학수번호만 사용한다. 1학기 전체 목록은 1월 25일 게시되고 26일 검증된 설정이다.
 const ORIGIN_2025 = {asOf:'2025-01-01T00:00:00.000+09:00', targetTerm:'2025-1'};
 const ORIGIN_2026 = {asOf:'2026-01-01T00:00:00.000+09:00', targetTerm:'2026-1'};
 const TRUTH_AS_OF = '2026-11-01T00:00:00.000+09:00';
@@ -16,7 +16,7 @@ const row = (term:string, state:State, over:Partial<OfferingObservation> = {}):O
   publishedAt:`${term.slice(0, 4)}-01-25T00:00:00.000+09:00`,
   verifiedAt:`${term.slice(0, 4)}-01-26T00:00:00.000+09:00`, ...over,
 });
-/** O = offered, N = confirmed not offered, one spring term per letter from 2021-1. */
+/** O는 개설, N은 공식 미개설로 2021-1부터 한 글자가 1개 1학기를 뜻한다. */
 const springs = (pattern:string):OfferingObservation[] => [...pattern].map((letter, index) =>
   row(`${2021 + index}-1`, letter === 'O' ? 'OFFERED' : 'CONFIRMED_NOT_OFFERED'));
 const course = (courseId:string, observations:readonly OfferingObservation[],
@@ -29,7 +29,7 @@ const event = (kind:OfficialAcademicEvent['kind'], impact:OfficialAcademicEvent[
   impact, affectedCourseIds:[courseId],
 });
 
-/** Seasons 2021-1..2026-1. Each course is built so that the methods disagree somewhere. */
+/** 2021-1~2026-1에 여러 평가 방법의 결과가 다르게 나오도록 과목별 사례를 구성한다. */
 const COURSES:EvaluationCourse[] = [
   course('SYN-ALWAYS', springs('OOOOOO')),
   course('SYN-NEVER', springs('NNNNNN')),
@@ -55,7 +55,7 @@ const origin = (report:RollingOriginReport, targetTerm:string) => {
   if (!found) throw new Error(`no origin for ${targetTerm}`);
   return found;
 };
-/** What each method answered for one course at one origin, as TP/FP/FN/TN/ABSTAIN. */
+/** 평가 방법별 과목·평가 시각의 결과를 TP/FP/FN/TN/ABSTAIN으로 표시한다. */
 const outcomes = (courseId:string, targetTerm:string) => {
   const one = COURSES.find(item => item.courseId === courseId)!;
   const methods = origin(evaluate([one]), targetTerm).methods;
@@ -87,19 +87,19 @@ describe('evaluateOfferingOutlook: same items for every method', () => {
   it('gives the expected answer per course, method and origin', () => {
     expect(outcomes('SYN-ALWAYS', '2025-1')).toEqual({OUTLOOK:'TP', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
     expect(outcomes('SYN-NEVER', '2026-1')).toEqual({OUTLOOK:'TN', RECENT_SAME_SEASON:'TN', HISTORY_MAJORITY:'TN', ALWAYS_OFFERED:'FP'});
-    // 3 of 4 springs offered, then closed: the majority reading is wrong, the latest term is right.
+    // 최근 4개 봄학기 중 3개가 개설되다가 이번에 미개설된 사례다. 다수결은 틀리고 가장 최근 학기는 맞는다.
     expect(outcomes('SYN-FLIP', '2025-1')).toEqual({OUTLOOK:'FP', RECENT_SAME_SEASON:'TN', HISTORY_MAJORITY:'FP', ALWAYS_OFFERED:'FP'});
-    // Two complete springs are not a pattern for the outlook, but the naive baselines answer.
+    // 전체 개설 목록이 2개뿐이면 전망 코어는 패턴을 확정하지 않지만 단순 기준선은 답한다.
     expect(outcomes('SYN-SHORT', '2025-1')).toEqual({OUTLOOK:'ABSTAIN', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
     expect(outcomes('SYN-SHORT', '2026-1')).toEqual({OUTLOOK:'TP', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
-    // 2 of 4 is a tie: no answer from a majority reading.
+    // 4개 중 2개면 동률이므로 다수결은 답변을 보류한다.
     expect(outcomes('SYN-TIE', '2025-1')).toEqual({OUTLOOK:'ABSTAIN', RECENT_SAME_SEASON:'FN', HISTORY_MAJORITY:'ABSTAIN', ALWAYS_OFFERED:'TP'});
-    // A research leave sends the outlook to review; it does not call the course closed.
+    // 연구학기 공지는 전망 결과를 검토 대상으로 만들 뿐 미개설 확정 근거가 아니다.
     expect(outcomes('SYN-LEAVE', '2025-1')).toEqual({OUTLOOK:'ABSTAIN', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
     expect(outcomes('SYN-LEAVE', '2026-1')).toEqual({OUTLOOK:'TP', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
-    // An official cancellation published before the origin is a real forecast input.
+    // 평가 기준 시점 이전에 게시된 공식 폐강 공지는 유효한 전망 입력이다.
     expect(outcomes('SYN-CANCEL', '2026-1')).toEqual({OUTLOOK:'TN', RECENT_SAME_SEASON:'FP', HISTORY_MAJORITY:'FP', ALWAYS_OFFERED:'FP'});
-    // Before that notice was published, the 2025 origin saw only history.
+    // 해당 공지가 게시되기 전인 2025년 평가 시점에는 과거 기록만 보인다.
     expect(outcomes('SYN-CANCEL', '2025-1')).toEqual({OUTLOOK:'TP', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
   });
 
@@ -143,7 +143,7 @@ describe('no leakage from after the origin', () => {
     const withLateRows = COURSES.map(item => ({
       ...item,
       observations:[...item.observations,
-        // A correction of an old term published after the 2025 origin.
+        // 2025년 평가 기준 시점 이후에 게시된 과거 학기 정정 자료다.
         row('2023-1', 'CONFIRMED_NOT_OFFERED', {sourceRef:'SYN-SRC-LATE-FIX', publishedAt:'2025-05-01T00:00:00.000+09:00',
           verifiedAt:'2025-05-02T00:00:00.000+09:00'}),
       ],
@@ -167,9 +167,9 @@ describe('history counts', () => {
     ]);
     const total = evaluate().total.historyCounts;
     expect(total.reduce((sum, item) => sum + item.shown, 0)).toBe(14);
-    // History looks back 8 semesters, so no count covers more than 4 spring terms.
+    // 과거는 최대 8개 정규 학기까지만 보고 봄학기 관측은 최대 4개다.
     expect(total.every(item => item.observedTerms <= 4)).toBe(true);
-    // 2/4 was shown three times (TIE in 2025, FLIP and TIE in 2026) and was followed by an offering twice.
+    // 2/4 기록이 3번 나타났고(2025 TIE, 2026 FLIP·TIE), 그 뒤 실제 개설은 2번이었다.
     expect(total.find(item => item.offeredTerms === 2 && item.observedTerms === 4)).toEqual(
       {offeredTerms:2, observedTerms:4, shown:3, thenOffered:2});
   });
@@ -238,9 +238,9 @@ describe('input checks and determinism', () => {
 
 import {forecastOfferings} from './offering.js';
 
-// ---- #11 (본선 전): rolling-origin gaps. Synthetic only; each case is one course, read by hand. ----
+// #11 본선 이전 이동 평가의 미검증 구간이다. 합성 데이터이며 각 사례를 사람이 계산해 확인할 수 있는 과목 하나로 구성한다.
 
-/** Per-method outcome for one ad-hoc course at one origin. */
+/** 하나의 임시 과목을 하나의 평가 시점에서 평가한 방법별 결과다. */
 const outcomesOf = (one:EvaluationCourse, targetTerm:string) => {
   const methods = origin(evaluate([one]), targetTerm).methods;
   return Object.fromEntries(EVALUATION_METHODS.map(method => {
@@ -250,7 +250,7 @@ const outcomesOf = (one:EvaluationCourse, targetTerm:string) => {
     return [method, label];
   })) as Record<EvaluationMethod, string>;
 };
-/** The 2025-1 answer, published after the 2025 origin. */
+/** 2025년 평가 시점 이후에 게시된 2025-1 정답 자료다. */
 const TRUTH_2025_O = row('2025-1', 'OFFERED');
 const TRUTH_2025_N = row('2025-1', 'CONFIRMED_NOT_OFFERED');
 
@@ -270,7 +270,7 @@ describe('NOTICE_ONLY rows in the evaluation', () => {
   });
 
   it('a past notice is neither counted in k/n nor read as the most recent season', () => {
-    // 2024-1 is only a notice saying closed. The last full catalog (2023-1) says offered.
+    // 2024-1은 미개설 안내만 있고, 가장 최근 완전한 목록인 2023-1에는 개설로 기록된 상태다.
     const one = course('SYN-NOTICE-HIST', [...springs('OOO'),
       row('2024-1', 'CONFIRMED_NOT_OFFERED', {coverage:'NOTICE_ONLY'}), TRUTH_2025_O]);
     expect(outcomesOf(one, '2025-1')).toEqual({OUTLOOK:'TP', RECENT_SAME_SEASON:'TP', HISTORY_MAJORITY:'TP', ALWAYS_OFFERED:'TP'});
@@ -332,13 +332,13 @@ describe('each official event kind at the origin', () => {
 
 describe('a row published before the origin but verified after it', () => {
   it('is not used at that origin', () => {
-    // 2024-1 is the only closed spring, verified only after the 2025 origin.
+    // 2024-1만 미개설 봄학기이며 2025년 평가 시점 이후에야 검증된다.
     const late = course('SYN-LATE-VERIFIED', [...springs('OOO'),
       row('2024-1', 'CONFIRMED_NOT_OFFERED', {verifiedAt:'2025-02-01T00:00:00.000+09:00'}), TRUTH_2025_O,
       row('2026-1', 'OFFERED')]);
     expect(origin(evaluate([late]), '2025-1').historyCounts).toEqual([{offeredTerms:3, observedTerms:3, shown:1, thenOffered:1}]);
     expect(outcomesOf(late, '2025-1').RECENT_SAME_SEASON).toBe('TP');
-    // By the 2026 origin it is verified and counts: 2022-1..2025-1 is 3 of 4.
+    // 2026년 평가 시점에는 검증돼 2022-1~2025-1 중 4개 중 3개 개설로 세어진다.
     expect(origin(evaluate([late]), '2026-1').historyCounts).toEqual([{offeredTerms:3, observedTerms:4, shown:1, thenOffered:1}]);
   });
 });
