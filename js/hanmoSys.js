@@ -1,23 +1,21 @@
-/*index.html은 index.js에서 환경 체킹함*/
-const now = new Date();
+// Secondary pages share the original practice restriction (09:58–10:10).
+// The home page applies its own notice state in index.js instead.
+const now=new Date();
+const title=document.getElementsByClassName('title')[0];
 
-const title = document.getElementsByClassName('title')[0];
-
-restrictHanmo = () => {
-	if (((now.getHours() === 9 && now.getMinutes() >= 58) || (now.getHours() === 10 && now.getMinutes() <= 10)) || localStorage.getItem('deviceInfo') === 'false'){
-		location.href = '/';
-	}
+function restrictHanmo(){
+  const restricted=(now.getHours()===9&&now.getMinutes()>=58)
+    ||(now.getHours()===10&&now.getMinutes()<=10);
+  if(restricted||localStorage.getItem('deviceInfo')==='false'){
+    location.href='/';
+  }
 }
 
-setSemester = () => {
-	let hakgi = 1
-	if (now.getMonth() >= 6 && now.getMonth() <= 11){
-		hakgi = 2;
-	}
-	title.innerText = `${now.getFullYear()}-${hakgi}학기`;
-
+/** Preserve the displayed semester convention: Jan–Jun=1, Jul–Dec=2. */
+function setSemester(){
+  const semester=now.getMonth()>=6?2:1;
+  title.innerText=now.getFullYear()+'-'+semester+'학기';
 }
-
 
 setSemester();
 restrictHanmo();
