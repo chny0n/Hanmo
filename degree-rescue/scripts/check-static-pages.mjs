@@ -29,6 +29,17 @@ for(const name of expected){
   if(!await isFile(join(site,name)))throw Error('Missing staged academic asset: '+name);
 }
 if(await isFile(join(dist,'CNAME')))throw Error('Production custom domain leaked into preview');
+if(!await isFile(join(dist,'html/pc-only.html')))throw Error('PC-only notice not deployed');
+if(!await isFile(join(dist,'js/pc-only.js')))throw Error('PC-only guard not deployed');
+for(const entry of ['index.html','html/developer.html','html/vsugang.html',
+  'html/practice.html','html/selectZone.html','html/result.html',
+  'degree-rescue/index.html','degree-rescue/catalog.html','degree-rescue/academic-timeline.html']){
+  const source=await readFile(join(dist,entry),'utf8');
+  const guard=entry==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
+  const position=source.indexOf('<script src="'+guard+'"></script>');
+  if(position===-1||position>source.indexOf('</head>'))throw Error('Missing synchronous device guard: '+entry);
+}
+
 
 let checkedLinks=0,checkedAria=0;
 for(const page of pages){
