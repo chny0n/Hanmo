@@ -16,7 +16,7 @@
 - 최종 PR #5 기준: TypeScript 타입 검사, **35개 Vitest 파일/650개 테스트 성공**, ESBuild 정적 번들, 원본 파일 보호 검사. GitHub Actions 2개 성공.
 - 추가 정적 스모크: HTML 3개 페이지, 허용된 10개 학업 정적 파일, 내부 링크 18개, ARIA 참조 9개, CNAME 미포함 확인.
 - 브라우저 코드 실행: GitHub Actions ZIP의 동일 JS 번들을 Chromium에 주입해 **14개 동작 확인 전부 통과**, 런타임 오류 0건, 모바일 폭 360px에서 가로 넘침 없음. 전공 선택, 공지 후보, 근거 주석, 가짜 SOURCE_REVIEWED와 외부 링크 차단, 미검수 D-day 보류, 가상 D-day 구분, 로컬 설정 저장/삭제, 저장 WIS 화면 기본 동작을 점검했습니다.
-- **환경 한계:** 자동 브라우저 실행은 로컬 HTTP 이동이 관리자에 의해 차단돼 HTML/JS/CSS를 메모리에서 렌더링했습니다. 공식 정적 JSON 응답과 저장소는 테스트 대역으로 제공했습니다. **실제 HTTP/Pages 배포 주소에서의 브라우저 E2E와 모바일 실기기는 별도 검수 대상입니다.**
+- **환경 한계:** 자동 브라우저 실행은 로컬 HTTP 이동이 관리자에 의해 차단돼 HTML/JS/CSS를 메모리에서 렌더링했습니다. 공식 정적 JSON 응답과 저장소는 테스트 대역으로 제공했습니다. **실제 HTTP/Pages의 Windows PC Chrome/Edge 브라우저 E2E와 키보드·화면낭독기 검증이 남아 있습니다. 모바일 실기기는 지원 대상이 아닙니다.**
 
 [최신 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44298300292) · [정적 빌드 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44298300403)
 
@@ -49,3 +49,5 @@
 ## 6. 후속 과제 (이번 병합의 구현 범위가 아님)
 
 검수된 강의 개설 이력과 미래 개설 전망의 정확도, 연도별 학사행사 시기 모델·학교 공지 원문, 전공별 적용 범위, 학생용 근거형 FAQ, 개인 학적·이수 내역 일괄 가져오기, 2차 실전 위기 시나리오, 3차 Supabase 실연동은 별도 개발·승인 대상입니다.
+
+**2026-11-19 제품 기기 정책:** 전체 한모 **PC 전용**으로 확정. 과거 360px 오버플로 통과는 참고 시험일 뿐 모바일 지원/출시 조건이 아닙니다. [PC 전용 설계](../../../docs/architecture.md) · [이슈 #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26).
