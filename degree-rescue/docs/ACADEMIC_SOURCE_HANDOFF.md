@@ -37,3 +37,7 @@
 `npm run check` = TypeScript 타입 검사 + Vitest 회귀 + ESBuild 번들 + 정적 스테이징; PR #2에서 추가한 `assert-additive-only`는 기존 한모 파일 변경을 차단합니다. 사용자가 업로드한 JSON의 SOURCE_REVIEWED 등 검증 상태는 운영 승인이 아닙니다. 이수데이터 원문·학교 로그인·SSO를 자동 수집하지 않습니다.
 
 **출시 전 게이트:** 공공 학사자료 사용권, 기여 원본의 GPL-3.0 호환성/재배포 허가, 학교 데이터 검수 및 실브라우저 E2E, 원개발자 승인. 모든 이전 아카이브 파일은 Git 커밋 이력에서 여전히 접근 가능할 수 있어 HEAD 삭제만으로 비공개화되지 않습니다.
+
+## PR #4 학사일정 페이지 추가
+
+`academic-timeline.html` + `src/app/academic-timeline.ts` + `src/core/academic-schedule.ts`를 추가했습니다. 공식 게시목록의 10개 제목/게시일 `REFERENCE_ONLY`는 행사 시기 예측이 아니며, 학생 신청 마감일·개인 적격성은 모르는 값으로 둡니다. 14개 졸업 체크리스트는 개인이 직접 갱신하는 메모입니다. 이후 PR #5의 전공 선택형 중요 공지/출처 주석을 기준으로 학생용 UX를 좁힙니다.
