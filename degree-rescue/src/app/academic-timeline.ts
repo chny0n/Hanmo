@@ -96,7 +96,8 @@ function exportProfile():void{
     const raw=exportRoadmap({profile:readProfile(),progress},parseProfile,ALLOWED_STEPS);
     const url=URL.createObjectURL(new Blob([raw],{type:'application/json;charset=utf-8'}));
     const a=document.createElement('a');a.href=url;a.download='hanmo-academic-profile-v1.json';a.click();
-    URL.revokeObjectURL(url);
+    // Allow the browser to resolve the download before discarding the object URL.
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
     setMessage('profile-message','현재 입력한 개인 설정의 백업 JSON을 저장했습니다. 공유 PC에는 백업 파일을 남기지 마세요.');
   }catch(e){setMessage('profile-message','백업 실패: '+(e instanceof Error?e.message:String(e)));}
 }
