@@ -1,4 +1,4 @@
-/** Korean FAQ text helpers shared by retrieval and answer checks (#341).
+/** Korean FAQ text helpers shared by retrieval and answer checks.
  * No morphology model: strip one common particle/ending per word and compare character bigrams,
  * so "교환학생은" still meets "교환학생" and a one-letter typo keeps most of its bigrams. */
 
