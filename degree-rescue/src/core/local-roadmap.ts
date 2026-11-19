@@ -58,7 +58,10 @@ export function saveRoadmap<T>(storage:RoadmapStorage,value:RoadmapPayload<T>,
 }
 export function exportRoadmap<T>(value:RoadmapPayload<T>,parseProfile:(value:unknown)=>T,
   allowedSteps:ReadonlySet<string>,timestamp=new Date().toISOString()):string{
-  return JSON.stringify(JSON.parse(encode(value,parseProfile,allowedSteps,timestamp,true)),null,2)+'\n';
+  const pretty=JSON.stringify(JSON.parse(encode(value,parseProfile,allowedSteps,timestamp,true)),null,2)+'\n';
+  // A pretty printed export can be larger than the compact saved payload.
+  bounded(pretty);
+  return pretty;
 }
 export function parseRoadmapBackup<T>(raw:string,parseProfile:(value:unknown)=>T,
   allowedSteps:ReadonlySet<string>):RoadmapPayload<T>{
