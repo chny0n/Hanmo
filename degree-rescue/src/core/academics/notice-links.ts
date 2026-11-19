@@ -2,12 +2,9 @@ import {AcademicAuditVNextSchema, type AcademicAuditVNext} from '../../contracts
 import {byCodeUnit} from './ledger.js';
 
 /**
- * Hand-off from the academic audit to the notice core (A07.1, NoticeStudent.openRequirementIds).
- * Returns the requirement ids a notice may link to, or null when academics are unknown.
- * null means "not known", never "nothing open": the notice core then keeps requirement
- * notices with an UNKNOWN badge instead of dropping them to GENERAL.
- * Open = UNSATISFIED, NEEDS_REVIEW, or NOT_CHECKED. A requirement is closed only when it is
- * SATISFIED or officially NOT_APPLICABLE, so an unverified row never hides a notice.
+ * 학사 요건 진단 결과에서 공지 연결에 필요한 미충족 요건 ID를 전달한다(A07.1).
+ * 학사 상태를 알 수 없으면 null을 반환하며 이는 '열린 요건 없음'이 아니다. 공지 측은 해당 공지를 일반 공지로 내리지 않고 UNKNOWN으로 유지한다.
+ * UNSATISFIED·NEEDS_REVIEW·NOT_CHECKED는 열린 요건이고, SATISFIED 또는 공식 NOT_APPLICABLE만 종료된 요건이다.
  */
 const OPEN:ReadonlySet<AcademicAuditVNext['requirements'][number]['state']> = new Set([
   'UNSATISFIED', 'NEEDS_REVIEW', 'NOT_CHECKED',

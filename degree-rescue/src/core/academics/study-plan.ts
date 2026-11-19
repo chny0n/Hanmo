@@ -8,15 +8,11 @@ import {AS_OF, assertId, assertPositiveUnits, byCodeUnit, termEndMs, type Ledger
 import {checkAcademicPlan, type PrerequisiteRule, type VerifiedSection} from './plan.js';
 
 /**
- * simulateStudyPlan (A13, #81): the server-side plan check behind the graduation + plan view.
- * It turns the owner's saved STUDY_PLAN items into PLANNED ledger rows, runs the #62 plan
- * check for one regular term, and returns only what the screen needs: plan issues, the
- * term load, the approved cap, and the planned courses it could not check.
- * It never returns transcript rows, attempt tokens, or grades, and it never changes the ledger.
- * The result is the core part of the #103 OwnerStudyPlanCheckResponse: caveats are its codes,
- * and without an APPROVED pack no confirmed warning is emitted. The server adds evidence
- * links, disclosure, and the approval receipt.
- * Pure: the caller supplies asOf. No clock, network, or storage.
+ * 졸업·수강계획 화면의 서버 측 검사 코어(A13, #81).
+ * 저장한 STUDY_PLAN을 PLANNED 원장 행으로 옮겨 한 정규 학기만 검사한다.
+ * 계획 문제·학기 학점·승인 상한·검토할 과목만 반환하고 성적표 원본·시도 토큰·성적은 노출하지 않는다.
+ * 원장은 변경하지 않으며 APPROVED 규칙집이 없으면 확정 경고를 만들지 않는다.
+ * 서버는 출처 링크·공개 범위·승인 확인을 별도 추가한다. 시계·네트워크·저장소에 의존하지 않는다.
  */
 
 type PlanIssue = AcademicAuditVNext['planIssues'][number];
@@ -27,19 +23,19 @@ export type UncheckedReason = 'TERM_UNDECIDED'|'TERM_ENDED'|'CREDITS_UNKNOWN';
 
 export interface StudyPlanCheckRequest {
   asOf:string;
-  /** Regular term to check, `YYYY-1|YYYY-2` (STUDY_PLAN targetTerm has no 계절학기). */
+  /** 검사 대상은 정규 학기 YYYY-1 또는 YYYY-2이며 계절학기는 포함하지 않는다. */
   term:string;
   rulePack:{version:string; state:RulePackGate};
-  /** EARNED and IN_PROGRESS rows from the owner's approved transcript. Plans come only from studyPlan. */
+  /** 개인 성적표의 EARNED·IN_PROGRESS 기록이다. 계획 기록은 studyPlan에서만 가져온다. */
   attempts:readonly LedgerAttempt[];
-  /** Saved STUDY_PLAN workspace values. Items with planned=false are ignored. */
+  /** 저장된 STUDY_PLAN 값이다. planned=false 항목은 제외한다. */
   studyPlan:readonly unknown[];
-  /** Catalog credit units per course id (1 unit = 0.5학점). */
+  /** 과목별 학점 단위 카탈로그다. 1단위는 0.5학점이다. */
   courseCreditUnits:Readonly<Record<string, number>>;
-  /** From the approved rule pack: per-term cap and official prerequisites. */
+  /** 승인된 RulePack의 학기 학점 상한 및 공식 선수과목 요건이다. */
   termRules:{creditCapUnits:number; capEvidenceRefs:readonly string[]; prerequisites?:readonly PrerequisiteRule[]};
   sections?:readonly VerifiedSection[];
-  /** Echoed so the screen can drop a result computed for an older plan or catalog. */
+  /** 화면에서 이전 계획 또는 카탈로그 판본으로 계산된 오래된 결과를 버릴 수 있도록 판본을 돌려준다. */
   versions?:Partial<Record<'rulePack'|'plan'|'catalog'|'transcript', string>>;
 }
 
@@ -48,9 +44,9 @@ export interface StudyPlanCheck {
   asOf:string;
   term:string;
   versions:Partial<Record<'rulePack'|'plan'|'catalog'|'transcript', string>>;
-  /** Unique PLANNED + IN_PROGRESS units in the term. Shown apart from earned credits. */
+  /** 해당 학기의 PLANNED·IN_PROGRESS 학점을 과목별로 한 번씩 계산한다. 취득 학점과 별도다. */
   termLoadCreditUnits:number;
-  /** Present only with an APPROVED rule pack. */
+  /** APPROVED 규칙집이 있는 경우에만 제공한다. */
   creditCapUnits?:number;
   planIssues:PlanIssue[];
   unchecked:{courseId:string; reason:UncheckedReason}[];
@@ -63,9 +59,8 @@ const VERSION_KEYS = ['rulePack', 'plan', 'catalog', 'transcript'] as const;
 const REVIEW_CODES:ReadonlySet<PlanIssue['code']> = new Set(['NEEDS_REVIEW', 'SEARCH_LIMIT_REVIEW']);
 
 /**
- * #62 holds cap and prerequisite blockers under an unapproved pack but still reports a timetable
- * conflict. The #103 wire forbids every confirmed warning without approval, so the conflict is
- * held here too, keeping its reason so the screen can still say the verified sections overlap.
+ * #62는 미승인 규칙집의 상한·선수요건 경고를 보류하면서 시간 충돌을 보고할 수 있다.
+ * 하지만 #103 응답 계약은 승인 없는 모든 확정 경고를 금지하므로 충돌도 이유를 남기고 보류한다.
  */
 function holdUnapproved(issue:PlanIssue):PlanIssue {
   return issue.code === 'TIMETABLE_CONFLICT' ? {...issue, code:'NEEDS_REVIEW'} : issue;
@@ -162,7 +157,7 @@ export function simulateStudyPlan(input:StudyPlanCheckRequest):StudyPlanCheck {
   const uncheckedRows = [...unchecked].map(([courseId, reason]) => ({courseId, reason}))
     .sort((a, b) => byCodeUnit(a.courseId, b.courseId));
   const sectionsUnconfirmed = planIssues.some(issue => issue.reasonCode === 'COURSE_NOT_CONFIRMED');
-  // READY on the wire needs every version, so a result the screen cannot tie to its inputs is held.
+  // READY 응답에는 모든 판본이 있어야 하며 화면에서 입력에 대응시킬 수 없는 결과는 보류한다.
   const versionsComplete = VERSION_KEYS.every(key => versions[key] !== undefined);
   let state:StudyPlanCheck['state'];
   if (input.rulePack.state === 'MISSING') state = 'INSUFFICIENT_DATA';

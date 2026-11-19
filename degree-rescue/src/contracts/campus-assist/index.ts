@@ -1,8 +1,6 @@
 import {z} from 'zod';
 
-/** Shared, strict contracts for the three pre-final campus-assistance features.
- * They do not authorize a source or convert synthetic examples into school facts.
- */
+/** 학내 지원 기능 세 가지의 엄격한 공통 계약이다. 이 계약만으로 출처 사용권을 승인하거나 합성 예시를 학교 사실로 바꿀 수 없다. */
 const Id = z.string().trim().min(1).max(120).regex(/^[A-Za-z0-9_.:-]+$/);
 const Iso = z.iso.datetime({offset:true});
 const Day = z.iso.date();
@@ -12,7 +10,7 @@ export const CampusProvenanceSchema = z.enum(['SYNTHETIC','REAL_APPROVED']);
 
 export const ActivityRecordSchema = z.strictObject({
   entryId:Id, sourceId:Id, revisionId:Id, supersedes:Id.optional(),
-  /** Optional for existing records; required by offline channel-intake verification. */
+  /** 이전 기록에는 선택 항목이지만 오프라인 채널 수집 검증에는 반드시 필요하다. */
   channelId:Id.optional(),
   organizationId:Id, seriesId:Id, title:z.string().trim().min(2).max(240),
   kind:z.enum(['ORIENTATION','ACADEMIC','RECRUITMENT','LECTURE','OTHER']),
@@ -24,8 +22,7 @@ export const ActivityRecordSchema = z.strictObject({
   venue:z.string().max(160).optional(),
 });
 export type ActivityRecord = z.infer<typeof ActivityRecordSchema>;
-/** Pre-NCP, operator-curated channel registry. Nothing in this contract is a
- * live crawler authorization or an independent rights attestation. */
+/** NCP 이전 단계에서 운영자가 관리하는 채널 목록이다. 실시간 크롤링 권한이나 독립적인 이용 허가 증명이 아니다. */
 export const ActivityOrganizationSchema=z.strictObject({
   organizationId:Id,displayName:z.string().trim().min(2).max(160),
   campus:z.enum(['SEOUL','GLOBAL','BOTH']),
@@ -62,7 +59,7 @@ export const ExchangeApplicantSchema = z.strictObject({
   departureOn:Day.optional(),
 });
 export type ExchangeApplicant = z.infer<typeof ExchangeApplicantSchema>;
-/** Semester limits must come from an approved, versioned official source. Omitted means UNKNOWN. */
+/** 학기 제한은 판본이 명시된 승인 공식 출처에서만 가져온다. 없으면 UNKNOWN이다. */
 const SemesterRangeSchema=z.strictObject({min:z.number().int().min(0).max(15),
   max:z.number().int().min(0).max(15)}).refine(v=>v.min<=v.max);
 const ProgramTermRulesSchema=z.strictObject({
@@ -75,13 +72,13 @@ export const ExchangePolicySchema = z.strictObject({
   effectiveFrom:Day, effectiveUntil:Day.optional(),
   rights:CampusRightsSchema, provenance:CampusProvenanceSchema,
   minimumGpa:z.number().finite().min(0).max(4.5),
-  /** Policy-specific rules; never infer these from a program length or student assertion. */
+  /** 정책별 세부 규칙은 프로그램 기간이나 학생의 진술만으로 추정하지 않는다. */
   termRules:ProgramTermRulesSchema.optional(),
   twoSemesterTransfersAllowed:z.boolean().optional(),
   priorCancellationAllowed:z.boolean().optional(),
   partnerMinimumGpa:z.number().finite().min(0).max(4.5).optional(),
   requiredLanguage:z.strictObject({test:Id,minimumScore:z.number().finite().nonnegative()}).optional(),
-  /** Officially identified partner/term scope; an unknown partner must stay UNKNOWN. */
+  /** 공식 확인된 교류 대학과 학기 범위다. 미확인 대학은 UNKNOWN을 유지한다. */
   partnerId:Id,
 });
 export type ExchangePolicy = z.infer<typeof ExchangePolicySchema>;
@@ -99,7 +96,7 @@ export const ExchangeResultSchema = z.strictObject({
 });
 export type ExchangeResult = z.infer<typeof ExchangeResultSchema>;
 
-/** Explicitly reviewed public office endpoints, never a domain-wide PII exemption. */
+/** 검토된 개별 공개 부서 연락처만 예외로 취급한다. 도메인 전체의 개인정보 예외로 확대하지 않는다. */
 export const FaqPublicContactsSchema = z.array(z.string().max(254).regex(
   /^(?:[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?:02|0[3-6][1-5])-\d{3,4}-\d{4})$/,
 )).max(8).refine(values=>new Set(values).size===values.length);
@@ -128,7 +125,7 @@ export type FaqCandidate = z.infer<typeof FaqCandidateSchema>;
 
 export const ActivityArchiveResponseSchema=z.strictObject({
   asOf:Iso,sourceVersion:Id,items:z.array(ActivityRecordSchema).max(200),
-  /** Optional for older read-only clients; true means only a bounded subset was returned. */
+  /** 이전 읽기 전용 클라이언트에는 선택 사항이며 true는 제한된 일부 결과만 반환했음을 뜻한다. */
   hasMore:z.boolean().optional(),
 });
 export const ExchangePartnerSummarySchema=z.strictObject({
@@ -140,7 +137,7 @@ export const ExchangePartnerSummarySchema=z.strictObject({
 export const ExchangePartnerListSchema=z.strictObject({
   asOf:Iso,sourceVersion:Id,partners:z.array(ExchangePartnerSummarySchema).max(50),
 });
-/** Source-only fallback: references are reviewed server metadata, not generated text. */
+/** 출처 링크만 제공하는 보수적 대체 방식이다. 링크는 검토된 서버 메타데이터이며 생성된 문구가 아니다. */
 export const FaqSourceLinkSchema=z.strictObject({
   documentId:Id,revisionId:Id,title:z.string().min(1).max(200),
   sourceUrl:Source,verifiedAt:Iso,
@@ -149,7 +146,7 @@ export const FaqAskResponseSchema=z.discriminatedUnion('status',[
   z.strictObject({status:z.literal('NOT_FOUND'),asOf:Iso,evidence:z.array(z.never()).length(0)}),
   z.strictObject({status:z.literal('CONFIGURATION_REQUIRED'),asOf:Iso,
     evidence:z.array(z.never()).length(0),
-    /** No model answer or paragraph text. Safe, current official source links only. */
+    /** 모델 답변이나 원문 문단 자체를 포함하지 않는다. 현재 유효한 공식 출처 링크만 제공한다. */
     sourceLinks:z.array(FaqSourceLinkSchema).max(6).optional()}),
   z.strictObject({status:z.literal('NEEDS_REVIEW'),asOf:Iso,answer:FaqCandidateSchema,
     evidence:z.array(z.strictObject({citationId:Id,sourceUrl:Source,title:z.string().min(1),verifiedAt:Iso})).max(6),

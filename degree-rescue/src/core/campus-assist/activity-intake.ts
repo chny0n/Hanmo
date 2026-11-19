@@ -1,6 +1,8 @@
-/** Synthetic, offline manual intake gate. No HTTP, crawler, file access,
- * persistence, RLS bypass or trusted real-school attestation is implemented.
- * Production source rights must be independently recorded by an operator. */
+/**
+ * 합성 자료의 오프라인 수동 등록 검사다.
+ * HTTP·크롤러·파일 접근·영속 저장·RLS 우회·실학교 자료 인증 기능은 없다.
+ * 운영 출처의 사용권은 담당자가 독립적으로 기록해야 한다.
+ */
 import {z} from 'zod';
 import {ActivityOrganizationSchema,ActivityChannelSchema,ActivityRecordSchema,
   type ActivityOrganization,type ActivityChannel,type ActivityRecord} from '../../contracts/campus-assist/index.js';
@@ -14,7 +16,7 @@ export type QuarantinedActivity={entryId:string;reason:IntakeRejection};
 export type ActivityIntakeReview={
   records:readonly ActivityRecord[];
   quarantined:readonly QuarantinedActivity[];
-  /** Counts are synthetic intake diagnostics, NOT a proof of licensed source collection. */
+  /** 이 건수는 합성 등록 진단 값으로 허가된 출처 수집의 증명이 아니다. */
   acceptedCount:number;
 };
 function registry<T extends object>(items:readonly T[],id:(r:T)=>string){
@@ -26,8 +28,10 @@ function registry<T extends object>(items:readonly T[],id:(r:T)=>string){
   }
   return {byId,conflicts};
 }
-/** A canonical HTTPS origin and a *path-segment-bounded* official base path.
- * Prefix string checks like /notice matching /notice-evil are not sufficient. */
+/**
+ * 정규화한 HTTPS 원점과 경로 세그먼트 경계가 있는 공식 기본 경로만 허용한다.
+ * /notice가 /notice-evil과 단순 접두어 일치하는 검사는 부족하다.
+ */
 function inChannel(source:string,base:string):boolean{
   try{
     const u=new URL(source),root=new URL(base);
@@ -40,9 +44,10 @@ function inChannel(source:string,base:string):boolean{
 }
 const current=(time:string,at:number)=>Date.parse(time)<=at;
 
-/** For synthetic, manually prepared data only. The registry must be a
- * separately controlled operator input; a browser cannot mark its own
- * channels VERIFIED or APPROVED. Real records are always quarantined here. */
+/**
+ * 합성 수동 자료만 처리한다. 채널 목록은 운영자가 별도로 관리해야 하며 브라우저가 자체 채널에 VERIFIED·APPROVED를 지정할 수 없다.
+ * 실제 학교 자료는 이 단계에서 모두 격리한다.
+ */
 export function reviewSyntheticActivityIntake(input:{
   raw:readonly unknown[];organizations:readonly ActivityOrganization[];
   channels:readonly ActivityChannel[];asOf:string;
@@ -86,8 +91,8 @@ export function reviewSyntheticActivityIntake(input:{
     if(!current(r.publishedAt,at)||!current(r.verifiedAt,at)){
       deny('RECORD_NOT_CURRENT');continue;
     }
-    // Preserve an explicit REVOKED/DELETED head so currentActivityRecords()
-    // can suppress its formerly approved revision; never resurrect history.
+    // REVOKED·DELETED 최신판을 보존해 currentActivityRecords가 이전 승인판을 억제하도록 한다.
+    // 철회 이전의 기록을 되살리지 않는다.
     records.push(r);
   }
   return {records,quarantined,acceptedCount:records.length};

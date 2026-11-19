@@ -7,22 +7,22 @@ function epoch(iso:string):number{
   return ms;
 }
 function year(day:string):number{return Number(day.slice(0,4));}
-/** Publication instants without an eventDate belong to the Asia/Seoul calendar
- * day, never the raw UTC/foreign-offset text date. This is only a
- * grouping/filtering date: it must not be used as a fabricated eventDate. */
+/**
+ * 공식 행사일이 없는 게시 시각은 UTC 문자열 날짜가 아니라 한국시간 달력 날짜로 분류·필터링한다.
+ * 이 날짜를 임의의 행사일(eventDate)로 표시해서는 안 된다.
+ */
 export function publishedDayKst(iso:string):string{
   return new Date(epoch(iso)+9*60*60*1000).toISOString().slice(0,10);
 }
 function dayOfYear(day:string):number{
   const m=Number(day.slice(5,7)), d=Number(day.slice(8,10));
-  // A leap-day occurrence is folded into February 28 for a coarse seasonal window.
+  // 윤년 2월 29일 행사는 거친 계절별 구간 산출에서 2월 28일로 접는다.
   return Math.floor((Date.UTC(2001,m-1,m===2&&d===29?28:d)-Date.UTC(2001,0,1))/86400000);
 }
 /**
- * `day` is an offset in the common (non-leap) reference year 2001. Rebuild its
- * month/day inside the *target* year's own calendar before applying the margin,
- * so a leap target year does not shift dates after February by one day,
- * then clamp to that target year's January 1 – December 31.
+ * day는 평년 기준 연도(2001)의 일수 오프셋이다.
+ * 대상 연도 달력에 월·일을 다시 구성한 다음 여유 구간을 적용해 윤년 2월 이후 날짜가 밀리지 않도록 한다.
+ * 최종 범위는 대상 연도의 1월 1일~12월 31일로 제한한다.
  */
 function windowDate(targetYear:number,day:number,marginDays:number):string{
   const common=new Date(Date.UTC(2001,0,1)+Math.max(0,Math.min(364,day))*86400000);
@@ -30,8 +30,10 @@ function windowDate(targetYear:number,day:number,marginDays:number):string{
   const clamped=Math.min(Date.UTC(targetYear,11,31),Math.max(Date.UTC(targetYear,0,1),ms));
   return new Date(clamped).toISOString().slice(0,10);
 }
-/** Filtering always uses the event day when officially known, otherwise the
- * Korean posting day. A posting day must never be displayed as an event day. */
+/**
+ * 행사일이 공식 확인되면 해당 날짜를, 그렇지 않으면 한국시간 게시일을 필터에 사용한다.
+ * 게시일을 행사일로 표시하지 않는다.
+ */
 export function archiveDay(row:ActivityRecord):string{
   return row.eventDate??publishedDayKst(row.publishedAt);
 }
@@ -39,16 +41,14 @@ export interface ActivityFilter{
   organizationId?:string; year?:number; campus?:ActivityRecord['campus'];
   kind?:ActivityRecord['kind']; query?:string;
 }
-/** Key-order independent comparison form of one record. */
+/** 객체 키 순서와 무관하게 기록 내용을 비교할 표준 형태다. */
 function canonical(row:ActivityRecord):string{
   return JSON.stringify(Object.keys(row).sort().map(k=>[k,row[k as keyof ActivityRecord]]));
 }
 /**
- * Newest revision per sourceId that was both published and verified by asOf
- * (newest publishedAt instant, then revisionId). If several rows carry that
- * same newest revision but disagree in any field (rights, status, dates,
- * text), the whole source is quarantined and has no head: input order
- * must never decide which copy survives. Identical copies collapse to one.
+ * asOf까지 게시·검증된 sourceId별 최신 판본을 선택한다(게시 시각 우선, 그 다음 revisionId).
+ * 같은 최신 판본의 복사본이 권리·상태·날짜·문구에서 다르면 입력 순서로 선택하지 않고 출처 전체를 격리한다.
+ * 완전히 같은 복사본만 하나로 합친다.
  */
 function sourceHeadsAt(parsed:readonly ActivityRecord[],time:number):Map<string,ActivityRecord>{
   const newest=new Map<string,ActivityRecord[]>();
@@ -65,7 +65,7 @@ function sourceHeadsAt(parsed:readonly ActivityRecord[],time:number):Map<string,
     if(new Set(rows.map(canonical)).size===1)heads.set(sourceId,rows[0]!);
   return heads;
 }
-/** Fail closed on newer revoked/blocked heads, never resurrect an older approved revision. */
+/** 더 최신 판본이 철회되거나 차단되면 과거 승인판을 다시 사용하지 않고 보수적으로 차단한다. */
 export function currentActivityRecords(raw:readonly ActivityRecord[],asOf:string):ActivityRecord[]{
   const time=epoch(asOf);
   const parsed=ActivityRecordSchema.array().max(10000).parse(raw);
@@ -80,7 +80,7 @@ export function currentActivityRecords(raw:readonly ActivityRecord[],asOf:string
     const order=!prev?1:epoch(item.publishedAt)-epoch(prev.publishedAt)
       ||(item.revisionId<prev.revisionId?-1:item.revisionId>prev.revisionId?1:0);
     if(order>0){events.set(key,item);tied.delete(key);}
-    // Same instant and revision from two sources but different content: no winner.
+    // 같은 시각·판본이라도 출처 내용이 다르면 어느 쪽도 승자로 선정하지 않는다.
     else if(order===0&&canonical(item)!==canonical(prev!))tied.add(key);
   }
   for(const key of tied)events.delete(key);
@@ -117,12 +117,10 @@ export function forecastActivity(raw:readonly ActivityRecord[],asOf:string,targe
     evidenceRefs:leading?[leading.revisionId,...evidence]:evidence,reason,
     ...(from?{from}:{}),...(to?{to}:{}),
   });
-  // a verified cancellation may omit the exact event date. It is checked
-  // *before* a dated target-year record is returned, because the two can sit
-  // under different archive years (e.g. confirmation posted 2026-10 for a 2027
-  // event, cancellation posted 2026-12). A `supersedes` link is trusted only
-  // when it points at a current, verified, approved head at asOf; otherwise the
-  // link is treated as unresolved. Only a newer dated record overrides it.
+  // 검증된 행사 취소 공지는 정확한 행사일이 없어도 대상 연도의 일정 결과보다 먼저 확인한다.
+  // 행사와 취소 공지가 서로 다른 연도의 보관함에 있을 수 있기 때문이다(예: 2027 행사 공지 2026-10, 취소 2026-12).
+  // supersedes 연결은 asOf 기준 유효하고 검증·승인된 최신 판본을 가리킬 때만 신뢰한다.
+  // 연결이 미확정이면 보류하고 더 나중에 나온 날짜가 명시된 기록만 우선 적용한다.
   const time=epoch(asOf);
   const heads=sourceHeadsAt(ActivityRecordSchema.array().max(10000).parse(raw),time);
   const trustedTarget=(ref:string)=>[...heads.values()].find(row=>

@@ -5,10 +5,7 @@ import {
 } from './course-identity.js';
 import {buildAcademicLedger, type LedgerAttempt, type LedgerRequirement} from './ledger.js';
 
-/**
- * #11 (본선 전): rows whose course code or equivalence is not confirmed. Synthetic SYN-* only.
- * 1 credit unit = 0.5학점; 3학점 = 6 units.
- */
+/** 본선 전 #11: 학수번호나 동일과목 여부가 미확정인 합성(SYN-*) 기록이다. 1단위=0.5학점, 3학점=6단위다. */
 
 const AS_OF = '2026-11-01T00:00:00.000+09:00';
 
@@ -29,7 +26,7 @@ const REQUIREMENTS:LedgerRequirement[] = [
   {id:'SYN-R-GROUP', kind:'GROUP_CHOICE', groups:[['SYN-C1'], ['SYN-C2', 'SYN-C3']], k:1, evidenceRefs:['SYN-EV-6']},
 ];
 const READS_ATTEMPTS = REQUIREMENTS.map(r => r.id);
-/** A row that reads no attempt. Unmeasured GPA always keeps the audit from READY. */
+/** 수강 시도를 참조하지 않는 요건이다. GPA가 측정되지 않으면 원장은 READY가 될 수 없다. */
 const GPA:LedgerRequirement = {id:'SYN-R-GPA', kind:'NON_CREDIT', criterionId:'SYN-GPA', verificationMode:'GPA_NOT_COLLECTED'};
 
 const request = (attempts:IdentifiedLedgerAttempt[], over:Partial<IdentifiedLedgerRequest> = {}):IdentifiedLedgerRequest => ({
@@ -42,7 +39,7 @@ const states = (result:ReturnType<typeof buildLedgerWithCourseIdentity>) =>
 const reasonOf = (result:ReturnType<typeof buildLedgerWithCourseIdentity>, token:string) =>
   result.audit.excludedAttempts.find(row => row.attemptToken === token)?.reason;
 
-/** Every requirement row SATISFIED on confirmed rows alone. */
+/** 검증된 수강 기록만으로 모든 요건이 SATISFIED인 상황이다. */
 const SATISFIED_BASE:IdentifiedLedgerAttempt[] = [
   resolved('SYN-T1', 'SYN-C1'),
   resolved('SYN-T2', 'SYN-C2', {areaIds:['SYN-A1', 'SYN-A2']}),
@@ -128,7 +125,7 @@ describe('course identity: what an unresolved row holds (#11)', () => {
   });
 
   it('an unsatisfied required course, K-of-N or area row is not reported as unsatisfied', () => {
-    // Confirmed rows give 6 units in no course of the K-of-N; the unresolved row could be SYN-C1.
+    // 확정 행은 K_OF_N 후보 과목과 무관한 6단위다. 미확정 행은 SYN-C1일 수 있다.
     const rows = [resolved('SYN-T9', 'SYN-C9', {areaIds:['SYN-A2']}), unresolved('SYN-U1')];
     const base = buildAcademicLedger({...request(rows), attempts:strip(rows)});
     const result = buildLedgerWithCourseIdentity(request(rows));
@@ -148,8 +145,8 @@ describe('course identity: what an unresolved row holds (#11)', () => {
   });
 
   it('a same-course collision is held, not subtracted', () => {
-    // If SYN-U1 were SYN-C1, the ordinary ledger would hold both SYN-C1 rows. So the required
-    // course is not confirmed, but SYN-T1's credit stays counted until the code is known.
+    // SYN-U1이 SYN-C1이면 일반 원장이 두 SYN-C1 기록을 모두 보류한다.
+    // 따라서 필수 과목은 미확정이지만 실제 코드 확인 전까지 SYN-T1 취득 학점은 유지한다.
     const rows = [...SATISFIED_BASE, unresolved('SYN-U1')];
     const asC1 = buildAcademicLedger({...request(rows), attempts:[...strip(rows),
       {attemptToken:'SYN-U1', canonicalCourseId:'SYN-C1', creditUnits:6, ledger:'EARNED', areaIds:['SYN-A1'], recognition:'RECOGNIZED', term:'2025-1'}]});
@@ -161,8 +158,7 @@ describe('course identity: what an unresolved row holds (#11)', () => {
   });
 
   it('an unresolved in-progress row can still change an earned course, so it holds too', () => {
-    // SYN-C1 is earned and also in progress. A second in-progress SYN-C1 row would make the
-    // ordinary ledger hold the whole course, so the required course is not confirmed.
+    // SYN-C1을 취득했지만 진행 중에도 있다. 두 번째 진행 중 행이 추가되면 원장이 해당 과목을 보류하므로 필수 요건을 확정하지 않는다.
     const rows = [...SATISFIED_BASE, resolved('SYN-T5', 'SYN-C1', {ledger:'IN_PROGRESS', term:'2026-2'}),
       unresolved('SYN-U1', {ledger:'IN_PROGRESS', term:'2026-2'})];
     const base = buildAcademicLedger({...request(rows), attempts:strip(rows)});
@@ -176,7 +172,7 @@ describe('course identity: what an unresolved row holds (#11)', () => {
   });
 
   it('an unresolved retake of a confirmed row keeps that row counted', () => {
-    // Even a PENDING unresolved row holds the audit when it is linked.
+    // 미확정 행이 PENDING이더라도 재수강 관계로 연결되면 원장 전체를 검토 보류한다.
     const rows = [...SATISFIED_BASE,
       unresolved('SYN-U1', {term:'2025-2', supersedesAttemptToken:'SYN-T1', retakeApprovalRef:'SYN-RETAKE-1', recognition:'PENDING'})];
     const result = buildLedgerWithCourseIdentity(request(rows));
@@ -227,7 +223,7 @@ describe('course identity: what an unresolved row holds (#11)', () => {
   });
 
   it('once the code is confirmed, the row is an ordinary attempt', () => {
-    // The caller re-runs with the newer resolution; nothing from the unresolved run is kept.
+    // 호출자는 새로 확정된 과목 ID로 다시 계산하며 이전 보류 결과를 재사용하지 않는다.
     const before = buildLedgerWithCourseIdentity(request([...SATISFIED_BASE, unresolved('SYN-U1')]));
     const rows = [...SATISFIED_BASE, resolved('SYN-U1', 'SYN-C5', {areaIds:[]})];
     const after = buildLedgerWithCourseIdentity(request(rows));
@@ -243,14 +239,13 @@ describe('course identity: what an unresolved row holds (#11)', () => {
     const late = buildLedgerWithCourseIdentity(request(rows, {asOf:'2027-02-01T00:00:00.000+09:00', rulePackVersion:'SYN-PACK-V2'}));
     expect([early.audit.asOf, early.audit.rulePackVersion]).toEqual(['2026-11-01T00:00:00.000+09:00', 'SYN-PACK-V1']);
     expect([late.audit.asOf, late.audit.rulePackVersion]).toEqual(['2027-02-01T00:00:00.000+09:00', 'SYN-PACK-V2']);
-    // A term that has since ended does not make an unresolved row count.
+    // 이후 학기가 종료되더라도 과목 ID가 미확정이면 학점 계산에 포함하지 않는다.
     expect(late.audit.earnedCreditUnits).toBe(18);
     expect(late.unresolved.attemptTokens).toEqual(['SYN-U1']);
   });
 });
 
-// ---------------------------------------------------------------------------------------------
-// Brute force: try every course and area set an unresolved row could turn out to be.
+// 완전 탐색: 미확정 행에 배정 가능한 모든 과목·영역 조합을 시험한다.
 
 type Rng = () => number;
 function mulberry32(seed:number):Rng {
@@ -297,7 +292,7 @@ function genRows(rng:Rng):IdentifiedLedgerAttempt[] {
   return rows;
 }
 
-/** Every way the unresolved rows could be resolved: an existing course or a fresh one, any area set. */
+/** 미확정 행을 기존 또는 신규 과목과 임의의 학점 영역 집합으로 해소하는 모든 경우다. */
 function resolutions(rows:readonly IdentifiedLedgerAttempt[]):LedgerAttempt[][] {
   let out:LedgerAttempt[][] = [[]];
   for (const row of rows) {
@@ -348,7 +343,7 @@ describe('course identity: brute force over every possible resolution (#11)', ()
         }
       }
     }
-    // Both paths are exercised: rows held, and rows kept because no resolution can move them.
+    // 보류해야 할 행과 어떤 해소 방법에서도 결과가 변하지 않아 유지할 행을 모두 시험한다.
     if (SEEDS.length >= 100) expect(Math.min(seenLive.held, seenLive.kept)).toBeGreaterThan(20);
   });
 
@@ -356,7 +351,7 @@ describe('course identity: brute force over every possible resolution (#11)', ()
     for (const seed of SEEDS) {
       const rows = genRows(mulberry32(seed));
       const result = buildLedgerWithCourseIdentity(request(rows));
-      // A confirmed row that claims to supersede an unresolved row is held, as with a missing target.
+      // 확정 행이 미확정 행을 재수강 선행 대상으로 지정하면 선행 기록이 없는 경우와 같이 보류한다.
       const base = buildAcademicLedger({...request(rows), attempts:strip(rows)});
       for (const key of ['earnedCreditUnits', 'inProgressCreditUnits', 'plannedCreditUnits', 'projectedUniqueCreditUnits',
         'pendingRecognitionCreditUnits', 'areaProgress'] as const) {

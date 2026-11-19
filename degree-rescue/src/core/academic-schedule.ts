@@ -3,9 +3,9 @@ import {openRequirementIdsFromAudit} from './academics/notice-links.js';
 import type {AcademicAuditVNext} from '../contracts/academics/vnext.js';
 
 /**
- * Academic-only, browser-safe adaptation of the archived HUFS One AI notice and
- * academic-calendar design. No career/opportunity feed, login, network or clock
- * dependency. Explicit asOf, source dates and applicability are mandatory.
+ * 이전 HUFS One AI의 학사공지·학사달력 설계를 브라우저에서 안전하게 쓰도록 선별 이식했다.
+ * 취업·진로 공지, 로그인, 네트워크, 현재 시각 조회 기능은 없다.
+ * 호출자는 기준 시각(asOf), 출처 날짜, 학생 적용 조건을 명시해야 한다.
  */
 const Iso=z.iso.datetime({offset:true});
 const Id=z.string().trim().min(1).max(120).regex(/^[A-Za-z0-9._:-]+$/);
@@ -76,7 +76,7 @@ export const AcademicEventSchema=z.strictObject({
   }),
   scope:Scope.optional(),
   opensAt:Iso.optional(),deadlineAt:Iso.optional(),eventAt:Iso.optional(),
-  /** Internal department report deadline is NEVER the student's deadline. */
+  /** 학과 내부 보고 마감은 학생 본인의 신청 마감일과 절대 혼동하지 않는다. */
   adminDeadlineAt:Iso.optional(),
   requirementRefs:z.array(Id).max(40).optional(),
   requiresOpenRequirement:z.boolean().optional(),
@@ -117,7 +117,7 @@ export const AcademicProfileSchema=z.strictObject({
   majors:z.array(Major).max(5).optional(),
   targetGraduationTerm:Term.optional(),
   enrollmentState:z.enum(['ENROLLED','LEAVE','RETURNING','GRADUATION_PENDING']).optional(),
-  /** null is unknown; [] is a verified no-open-requirements state, not the same thing. */
+  /** null은 미확정이며 []는 미충족 요건이 없음을 검증한 상태다. 두 값은 같지 않다. */
   openRequirementIds:z.array(Id).max(200).nullable().optional(),
 });
 export type AcademicProfile=z.infer<typeof AcademicProfileSchema>;
@@ -138,7 +138,7 @@ const one=(required:readonly string[]|undefined,actual:string|undefined,field:st
   if(actual===undefined){unknown.push(field);return false;}
   return !required.includes(actual);
 };
-/** Missing student attributes are UNKNOWN, never inferred from the person's other fields. */
+/** 없는 학생 속성은 다른 학생 정보에서 추정하지 않고 UNKNOWN으로 처리한다. */
 export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent):{state:Applies;unknown:string[]}{
   const scope=event.scope;const unknown:string[]=[];
   let mismatch=false;
@@ -156,7 +156,7 @@ export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent)
   if(one(scope.graduationTerms,profile.targetGraduationTerm,'graduationTerm',unknown))mismatch=true;
   if(one(scope.enrollmentStates,profile.enrollmentState,'enrollmentState',unknown))mismatch=true;
   }
-  // A title-only notice cannot prove which students actually qualify.
+  // 제목만 있는 공지는 어떤 학생에게 적용되는지 확정할 근거가 아니다.
   if(event.source.review==='REFERENCE_ONLY')unknown.push('noticeDetails');
   if(event.requiresOpenRequirement){
     if(profile.openRequirementIds===null||profile.openRequirementIds===undefined)unknown.push('graduationRequirement');
@@ -180,7 +180,7 @@ function sourceEvidence(event:AcademicEvent,now:number):Evidence{
     &&Date.parse(event.source.reviewedAt)<=now)return 'SOURCE_REVIEWED';
   return 'NEEDS_SOURCE_CHECK';
 }
-/** Local viewer, no live institution lookup, no fabricated or inferred deadlines. */
+/** 로컬 조회 화면이다. 학교 서버를 실시간 조회하거나 미확인 마감·날짜를 생성·추정하지 않는다. */
 export function buildAcademicAgenda(request:{
   asOf:string;profile:AcademicProfile;events:readonly AcademicEvent[];
 }):AcademicAgenda{

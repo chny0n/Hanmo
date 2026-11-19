@@ -4,36 +4,21 @@ import {describe, expect, it} from 'vitest';
 import {buildAcademicLedger, type AcademicLedgerRequest, type LedgerAttempt, type LedgerRequirement, type RulePackGate} from './ledger.js';
 
 /**
- * #202: seeded, reproducible property tests for buildAcademicLedger. Synthetic SYN-* data only; no
- * student record or school rule is generated or guessed.
- *
- * Expected values never come from calling buildAcademicLedger again. Small cases are compared with
- * `referenceLedger`, a separate model written from the ledger's documented rules below; large cases
- * are checked only against relations that follow from those rules. Each property states what it
- * assumes. A failure prints the seed, a shrunk case, the rule hash, and the ledger source hash.
- *
- * Reproduce one seed:  LEDGER_PROP_SEED=<seed> npx vitest run packages/core/src/academics/ledger.property.test.ts
- * More seeds:          LEDGER_PROP_RUNS=2000 npx vitest run packages/core/src/academics/ledger.property.test.ts
- *
- * Documented rules the model follows (ledger.ts header and LedgerAttempt docs):
- * R1 an EARNED attempt counts only if its term is known and ended by asOf (Asia/Seoul); otherwise it
- *    is held as NEEDS_REVIEW.
- * R2 a supersede link removes the earlier attempt (RETAKE_SUPERSEDED) only when exactly one attempt
- *    claims it, both are EARNED and the same course, the later one is RECOGNIZED, in a later term,
- *    has a retakeApprovalRef, and has itself ended by asOf; any other claimer is held, and attempts on
- *    a supersede cycle are held.
- * R3 per course, RECOGNIZED attempts left over count once: the highest slot wins (EARNED, then
- *    IN_PROGRESS, then PLANNED) and the rest are DUPLICATE; two left in the same slot hold them all.
- * R4 a PENDING attempt is credit awaiting recognition when it is the only pending one for a course
- *    with no winner; with a winner it is DUPLICATE; otherwise held. EXCLUDED is OFFICIAL_EXCLUSION.
- * R5 totals and areas sum winners; one course counts once in the total and fully in each of its areas.
- * R6 rows: totals and areas by earned units, a required course by an EARNED winner, K_OF_N by earned
- *    winners; a row stays NEEDS_REVIEW unless the pack is APPROVED, and GPA_NOT_COLLECTED is NOT_CHECKED.
- * R7 state: MISSING pack -> INSUFFICIENT_DATA; not approved, any hold, or any review row -> NEEDS_REVIEW.
+ * buildAcademicLedger의 재현 가능한 속성 테스트(#202)다. SYN-* 합성 데이터만 사용하며 실학생 성적표나 학교 규정을 생성·추정하지 않는다.
+ * 기대값은 테스트 대상 함수를 다시 호출해 만들지 않는다. 작은 사례는 문서화된 규칙으로 별도 구현한 referenceLedger와, 큰 사례는 규칙에서 도출되는 관계와 비교한다.
+ * 실패 시 시드·축소 사례·규칙 해시·코어 소스 해시를 출력한다.
+ * 한 시드 재현: LEDGER_PROP_SEED=<seed> npx vitest run packages/core/src/academics/ledger.property.test.ts
+ * 대량 탐색: LEDGER_PROP_RUNS=2000 npx vitest run packages/core/src/academics/ledger.property.test.ts
+ * R1 EARNED는 학기가 asOf(한국시간)까지 종료됐을 때만 인정한다.
+ * R2 승인된 올바른 재수강 연결만 이전 기록을 제외하며 순환·잘못된 연결은 보류한다.
+ * R3 과목당 최고 우선순위(EARNED→IN_PROGRESS→PLANNED) 기록 하나만 세며 같은 우선순위 충돌은 보류한다.
+ * R4 PENDING은 조건에 따라 인정 대기·중복·보류, EXCLUDED는 공식 제외다.
+ * R5 총학점은 과목당 한 번만, 영역은 승인된 각 영역에 배정한다.
+ * R6 요건은 취득 학점과 승인 규칙으로 판정하며 미수집 GPA는 NOT_CHECKED다.
+ * R7 규칙집 미존재는 INSUFFICIENT_DATA, 미승인이나 보류 항목이 있으면 NEEDS_REVIEW다.
  */
 
-// ---------------------------------------------------------------------------------------------
-// Seeded generator (mulberry32; same seed, same case on any machine)
+// 고정 시드 사례 생성기(mulberry32): 같은 시드는 모든 환경에서 같은 사례를 만든다.
 
 type Rng = () => number;
 function mulberry32(seed:number):Rng {
@@ -73,14 +58,14 @@ function genCase(rng:Rng, size:number):Case {
     if (ledger === 'EARNED' ? chance(rng, 0.93) : chance(rng, 0.4)) attempt.term = pick(rng, TERMS);
     attempts.push(attempt);
   }
-  // Supersede links: mostly well-formed retakes, plus broken ones (no approval, wrong order, fork, cycle).
+  // 재수강 연결은 정상 승인 사례를 주로 생성하되 승인 누락·순서 오류·분기·순환도 포함한다.
   for (const attempt of attempts) {
     if (attempts.length < 2 || !chance(rng, 0.3)) continue;
     const target = pick(rng, attempts);
     if (target === attempt && !chance(rng, 0.2)) continue;
     attempt.supersedesAttemptToken = target.attemptToken;
     if (target !== attempt && chance(rng, 0.5)) {
-      // A well-formed approved retake: same course, both earned and recognized, the later one in a later term.
+      // 올바른 승인 재수강은 같은 과목을 두 번 취득·인정했고 새 기록의 학기가 더 늦다.
       const first = Math.floor(rng() * (TERMS.length - 1));
       const later = first + 1 + Math.floor(rng() * (TERMS.length - first - 1));
       Object.assign(target, {ledger:'EARNED', term:TERMS[first]});
@@ -107,12 +92,11 @@ function genCase(rng:Rng, size:number):Case {
   return {asOf:pick(rng, AS_OF), rulePackVersion:'SYN-PACK-PROP', rulePackState:pick(rng, STATES), attempts, requirements};
 }
 
-// ---------------------------------------------------------------------------------------------
-// Independent reference model (R1-R7), written for small cases and readability, not speed.
+// 독립 기준 모델(R1~R7)은 성능보다 작은 사례의 검증과 가독성을 우선한다.
 
 const SEASON = {'1':0, S:1, '2':2, W:3} as const;
 const order = (term:string) => Number(term.slice(0, 4)) * 4 + SEASON[term.slice(5) as keyof typeof SEASON];
-/** First instant (Asia/Seoul) after which a term's grade exists: 1 -> 7/1, S -> 9/1, 2 -> next 1/1, W -> next 3/1. */
+/** 한국시간 학기 성적 인정 시작 시각: 1학기→7/1, 여름→9/1, 2학기→다음 해 1/1, 겨울→다음 해 3/1. */
 function endsAt(term:string):number {
   const year = Number(term.slice(0, 4));
   const [y, m] = ({'1':[year, 7], S:[year, 9], '2':[year + 1, 1], W:[year + 1, 3]} as const)[term.slice(5) as '1'|'S'|'2'|'W'];
@@ -133,8 +117,7 @@ export function referenceLedger(c:Case):ModelResult {
   const held = new Set<string>();
   // R1
   for (const a of c.attempts) if (a.ledger === 'EARNED' && !ended(a)) held.add(a.attemptToken);
-  // R2 cycles: walk the links from every linked attempt; reaching a token twice means a cycle, and every
-  // token walked on the way (the lead-in included) is held.
+  // R2 순환은 연결된 모든 기록에서 링크를 추적해 같은 토큰을 다시 만나면 판단한다. 순환 진입까지 거친 기록도 보류한다.
   const cycleTokens = new Set<string>();
   for (const a of c.attempts) {
     if (!a.supersedesAttemptToken) continue;
@@ -211,7 +194,7 @@ export function referenceLedger(c:Case):ModelResult {
     } else if (r.kind === 'REQUIRED_COURSE') row = {state:winners.get(r.canonicalCourseId)?.ledger === 'EARNED' ? 'SATISFIED' : 'UNSATISFIED'};
     else if (r.kind === 'AREA_SPREAD') row = spreadModel(r, winners);
     else if (r.kind === 'GROUP_CHOICE') {
-      // A group counts only when every course in it has an EARNED winner.
+      // 그룹 내 모든 과목에 취득 완료 판정 기록이 있는 경우에만 충족으로 센다.
       const done = r.groups.filter(group => group.every(id => winners.get(id)?.ledger === 'EARNED')).length;
       row = {state:done >= r.k ? 'SATISFIED' : 'UNSATISFIED', groupsMatched:done};
     } else {
@@ -229,9 +212,8 @@ export function referenceLedger(c:Case):ModelResult {
 }
 
 /**
- * AREA_SPREAD by brute force: every earned course that lists two or more of the spread's areas is
- * tried in each of them, and the fewest and most distinct areas over all allocations decide the row.
- * It shares no code with the ledger's matching or set-cover search. Only for small cases.
+ * AREA_SPREAD는 취득 과목별 가능한 영역 배정을 모두 시도해 최소·최대 영역 수로 판정한다.
+ * 원장의 매칭·집합 덮개 코드를 공유하지 않는 독립적인 소규모 전수 탐색이다.
  */
 function spreadModel(r:Extract<LedgerRequirement, {kind:'AREA_SPREAD'}>, winners:ReadonlyMap<string, LedgerAttempt>):ModelResult['rows'][string] {
   const allowed = new Set(r.areaIds);
@@ -283,8 +265,7 @@ function project(c:Case):ModelResult {
   };
 }
 
-// ---------------------------------------------------------------------------------------------
-// Runner: seeds, shrinking, and a reproducible failure report
+// 실행기: 재현 시드·반례 축소·실패 보고 생성.
 
 const LEDGER_SHA = createHash('sha256').update(readFileSync(new URL('./ledger.ts', import.meta.url))).digest('hex').slice(0, 12);
 const ruleHash = (c:Case) => createHash('sha256').update(JSON.stringify(c.requirements)).digest('hex').slice(0, 12);
@@ -292,7 +273,7 @@ const SEEDS = process.env.LEDGER_PROP_SEED !== undefined
   ? [Number(process.env.LEDGER_PROP_SEED)]
   : Array.from({length:Number(process.env.LEDGER_PROP_RUNS ?? 400)}, (_, i) => 20261104 + i);
 
-/** Drop attempts and requirements one at a time while the property still fails. */
+/** 속성이 계속 실패하는 범위에서 수강 시도와 요건을 하나씩 제거하며 반례를 축소한다. */
 function shrink(c:Case, fails:(x:Case) => boolean):Case {
   let cur = c;
   for (let changed = true; changed;) {
@@ -311,10 +292,10 @@ function shrink(c:Case, fails:(x:Case) => boolean):Case {
 
 const canonical = (v:unknown):unknown => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
   ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, x]) => [k, canonical(x)])) : v;
-/** Hash of the whole input (attempts, requirements, asOf, pack state), independent of key order. */
+/** 입력 전체(수강 시도·요건·시각·규칙 상태)를 키 순서와 무관하게 해시한다. */
 const inputHash = (c:Case) => createHash('sha256').update(JSON.stringify(canonical(c))).digest('hex').slice(0, 12);
 
-/** What a failure report carries, so the same case can be rebuilt and checked by hand. */
+/** 실패 사례를 똑같이 복구해 수작업으로 확인할 수 있도록 보고서에 넣을 정보를 정의한다. */
 export function failureReport(name:string, problem:string, seed:number, original:Case, small:Case):string {
   return [`property "${name}" failed: ${problem}`,
     `seed=${seed} inputHash=${inputHash(original)} asOf=${original.asOf} pack=${original.rulePackState} ` +
@@ -333,7 +314,7 @@ function forAll(name:string, size:number, prop:(c:Case, rng:Rng) => string|null,
     try { problem = check(c); } catch (error) { problem = `threw: ${(error as Error).message}`; }
     if (problem !== null) {
       const small = shrink(c, x => check(x) !== null);
-      // Re-describe the shrunk case: the first message was about the full case.
+      // 첫 오류 메시지는 축소 전 사례를 설명하므로 축소 후 사례를 다시 설명한다.
       let final = problem;
       try { final = check(small) ?? problem; } catch (error) { final = `threw: ${(error as Error).message}`; }
       throw new Error(failureReport(name, final, seed, c, small));
@@ -343,7 +324,7 @@ function forAll(name:string, size:number, prop:(c:Case, rng:Rng) => string|null,
 const same = (a:unknown, b:unknown) => JSON.stringify(a) === JSON.stringify(b);
 const sortKeys = (o:Record<string, unknown>) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => (a < b ? -1 : 1)));
 
-/** Field-by-field difference between the model and the implementation, one line per field. */
+/** 기준 모델과 구현 결과의 필드별 차이를 한 줄씩 출력한다. */
 function explain(want:ModelResult, got:ModelResult):string|null {
   const lines:string[] = [];
   for (const key of ['state', 'earned', 'inProgress', 'planned', 'pending'] as const) {
@@ -362,7 +343,7 @@ function explain(want:ModelResult, got:ModelResult):string|null {
 
 describe('buildAcademicLedger properties (#202)', () => {
   it('reports a failure with everything needed to rebuild and re-check it', () => {
-    // A property that fails on any case with an earned attempt, so the runner has to report and shrink.
+    // 취득 기록이 있는 모든 사례에서 일부러 실패하도록 만든 속성으로 보고·축소 기능을 검증한다.
     const seed = 20261104;
     let message = '';
     try {
@@ -372,51 +353,50 @@ describe('buildAcademicLedger properties (#202)', () => {
     const full = genCase(mulberry32(seed), 6);
     expect(message).toContain(`seed=${seed} inputHash=${inputHash(full)} asOf=${full.asOf} pack=${full.rulePackState}`);
     expect(message).toContain(`repro: LEDGER_PROP_SEED=${seed} npx vitest run packages/core/src/academics/ledger.property.test.ts`);
-    // The shrunk case in the report parses back, keeps exactly what makes it fail, and its hashes match.
+    // 보고서의 축소 사례를 다시 파싱할 수 있고 실패 조건을 유지하며 해시가 같아야 한다.
     const small = JSON.parse(/^shrunk case: (.*)$/m.exec(message)![1]!) as Case;
     expect(small.attempts.filter(a => a.ledger === 'EARNED')).toHaveLength(1);
     expect(small.requirements).toEqual([]);
     expect(message).toContain(`shrunk: inputHash=${inputHash(small)} ruleHash=${ruleHash(small)} asOf=${small.asOf} pack=${small.rulePackState} ledgerSha=${LEDGER_SHA}`);
-    // The same seed always rebuilds the same case.
+    // 동일한 시드는 언제나 동일한 사례를 재구성한다.
     expect(inputHash(genCase(mulberry32(seed), 6))).toBe(inputHash(full));
-    // A model mismatch is reported field by field (expected = model, actual = implementation).
+    // 기준 모델 기대값과 구현 실제값의 차이를 필드별로 보고한다.
     const want = referenceLedger(full), got = {...want, earned:want.earned + 1, rows:{...want.rows, 'SYN-X':{state:'SATISFIED'}}};
     expect(explain(want, got)).toBe(`earned: model=${want.earned} implementation=${want.earned + 1}; row SYN-X: model=null implementation={"state":"SATISFIED"}`);
     expect(explain(want, want)).toBeNull();
   });
 
   it('the reference model agrees with hand-checked cases', () => {
-    // The expected values below are literals worked out by hand from R1-R7, not output of referenceLedger;
-    // the model is checked against them first, and only then compared with the implementation.
-    // Hand-worked: C1 earned 2024-1 (6) retaken and approved in 2025-1 (6): one counts, total 6.
+    // 아래 기대값은 R1~R7로 사람이 계산한 상수이지 referenceLedger의 출력이 아니다.
+    // 먼저 기준 모델을 상수에 대조한 다음 구현과 비교한다.
+    // 예: C1은 2024-1에 6단위 취득 후 2025-1에 승인 재수강했으므로 한 번만 세어 총 6단위다.
     const retake:Case = {asOf:'2025-08-01T00:00:00+09:00', rulePackVersion:'SYN-P', rulePackState:'APPROVED', requirements:[], attempts:[
       {attemptToken:'SYN-A', canonicalCourseId:'SYN-C1', creditUnits:6, ledger:'EARNED', areaIds:[], recognition:'RECOGNIZED', term:'2024-1'},
       {attemptToken:'SYN-B', canonicalCourseId:'SYN-C1', creditUnits:6, ledger:'EARNED', areaIds:[], recognition:'RECOGNIZED', term:'2025-1',
         supersedesAttemptToken:'SYN-A', retakeApprovalRef:'SYN-OK'}]};
     expect(referenceLedger(retake)).toMatchObject({earned:6, excluded:{'SYN-A':'RETAKE_SUPERSEDED'}, state:'READY'});
-    // Same without approval: the claimer is held, the earlier credit stays (6), state NEEDS_REVIEW.
+    // 재수강 승인이 없으면 새 기록을 보류하고 이전 취득 학점 6단위는 유지하며 상태는 NEEDS_REVIEW다.
     const {retakeApprovalRef:_r, ...noApproval} = retake.attempts[1]!;
     expect(referenceLedger({...retake, attempts:[retake.attempts[0]!, noApproval]})).toMatchObject({earned:6, excluded:{'SYN-B':'NEEDS_REVIEW'}, state:'NEEDS_REVIEW'});
-    // 2025-2 grade is not in before 2026-01-01 KST: 0 earned at 2025-12-31.
+    // 2026-01-01 한국시간 전에는 2025-2 학점이 인정되지 않으므로 2025-12-31 취득 학점은 0이다.
     const future:Case = {...retake, asOf:'2025-12-31T23:59:59+09:00', attempts:[{...retake.attempts[0]!, term:'2025-2'}]};
     expect(referenceLedger(future)).toMatchObject({earned:0, excluded:{'SYN-A':'NEEDS_REVIEW'}});
     expect(referenceLedger({...future, asOf:'2026-01-01T00:00:00+09:00'})).toMatchObject({earned:6, excluded:{}});
-    // One course in two areas: total 6, each area 6. Earned + planned of one course: planned is DUPLICATE.
+    // 한 과목이 두 영역에 속하면 총합은 6단위, 각 영역은 6단위다. 같은 과목의 취득·계획 중 계획 기록은 DUPLICATE다.
     const shared:Case = {...retake, attempts:[
       {attemptToken:'SYN-A', canonicalCourseId:'SYN-C1', creditUnits:6, ledger:'EARNED', areaIds:['SYN-A1', 'SYN-A2'], recognition:'RECOGNIZED', term:'2024-1'},
       {attemptToken:'SYN-P', canonicalCourseId:'SYN-C1', creditUnits:6, ledger:'PLANNED', areaIds:['SYN-A1'], recognition:'RECOGNIZED'}]};
     expect(referenceLedger(shared)).toMatchObject({earned:6, planned:0, areas:{'SYN-A1':[6, 6], 'SYN-A2':[6, 6]}, excluded:{'SYN-P':'DUPLICATE'}});
-    // A pending exchange alone: 0 earned, 6 pending.
+    // 교환학점이 인정 대기인 경우 취득은 0, 대기 중 학점은 6단위다.
     expect(referenceLedger({...retake, attempts:[{...retake.attempts[0]!, recognition:'PENDING'}]})).toMatchObject({earned:0, pending:6});
-    // The implementation agrees on every hand case.
+    // 구현은 사람이 계산한 모든 기준 사례와 결과가 같아야 한다.
     for (const c of [retake, {...retake, attempts:[retake.attempts[0]!, noApproval]}, future, shared]) {
       expect(project(c)).toEqual(referenceLedger(c));
     }
   });
 
   it('generates every kind of case it claims to test', () => {
-    // Guards the generator: if it stopped producing retakes, holds, duplicates, or ready packs, the
-    // properties below would pass without testing anything.
+    // 재수강·보류·중복·승인 규칙이 생성되지 않는다면 속성이 공허하게 통과하므로 생성기 분포를 확인한다.
     const tally:Record<string, number> = {};
     const bump = (k:string) => { tally[k] = (tally[k] ?? 0) + 1; };
     for (const seed of SEEDS.slice(0, 400)) {
@@ -439,7 +419,7 @@ describe('buildAcademicLedger properties (#202)', () => {
     forAll('reference model', 6, c => explain(referenceLedger(c), project(c)));
   });
 
-  // Precondition: none. The ledger reads attempts as a set; only excludedAttempts follows input order.
+  // 전제 없음. 원장은 수강 시도를 집합으로 처리하고 excludedAttempts만 입력 순서를 따른다.
   it('gives the same result for any attempt order', () => {
     forAll('order independence', 12, (c, rng) => {
       const shuffled = [...c.attempts].map(a => [rng(), a] as const).sort((x, y) => x[0] - y[0]).map(([, a]) => a);
@@ -448,7 +428,7 @@ describe('buildAcademicLedger properties (#202)', () => {
     });
   });
 
-  // Precondition: none. Units are integers (1 unit = 0.5학점); sums never lose or invent units.
+  // 전제 없음. 학점 단위는 정수(1단위=0.5학점)이며 합계가 학점을 잃거나 만들어내지 않는다.
   it('keeps integer units and consistent sums', () => {
     forAll('integer units', 12, c => {
       const out = buildAcademicLedger(c);
@@ -456,7 +436,7 @@ describe('buildAcademicLedger properties (#202)', () => {
         out.pendingRecognitionCreditUnits, ...out.areaProgress.flatMap(a => [a.earnedCreditUnits, a.projectedCreditUnits])];
       if (!nums.every(n => Number.isSafeInteger(n) && n >= 0)) return `non-integer or negative unit in ${JSON.stringify(nums)}`;
       if (out.projectedUniqueCreditUnits !== out.earnedCreditUnits + out.inProgressCreditUnits + out.plannedCreditUnits) return 'projected != earned + in progress + planned';
-      // Each course counts once: the unique total is at most the earned units of distinct courses.
+      // 각 과목을 한 번만 세므로 고유 취득 총합은 서로 다른 과목의 취득 학점 합을 넘지 않는다.
       const bound = new Map<string, number>();
       for (const a of c.attempts) if (a.ledger === 'EARNED') bound.set(a.canonicalCourseId, Math.max(bound.get(a.canonicalCourseId) ?? 0, a.creditUnits));
       if (out.earnedCreditUnits > [...bound.values()].reduce((s, n) => s + n, 0)) return 'earned exceeds one attempt per course';
@@ -465,14 +445,14 @@ describe('buildAcademicLedger properties (#202)', () => {
       if (new Set(tokens).size !== tokens.length || tokens.some(t => !c.attempts.some(a => a.attemptToken === t))) return 'an attempt is excluded twice or unknown';
       return null;
     });
-    // A repeated attempt token is refused, never counted twice; a fractional unit is refused, never rounded.
+    // 같은 수강 시도 토큰의 중복은 두 번 세지 않고 거부하며 소수 학점 단위도 반올림하지 않고 거부한다.
     const one:LedgerAttempt = {attemptToken:'SYN-T', canonicalCourseId:'SYN-C1', creditUnits:6, ledger:'EARNED', areaIds:[], recognition:'RECOGNIZED', term:'2024-1'};
     const base = {asOf:'2026-12-20T12:00:00+09:00', rulePackVersion:'SYN-P', rulePackState:'APPROVED' as const, requirements:[]};
     expect(() => buildAcademicLedger({...base, attempts:[one, {...one}]})).toThrow(/duplicate attempt/);
     expect(() => buildAcademicLedger({...base, attempts:[{...one, creditUnits:5.5}]})).toThrow(/integer credit unit/);
   });
 
-  // Precondition: none. A grade exists only after its term ended (R1), so no term ending after asOf adds earned units.
+  // 전제 없음. 학기가 asOf보다 뒤에 끝나면 그 학점은 취득으로 추가하지 않는다(R1).
   it('never counts a term that had not ended by asOf', () => {
     forAll('no future credit', 12, c => {
       const out = buildAcademicLedger(c);
@@ -484,7 +464,8 @@ describe('buildAcademicLedger properties (#202)', () => {
     });
   });
 
-  // Precondition: none. Without APPROVED nothing is SATISFIED or READY (R6/R7); without an approval ref no retake removes credit (R2).
+  // 전제 없음. APPROVED 규칙집 없이는 SATISFIED·READY가 될 수 없다(R6/R7).
+  // 승인 근거 없는 재수강 연결은 이전 학점을 제거하지 않는다(R2).
   it('never passes on an unapproved pack or an unapproved retake', () => {
     forAll('approval gates', 12, c => {
       for (const state of ['DRAFT', 'NEEDS_REVIEW', 'MISSING'] as const) {
@@ -499,10 +480,9 @@ describe('buildAcademicLedger properties (#202)', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------
-// #11 (본선 전) gaps. What these add is listed in PROPERTY_COVERAGE.md next to this file.
+// 본선 이전 #11에서 추가한 검증 공백은 인접 PROPERTY_COVERAGE.md에 기록한다.
 
-/** Which supersede-link shapes one case contains. */
+/** 한 사례가 포함하는 재수강 연결 형태를 분류한다. */
 function linkShapes(c:Case) {
   const byToken = new Map(c.attempts.map(a => [a.attemptToken, a]));
   const claims = new Map<string, number>();
@@ -527,7 +507,7 @@ function linkShapes(c:Case) {
   };
 }
 
-/** Adds an AREA_SPREAD and a GROUP_CHOICE row, which genCase and referenceLedger do not model. */
+/** 기존 genCase/referenceLedger가 모델링하지 않는 AREA_SPREAD와 GROUP_CHOICE 요건을 추가한다. */
 function withComposite(c:Case, rng:Rng):Case {
   const requirements = [...c.requirements];
   if (chance(rng, 0.7)) {
@@ -549,7 +529,7 @@ const earned = (token:string, course:string, units:number, over:Partial<LedgerAt
 
 describe('buildAcademicLedger gaps (#11 본선 전)', () => {
   it('the generator makes forks, cycles, self-links and chains, not only plain retakes', () => {
-    // The reference-model test runs on these same seeds and size, so these shapes are compared there.
+    // 기준 모델 시험도 같은 시드·입력 크기로 실행하므로 추가 요건을 함께 비교한다.
     const tally = {fork:0, selfLink:0, cycle:0, chain:0};
     for (const seed of SEEDS.slice(0, 400)) {
       const found = linkShapes(genCase(mulberry32(seed), 6));
@@ -606,7 +586,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     expect(row(3)).toMatchObject({state:'UNSATISFIED', earnedCreditUnits:2, remainingCreditUnits:1});
   });
 
-  // Precondition: none. Every comparison is earned >= required, so doubling all units changes no state.
+  // 전제 없음. 모든 비교가 취득 학점 ≥ 요구 학점이므로 모든 학점 단위를 두 배로 해도 상태가 달라지지 않는다.
   it('doubling every credit unit doubles every unit figure and changes no state', () => {
     forAll('unit scale', 12, (c0, rng) => {
       const c = withComposite(c0, rng);
@@ -629,7 +609,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     });
   });
 
-  // Precondition: the added course is new, cleanly earned and named by no requirement except through its areas.
+  // 전제: 추가 과목은 새 과목으로 문제없이 취득했고 직접 지정된 필수 요건이 아니라 영역을 통해서만 참조된다.
   it('one more cleanly earned course never takes credit or a satisfied row away', () => {
     forAll('one more earned course', 12, (c0, rng) => {
       const c = withComposite(c0, rng);
@@ -644,9 +624,8 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
         if (area(after, id) !== want) return `area ${id}: ${area(before, id)} -> ${area(after, id)}, want ${want}`;
       }
       if (!same(before.excludedAttempts, after.excludedAttempts)) return 'other attempts changed their exclusion';
-      // Two ledger rules may send a row to review instead of SATISFIED: a row with no evidence, and a spread
-      // with an earned course in two or more of its areas, whose official allocation decides the spread
-      // (the new credit can lift the unit gate while that course is still ambiguous).
+      // 두 상황에서는 충족처럼 보이는 요건도 검토 보류될 수 있다.
+      // 근거가 없는 요건, 또는 여러 영역에 걸친 취득 과목의 공식 배정에 따라 AREA_SPREAD가 달라지는 경우다.
       const unevidenced = new Set(c.requirements.filter(r => !(r.evidenceRefs?.length)).map(r => r.id));
       let toReview = false;
       for (const row of before.requirements) {
@@ -673,7 +652,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     });
   });
 
-  // Precondition: none. The ledger reads its request; it never writes to it.
+  // 전제 없음. 원장은 요청을 읽기만 하고 입력을 수정하지 않는다.
   it('never modifies its inputs', () => {
     const freeze = (value:unknown):void => {
       if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); }
@@ -681,7 +660,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     forAll('inputs unchanged', 12, (c0, rng) => {
       const c = withComposite(c0, rng), before = JSON.stringify(c), frozen = structuredClone(c);
       freeze(frozen);
-      // A write to the frozen copy throws in strict mode; the plain copy shows any silent change.
+      // 동결된 입력 수정은 엄격 모드에서 예외를 내고, 일반 복사본은 조용한 변경도 검출한다.
       const out = buildAcademicLedger(frozen), plain = buildAcademicLedger(c);
       if (JSON.stringify(c) !== before) return 'the request changed';
       return same(out, plain) ? null : 'a frozen request gives a different result';
@@ -705,13 +684,11 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------
-// #11 (본선 전): AREA_SPREAD / GROUP_CHOICE against the brute-force reference model, the search
-// budget, and large inputs. Synthetic SYN-* only.
+// #11 본선 전에는 AREA_SPREAD·GROUP_CHOICE를 전수 탐색 기준 모델, 탐색 예산, 대규모 입력과 비교한다. SYN-* 합성 데이터만 사용한다.
 
 const SPREAD_AREAS = ['SYN-S1', 'SYN-S2', 'SYN-S3', 'SYN-S4', 'SYN-S5', 'SYN-S6'] as const;
 
-/** Distinct, recognized, link-free courses with many multi-area tags, so the spread rule is busy. */
+/** 서로 다른 인정 과목이며 재수강 링크가 없고 여러 영역에 걸쳐 있어 영역 분배 계산이 복잡한 사례다. */
 function genSpreadCase(rng:Rng):Case {
   const attempts:LedgerAttempt[] = [];
   const count = 1 + Math.floor(rng() * 8);
@@ -728,7 +705,7 @@ function genSpreadCase(rng:Rng):Case {
       requiredCreditUnits:pick(rng, [1, 6, 12, 18]), evidenceRefs:['SYN-EV-SPREAD']}]};
 }
 
-/** Ten triangles of areas; each course sits on one edge (two areas). Any allocation covers at least 20 areas. */
+/** 영역 삼각형 10개를 만든다. 각 과목은 두 영역을 잇는 간선 하나에 있으므로 모든 배정은 최소 20개 영역을 채운다. */
 function triangles(count:number, minAreas:number):Case {
   const attempts:LedgerAttempt[] = [];
   const areaIds:string[] = [];
@@ -753,18 +730,18 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
     const spread = (minAreas:number, requiredCreditUnits = 6):LedgerRequirement => ({id:'SYN-R', kind:'AREA_SPREAD',
       areaIds:['SYN-X', 'SYN-Y', 'SYN-Z'], minAreas, requiredCreditUnits, evidenceRefs:['SYN-EV']});
     const state = (attempts:LedgerAttempt[], req:LedgerRequirement) => referenceLedger({...base, attempts, requirements:[req]}).rows['SYN-R']!.state;
-    // One course in X or Y can give only one area.
+    // X·Y 중 하나에 속하는 과목 하나로는 영역 하나만 채운다.
     expect(state([course(1, ['SYN-X', 'SYN-Y'])], spread(2))).toBe('UNSATISFIED');
-    // X alone plus a course in X or Y: one allocation gives 1 area, another gives 2.
+    // X 전용 과목과 X·Y 겸용 과목이면 배정에 따라 영역 1개 또는 2개를 채운다.
     expect(state([course(1, ['SYN-X']), course(2, ['SYN-X', 'SYN-Y'])], spread(2))).toBe('NEEDS_REVIEW');
-    // X alone plus a course in Y or Z: every allocation gives 2.
+    // X 전용과 Y·Z 겸용 과목이면 어떤 배정에서도 정확히 2개 영역을 채운다.
     expect(state([course(1, ['SYN-X']), course(2, ['SYN-Y', 'SYN-Z'])], spread(2))).toBe('SATISFIED');
-    // Enough areas but too few units.
+    // 영역 종류가 충분해도 취득 학점 단위가 모자라는 경우다.
     expect(state([course(1, ['SYN-X'], 1), course(2, ['SYN-Y'], 1)], spread(2, 6))).toBe('UNSATISFIED');
   });
 
   it('more multi-area courses than their areas cannot give more areas', () => {
-    // Three courses, each in X or Y: at most 2 areas, so 3 is unreachable.
+    // 각각 X·Y만 가능한 과목 셋으로는 최대 2개 영역이므로 3개 영역 충족은 불가능하다.
     const three:Case = {asOf:'2026-12-20T12:00:00+09:00', rulePackVersion:'SYN-P', rulePackState:'APPROVED',
       attempts:[1, 2, 3].map(n => ({attemptToken:`SYN-M${n}`, canonicalCourseId:`SYN-MC${n}`, creditUnits:6, ledger:'EARNED' as const,
         areaIds:['SYN-X', 'SYN-Y'], recognition:'RECOGNIZED' as const, term:'2023-1'})),
@@ -796,7 +773,7 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
   });
 
   it('a spread the search can finish is decided exactly', () => {
-    // 3 triangles, 9 areas: every allocation covers at least 6 and at most 9 areas.
+    // 삼각형 3개로 9개 영역을 만들면 모든 배정에서 최소 6개, 최대 9개 영역을 채운다.
     for (const [minAreas, want] of [[6, 'SATISFIED'], [7, 'NEEDS_REVIEW'], [9, 'NEEDS_REVIEW']] as const) {
       const c = triangles(3, minAreas);
       expect(project(c).rows['SYN-R-TRI']!.state, `min ${minAreas}`).toBe(want);
@@ -805,14 +782,13 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
   });
 
   it('past the search budget the ledger holds for review instead of guessing', () => {
-    // 10 triangles, 30 areas: every allocation covers at least 20 (two per triangle), so 20 is
-    // truly met. Proving that needs more than the ledger's 50000 search steps, and the documented
-    // rule then holds the row for review. It must never say UNSATISFIED here.
+    // 삼각형 10개·영역 30개에서는 모든 배정이 최소 20개 영역을 채워 실제로 충족한다.
+    // 다만 이를 증명하려면 원장의 탐색 한도 50,000단계를 넘으므로 보류해야 하고 UNSATISFIED로 단정하면 안 된다.
     const met = buildAcademicLedger(triangles(10, 20)).requirements[0]!;
     expect(met.state).toBe('NEEDS_REVIEW');
-    // 21 is truly undecided (some allocations give 20, some 30): review, budget or not.
+    // 최소 20~최대 30개 영역을 채우므로 21개 충족 여부는 탐색 예산과 무관하게 미확정이다.
     expect(buildAcademicLedger(triangles(10, 21)).requirements[0]!.state).toBe('NEEDS_REVIEW');
-    // Too few units is still UNSATISFIED without any search.
+    // 취득 단위가 명확히 부족하면 별도 탐색 없이도 UNSATISFIED로 판정한다.
     const short = triangles(10, 20);
     short.requirements = [{...short.requirements[0]!, requiredCreditUnits:31} as LedgerRequirement];
     expect(buildAcademicLedger(short).requirements[0]!.state).toBe('UNSATISFIED');
@@ -828,7 +804,7 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
       requirements:[
         {id:'SYN-R-TOTAL', kind:'CREDIT_TOTAL', requiredCreditUnits:2000, evidenceRefs:['SYN-EV-T']},
         {id:'SYN-R-SPREAD', kind:'AREA_SPREAD', areaIds:areas, minAreas:30, requiredCreditUnits:2000, evidenceRefs:['SYN-EV-S']},
-        // Every seventh course is only planned, so each group of ten misses at least one course.
+        // 일곱 번째마다 계획 상태이므로 열 과목씩 묶은 모든 그룹에는 적어도 하나의 미취득 과목이 있다.
         {id:'SYN-R-GROUP', kind:'GROUP_CHOICE', groups, k:1, evidenceRefs:['SYN-EV-G']},
       ]};
     expect(explain(referenceLedger(c), project(c))).toBeNull();

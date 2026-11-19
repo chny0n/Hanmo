@@ -3,22 +3,19 @@ import {AcademicAuditVNextSchema, type AcademicAuditVNext} from '../contracts/in
 import {NOT_OFFICIAL_GRADUATION_TEXT, creditsText} from './graduationView.js';
 
 /**
- * #144 졸업 화면의 "주전공 + 지금 선택한 이중전공" 모델. Not the #82 what-if: it shows only the major the
- * student actually chose. Figures come from the academics core (buildDoubleMajorAudit, #147) as-is; the UI
- * never adds credits, decides a row or settles whether a shared course may count twice.
- *
- * Wire: the merged core DoubleMajorAudit shape. Every overlap element is checked strictly (OverlapSchema) and
- * against the audited rows, so a malformed row impact is an error frame, never a thrown render.
+ * 졸업 화면의 현재 주전공·이중전공 모델(#144)이다. 가상 변경(#82)이 아닌 실제 선택 전공만 표시한다.
+ * 학점·요건 결과는 buildDoubleMajorAudit 그대로 사용하며 화면이 직접 합산·판정하거나 공유 과목의 중복 인정을 확정하지 않는다.
+ * OverlapSchema로 데이터를 엄격히 검증하고 잘못된 영향 정보는 렌더링 예외 대신 오류 화면으로 처리한다.
  */
 type RowState = AcademicAuditVNext['requirements'][number]['state'];
 type OverlapStatus = 'NONE' | 'NO_APPROVED_RULE' | 'COVERED_BY_APPROVED_RULE' | 'OVER_APPROVED_LIMIT';
 
 export interface MajorRowView {
   readonly id: string;
-  /** Text + icon; never colour alone. */
+  /** 색상만으로 상태를 나타내지 않고 텍스트와 아이콘을 함께 제공한다. */
   readonly badge: {readonly text: string; readonly icon: string};
   readonly creditsText: string | null;
-  /** Set when the row depends on a shared course the rules do not settle. */
+  /** 공유 과목의 중복 인정 여부가 미확정이라 해당 요건 결과도 달라질 수 있을 때 설정한다. */
   readonly heldText: string | null;
   readonly ariaLabel: string;
 }
@@ -33,10 +30,10 @@ export interface MajorColumnView {
 export interface DoubleMajorView {
   readonly selectionText: string;
   readonly notOfficialText: string;
-  /** One transcript: each course counted once, whichever majors use it. */
+  /** 같은 성적표의 과목은 어느 전공에서 사용하든 총합에서 한 번만 계산한다. */
   readonly uniqueCredits: readonly {readonly label: string; readonly credits: string}[];
   readonly primary: MajorColumnView;
-  /** Null when there is no double-major column to show; doubleMajorNote says why. */
+  /** 이중전공 열이 없으면 null이며 사유는 doubleMajorNote에서 안내한다. */
   readonly doubleMajor: MajorColumnView | null;
   readonly doubleMajorNote: string | null;
   readonly overlapText: string | null;
@@ -52,13 +49,13 @@ const ROW_BADGE: Record<RowState, MajorRowView['badge']> = {
   NOT_APPLICABLE: {text: '해당 없음', icon: '–'},
   NOT_CHECKED: {text: '확인 안 함', icon: '…'},
 };
-// What the student must act on first, then what is still open, then what is done.
+// 학생이 먼저 조치해야 할 항목, 남은 항목, 완료 항목 순으로 정렬한다.
 const ROW_RANK: Record<RowState, number> = {UNSATISFIED: 0, NEEDS_REVIEW: 1, NOT_CHECKED: 2, SATISFIED: 3, NOT_APPLICABLE: 4};
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isUnits = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
 
-// Mirrors core OverlapRowImpact / DoubleMajorAudit['overlap']; extra keys, nulls and bad numbers are rejected.
+// 코어의 OverlapRowImpact·DoubleMajorAudit['overlap'] 구조를 그대로 검증한다. 불필요한 키·null·잘못된 숫자는 거부한다.
 const Id = z.string().trim().min(1).max(128);
 const Units = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const ImpactSchema = z.strictObject({
@@ -76,7 +73,7 @@ const OverlapSchema = z.strictObject({
 });
 type Impact = z.infer<typeof ImpactSchema>;
 
-/** Impacts name real rows once each; the held rows are exactly the undecided impacts and are shown as open. */
+/** 영향받는 실제 요건을 각각 한 번만 나열한다. 미확정 요건은 영향 목록과 정확히 일치해야 하며 열린 상태로 보여준다. */
 function impactsFit(audit: AcademicAuditVNext | null, impacts: readonly Impact[], held: readonly string[]): boolean {
   const rows = new Map((audit?.requirements ?? []).map(r => [r.requirementId, r.state]));
   const undecided = impacts.filter(i => !i.decided).map(i => i.requirementId);
@@ -112,7 +109,7 @@ function overlapText(status: OverlapStatus, count: number, units: number): strin
   }
 }
 
-/** Anything malformed or bound to another asOf is {ok:false}: render an error, never guessed values. */
+/** 데이터 형식이 잘못되거나 asOf가 다른 입력이면 ok:false로 처리하고 추정값 대신 오류를 표시한다. */
 export function buildDoubleMajorView(raw: unknown, expected: {asOf: string}): DoubleMajorViewResult {
   if (!isObj(raw) || typeof raw.asOf !== 'string' || Date.parse(raw.asOf) !== Date.parse(expected.asOf)) return {ok: false};
   const primary = AcademicAuditVNextSchema.safeParse(raw.primary);
@@ -121,11 +118,11 @@ export function buildDoubleMajorView(raw: unknown, expected: {asOf: string}): Do
   if (!isObj(u) || !isUnits(u.earnedCreditUnits) || !isUnits(u.inProgressCreditUnits) || !isUnits(u.plannedCreditUnits)) return {ok: false};
   if (!isObj(dm) || !parsedOverlap.success) return {ok: false};
   const ov = parsedOverlap.data, status: OverlapStatus = ov.status, heldIds = ov.heldRequirementIds, impacts = ov.rowImpacts;
-  // A settled overlap holds nothing; only an unsettled one may carry row impacts.
+  // 중복 인정이 확정된 상태에는 보류 요건이 없어야 하며 미확정 상태만 영향을 기록한다.
   if ((status === 'NONE' || status === 'COVERED_BY_APPROVED_RULE')
     && (impacts.primary.length || impacts.doubleMajor.length || heldIds.primary.length || heldIds.doubleMajor.length)) return {ok: false};
   if (!impactsFit(primary.data, impacts.primary, heldIds.primary)) return {ok: false};
-  // The same transcript feeds both majors: the totals must agree, or the two columns describe different students.
+  // 양쪽 전공에 같은 성적표를 쓰므로 고유 총 학점도 같아야 한다. 다르면 서로 다른 사용자 데이터가 섞였을 가능성이 있다.
   if (u.earnedCreditUnits !== primary.data.earnedCreditUnits) return {ok: false};
 
   let second: MajorColumnView | null = null;
@@ -144,7 +141,7 @@ export function buildDoubleMajorView(raw: unknown, expected: {asOf: string}): Do
     }
     default: return {ok: false};
   }
-  // Without a checked double major there is no second column for an impact to describe.
+  // 검증된 이중전공이 없으면 두 번째 열에 대한 영향 정보를 표시하지 않는다.
   if (dm.status !== 'CHECKED' && (impacts.doubleMajor.length || heldIds.doubleMajor.length)) return {ok: false};
   const selectionText = dm.status === 'CHECKED' || dm.status === 'RULES_MISSING' ? '이중전공: 선택함'
     : dm.status === 'NOT_APPLICABLE' ? '이중전공: 해당 없음' : '이중전공: 입력 필요';

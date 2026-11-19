@@ -2,16 +2,16 @@ import {OwnerStudyPlanCheckResponseSchema, type OwnerStudyPlanCheckResponse} fro
 import {creditsText} from './graduationView.js';
 
 /**
- * #81 수강계획 검사 모델, shown next to the #74 졸업 요건 현황. Values come from the owner plan check
- * (contracts self/study-plan-check) as-is; the UI never adds credits, invents a cap or turns a
- * needs-review finding into a confirmed warning. Not course registration, not a graduation decision.
+ * 졸업 요건 현황(#74) 옆에 표시할 수강계획 검사 모델(#81)이다.
+ * 값은 서버 소유자 검사 계약(self/study-plan-check)에서 받은 그대로 사용한다.
+ * 화면이 학점을 더하거나 상한을 만들어 내거나 검토 보류를 확정 경고로 바꾸지 않는다. 실제 수강신청 또는 졸업 판정이 아니다.
  */
 type Issue = OwnerStudyPlanCheckResponse['planIssues'][number];
 type Caveat = OwnerStudyPlanCheckResponse['caveats'][number];
 
 export interface PlanIssueView {
   readonly key: string;
-  /** Text + icon; never colour alone. */
+  /** 상태는 색상만으로 구별하지 않고 텍스트와 아이콘을 함께 제공한다. */
   readonly badge: {readonly text: string; readonly icon: string};
   readonly text: string;
   readonly courses: string;
@@ -21,7 +21,7 @@ export interface PlanCheckView {
   readonly term: string;
   readonly stateText: string;
   readonly loadText: string;
-  /** Null unless the server sent an approved cap (the contract forbids an unverified one). */
+  /** 서버가 승인된 상한을 보내지 않았다면 null이다. 검증되지 않은 상한은 계약상 허용하지 않는다. */
   readonly capText: string | null;
   readonly issues: readonly PlanIssueView[];
   readonly unchecked: readonly string[];
@@ -65,13 +65,13 @@ export function termText(term: string): string {
   return `${y}년 ${s === '1' ? '1학기' : s === '2' ? '2학기' : s === 'S' ? '여름 계절학기' : '겨울 계절학기'}`;
 }
 
-/** Anything malformed or bound to another term/asOf is {ok:false}: render an error, never guessed values. */
+/** 형식 오류나 대상 학기·기준 시각이 다른 결과는 ok:false로 처리하고 추정값 대신 오류를 표시한다. */
 export function buildPlanCheckView(raw: unknown, expected: {term: string; asOf: string}): PlanCheckViewResult {
   const parsed = OwnerStudyPlanCheckResponseSchema.safeParse(raw);
   if (!parsed.success) return {ok: false};
   const r = parsed.data;
   if (r.term !== expected.term || Date.parse(r.asOf) !== Date.parse(expected.asOf)) return {ok: false};
-  // Confirmed findings first; within each group, server order.
+  // 확정된 발견 사항을 먼저 표시하고 같은 그룹 안에서는 서버가 보낸 순서를 따른다.
   const issues = [...r.planIssues].sort((a, b) => Number(ISSUE[b.code].confirmed) - Number(ISSUE[a.code].confirmed)).map((i, n) => {
     const def = ISSUE[i.code];
     return {
