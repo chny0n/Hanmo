@@ -6,6 +6,7 @@ import {
 import {importantNotices} from '../core/important-notices.js';
 import {academicSourceLink,selectedMajors,studentDeadlineDisplay} from '../core/academic-display.js';
 import {readRoadmap,saveRoadmap,clearRoadmap,exportRoadmap,parseRoadmapBackup,ROADMAP_MAX_BYTES} from '../core/local-roadmap.js';
+import {takeStudentEntry} from '../views/student-entry.js';
 
 // 이전 개발판 설정은 사용자가 별도로 실행하지 않는 한 자동 이관하지 않는다.
 const LEGACY_KEY='hanmo:degree-rescue:academic-roadmap:v1';
@@ -377,4 +378,19 @@ element<HTMLButtonElement>('template-export').addEventListener('click',exportJso
 element<HTMLSelectElement>('group-filter').addEventListener('change',render);
 element<HTMLInputElement>('agenda-search').addEventListener('input',render);
 element<HTMLInputElement>('include-unknown').addEventListener('change',render);
-loadSaved();renderSteps();void officialTitles();
+/** 현재 탭에서 학생이 명시적으로 선택한 조건만 임시 적용하며, 저장된 설정은 자동 덮어쓰지 않는다. */
+function applyEntryHandoff():void {
+  const choice=takeStudentEntry(sessionStorage);
+  if(!choice)return;
+  element<HTMLSelectElement>('profile-campus').value=choice.campus;
+  element<HTMLInputElement>('profile-major').value=choice.major;
+  element<HTMLInputElement>('profile-double').value=choice.doubleMajor??'';
+  element<HTMLInputElement>('profile-cohort').value=choice.cohort===undefined?'':String(choice.cohort);
+  const note=element<HTMLElement>('entry-journey-note');
+  note.hidden=false;
+  note.textContent=(choice.campus==='SEOUL'?'서울':'글로벌')+'캠퍼스 · '+choice.major
+    +' 기준으로 공지 후보를 찾습니다. 실제 전공 적용 대상과 신청 기한은 원문에서 확인해 주세요.';
+  setMessage('profile-message','첫 화면의 전공 선택을 임시 적용했습니다. 학생 소속이나 학칙 적용은 인증되지 않았으며, 보존하려면 아래 저장 버튼을 누르세요.');
+}
+
+loadSaved();applyEntryHandoff();renderSteps();void officialTitles();

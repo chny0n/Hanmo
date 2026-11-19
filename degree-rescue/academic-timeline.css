@@ -16,3 +16,22 @@
 .graduation-collapsed>summary{cursor:pointer;font-weight:700;color:#234563;line-height:1.6}
 .graduation-collapsed[open]>summary{margin-bottom:16px}
 @media(max-width:440px){.focus-panel .agenda-card{padding:13px}.source-footnote summary{font-size:12px}}
+
+/* 1차 전공 선택의 임시 전달 상태와 다음 행동을 일반 학생에게 설명한다. */
+.entry-journey-note {
+  padding:12px 15px;margin:16px 0 0;
+  border-left:4px solid #b38e4b;border-radius:8px;
+  background:#f7f9fc;color:#1f4b72;font-size:13px;line-height:1.7;
+}
+.entry-journey-note[hidden] {display:none;}
+.timeline-next-step {
+  margin-top:24px;padding:20px;border-radius:12px;
+  border:1px solid #d7e5ec;background:#f4f8fb;
+}
+.timeline-next-step h3 {font-size:16px;color:#193e5b;margin:0 0 9px;}
+.timeline-next-step p {font-size:13px;line-height:1.7;color:#4c6378;margin:0 0 14px;}
+.timeline-next-step a {
+  display:inline-block;padding:11px 15px;border-radius:8px;
+  background:#0c3658;color:white;font-size:13px;font-weight:750;text-decoration:none;
+}
+.timeline-next-step a:focus-visible {outline:3px solid #c78d29;outline-offset:3px;}

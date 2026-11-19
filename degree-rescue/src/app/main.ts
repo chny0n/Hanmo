@@ -5,6 +5,7 @@ import {openRequirementIdsFromAudit} from '../core/academics/notice-links.js';
 import {ACADEMIC_AUDIT_BRIDGE_KEY,AcademicAuditHintSchema} from '../core/academic-schedule.js';
 import {DEMO_FORECAST,DEMO_LEDGER,DEMO_PLAN} from './synthetic-demo.js';
 import {studentForecastInput} from '../views/forecast-student-input.js';
+import {stageStudentEntry} from '../views/student-entry.js';
 
 type Mode='forecast'|'ledger'|'plan';
 const defaults:Record<Mode,unknown>={forecast:DEMO_FORECAST,ledger:DEMO_LEDGER,plan:DEMO_PLAN};
@@ -193,4 +194,30 @@ document.getElementById('forecast-json-run')?.addEventListener('click',()=>compu
 document.getElementById('forecast-json-reset')?.addEventListener('click',()=>{
   textarea('forecast').value=JSON.stringify(DEMO_FORECAST,null,2);
   compute('forecast');
+});
+
+/** 1차 #57: 캠퍼스·전공 선택을 학사공지 화면으로 안전하게 한 번 전달한다. */
+const entryForm=document.getElementById('student-entry-form');
+if(!(entryForm instanceof HTMLFormElement))throw new Error('첫 학업 안내 폼을 찾지 못했습니다.');
+entryForm.addEventListener('submit',event=>{
+  event.preventDefault();
+  const byId=(id:string):HTMLInputElement|HTMLSelectElement=>{
+    const el=document.getElementById(id);
+    if(!(el instanceof HTMLInputElement)&&!(el instanceof HTMLSelectElement)){
+      throw new Error('전공 선택 입력란을 찾지 못했습니다.');
+    }
+    return el;
+  };
+  const message=document.getElementById('student-entry-status');
+  try{
+    const campus=byId('student-entry-campus').value;
+    const major=byId('student-entry-major').value;
+    const doubleMajor=byId('student-entry-double').value;
+    const cohort=byId('student-entry-cohort').value;
+    stageStudentEntry(sessionStorage,{campus,major,doubleMajor,cohort});
+    window.location.assign('./academic-timeline.html');
+  }catch(error){
+    if(message)message.textContent='전공 정보를 다음 화면으로 전달하지 못했습니다. '+(error instanceof Error?error.message:String(error))
+      +' 오른쪽의 “전공 없이 전체 공지 보기”로 이동해 직접 입력할 수 있습니다.';
+  }
 });

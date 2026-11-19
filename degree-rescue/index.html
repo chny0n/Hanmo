@@ -20,6 +20,42 @@
       <p class="home-notice" role="note"><strong>NOTICE</strong><span>한모 학업 플래너 · 비공식 개발용 시연</span></p>
       <p class="home-guidance">공식 학사 일정과 적용 대상은 학교 공지에서 확인하세요. 현재 강의 개설 전망은 공식 원장과 연결되지 않았으며, 가상 예시는 실제 자료가 아닙니다. 공유 PC에서는 실제 성적표와 개인정보를 입력하지 마세요.</p>
     </section>
+    <section class="student-entry" aria-labelledby="student-entry-heading">
+      <div class="student-entry-heading">
+        <p class="student-entry-eyebrow">1차 학업 안내 · 학생용</p>
+        <h2 id="student-entry-heading">내 전공 공지부터 확인하기</h2>
+        <p>학교 계정이나 성적표 없이 시작할 수 있습니다. 캠퍼스와 주전공을 입력해 공지 후보를 확인하고, 다음 학기 과목 개설 정보를 살펴보세요.</p>
+      </div>
+      <ol class="student-entry-steps" aria-label="학업 정보 탐색 순서">
+        <li><strong>1</strong> 캠퍼스·전공 선택</li>
+        <li><strong>2</strong> 공지·원문 확인</li>
+        <li><strong>3</strong> 개설 전망 확인</li>
+      </ol>
+      <form id="student-entry-form" class="student-entry-form" aria-describedby="student-entry-help">
+        <label for="student-entry-campus">캠퍼스 <span class="required-label">(필수)</span>
+          <select id="student-entry-campus" name="campus" required>
+            <option value="">캠퍼스를 선택해 주세요</option>
+            <option value="SEOUL">서울캠퍼스</option>
+            <option value="GLOBAL">글로벌캠퍼스</option>
+          </select>
+        </label>
+        <label for="student-entry-major">주전공 <span class="required-label">(필수)</span>
+          <input id="student-entry-major" name="major" type="text" maxlength="100" autocomplete="off" placeholder="예: 경제학부" required>
+        </label>
+        <label for="student-entry-double">이중전공 <span class="optional-label">(선택)</span>
+          <input id="student-entry-double" name="doubleMajor" type="text" maxlength="100" autocomplete="off" placeholder="해당 없다면 비워 두세요">
+        </label>
+        <label for="student-entry-cohort">입학년도 <span class="optional-label">(선택)</span>
+          <input id="student-entry-cohort" name="cohort" type="number" min="2010" max="2100" step="1" placeholder="예: 2024">
+        </label>
+        <div class="student-entry-submit">
+          <button id="student-entry-go" type="submit">내 전공 공지 확인하기</button>
+          <a href="./academic-timeline.html">전공 없이 전체 공지 보기</a>
+        </div>
+      </form>
+      <p id="student-entry-help" class="student-entry-help">입력한 전공 선택은 이 브라우저 탭에서 다음 화면으로만 전달됩니다. 저장 버튼을 누르기 전까지 영구 저장하지 않으며, 입력한 내용은 학교의 소속·요건 인증이 아닙니다.</p>
+      <p id="student-entry-status" class="student-entry-status" role="status" aria-live="polite"></p>
+    </section>
     <nav class="value-grid" aria-label="학업 플래너 메뉴">
       <a class="value-card tile-notices" href="./academic-timeline.html"><strong>전공별 중요공지</strong><span>캠퍼스와 전공에 맞는 공지 후보와 원문 근거를 확인하세요.</span></a>
       <a class="value-card tile-forecast" href="#forecast-heading"><strong>강의 개설 전망</strong><span>과거 같은 학기 개설 기록을 바탕으로 다음 학기를 계획하세요.</span></a>

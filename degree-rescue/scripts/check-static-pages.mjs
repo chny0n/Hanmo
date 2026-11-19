@@ -67,12 +67,14 @@ for(const page of pages){
   }
 }
 const scriptRequirements={
-  'index.html':['forecast-form','forecast-course-id','forecast-year','forecast-semester',
+  'index.html':['student-entry-form','student-entry-campus','student-entry-major',
+    'student-entry-double','student-entry-cohort','student-entry-status','student-entry-help',
+    'forecast-form','forecast-course-id','forecast-year','forecast-semester',
     'forecast-form-help','forecast-input','forecast-run','forecast-reset','forecast-json-run',
     'forecast-json-reset','forecast-data-status','forecast-result','forecast-summary',
     'ledger-input','ledger-run','ledger-reset','ledger-result','plan-input','plan-run','plan-reset','plan-result'],
   'catalog.html':['wis-file','department','load-wis','export-csv','catalog-status','catalog-rows','catalog-count','course-search'],
-  'academic-timeline.html':['profile-campus','profile-major','profile-double','profile-save','profile-clear',
+  'academic-timeline.html':['entry-journey-note','profile-campus','profile-major','profile-double','profile-save','profile-clear',
     'focus-status','focus-list','agenda-list','graduation-steps','data-message','data-official','data-demo',
     'timeline-file','template-export','group-filter','agenda-search','include-unknown','audit-transfer'],
 };
@@ -90,6 +92,15 @@ if(collapsedDeveloperPos<0||rawInputPos<collapsedDeveloperPos
 }
 if(!studentHome.includes('id="forecast-form"')){
   throw Error('Nondeveloper forecast form must be available');
+}
+const homeEntry=await readFile(join(site,'index.html'),'utf8');
+if(!homeEntry.includes('id="student-entry-form"')
+  ||!homeEntry.includes('href="./academic-timeline.html"')) {
+  throw Error('First student flow must be accessible without a transcript');
+}
+const noticeEntry=await readFile(join(site,'academic-timeline.html'),'utf8');
+if(!noticeEntry.includes('href="./index.html#forecast-heading"')) {
+  throw Error('Notices must offer the next course forecast step');
 }
 console.log('Static smoke: '+pages.length+' pages, '+found.length+' allowlisted assets, '
   +checkedLinks+' internal links, '+checkedAria+' ARIA references; no CNAME.');

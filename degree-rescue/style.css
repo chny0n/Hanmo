@@ -81,6 +81,56 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex="0"]:foc
 .home-notice strong { color: #d0ab78; }
 .home-guidance { margin: 0; color: #c6d1dd; }
 
+/* 첫 학생 흐름: 일반 사용자에게 JSON이나 학사 규정 ID를 요구하지 않는다. */
+.student-entry {
+  margin: 0 auto 32px;
+  border: 1px solid #49667d;
+  border-radius: 16px;
+  background: linear-gradient(135deg,#0b2d46,#0a1a2c 70%);
+  padding: clamp(20px,3vw,30px);
+  box-shadow: 0 12px 28px #0000002b;
+}
+.student-entry-heading h2 {margin: 6px 0 10px;font-size: clamp(22px,2.3vw,27px);}
+.student-entry-heading p:not(.student-entry-eyebrow) {margin: 0;color:#d4e1ec;font-size:14px;line-height:1.8;}
+.student-entry-eyebrow {margin: 0;color:#f4cc88;font-size:12px;font-weight:800;letter-spacing:.04em;}
+.student-entry-steps {
+  list-style: none;display:flex;gap:10px;flex-wrap:wrap;
+  margin: 21px 0;padding:0;
+}
+.student-entry-steps li {display:flex;align-items:center;gap:9px;color:#dce7f1;font-size:13px;}
+.student-entry-steps li+li::before {content:"→";color:#d7b36b;margin-right:4px;}
+.student-entry-steps strong {
+  width:26px;height:26px;display:grid;place-items:center;border-radius:50%;
+  background:#f3d9a5;color:#19334a;font-size:13px;
+}
+.student-entry-form {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:end;gap:16px;
+}
+.student-entry-form label {
+  display:grid;gap:8px;min-width:0;font-size:14px;font-weight:700;
+}
+.required-label,.optional-label {font-size:11px;font-weight:500;color:#c2d4e0;}
+.student-entry-form input,.student-entry-form select {
+  width:100%;min-height:45px;padding:10px 12px;
+  border-radius:7px;border:1px solid #7895aa;color:#1d3349;background:white;font:inherit;
+}
+.student-entry-form input:focus-visible,.student-entry-form select:focus-visible {
+  outline:3px solid #f4c66c;outline-offset:2px;
+}
+.student-entry-submit {grid-column:1/-1;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.student-entry-submit button {background:#e9bb64;color:#142e43;padding:12px 20px;}
+.student-entry-submit button:hover {background:#f5d08d;}
+.student-entry-submit a {color:#d8e9f7;font-size:13px;text-underline-offset:3px;}
+.student-entry-help,.student-entry-status {color:#c1d3e1;font-size:12px;line-height:1.7;}
+.student-entry-help {margin:17px 0 0;}
+.student-entry-status {margin:8px 0 0;}
+@media (max-width:750px) {
+  /* 작은 PC 창은 PC 전용 정책상 차단하지 않는다. */
+  .student-entry-form {grid-template-columns:1fr;}
+  .student-entry-steps {gap:8px;}
+}
+
 .value-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
