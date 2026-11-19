@@ -60,7 +60,14 @@
         <p class="subtle">직접 입력하거나 로컬 학점 계산에서 가져온 ID는 <strong>검증되지 않은 후보</strong>입니다. 후보가 없다는 이유로 관련 공지를 숨기거나 졸업요건을 완료 처리하지 않습니다.</p>
         <div class="actions"><button id="audit-transfer" type="button" class="secondary">이 탭의 학점 계산 결과 연결</button><a href="./index.html">학점 계산으로 이동</a></div>
         <div class="actions"><button id="profile-save" type="button">이 브라우저에 설정 저장</button><button id="profile-clear" type="button" class="secondary">저장 정보 삭제</button></div>
-        <p id="profile-message" class="status-text" role="status"></p>
+        <div class="actions"><button id="profile-export" type="button" class="secondary">현재 설정 백업 파일 저장</button>
+          <label for="profile-import" class="upload-label">학업 설정 백업 복원
+            <input id="profile-import" type="file" accept=".json,application/json">
+          </label>
+        </div>
+        <button id="profile-legacy" type="button" class="secondary" hidden>이전 테스트 설정 직접 복사</button>
+        <p class="subtle">설정·체크 상태만 1MiB 이내 JSON 파일로 저장하거나 복원합니다. 복원은 파일을 검증한 뒤 확인을 받아 진행합니다. 학칙 검수·학교 계정 연결 기능이 아닙니다.</p>
+        <p id="profile-message" class="status-text" role="status" aria-live="polite"></p>
         <hr>
         <h2>학사 일정 자료</h2>
         <p class="subtle">공식 공지 목록의 제목만 참고하는 기본값 또는 합성 예시를 불러올 수 있습니다.</p>
