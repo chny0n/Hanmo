@@ -21,7 +21,6 @@ const profileIds=['profile-campus','profile-cohort','profile-major','profile-dou
 const inputs=Object.fromEntries(profileIds.map(id=>[id,document.getElementById(id)])) as Record<typeof profileIds[number],HTMLInputElement|HTMLSelectElement|null>;
 let records:AcademicEvent[]=[];
 let progress:Partial<Record<GraduationStepId,StepStatus>>={};
-let currentMode='reference';
 const element=<T extends HTMLElement>(id:string):T=>{
   const e=document.getElementById(id);if(!e)throw new Error('필수 UI 누락: '+id);return e as T;
 };
@@ -257,7 +256,7 @@ async function officialTitles():Promise<void>{
     if(!r.ok)throw new Error('정적 JSON을 읽지 못했습니다: '+r.status);
     const json=await r.json() as {schemaVersion?:number;events?:unknown;note?:string;snapshotDate?:string};
     const loaded=parseAcademicSchedule({schemaVersion:json.schemaVersion,events:json.events});
-    records=loaded.events;currentMode='reference';
+    records=loaded.events;
     setMessage('data-message','게시 제목 '+records.length+'건 · '+(json.snapshotDate??'미상')+
       ' 기준 참고 자료. 신청·마감일은 수록되지 않았습니다. '+loaded.invalid.length+'건 제외.');
     render();
@@ -299,7 +298,7 @@ async function importJson():Promise<void>{
     const data=JSON.parse(await file.text()) as unknown;
     const {events,invalid}=parseAcademicSchedule(data);
     if(!events.length&&invalid.length)throw new Error('유효한 공지 항목이 없습니다. 첫 오류: '+invalid[0]?.reason);
-    records=events;currentMode='imported';
+    records=events;
     setMessage('data-message','이 기기의 JSON '+events.length+'건 불러옴. 형식 오류 '+invalid.length+
       '건 제외. JSON 안의 SOURCE_REVIEWED 자기선언은 운영 검수로 인정하지 않습니다. 모든 기한은 원문을 재확인하세요.');
     render();
@@ -311,7 +310,7 @@ element<HTMLButtonElement>('audit-transfer').addEventListener('click',applyLocal
 element<HTMLButtonElement>('profile-clear').addEventListener('click',clearSaved);
 element<HTMLButtonElement>('data-official').addEventListener('click',()=>{void officialTitles();});
 element<HTMLButtonElement>('data-demo').addEventListener('click',()=>{
-  records=demo();currentMode='demo';render();
+  records=demo();render();
   setMessage('data-message','합성 마감 시연 '+records.length+'건. 아래 D-day와 신청기간은 실제 학교 일정이 아닙니다.');
 });
 element<HTMLInputElement>('timeline-file').addEventListener('change',()=>{void importJson();});
