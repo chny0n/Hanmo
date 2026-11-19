@@ -97,6 +97,11 @@ test('config can never include a real course ID, credentials or arbitrary altern
   assert.throws(()=>createScenario({...base,alternatives:[{...base.alternatives[0],syntheticCourseId:'SYN-INJECT'}]}),/existing/);
   assert.throws(()=>createScenario({...base,alternatives:[{...base.alternatives[0],creditOk:undefined}]}),/eligibility/);
 });
+test('rejected last course cannot be its own replacement',()=>{
+  assert.throws(()=>createScenario({...base,alternatives:[{
+    ...base.alternatives[0],syntheticCourseId:'SYN-LAST',
+  }]}),/Alternative/);
+});
 test('reconnect and alternative config cannot be mixed',()=>{
   assert.throws(()=>createScenario({...base,scenarioId:'RECONNECT_RECOVERY'}),/Reconnect/);
 });
@@ -106,7 +111,8 @@ test('rejects unbounded or missing seed, invalid mode, schema, dates, and events
   assert.throws(()=>createScenario({...base,mode:'REAL'}),/mode/);
   assert.throws(()=>createScenario({...base,schemaVersion:2}),/schema/);
   assert.throws(()=>createScenario({...base,virtualClockStart:'not-date'}),/clock/);
-  assert.throws(()=>createScenario({...base,enabled:undefined}),/explicit/);
+  assert.equal(createScenario({...base,enabled:undefined}).state,'OFF');
+  assert.throws(()=>createScenario({...base,enabled:'yes'}),/boolean/);
   assert.throws(()=>dispatch(createScenario(base),{type:'UPLOAD_TRANSCRIPT'}),/Unknown/);
   assert.throws(()=>dispatch(createScenario(base),{type:'CONFIRM_PREVIOUS',elapsedVirtualMs:-3}),/Virtual/);
 });
