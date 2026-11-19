@@ -67,7 +67,9 @@ for(const page of pages){
   }
 }
 const scriptRequirements={
-  'index.html':['forecast-input','forecast-run','forecast-reset','forecast-result','forecast-summary',
+  'index.html':['forecast-form','forecast-course-id','forecast-year','forecast-semester',
+    'forecast-form-help','forecast-input','forecast-run','forecast-reset','forecast-json-run',
+    'forecast-json-reset','forecast-data-status','forecast-result','forecast-summary',
     'ledger-input','ledger-run','ledger-reset','ledger-result','plan-input','plan-run','plan-reset','plan-result'],
   'catalog.html':['wis-file','department','load-wis','export-csv','catalog-status','catalog-rows','catalog-count','course-search'],
   'academic-timeline.html':['profile-campus','profile-major','profile-double','profile-save','profile-clear',
@@ -78,6 +80,16 @@ for(const [page,needed] of Object.entries(scriptRequirements)){
   const contents=await readFile(join(site,page),'utf8');
   const ids=new Set([...contents.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
   for(const id of needed)if(!ids.has(id))throw Error(page+' missing script-bound control: '+id);
+}
+const studentHome=await readFile(join(site,'index.html'),'utf8');
+const rawInputPos=studentHome.indexOf('id="forecast-input"');
+const collapsedDeveloperPos=studentHome.indexOf('<details class="developer-json forecast-developer"');
+if(collapsedDeveloperPos<0||rawInputPos<collapsedDeveloperPos
+  ||studentHome.slice(collapsedDeveloperPos,rawInputPos).includes(' open')){
+  throw Error('Raw forecast JSON must live inside a closed developer-only details section');
+}
+if(!studentHome.includes('id="forecast-form"')){
+  throw Error('Nondeveloper forecast form must be available');
 }
 console.log('Static smoke: '+pages.length+' pages, '+found.length+' allowlisted assets, '
   +checkedLinks+' internal links, '+checkedAria+' ARIA references; no CNAME.');
