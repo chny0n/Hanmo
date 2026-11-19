@@ -447,46 +447,28 @@
 
 **현재:** 기존 한모는 운영 중이고 학업 추가 기능은 미병합 개발 PR에 있습니다. 학교 전체 강의/학칙 정본, 실제 Supabase 데이터베이스와 자동 갱신은 연결되지 않았습니다. 계획과 실서비스 구현 완료를 구분해야 합니다.
 
-## 10. 미결 사항 — GitHub Issues
+## 10. 미결 설계와 별도 실행 작업
 
-채택된 규칙은 본문에 반영했습니다. 아래는 **남은 설계 세부 결정·권리 확인·구현 검증·운영 계약**의 추적 목록입니다. GitHub [이슈 목록](https://github.com/ot4562-glitch/Hanmo_develop/issues)에서 진행 상태를 관리하며, 기존 `HMD-001`~`HMD-032`의 상세 조건은 [docs/pending-issues.md](pending-issues.md)에 있습니다.
+**2026-11-19 이슈 정리 결과:** 기존 설계 추적 `HMD-001`~`HMD-032` 32건 중 **31건은 설계 결정 완료(Closed)**이며, 현재 남은 설계 결정은 **학교 자료 사용 회신에 따른 #27 한 건뿐**입니다. 설계 완료를 기능 구현·원문 검수·QA/실운영 완료와 혼동하지 않습니다.
 
-**2026-11-19 학교 회신 전 설계 정리의 완료/미완료 구분**
+### 10.1 유일한 미결 설계
 
-| 구분 | 이슈 | 지금 가능한 결과 | 학교 회신·실측 또는 후속 테스트 |
-|---|---|---|---|
-| 1차 UX·저장·기기 | [#7](https://github.com/ot4562-glitch/Hanmo_develop/issues/7) · [#17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) · [#26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | 필수 학생 흐름, 로컬 백업/삭제 계약, **전 기능 PC 전용 결정** | 실기기 접근성·복원·검수된 자료 연결은 아직 테스트 필요 |
-| 2차 모의신청 | [#19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) · [#20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) · [#21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) · [#22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) · [#37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) | 상태도, 시드·난이도, JS 경계, 원본 회귀 시험표 채택 | 실제 시뮬레이터 구현·재현 테스트·브라우저 비교 별도 |
-| 예측·FAQ·홍보 | [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) · [#15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) · [#38](https://github.com/ot4562-glitch/Hanmo_develop/issues/38) | 검증용 기록 형식·보류 정책·과장 금지 문구 결정 | 실데이터 백테스트/FAQ 평가와 사용성 시험 별도 |
-| 3차/4차 기술 설계 | [#30](https://github.com/ot4562-glitch/Hanmo_develop/issues/30) · [#31](https://github.com/ot4562-glitch/Hanmo_develop/issues/31) · [#32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) · [#34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) · [#36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | 데이터 판본·공개 읽기/RLS·롤백·인수 시험·TS→JS 동등성 조건 확정 | 물리 SQL·실환경 권한/장애 시험·코드 이관은 미실행 |
-| 외부 확인 필요 | [#9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9) · [#11](https://github.com/ot4562-glitch/Hanmo_develop/issues/11) · [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) · [#29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | 학사자료·학칙의 권리표와 Supabase Free/운영 관리 RACI는 명문화 | **학교 회신**은 대기; 임창용 님의 Free 프로젝트 실접근·수동 백업·공동 장애복구 시험은 구축 시 확인 |
- 
-**정리 원칙:** 설계 문장/테스트 명세가 확정돼도 구현·독립 검수·실데이터 평가·운영 인수 조건이 남아 있는 이슈는 열린 상태를 유지합니다. 학교가 회신하면 해당 자료 유형의 허용 범위를 출처 단위로 반영하고, 각 이슈의 **실제 완료 조건**을 충족한 건만 닫습니다.
+- **[#27 · HMD-021 — 학교 회신에 따른 학사자료 이용 허용 범위·대체 정책](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)**: 사용자가 학교의 회신을 공유하면 공지·FAQ 문단, 강의 이력·시간표, 학칙·졸업요건 각각의 **링크/인용·요약/구조화 저장·재배포/자동 수집** 허용·제한·불허를 기록합니다. 회신이 없거나 불명확한 항목은 `UNKNOWN`으로 남기고 **수집하지 않는 대체 정책**을 확정하면 설계 종료입니다. 실제 자료 다운로드·검수·정확도 시험을 기다리지 않습니다.
 
-| ID | 우선순위 | 단계 | 개별 작업 |
-|---|---|---|---|
-| [HMD-001 · #7](https://github.com/ot4562-glitch/Hanmo_develop/issues/7) | P0 | 공통 | §1.2의 첫 출시 범위에 맞춰 화면별 인수 조건을 확정한다 |
-| [HMD-003 · #9](https://github.com/ot4562-glitch/Hanmo_develop/issues/9) | P0 | 공통 | GPL-3.0과 이식 코드·학사 자료의 배포 권리를 검수한다 |
-| [HMD-005 · #11](https://github.com/ot4562-glitch/Hanmo_develop/issues/11) | P0 | 1차 | 공식 학칙 RulePack과 판본별 졸업요건 검수 범위를 정한다 |
-| [HMD-007 · #13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) | P1 | 1차 | 강의 개설 전망과 학사행사 예상 구간의 근거·보류 기준을 확정한다 |
-| [HMD-009 · #15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) | P1 | 1차 | 근거 기반 FAQ와 상담 부서 연결의 채택·검증 범위를 정한다 |
-| [HMD-011 · #17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) | P0 | 1차 | 학생 로컬 저장 스키마·키 네임스페이스·백업/복원·삭제 정책을 정한다 |
-| [HMD-013 · #19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) | P0 | 2차 | 기존 BASIC/TIME/SELECT 기준 동작·키보드·타이머 회귀 테스트를 확보한다 |
-| [HMD-014 · #20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | P1 | 2차 | 마지막 과목 신청 실패 및 대체과목 선택 상태 머신을 설계한다 |
-| [HMD-015 · #21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) | P1 | 2차 | 가상 연결 끊김·재접속·결과 불명 시나리오 상태 머신을 설계한다 |
-| [HMD-016 · #22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | P0 | 1·2차 | 학업 코어와 모의신청 간 과목 ID·상태 어댑터 계약을 확정한다 |
-| [HMD-020 · #26](https://github.com/ot4562-glitch/Hanmo_develop/issues/26) | P1 | 검증 | PC 전용 지원 범위·접근성 및 모바일 안내 기준을 검증한다 |
-| [HMD-021 · #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) | P0 | 데이터 | 공식 학사자료 수집 가능 범위·재사용 권리·출처 목록을 만든다 |
-| [HMD-023 · #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) | P0 | 3차 | Supabase Free 운영·관리 권한과 공동 장애 대응 인수를 검증한다 |
-| [HMD-024 · #30](https://github.com/ot4562-glitch/Hanmo_develop/issues/30) | P1 | 3차 | Supabase 스키마·판본·스냅샷·마이그레이션 설계를 확정한다 |
-| [HMD-025 · #31](https://github.com/ot4562-glitch/Hanmo_develop/issues/31) | P1 | 3차 | 허용된 공식 자료 수집·변경 감지·검수·정적 대체 흐름을 정의한다 |
-| [HMD-026 · #32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) | P1 | 3차 | Supabase API·RLS·비밀키·브라우저 읽기 권한 보안을 정한다 |
-| [HMD-028 · #34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) | P0 | 3차 | Supabase 실연동·운영 모니터링·복구를 포함한 3차 인수 시험을 정의한다 |
-| [HMD-030 · #36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | P2 | 4차 | JavaScript/JSDoc 정적 검사·TS 동등성·회귀 검증 및 완료 기준을 정한다 |
-| [HMD-031 · #37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) | P0 | 2차 | 위기 대응 시나리오 다양성·난이도·조합형 훈련 체계 설계 |
-| [HMD-032 · #38](https://github.com/ot4562-glitch/Hanmo_develop/issues/38) | P1 | 공통 | 한모 차별화 메시지·유사 서비스 비교·예측 안내 품질 기준 |
-| [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39) | P1 | 1차 | 학업 화면의 근거·확정·전망 표시와 회귀 검증 |
-| [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40) | P0 | 1차·NLP | 한국어 학사 FAQ 검색 평가셋과 근거 검증 |
-| [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) | P0 | 1차·데이터 | 공지·개설 이력 골드셋과 결측 포함 백테스트 |
+### 10.2 설계 종료 이후의 실행 책임
 
-**진행 기준:** P0는 해당 작업·병합·실운영 시작 전 우선 결정하고, P1은 단계별 검증·출시 전에, P2는 선택 확장 또는 4차 전환 전에 결정합니다. 이슈를 만들거나 문서에 명세를 적는 행위는 원개발자 승인, 정본 자료 검수, 운영 책임 합의, 기능 개발 완료나 출시 승인을 뜻하지 않습니다. 항목이 확정되면 관련 장의 **현행 설계**에 통합하고 본 표와 상세 명세를 최신화합니다.
+| 분리된 작업 | 별도 구현·검증 Issue | 완료 판정 기준 |
+|---|---|---|
+| 첫 학생 화면·공지·개설 전망 | [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39), [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42), [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | 실제 화면/정적 자산·PC 회귀와 출처 상태 일치 |
+| 한국어 FAQ·공식 학칙 검수 | [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40), [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41), [#47](https://github.com/ot4562-glitch/Hanmo_develop/issues/47) | 허용된 원문 판본 대조·근거 평가·독립 검수 |
+| 로컬 데이터/백업·복원 | [#45](https://github.com/ot4562-glitch/Hanmo_develop/issues/45) | 파일·복원 오류·원본 키 보존과 로컬 전송 제약 테스트 |
+| 2차 원본 모드 기준선·시나리오 구현 | [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49), [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50), [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62) | PC 기준선/시나리오 OFF 동등성·가상 위기 재현 |
+| PC 전용 지원·접근성 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72), [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39), [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | Windows PC Chrome/Edge·키보드·NVDA, 비지원 기기 안내 |
+| 자료 이용 조건 준수·라이선스 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73), [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41), [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) | 학교 회신 이후 실제 자료·배포 후보에서 제한 위반 없음 |
+| 3차 Supabase Free 실연동/보안/인수 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64), [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65), [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66), [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | 물리 DB·RLS·스냅샷·무료 용량·장애 복원·운영 인수 실증 |
+| 4차 TS→JS 이관 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) | 3차 운영 인수 후 실제 이관 코드의 판정 동등성 |
+| 소개 문구·비교 근거·학생 오해 | [#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) | 제품 상태 표기·비교 출처·학생 시연의 실제 검증 |
+
+**이슈 운영 규칙:** [agent.md](https://github.com/ot4562-glitch/Hanmo_develop/blob/main/agent.md)의 제목·차수·P0/P1/P2·담당자·선행 조건·검증 가능한 완료 기준을 따릅니다. `[설계]`는 사용자/팀의 설계 결정과 아키텍처 반영까지만 추적하고, `[구현]`/ `[검증]`은 별도의 실행 결과가 확인된 때 닫습니다. 새 실데이터나 실환경이 들어왔다는 이유만으로 닫힌 설계 이슈를 재개하지 않고, **실제 설계 선택의 변경이 필요한 때**에만 정책을 수정합니다.
+
+32개 설계 추적 ID의 진행 이력/연결은 [docs/pending-issues.md](pending-issues.md)에, 구현·검증과 실측 증빙은 [GitHub Issues](https://github.com/ot4562-glitch/Hanmo_develop/issues)에 둡니다.
