@@ -1,61 +1,62 @@
-const printValue = document.getElementsByClassName('printValue')[0];
-const setting = document.getElementsByClassName('setting')[0];
-const settingSection = document.getElementsByClassName('settingSection')[0];
-const psugangInput = document.getElementsByClassName('psugangVal')[0];
-const vsugangInput = document.getElementsByClassName('vsugangVal')[0];
+// 설정 페이지의 함수는 vsugang.html의 인라인 onclick에서 호출하므로 전역으로 유지한다.
+// 이벤트 연결 방식을 바꿀 때는 별도 PR에서 회귀 테스트를 수행한다.
+const printValue=document.getElementsByClassName('printValue')[0];
+const setting=document.getElementsByClassName('setting')[0];
+const settingSection=document.getElementsByClassName('settingSection')[0];
+const psugangInput=document.getElementsByClassName('psugangVal')[0];
+const vsugangInput=document.getElementsByClassName('vsugangVal')[0];
 
-var isSettedValue = false;
+let isSettedValue=false;
 
+/** 이 저장 키들은 기존 페이지 간 계약이므로 이름을 변경하지 않는다. */
+function validSetting(preselected,requested,waiting){
+  return Number.isInteger(preselected)&&preselected>=1&&preselected<=15
+    &&Number.isInteger(requested)&&requested>=1&&requested<=preselected
+    &&(waiting==='yes'||waiting==='no');
+}
 
-// 모바일 감지 시 index.html로 강제 이동 (모바일 접속을 막기 위함)
+function setValue(){
+  const preselected=Number(localStorage.getItem('psubjectValue'));
+  const requested=Number(localStorage.getItem('subjectValue'));
+  const waiting=localStorage.getItem('waitingValue');
+  isSettedValue=validSetting(preselected,requested,waiting);
+  setting.style.background=isSettedValue?'#001203':'#120000';
+  if(isSettedValue){
+    printValue.innerText='올바른 설정값이 들어갔어요.';
+    printValue.style.color='white';
+  }
+}
 
-setValue = () => {
-	console.log(localStorage.getItem('subjectValue') > localStorage.getItem('psubjectValue'))
-	if ((localStorage.getItem('psubjectValue') >= 1 && localStorage.getItem('psubjectValue') <= 15) && (localStorage.getItem('subjectValue') >= 1 && Number(localStorage.getItem('subjectValue')) <= Number(localStorage.getItem('psubjectValue'))) && (localStorage.getItem('waitingValue') === 'yes' || localStorage.getItem('waitingValue') === 'no')){
-		printValue.innerText = '올바른 설정값이 들어갔어요.'
-		printValue.style.color = 'white';
-		setting.style.background = '#001203';
-		isSettedValue = true;
-	} else{
-		setting.style.background = '#120000';
-	}
+/** 인라인 HTML의 모드 식별값: BASIC=1, TIME=2, SELECT=3. */
+function goPractice(mode){
+  if(!isSettedValue){
+    alert('SETTING에서 과목 수를 지정해주세요.');
+    return;
+  }
+  localStorage.setItem('practiceSetter',mode);
+  location.href='practice.html';
+}
+
+function getSettingValue(){
+  const preselected=Number(psugangInput.value);
+  const requested=Number(vsugangInput.value);
+  const checked=document.querySelector('input[name="waitingYN"]:checked');
+  const waiting=checked?.value;
+  if(!validSetting(preselected,requested,waiting)){
+    alert('설정 값을 다시 확인해주세요.');
+    return;
+  }
+  localStorage.setItem('psubjectValue',preselected);
+  localStorage.setItem('subjectValue',requested);
+  localStorage.setItem('waitingValue',waiting);
+  settingSection.style.display='none';
+  setValue();
+}
+
+function openSettingPanel(){
+  settingSection.style.display='flex';
+  psugangInput.value=localStorage.getItem('psubjectValue');
+  vsugangInput.value=localStorage.getItem('subjectValue');
 }
 
 setValue();
-
-function goPractice(val) {
-	if (isSettedValue === false){
-		alert('SETTING에서 과목 수를 지정해주세요.')
-	} else{
-		localStorage.setItem('practiceSetter', val);
-		location.href='practice.html';
-	}
-}
-
-//SETTING 버튼 작동 함수
-function getSettingValue() {
-	const psugangVal = Number(psugangInput.value);
-	const vsugangVal = Number(vsugangInput.value);
-	const waitingVal = document.querySelector('input[name="waitingYN"]:checked').value;
-	
-	if (psugangVal < 1 || psugangVal > 15 || !Number(psugangVal)) {
-		alert('설정 값을 다시 확인해주세요.');
-	} else if (vsugangVal < 1 || psugangVal < vsugangVal || !Number(vsugangVal)) {
-		alert('설정 값을 다시 확인해주세요.');
-	} else{
-		localStorage.setItem('psubjectValue', psugangVal);
-		localStorage.setItem('subjectValue', vsugangVal);
-		localStorage.setItem('waitingValue', waitingVal);
-		
-		settingSection.style.display = 'none';
-		setValue();
-	}
-	
-}
-
-function openSettingPanel() {
-	settingSection.style.display = 'flex';
-	
-	psugangInput.value = localStorage.getItem('psubjectValue');
-	vsugangInput.value = localStorage.getItem('subjectValue');
-}
