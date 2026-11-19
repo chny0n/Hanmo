@@ -20,10 +20,10 @@ for(let index=noticeList.length-1;index>=0;index--){
   $NOTICELIST.insertAdjacentHTML('afterbegin','<li>'+noticeList[index]+'</li>');
 }
 
-let noticeIndex=0;
+let homeNoticeIndex=0;
 function rotateNotice(){
-  $NOTICELIST.style.bottom=noticeIndex===0?'77px':'0px';
-  noticeIndex=(noticeIndex+1)%2;
+  $NOTICELIST.style.bottom=homeNoticeIndex===0?'77px':'0px';
+  homeNoticeIndex=(homeNoticeIndex+1)%2;
 }
 setInterval(rotateNotice,5000);
 
