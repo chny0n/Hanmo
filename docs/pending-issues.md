@@ -56,7 +56,7 @@
 
 | 실행 작업 | 주요 대상 |
 |---|---|
-| 1차 구현·데이터·FAQ·UI 검증 | [#39~#58](https://github.com/ot4562-glitch/Hanmo_develop/issues?q=is%3Aissue+is%3Aopen+%E2%80%981%EC%B0%A8%E2%80%99) 및 개별 [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40), [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41), [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42), [#47](https://github.com/ot4562-glitch/Hanmo_develop/issues/47), [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) |
+| 1차 구현·데이터·FAQ·UI 검증 | [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39), [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40), [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41), [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42), [#47](https://github.com/ot4562-glitch/Hanmo_develop/issues/47), [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57), [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58) 등 기존 1차 이슈 |
 | 기존 한모 모드 기준선·시나리오 | [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49), [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50), [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62) |
 | 제품 전체 PC 접근성·비지원 기기 안내 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) |
 | 실배포 라이선스·학교 자료 허용 범위 점검 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
