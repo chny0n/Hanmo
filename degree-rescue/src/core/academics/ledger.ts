@@ -1,12 +1,10 @@
 import {AcademicAuditVNextSchema, type AcademicAuditVNext} from '../../contracts/index.js';
 
 /**
- * Three credit ledgers (A08.2, A08.5 CREDIT-01..CREDIT-06).
- * 1 credit unit = 0.5학점. A 3학점 course is 6 units. Sums are integer additions only.
- * The same canonical course counts once toward the unique total. Approved area
- * allocation may still apply that one course to every listed area.
- * `asOf` is the caller's instant. This module does not read a clock, a network, or randomness.
- * READY means an approved pack was checked. It is not a graduation decision.
+ * 학점 세 원장 계약(A08.2, A08.5 CREDIT-01~06).
+ * 1단위는 0.5학점이며 합산은 정수로만 수행한다. 동일 대표 과목은 고유 합계에 한 번만 포함하며 승인된 영역 배정은 여러 영역에 적용할 수 있다.
+ * asOf는 호출자가 제공하며 현재 시각·네트워크·난수에 의존하지 않는다.
+ * READY는 승인된 규칙을 확인했다는 뜻이지 졸업 판정이 아니다.
  */
 
 export const ID = /^[A-Za-z0-9_.:-]{1,128}$/;
@@ -19,33 +17,30 @@ export type RulePackGate = 'MISSING'|'DRAFT'|'NEEDS_REVIEW'|'APPROVED';
 export interface LedgerAttempt {
   attemptToken:string;
   canonicalCourseId:string;
-  /** Non-negative safe integer. 1 unit = 0.5학점. Non-integers are refused, not rounded. */
+  /** 0 이상의 안전한 정수만 허용한다. 1단위는 0.5학점이며 소수는 반올림하지 않고 거부한다. */
   creditUnits:number;
   ledger:LedgerSlot;
-  /** Official allocation. One course may list several areas; the unique total still counts it once. */
+  /** 공식 학점 영역 배정이다. 한 과목이 여러 영역에 속하더라도 고유 합계에는 한 번만 센다. */
   areaIds:readonly string[];
   recognition:LedgerRecognition;
   /**
-   * Academic term `YYYY-1|S|2|W`. An EARNED row without a term, or whose term has not
-   * ended by asOf (Asia/Seoul), is held as NEEDS_REVIEW and not counted.
-   * Also required on both sides of a retake.
+   * 학기 표기는 YYYY-1|S|2|W다. EARNED 기록은 학기가 없거나 asOf(한국시간)까지 끝나지 않았다면 학점에 포함하지 않고 NEEDS_REVIEW로 보류한다.
+   * 재수강 관계의 양쪽 기록에도 학기가 필요하다.
    */
   term?:string;
   /**
-   * Explicit approved retake (repeatPolicy EXPLICIT_APPROVED_ATTEMPT).
-   * The named attempt is excluded as RETAKE_SUPERSEDED only when both attempts are the
-   * same course, both are EARNED, this one is RECOGNIZED in a later term, and
-   * `retakeApprovalRef` is present. Otherwise this attempt alone is held as NEEDS_REVIEW
-   * and the earlier earned credit stays counted.
+   * 명시적으로 승인된 재수강 정책(EXPLICIT_APPROVED_ATTEMPT)을 따른다.
+   * 두 기록이 같은 과목이고 취득 완료됐으며 나중 학기의 인정 기록에 retakeApprovalRef가 있을 때만 이전 시도를 RETAKE_SUPERSEDED로 제외한다.
+   * 조건이 부족하면 새 기록을 검토 보류하고 기존 취득 학점은 유지한다.
    */
   supersedesAttemptToken?:string;
-  /** Reference to the official retake approval. A bare supersede link is not enough. */
+  /** 재수강 공식 승인 근거. 다른 수강 시도를 가리키는 연결만으로는 승인으로 취급하지 않는다. */
   retakeApprovalRef?:string;
 }
 
 interface RequirementBase {
   id:string;
-  /** Copied onto a SATISFIED row. Empty evidence cannot be reported as satisfied. */
+  /** 충족 요건에 복사되는 증빙이다. 근거가 비어 있으면 충족으로 표시하지 않는다. */
   evidenceRefs?:readonly string[];
 }
 
@@ -63,13 +58,12 @@ export type LedgerRequirement =
   });
 
 export interface AcademicLedgerRequest {
-  /** Caller-supplied ISO-8601 datetime with a timezone offset. */
+  /** 호출자가 전달하는 시간대 포함 ISO-8601 기준 시각이다. */
   asOf:string;
   rulePackVersion:string;
   /**
-   * MISSING → audit state INSUFFICIENT_DATA.
-   * Any other state than APPROVED → NEEDS_REVIEW.
-   * Neither state claims graduation, and requirement rows are not marked SATISFIED.
+   * 규칙집이 MISSING이면 INSUFFICIENT_DATA, APPROVED가 아니면 NEEDS_REVIEW다.
+   * 두 경우 모두 졸업을 확정하지 않으며 요건을 SATISFIED로 표시하지 않는다.
    */
   rulePackState:RulePackGate;
   attempts:readonly LedgerAttempt[];
@@ -111,7 +105,7 @@ export function termKey(term:string):number {
   return Number(match[1]) * 4 + SEASON_RANK[match[2]!]!;
 }
 
-/** Asia/Seoul instant after which a term's grades can be earned. */
+/** 한국시간 기준 학점 취득 처리가 가능해지는 학기 종료 시각이다. */
 export function termEndMs(term:string):number {
   const match = TERM.exec(term);
   if (!match) throw new TypeError(`term must be YYYY-1|S|2|W; refused ${term}`);
@@ -125,7 +119,7 @@ export function termEndMs(term:string):number {
   return Date.parse(`${end}T00:00:00.000+09:00`);
 }
 
-/** An EARNED row counts only when its term is known and ended by asOf. */
+/** 취득 기록은 학기가 확인되고 asOf까지 종료된 경우에만 합산한다. */
 function earnedByAsOf(attempt:LedgerAttempt, asOfMs:number):boolean {
   return attempt.term !== undefined && termEndMs(attempt.term) <= asOfMs;
 }
@@ -338,17 +332,17 @@ function classify(attempts:readonly LedgerAttempt[], asOfMs:number):Classified {
   return {winners, reasons, pendingUnits, ambiguous};
 }
 
-/** The ledger's own decision for each attempt, without any requirement or RulePack. */
+/** 요건이나 RulePack 판정과 무관하게 원장이 각 수강 시도에 내린 결정이다. */
 export interface LedgerAttemptClassification {
-  /** The one counted attempt per canonical course. */
+  /** 대표 과목당 학점 계산에 포함되는 수강 시도는 하나다. */
   winners:ReadonlyMap<string, LedgerAttempt>;
-  /** Why each other attempt is not counted, keyed by attemptToken. */
+  /** 포함되지 않은 나머지 수강 시도의 사유를 attemptToken으로 조회한다. */
   reasons:ReadonlyMap<string, ExclusionReason>;
 }
 
 /**
- * Same attempt rules and input checks as buildAcademicLedger, for another core that must
- * agree with the credit audit about which attempts count (experience evidence, #260).
+ * 학점 원장과 동일한 수강 시도 판정·입력 검증을 제공한다.
+ * 다른 코어(경험 증빙 #260)도 어떤 기록을 계산할지 동일하게 결정하도록 사용한다.
  */
 export function classifyLedgerAttempts(attempts:readonly LedgerAttempt[], asOf:string):LedgerAttemptClassification {
   if (!AS_OF.test(asOf) || !Number.isFinite(Date.parse(asOf))) {
@@ -426,8 +420,8 @@ function evaluateRequirement(
     assertPositiveUnits(requirement.minAreas, 'minimum areas');
     assertPositiveUnits(requirement.requiredCreditUnits, 'spread credit units');
     if (requirement.minAreas > allowed.size) throw new TypeError('minimum areas exceeds available areas');
-    // Uncompleted multi-area courses never affect earned status. An earned
-    // course can contribute credits, but never two distinct areas at once.
+    // 미완료 다영역 과목은 취득 영역 판정에 영향을 주지 않는다.
+    // 취득한 과목도 여러 영역의 학점을 지원할 수 있지만 서로 다른 두 영역을 동시에 차지할 수는 없다.
     const earnedAreas = new Set<string>();
     const ambiguousEarned:string[][] = [];
     let earnedUnits = 0, projectedUnits = 0;
@@ -441,8 +435,8 @@ function evaluateRequirement(
       if (eligible.length === 1) earnedAreas.add(eligible[0]!);
       else ambiguousEarned.push(eligible);
     }
-    // Maximum possible area spread is a bipartite matching, not the union
-    // of area tags: each earned course must be assigned to only one area.
+    // 영역 수 최대치는 영역 태그의 합집합이 아닌 이분 매칭으로 계산한다.
+    // 취득 과목 하나는 가능한 영역 하나에만 배정할 수 있다.
     const matched = new Map<string,number>();
     const augment = (index:number, visited:Set<string>):boolean => {
       for (const area of ambiguousEarned[index] ?? []) {
@@ -459,8 +453,8 @@ function evaluateRequirement(
     for (let i = 0; i < ambiguousEarned.length; i++) augment(i, new Set());
     const maxPossibleAreas = earnedAreas.size + matched.size;
 
-    // A small set-cover search proves whether some legal allocation could
-    // stay below minAreas. If the search budget is reached, hold for review.
+    // 집합 덮개 탐색으로 합법적인 배정 중 최소 영역 수 미달 사례가 있는지 확인한다.
+    // 탐색 예산을 초과하면 임의로 확정하지 않고 검토 보류한다.
     const uncovered = ambiguousEarned.filter(xs => !xs.some(a => earnedAreas.has(a)));
     let searches = 0;
     const canStayBelow = (groups:readonly string[][], slots:number):boolean => {
@@ -481,8 +475,8 @@ function evaluateRequirement(
       state,
       requiredCreditUnits:requirement.requiredCreditUnits, earnedCreditUnits:earnedUnits,
       remainingCreditUnits:Math.max(0, requirement.requiredCreditUnits - earnedUnits),
-      // A definite SAT guarantees minAreas, even with unapproved allocations.
-      // Never count a single course as two simultaneous areas.
+      // 확정 SAT는 미승인 배정 가능성을 고려해도 최소 영역 수를 보장해야 한다.
+      // 한 과목을 동시에 두 영역으로 세지 않는다.
       projectedCreditUnits:projectedUnits,
       matchedAreasCount:state==='SATISFIED'?Math.max(earnedAreas.size,requirement.minAreas):earnedAreas.size,
       requiredAreasCount:requirement.minAreas, evidenceRefs};
@@ -536,8 +530,8 @@ function evaluateRequirement(
 }
 
 /**
- * Compute unique earned / in-progress / planned credits and the requirement rows
- * for A08.5 CREDIT-01 through CREDIT-06. Non-integer units throw; they are not coerced.
+ * 취득·진행 중·계획 학점의 고유 합계와 CREDIT-01~06 요건을 계산한다.
+ * 정수가 아닌 학점 단위는 형 변환하지 않고 오류로 거부한다.
  */
 export function buildAcademicLedger(input:AcademicLedgerRequest):AcademicAuditVNext {
   if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {

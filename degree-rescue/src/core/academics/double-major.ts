@@ -2,32 +2,24 @@ import {AcademicAuditVNextSchema, type AcademicAuditVNext} from '../../contracts
 import {assertId, assertUnits, buildAcademicLedger, type LedgerAttempt, type LedgerRequirement, type RulePackGate} from './ledger.js';
 
 /**
- * buildDoubleMajorAudit (#144): the current primary major and the double major the student
- * actually chose, checked side by side on one transcript. Not a hypothetical change (#82).
- *
- * Each major's rule pack runs through buildAcademicLedger on the same attempts, with its own
- * course-to-area allocation, so the unique total still counts every course once.
- * A counted course that both packs use is shared. Without an approved overlap rule it is not
- * known whether that course may count for both, so each row a shared course feeds is worked out
- * twice, with and without the shared courses. A row whose result is the same either way keeps
- * it; a row whose result depends on the overlap is held as NEEDS_REVIEW in either major. Both
- * sets of figures are reported. An approved rule covers the overlap only while all shared
- * credits fit its limit. Nothing here is a graduation decision.
- * Pure: the caller supplies asOf. No clock, network, or storage.
+ * 현재 주전공과 실제 선택한 이중전공을 같은 성적표로 함께 진단한다(#144). 가상 전공 변경(#82)이 아니다.
+ * 전공별 RulePack이 같은 수강 기록에 별도 학점 영역을 지정하더라도 총 이수 과목은 한 번만 센다.
+ * 중복 인정 규칙이 없으면 공유 과목을 포함한 경우와 제외한 경우를 모두 계산해 결과가 달라지는 요건을 NEEDS_REVIEW로 보류한다.
+ * 승인된 중복 인정 규칙도 허용 학점 한도 내에서만 적용하며 졸업 판정은 하지 않는다. 시계·네트워크·저장소에 의존하지 않는다.
  */
 
-/** The transcript row without an area list: areas belong to each pack, not to the attempt. */
+/** 성적표 행에는 영역을 저장하지 않는다. 영역 배정은 각 RulePack이 담당한다. */
 export type DoubleMajorAttempt = Omit<LedgerAttempt, 'areaIds'>;
 
 export interface MajorRulePack {
   rulePackVersion:string;
   rulePackState:RulePackGate;
   requirements:readonly LedgerRequirement[];
-  /** This pack's official allocation: course id to its areas in this pack. */
+  /** 해당 RulePack의 공식 배정표로서 과목 ID와 영역 목록을 연결한다. */
   courseAreas:Readonly<Record<string, readonly string[]>>;
 }
 
-/** An official rule on how many credits may count toward both majors. */
+/** 두 전공에 중복으로 인정할 수 있는 최대 학점에 관한 공식 규칙이다. */
 export interface OverlapRule {
   maxSharedCreditUnits:number;
   evidenceRefs:readonly string[];
@@ -56,13 +48,12 @@ export interface SharedCourse {
 export type OverlapStatus = 'NONE'|'NO_APPROVED_RULE'|'COVERED_BY_APPROVED_RULE'|'OVER_APPROVED_LIMIT';
 
 /**
- * One requirement row a shared course feeds, worked out with and without the shared courses.
- * `met` uses earned credit only, like the ledger. The without-shared figures are the
- * conservative reading if the overlap is not allowed.
+ * 공유 과목을 포함하거나 제외했을 때의 요건 충족 상태를 각각 계산한다.
+ * met은 원장과 마찬가지로 취득 학점만 사용하며 제외 결과는 중복 인정 불가 시의 보수적 판단이다.
  */
 export interface OverlapRowImpact {
   requirementId:string;
-  /** The row's result is the same with or without the shared courses. */
+  /** 공유 과목 포함 여부에 관계없이 같은 판정이 나오는지 나타낸다. */
   decided:boolean;
   metWithShared:boolean;
   metWithoutShared:boolean;
@@ -75,7 +66,7 @@ export interface OverlapRowImpact {
 export interface DoubleMajorAudit {
   state:'READY'|'NEEDS_REVIEW'|'INSUFFICIENT_DATA';
   asOf:string;
-  /** One transcript: each course counts once, whichever majors use it. */
+  /** 한 성적표의 각 과목은 사용 전공 수와 관계없이 총합에서 한 번만 센다. */
   uniqueCredits:{earnedCreditUnits:number; inProgressCreditUnits:number; plannedCreditUnits:number; projectedCreditUnits:number};
   primary:AcademicAuditVNext;
   doubleMajor:
@@ -86,12 +77,12 @@ export interface DoubleMajorAudit {
   overlap:{
     status:OverlapStatus;
     sharedCourses:SharedCourse[];
-    /** Every slot: earned, in progress, and planned shared credits. */
+    /** 공유 과목의 취득·진행 중·계획 학점을 모두 포함한 수치다. */
     sharedCreditUnits:number;
     evidenceRefs:string[];
-    /** Rows held as NEEDS_REVIEW because their result depends on the overlap. */
+    /** 중복 인정 여부에 따라 결과가 달라져 NEEDS_REVIEW로 보류된 요건 ID다. */
     heldRequirementIds:{primary:string[]; doubleMajor:string[]};
-    /** Every row a shared course feeds, when the overlap is not covered by an approved rule. */
+    /** 승인된 중복 인정 규칙이 없을 때 공유 과목이 영향을 주는 모든 요건을 나타낸다. */
     rowImpacts:{primary:OverlapRowImpact[]; doubleMajor:OverlapRowImpact[]};
   };
   caveats:string[];
@@ -116,7 +107,7 @@ function readAreas(pack:MajorRulePack, label:string):Map<string, string[]> {
   return map;
 }
 
-/** Courses a pack names directly in a requirement, apart from its area allocation. */
+/** 영역 배정 이외에 RulePack 요건에서 직접 지정한 과목 목록이다. */
 function namedCourses(requirements:readonly LedgerRequirement[]):Set<string> {
   const named = new Set<string>();
   for (const requirement of requirements) {
@@ -138,8 +129,8 @@ function runPack(asOf:string, attempts:readonly DoubleMajorAttempt[], pack:Major
 }
 
 /**
- * Each row in this pack that a shared course feeds, worked out with and without the shared
- * courses from the ledger's own figures. Total and non-credit rows never depend on the overlap.
+ * 원장 계산 수치로 공유 과목 포함·제외 시의 각 요건 판정을 비교한다.
+ * 총 학점 및 비학점 요건은 이중전공 중복 인정 여부에 좌우되지 않는다.
  */
 function rowImpacts(requirements:readonly LedgerRequirement[], audit:AcademicAuditVNext,
   shared:ReadonlyMap<string, SharedCourse>, sharedAreas:(course:SharedCourse) => readonly string[],
@@ -251,7 +242,7 @@ export function buildDoubleMajorAudit(input:DoubleMajorRequest):DoubleMajorAudit
     throw new Error('both majors must read the same transcript totals');
   }
 
-  // Counted courses only: an attempt the ledger excluded (duplicate, retake, pending, official) is not shared.
+  // 원장이 제외한 중복·재수강·인정 대기 등의 수강 시도는 공유 과목으로 계산하지 않는다.
   const excluded = new Set(primaryRaw.excludedAttempts.map(row => row.attemptToken));
   const primaryNamed = namedCourses(input.primary.requirements);
   const doubleNamed = namedCourses(pack.requirements);

@@ -6,7 +6,7 @@ import {
 } from './offering.js';
 import * as forecastIndex from './index.js';
 
-// Synthetic course ids only. Past counts are not a probability or a guarantee.
+// 합성 학수번호만 사용한다. 과거 개설 횟수는 확률이나 개설 보장이 아니다.
 const ASOF = '2026-02-15T00:00:00.000Z';
 
 function catalog(
@@ -528,7 +528,7 @@ describe('NOTICE_ONLY rows', () => {
     const result = outlook({courseId:'SYN-NOTICE', targetTerm:'2026-1', asOf:ASOF, observations:[
       catalog('2023-1', 'CONFIRMED_NOT_OFFERED', 'NOTICE_ONLY'),
       {...catalog('2023-1', 'OFFERED'), sourceRef:'SYN-SRC-2023-1-FULL'},
-      // Published later, so a tie in rank would pick the partial list.
+      // 늦게 게시된 자료가 동일한 우선순위 비교에서 부분 목록으로 선택될 수 있는 경우다.
       catalog('2024-1', 'OFFERED', 'PARTIAL', '2024-03-01T00:00:00.000Z'),
       {...catalog('2024-1', 'OFFERED', 'NOTICE_ONLY'), sourceRef:'SYN-SRC-2024-1-NOTICE'},
     ]});

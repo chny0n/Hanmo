@@ -7,8 +7,8 @@ import {
 import {evaluateOfferingOutlook} from './rolling-origin.js';
 
 /**
- * #11 (본선 전): offering rows whose course code or equivalence is not confirmed.
- * Synthetic SYN-* only. Past counts are not a probability or a guarantee.
+ * 본선 전 #11: 학수번호나 동일교과목 여부를 확인하지 못한 개설 기록이다.
+ * SYN-* 합성 자료만 사용하며 과거 횟수는 확률이나 보장이 아니다.
  */
 
 const ASOF = '2026-02-15T00:00:00.000+09:00';
@@ -66,7 +66,7 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
   it('a partial or notice row that is unverified is still not counted', () => {
     const partial = [row('2024-2', 'OFFERED', {coverage:'PARTIAL'}), row('2025-2', 'OFFERED', {coverage:'NOTICE_ONLY'})];
     const fall = {...base, targetTerm:'2026-2', asOf:'2026-08-01T00:00:00.000+09:00'};
-    // Confirmed partial rows make the result "too little data"; unverified ones are not seen at all.
+    // 확정된 부분 목록은 자료 부족으로 처리하고 미검증 행은 관측 목록에 포함하지 않는다.
     expect(outlook({...fall, observations:[...HISTORY, ...partial]}).signal).toBe('INSUFFICIENT_DATA');
     const result = outlook({...fall, observations:[...HISTORY, ...partial.map(r => ({...r, courseIdentity:UNVERIFIED}))]});
     expect([result.signal, result.sameSeasonObservedTerms, result.observations]).toEqual(['UNKNOWN', 0, []]);
@@ -81,7 +81,7 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
         const result = outlook({...base, observations:[...HISTORY, target]});
         expect(result.signal, `${state} ${coverage}`).toBe('INSUFFICIENT_DATA');
         expect(result.sourcePublishedAt, `${state} ${coverage}`).toBeUndefined();
-        // History is kept for display, but the target term is not answered from it.
+        // 과거 기록은 표시용으로 남기지만 대상 학기의 개설 여부를 과거 기록만으로 확정하지 않는다.
         expect(result.sameSeasonObservedTerms, `${state} ${coverage}`).toBe(4);
       }
     }
@@ -144,7 +144,7 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
       {state:'RESOLVED', revisionRef:'SYN-MAP-R1', checkedAt:'2026-01-01'},
     ];
     for (const courseIdentity of bad) {
-      // A future row the outlook would not read is still checked.
+      // 전망 계산에는 포함되지 않을 미래 관측 행도 입력 검증은 수행한다.
       const future = row('2027-1', 'OFFERED', {courseIdentity:courseIdentity as ObservationCourseIdentity});
       expect(() => forecastOffering({...base, observations:[...HISTORY, future]}), JSON.stringify(courseIdentity)).toThrow(RangeError);
     }

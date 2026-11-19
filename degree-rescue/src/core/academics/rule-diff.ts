@@ -7,14 +7,10 @@ import {
 import {AS_OF, buildAcademicLedger, byCodeUnit, type LedgerAttempt, type LedgerRequirement} from './ledger.js';
 
 /**
- * RulePack revision impact (#87). Applies two APPROVED versions of one rule pack to the same
- * credit ledger and reports, per stable requirement id, how the rule and its result changed.
- * Area membership is not in the pack: it comes from the ledger rows, classified once per version
- * (`attempts`, `nextAttempts`). Without the next classification, area results are UNKNOWN.
- * It never activates either pack and never decides graduation.
- * A pair that is not one clean revision is blocked: no row is returned, so a stale SATISFIED
- * result cannot be carried across an unverified change.
- * Pure: the caller supplies asOf. No clock, network, or storage.
+ * 동일 RulePack의 승인된 두 판본을 같은 학점 원장에 적용해 요건별 규칙과 결과 차이를 계산한다(#87).
+ * 학점 영역은 규칙집이 아닌 원장 행에서 분류하며 새 분류(nextAttempts)가 없으면 영역 요건은 UNKNOWN이다.
+ * 직계 판본 관계가 불확실하면 결과를 차단해 낡은 SATISFIED 판정이 검증 없이 이어지지 않게 한다.
+ * 규칙집을 활성화하거나 졸업을 판정하지 않으며 asOf는 호출자가 제공한다.
  */
 
 type Pack = AcademicRulePackVNext;
@@ -35,17 +31,17 @@ export type RevisionBlockerCode =
 
 export interface RevisionBlocker {
   code:RevisionBlockerCode;
-  /** Which input it concerns, when only one side is at fault. */
+  /** 한쪽 입력만 잘못된 경우 문제가 있는 판본을 표시한다. */
   side?:'previous'|'next';
 }
 
 export type DefinitionChange = 'UNCHANGED'|'CHANGED'|'ADDED'|'REMOVED';
-/** SAME, GAINED (now satisfied), LOST (no longer satisfied), or UNKNOWN when either side is unverified. */
+/** SAME은 동일, GAINED는 새로 충족, LOST는 충족 상실, UNKNOWN은 어느 쪽이든 판정이 보류된 상태다. */
 export type StateChange = 'SAME'|'GAINED'|'LOST'|'UNKNOWN';
 export type ChangedField =
   | 'kind'|'requiredCreditUnits'|'areaId'|'areaIds'|'minAreas'|'groups'|'canonicalCourseId'|'courseIds'|'k'
   | 'criterionId'|'verificationMode'|'sourceClauseIds'|'exceptionClauseIds'|'clauses'
-  /** A course counts in a different area under the next version (from `nextAttempts`, not the pack). */
+  /** 새 판본에서 과목의 학점 영역이 바뀌었는지 나타낸다. 근거는 RulePack이 아닌 nextAttempts다. */
   | 'areaMembership';
 
 interface SideResult {
@@ -54,7 +50,7 @@ interface SideResult {
   earnedCreditUnits?:number;
   remainingCreditUnits?:number;
   projectedCreditUnits?:number;
-  /** Source and exception clause ids, sorted. */
+  /** 원문 조항 및 예외 조항 ID를 정렬한 목록이다. */
   clauseIds:string[];
 }
 
@@ -63,7 +59,7 @@ export interface RequirementRevision {
   semanticKey:string;
   definition:DefinitionChange;
   changedFields:ChangedField[];
-  /** Present only when the requirement exists in both versions. */
+  /** 해당 요건이 두 판본에 모두 존재할 때만 나타낸다. */
   stateChange?:StateChange;
   previous?:SideResult;
   next?:SideResult;
@@ -74,9 +70,9 @@ export interface RulePackRevisionDiff {
   asOf:string;
   previousVersion?:string;
   nextVersion?:string;
-  /** AMENDMENT replaces the previous version from next.effectiveFrom; CORRECTION re-issues the same period. */
+  /** AMENDMENT는 새 판본의 적용 시작일부터 이전 판본을 대체한다. CORRECTION은 같은 기간의 정정판이다. */
   revisionKind?:'AMENDMENT'|'CORRECTION';
-  /** Which version is in effect at asOf: effectiveFrom <= asOf < effectiveUntil, as in #70. */
+  /** asOf가 시작 시각 이상·종료 시각 미만인 유효 판본을 선택한다. */
   inEffectAtAsOf:'PREVIOUS'|'NEXT'|'NONE'|'BOTH';
   blockers:RevisionBlocker[];
   requirements:RequirementRevision[];
@@ -87,18 +83,17 @@ export interface RulePackRevisionRequest {
   asOf:string;
   previous:unknown;
   next:unknown;
-  /** Ledger rows classified under the previous version. */
+  /** 이전 판본 기준으로 학점 영역을 분류한 원장 행이다. */
   attempts:readonly LedgerAttempt[];
   /**
-   * The same rows classified under the next version. A rule pack has no course-to-area table, so a
-   * revision that moves a course to another area is visible only here. Only `areaIds` may differ.
-   * When omitted, area-based results (CATEGORY_MINIMUM, AREA_SPREAD) are UNKNOWN: the next version's
-   * area membership was not supplied. Pass the same rows to state that membership did not change.
+   * 같은 원장 행을 새 판본에 따라 분류한 자료다. RulePack 자체에는 과목별 영역 목록이 없다.
+   * areaIds만 변경할 수 있으며 생략하면 CATEGORY_MINIMUM·AREA_SPREAD 결과를 UNKNOWN으로 둔다.
+   * 영역 배정이 같다는 사실을 명시하려면 이전 행과 동일한 데이터를 전달한다.
    */
   nextAttempts?:readonly LedgerAttempt[];
 }
 
-/** Every field but areaIds must match row for row, so only area membership can differ. */
+/** areaIds 이외 필드는 행별로 완전히 동일해야 한다. 영역 배정만 바뀔 수 있다. */
 function movedAreas(previous:readonly LedgerAttempt[], next:readonly LedgerAttempt[]):Set<string> {
   if (!Array.isArray(next)) throw new TypeError('nextAttempts must be an array');
   if (next.length !== previous.length) throw new TypeError('nextAttempts must list the same ledger rows');
@@ -123,7 +118,7 @@ function movedAreas(previous:readonly LedgerAttempt[], next:readonly LedgerAttem
   return moved;
 }
 
-/** The areas a requirement reads from ledger rows. */
+/** 요건 판정에 필요한 원장 행의 영역 목록이다. */
 function areasRead(requirement:Requirement):readonly string[] {
   if (requirement.kind === 'CATEGORY_MINIMUM') return [requirement.areaId];
   if (requirement.kind === 'AREA_SPREAD') return requirement.areaIds;
@@ -156,7 +151,7 @@ function sameList(a:readonly string[], b:readonly string[]):boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
-/** Rule fields that decide the result. evidenceRefs is provenance and is not compared. */
+/** 요건 결과를 바꾸는 규칙 필드다. 출처인 evidenceRefs는 차이 비교 대상이 아니다. */
 function ruleFields(requirement:Requirement):Partial<Record<ChangedField, string>> {
   const fields:Partial<Record<ChangedField, string>> = {
     kind:requirement.kind,
@@ -198,7 +193,7 @@ function clauseIdsOf(requirement:Requirement):string[] {
   return sorted([...new Set([...requirement.sourceClauseIds, ...requirement.exceptionClauseIds])]);
 }
 
-/** Same clause ids can still point at re-worded text: compare kind and source span. */
+/** 같은 조항 ID라도 문구가 변경될 수 있으므로 조항 종류와 원본 위치를 함께 비교한다. */
 function clausesReworded(previous:Pack, next:Pack, ids:readonly string[]):boolean {
   const before = new Map(previous.clauseInventory.map(clause => [clause.clauseId, clause]));
   const after = new Map(next.clauseInventory.map(clause => [clause.clauseId, clause]));
@@ -263,7 +258,7 @@ function approvedPack(raw:unknown, sideName:'previous'|'next', asOfMs:number, bl
   return pack;
 }
 
-/** Revision checks. Returns the kind when the pair is one clean step. */
+/** 두 판본이 명확히 하나의 변경 관계인지 검증하고 관계 유형을 반환한다. */
 function checkRevision(previous:Pack, next:Pack, blockers:RevisionBlocker[]):'AMENDMENT'|'CORRECTION'|undefined {
   if (previous.version === next.version) {
     blockers.push({code:'SAME_VERSION'});
@@ -279,7 +274,7 @@ function checkRevision(previous:Pack, next:Pack, blockers:RevisionBlocker[]):'AM
     return undefined;
   }
   if (fromNext === fromPrev) {
-    // A correction re-issues the same period; any other shape is ambiguous.
+    // CORRECTION은 같은 유효 기간에 다시 발행한 판본이다. 다른 기간은 모호하므로 거부한다.
     if (previous.effectiveUntil !== next.effectiveUntil) blockers.push({code:'EFFECTIVE_OVERLAP'});
     return 'CORRECTION';
   }
@@ -303,9 +298,8 @@ function blocked(asOf:string, blockers:RevisionBlocker[], inEffectAtAsOf:RulePac
 }
 
 /**
- * Compare two APPROVED versions of one rule pack on the same ledger rows.
- * Each requirement row equals buildAcademicLedger's row for that version, using `attempts` for the
- * previous version and `nextAttempts` (or `attempts`) for the next one.
+ * 한 원장 행 목록으로 같은 RulePack의 두 APPROVED 판본을 비교한다.
+ * 이전에는 attempts, 새 판본에는 nextAttempts(없으면 attempts)를 사용하여 각 판본의 buildAcademicLedger 요건 결과와 맞춘다.
  */
 export function compareRulePackRevisions(input:RulePackRevisionRequest):RulePackRevisionDiff {
   if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {
@@ -313,7 +307,7 @@ export function compareRulePackRevisions(input:RulePackRevisionRequest):RulePack
   }
   const asOfMs = Date.parse(input.asOf);
   if (input.nextAttempts !== undefined && !Array.isArray(input.attempts)) throw new TypeError('attempts must be an array');
-  /** Areas some course enters or leaves under the next version; undefined when not supplied. */
+  /** 새 판본에서 어떤 과목이 새로 속하거나 제외된 학점 영역이다. 공급되지 않으면 undefined다. */
   const moved = input.nextAttempts === undefined ? undefined : movedAreas(input.attempts, input.nextAttempts);
   const blockers:RevisionBlocker[] = [];
   const previous = approvedPack(input.previous, 'previous', asOfMs, blockers);
@@ -352,7 +346,7 @@ export function compareRulePackRevisions(input:RulePackRevisionRequest):RulePack
         requirementId:id, semanticKey:b.semanticKey,
         definition:fields.length > 0 ? 'CHANGED' : 'UNCHANGED',
         changedFields:fields,
-        // Without the next classification an area result cannot be called SAME, GAINED or LOST.
+        // 새 영역 분류 정보가 없으면 영역 요건이 SAME·GAINED·LOST인지 확정할 수 없다.
         stateChange:!moved && reads.length > 0 ? 'UNKNOWN' : stateChange(prevSide.state, nextSide.state),
         previous:prevSide, next:nextSide,
       };

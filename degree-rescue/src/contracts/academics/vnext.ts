@@ -2,10 +2,9 @@ import {z} from 'zod';
 const CreditUnitsSchema=z.number().int().nonnegative(); // 1 unit = 0.5 credit
 
 /**
- * Feedback follow-up to merged TASK-00 PR #13. All V1 wire contracts remain
- * untouched; these strict, additive schemas are opt-in until 4-track review.
- * They validate contract consistency, NOT official university requirements,
- * source completeness, actual recognition or graduation eligibility.
+ * 병합된 TASK-00 PR #13의 후속 검토 결과다.
+ * 기존 V1 통신 계약은 변경하지 않고, 4개 작업 영역 검토 전까지 엄격한 추가 스키마는 선택적으로 사용한다.
+ * 스키마 검증은 자료의 내부 일관성만 확인하며 학교 공식 요건, 출처의 완전성, 실제 학점 인정 또는 졸업 자격을 보증하지 않는다.
  */
 const Id=z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_.:-]+$/);
 const DateTime=z.iso.datetime({offset:true});
@@ -53,7 +52,7 @@ export type AcademicRuleScopeVNext=z.infer<typeof AcademicRuleScopeVNextSchema>;
 
 const RequirementBase={
   id:Id,
-  /** Stable semantic identity across versions, not an ID invented from a title. */
+  /** 판본이 바뀌어도 유지되는 의미상 식별자이며 제목을 바탕으로 임의 생성한 ID가 아니다. */
   semanticKey:Id,
   sourceClauseIds:RequirementRef,
   exceptionClauseIds:z.array(Id).max(100),
@@ -106,7 +105,7 @@ export type AcademicRequirementVNext=z.infer<typeof AcademicRequirementVNextSche
 export const AcademicClauseVNextSchema=z.strictObject({
   clauseId:Id,
   kind:z.enum(['RULE','EXCEPTION','FOOTNOTE','SCOPE','PROCEDURE']),
-  /** Source document must be independently inventoried BEFORE running LLM. */
+  /** LLM을 실행하기 전에 원본 문서의 조항을 별도로 대조·목록화해야 한다. */
   sourceSpanRef:Id,
   sourceDocumentId:Id.optional(),
   coverage:z.discriminatedUnion('state',[
@@ -147,7 +146,7 @@ export const AcademicRulePackVNextSchema=z.strictObject({
   state:z.enum(['DRAFT','NEEDS_REVIEW','APPROVED']),
   requirements:z.array(AcademicRequirementVNextSchema).min(1).max(200),
   clauseInventory:z.array(AcademicClauseVNextSchema).min(1).max(500),
-  /** A checked candidate with ANY blocking warning must not be activated. */
+  /** 차단 경고가 하나라도 있는 검토 후보는 활성화하지 않는다. */
   validationReport:z.strictObject({
     checkedAt:DateTime,
     sourceDocumentSha256:sha256,
@@ -161,7 +160,7 @@ export const AcademicRulePackVNextSchema=z.strictObject({
       sourceClauseId:Id.optional(),
     })).max(200),
   }).optional(),
-  /** Human attests independently checked inventory against original source. */
+  /** 담당자가 원본과 독립적으로 대조한 조항 목록을 직접 확인·확약한다. */
   inventoryReviewedBy:Id.optional(),
   approvedBy:Id.optional(),
   independentlyCheckedBy:Id.optional(),
@@ -257,8 +256,7 @@ export const AcademicRulePackVNextSchema=z.strictObject({
       }
     }
   }
-  // A source inventory can still omit clauses: source-level completeness
-  // cannot be proven by this JSON. Separate human/source reconciliation required.
+  // 출처 목록 자체에서 조항이 누락될 수 있다. JSON만으로 원본의 완전성을 증명할 수 없으므로 사람의 원문 대조가 추가로 필요하다.
   for(const [i,clause] of v.clauseInventory.entries()){
     if(clause.coverage.state!=='LINKED')continue;
     for(const id of clause.coverage.requirementIds){
@@ -272,10 +270,9 @@ export const AcademicRulePackVNextSchema=z.strictObject({
 export type AcademicRulePackVNext=z.infer<typeof AcademicRulePackVNextSchema>;
 
 /**
- * Compare the submitted inventory with an INDEPENDENT inventory of the trusted
- * original document. A self-authored inventory can omit the same clause as
- * an LLM candidate, so inner Zod validation alone is never approval evidence.
- * This helper does not decide whether that independent inventory is correct.
+ * 제출된 조항 목록을 신뢰 가능한 원문에서 독립적으로 만든 목록과 비교한다.
+ * 작성자가 직접 만든 목록은 LLM 후보와 똑같은 조항을 빠뜨릴 수 있으므로 Zod 내부 검증만으로 승인하지 않는다.
+ * 이 함수는 독립 목록 자체의 정확성까지 판정하지 않는다.
  */
 export interface AcademicTrustedSourceInventoryVNext {
   sourceDocumentSha256:string;
@@ -312,7 +309,7 @@ export function verifyAcademicSourceCoverageVNext(
   return true;
 }
 
-/** Required ingestion boundary for an APPROVED version; caller owns genuine source verification. */
+/** APPROVED 판본의 필수 수집 경계다. 실제 출처 검증 책임은 호출자에게 있다. */
 export function parseApprovedAcademicRulePackVNext(
   candidate:unknown,
   trustedOriginal:AcademicTrustedSourceInventoryVNext,
@@ -358,17 +355,16 @@ export function selectAcademicRulePackAsOfVNext(
   });
   const axes=['degreePath','track'] as const;
   const selected=(value:string|undefined)=>!!value&&value!=='UNSELECTED'&&value!=='UNDECIDED';
-  // First exclude known mismatches on either axis; a different degree path's
-  // track does not make the current path require an irrelevant choice.
+  // 두 분류 축에서 명확히 불일치하는 항목을 먼저 제외한다. 다른 학위 경로의 트랙을 현재 경로에 잘못 적용하지 않는다.
   const applicable=baseCandidates.filter(p=>axes.every(axis=>p.scope[axis]===undefined
     ||!selected(request[axis])||p.scope[axis]===request[axis]));
   for(const axis of axes)
     if(!selected(request[axis])&&applicable.some(p=>p.scope[axis]!==undefined))return null;
   if(!applicable.length)return null;
-  // A legacy record is not proof that the new axis is irrelevant, even across a supersede chain.
+  // 이전 판본 기록이 있더라도 새로운 분류 축이 무관하다는 근거는 아니다. 대체 연결 사슬도 마찬가지다.
   for(const axis of ['degreePath','track'] as const)
     if(applicable.some(p=>p.scope[axis]!==undefined)&&applicable.some(p=>p.scope[axis]===undefined))return null;
-  // Reject forks, disconnected overlapping rules, or identical version IDs.
+  // 분기된 규칙, 연결되지 않은 중복 규칙, 동일한 판본 ID를 거부한다.
   if(new Set(applicable.map(p=>p.version)).size!==applicable.length)return null;
   const byVersion=new Map(applicable.map(p=>[p.version,p]));
   const heads=applicable.filter(p=>!applicable.some(x=>x.supersedesVersion===p.version));
@@ -401,7 +397,7 @@ export const AcademicRequirementProgressVNextSchema=z.strictObject({
   matchedGroupsCount:z.number().int().min(0).max(10).optional(),
   requiredGroupsCount:z.number().int().min(1).max(10).optional(),
   evidenceRefs:z.array(Id).max(100),
-  /** NOT_CHECKED is reserved for missing GPA (never silently pass it). */
+  /** NOT_CHECKED는 GPA 정보가 없는 경우에만 사용하며 검사를 통과한 것으로 처리하지 않는다. */
   notCheckedReason:z.literal('GPA_NOT_COLLECTED').optional(),
   notApplicableReason:z.string().trim().min(8).max(300).optional(),
 }).superRefine((v,ctx)=>{
@@ -530,8 +526,8 @@ export const AcademicCourseCodeResolutionVNextSchema=z.discriminatedUnion('statu
     sectionId:z.string().regex(/^\d{2}$/).optional()}),
 ]);
 /**
- * Course/section splitting is disabled until the school/source format is
- * independently confirmed. Blank codes or name matches are never guessed.
+ * 학교의 학수번호·분반 형식을 독립적으로 확인하기 전에는 과목과 분반 번호를 분리하지 않는다.
+ * 공백 코드나 이름 유사도로 번호를 추측하지 않는다.
  */
 export function resolveAcademicCourseCodeVNext(input:{
   rawCode:string;

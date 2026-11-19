@@ -11,8 +11,7 @@ function pack(version:string,id:string,total=false):MajorRulePack {
   ]};
 }
 function programs():ProgramOffer[]{
-  // Exercise approved-contract values at the runtime adapter boundary, rather
-  // than teaching this test the private core's different legacy spellings.
+  // 내부 코어의 오래된 별칭이 아니라 실제 승인된 통신 계약 값으로 런타임 어댑터 경계를 시험한다.
   const paths=AcademicDegreePathVNextSchema.options;
   const primary=['SYN-A','SYN-C'].flatMap(id=>paths.map(degreePath=>({
     role:'PRIMARY_MAJOR',programId:id,degreePath,
