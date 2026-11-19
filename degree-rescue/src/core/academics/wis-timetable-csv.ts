@@ -1,36 +1,27 @@
 import type {TimetableAttribute, TimetableImport, TimetableRow} from './wis-timetable.js';
 
 /**
- * toSavedCurriculumCsv (#133): one converted timetable page as the 8-column CSV that the
- * operator-saved curriculum import (apps/api permitted-curriculum `importSavedCurriculum`,
- * OPERATOR_SAVED) accepts. One line per listed section; the raw 9-character code is kept, so
- * sections never collide. category is the page's 개설영역 text as written. The page states no
- * 학번, so cohort is UNKNOWN; campus is the one the page shows (TimetableImport.campus), and a
- * stated campus is only checked against it.
- *
- * The CSV has no column for 이수구분, notes, or review flags, so they travel beside it in
- * `details`, one entry per exported line, and a row that needs review (for example a course
- * without a syllabus link, termEvidence PAGE_ONLY) is withheld and listed, never sent as if it
- * were clean. Rules in notes stay NEEDS_REVIEW on the import side.
- * Pure: no hashing, files, or network. The local CLI adds the original/CSV hashes.
+ * 사용자가 저장한 학교 시간표를 운영자가 가져올 수 있는 8열 CSV로 변환한다(#133).
+ * 분반마다 별도 행을 만들고 원시 9자리 학수번호·개설영역을 보존한다. 입학년도는 UNKNOWN이며 캠퍼스는 페이지에 표시된 것만 사용한다.
+ * CSV에 담을 수 없는 이수구분·비고·검토 정보는 details에 보존한다. 검토가 필요한 행은 보류하고 자동 승인하지 않는다.
  */
 
-/** Bump when the converter or this export changes output for the same saved page. */
+/** 같은 저장 페이지의 변환 결과가 바뀔 때 변환기 판본을 올린다. */
 export const WIS_TIMETABLE_CONVERTER_VERSION = 'hufs-wis-timetable-3';
 
-/** Must equal apps/api permitted-curriculum `courseCsvHeaders`; a test keeps them in step. */
+/** apps/api의 permitted-curriculum courseCsvHeaders와 일치해야 하며 테스트로 동기화한다. */
 export const SAVED_CURRICULUM_CSV_HEADERS = ['courseCode', 'courseName', 'credits', 'category', 'major', 'semester', 'campus', 'cohort'] as const;
 
 export type WithheldReason = 'NEEDS_REVIEW'|'TERM_FROM_PAGE'|'NOT_A_REGULAR_TERM'|'CELL_NOT_ACCEPTED';
 
-/** What the CSV line cannot hold, kept for the same course code. */
+/** CSV 행에 담을 수 없는 추가 정보를 같은 학수번호와 연결해 보존한다. */
 export interface SavedCurriculumDetail {
   rawCode:string;
-  /** 이수구분 as the page states it: 전필 when the REQUIRED chip is shown; nothing is inferred otherwise. */
+  /** 페이지의 이수구분을 그대로 옮기고 REQUIRED 표기가 있을 때에만 전필로 판단한다. */
   completion:'REQUIRED'|'NOT_STATED';
   attributes:TimetableAttribute[];
   instructionLanguage:string|null;
-  /** 비고 as written; prerequisite, 학번, and equivalent-course text is never applied as a rule. */
+  /** 비고 원문을 보존하되 선수과목·입학년도·동일과목 텍스트를 자동 규칙으로 해석하지 않는다. */
   note:string;
   noteHints:TimetableRow['noteHints'];
 }
@@ -43,7 +34,7 @@ export interface SavedCurriculumCsv {
   withheld:{no:number; rawCode:string; reason:WithheldReason}[];
 }
 
-/** The import refuses the whole CSV on an empty cell, a cell over 200 characters, or a leading = + @. */
+/** 빈 셀, 200자 초과 셀 또는 =·+·@로 시작하는 셀이 있으면 CSV 전체 가져오기를 거부한다. */
 const acceptable = (cell:string) => cell.trim() !== '' && cell.trim().length <= 200 && !/^[=+@]/.test(cell.trim());
 
 function quote(cell:string):string {
@@ -51,7 +42,7 @@ function quote(cell:string):string {
 }
 
 export function toSavedCurriculumCsv(page:TimetableImport, options:{campus?:string} = {}):SavedCurriculumCsv {
-  // A stated campus may only confirm what the page shows. It never turns UNKNOWN into a campus.
+  // 캠퍼스는 페이지의 값을 확인할 때만 사용하며 UNKNOWN을 임의 값으로 변경하지 않는다.
   if (options.campus !== undefined && options.campus !== page.campus) {
     throw new TypeError(`campus ${options.campus} does not match the page, which shows ${page.campus}`);
   }

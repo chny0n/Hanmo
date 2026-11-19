@@ -39,7 +39,7 @@ function readProfile():AcademicProfile{
     ...(year?{cohort:Number(year)}:{}),
     ...(majors.length?{majors}:{}),
     ...(target?{targetGraduationTerm:target}:{}),
-    // Self-reported or calculator-derived IDs are hints, never independently verified audit results.
+    // 학생 자가 입력이나 계산기에서 만든 요건 ID는 참고 힌트일 뿐 독립 검토된 진단 결과가 아니다.
     openRequirementIds:null,
     candidateOpenRequirementIds:requirements?requirements.split(',').map(x=>x.trim()).filter(Boolean):[],
   });
@@ -266,7 +266,7 @@ async function officialTitles():Promise<void>{
       ' · 정적 파일 서버에서 페이지를 열었는지 확인하세요.');
   }
 }
-/** Explicit user action only. A calculator response can suggest links but never close an official requirement. */
+/** 사용자가 명시적으로 실행한 경우에만 반영한다. 계산기 응답은 관련 링크를 제안할 수 있어도 공식 요건을 완료 처리하지 못한다. */
 function applyLocalAuditHints():void{
   try{
     const raw=sessionStorage.getItem(ACADEMIC_AUDIT_BRIDGE_KEY);

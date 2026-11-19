@@ -3,9 +3,9 @@ import {openRequirementIdsFromAudit} from './academics/notice-links.js';
 import type {AcademicAuditVNext} from '../contracts/academics/vnext.js';
 
 /**
- * Academic-only, browser-safe adaptation of the archived HUFS One AI notice and
- * academic-calendar design. No career/opportunity feed, login, network or clock
- * dependency. Explicit asOf, source dates and applicability are mandatory.
+ * 이전 HUFS One AI의 학사공지·달력 설계를 브라우저용으로 안전하게 이식했다.
+ * 취업·진로 공지, 로그인, 네트워크, 현재 시각 조회는 포함하지 않는다.
+ * 기준 시각(asOf), 출처 날짜, 대상 조건을 명시적으로 요구한다.
  */
 const Iso=z.iso.datetime({offset:true});
 const Id=z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/);
@@ -76,7 +76,7 @@ export const AcademicEventSchema=z.strictObject({
   }),
   scope:Scope.optional(),
   opensAt:Iso.optional(),deadlineAt:Iso.optional(),eventAt:Iso.optional(),
-  /** Internal department report deadline is NEVER the student's deadline. */
+  /** 학과 내부 보고 마감은 학생의 신청 마감일과 구별한다. */
   adminDeadlineAt:Iso.optional(),
   requirementRefs:z.array(Id).max(40).optional(),
   requiresOpenRequirement:z.boolean().optional(),
@@ -111,8 +111,10 @@ export function parseAcademicSchedule(source:unknown):AcademicScheduleImport{
   }
   return {events,invalid};
 }
-/** Same-origin, tab-scoped, untrusted hints from the standalone ledger calculator.
- * Never move the complete student ledger into the timeline or treat this as school evidence. */
+/**
+ * 같은 출처·현재 탭에서만 사용하는 독립 원장 계산기의 검증되지 않은 힌트다.
+ * 학생 원장 전체를 일정 화면으로 옮기거나 학교 공식 근거로 오인하면 안 된다.
+ */
 export const ACADEMIC_AUDIT_BRIDGE_KEY='hanmo:degree-rescue:local-audit-hints:v1';
 export const AcademicAuditHintSchema=z.strictObject({
   schemaVersion:z.literal(1),
@@ -129,10 +131,10 @@ export const AcademicProfileSchema=z.strictObject({
   majors:z.array(Major).max(5).optional(),
   targetGraduationTerm:Term.optional(),
   enrollmentState:z.enum(['ENROLLED','LEAVE','RETURNING','GRADUATION_PENDING']).optional(),
-  /** null is unknown; [] is a verified no-open-requirements state, not the same thing. */
-  /** Independently confirmed results only; never populated from student-entered JSON. */
+  /** null은 상태 미확정, []는 미충족 요건 없음이 확인된 상태이므로 다르게 취급한다. */
+  /** 독립적으로 확인된 결과만 사용한다. 학생이 작성한 JSON으로 채울 수 없다. */
   openRequirementIds:z.array(Id).max(200).nullable().optional(),
-  /** Student/locally computed hints; may prioritize but MUST NOT prove applicability or completion. */
+  /** 학생 입력·로컬 계산 힌트는 우선순위에 참고할 수 있지만 공지 적용 대상이나 요건 완료의 근거로 사용하지 않는다. */
   candidateOpenRequirementIds:z.array(Id).max(200).optional(),
 });
 export type AcademicProfile=z.infer<typeof AcademicProfileSchema>;
@@ -154,7 +156,7 @@ const one=(required:readonly string[]|undefined,actual:string|undefined,field:st
   if(actual===undefined){unknown.push(field);return false;}
   return !required.includes(actual);
 };
-/** Missing student attributes are UNKNOWN, never inferred from the person's other fields. */
+/** 누락된 학생 속성은 다른 필드에서 추측하지 않고 UNKNOWN으로 보류한다. */
 export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent,independentlyReviewed=false):{state:Applies;unknown:string[]}{
   const scope=event.scope;const unknown:string[]=[];
   let mismatch=false;
@@ -172,9 +174,9 @@ export function noticeApplicability(profile:AcademicProfile,event:AcademicEvent,
   if(one(scope.graduationTerms,profile.targetGraduationTerm,'graduationTerm',unknown))mismatch=true;
   if(one(scope.enrollmentStates,profile.enrollmentState,'enrollmentState',unknown))mismatch=true;
   }
-  // A title-only notice cannot prove which students actually qualify.
+  // 제목만 있는 공지로는 어떤 학생에게 적용되는지 확정할 수 없다.
   if(event.source.review==='REFERENCE_ONLY')unknown.push('noticeDetails');
-  // SOURCE_REVIEWED inside a JSON file is self-asserted. It is not an operator attestation.
+  // JSON의 SOURCE_REVIEWED 표시는 작성자 스스로 선언한 상태이며 운영 담당자의 독립 검수 증명이 아니다.
   if(event.source.review==='SOURCE_REVIEWED'&&!independentlyReviewed)unknown.push('sourceVerification');
   if(event.requiresOpenRequirement){
     if(profile.openRequirementIds===null||profile.openRequirementIds===undefined){
@@ -198,11 +200,13 @@ function sourceEvidence(event:AcademicEvent,independentlyReviewed:boolean):Evide
   if(event.source.review==='SYNTHETIC')return 'SYNTHETIC';
   return independentlyReviewed?'SOURCE_REVIEWED':'NEEDS_SOURCE_CHECK';
 }
-/** Local viewer, no live institution lookup, no fabricated or inferred deadlines. */
+/** 로컬 조회 화면이며 학교 서버 실시간 조회나 마감일 생성·추정 기능은 없다. */
 export function buildAcademicAgenda(request:{
   asOf:string;profile:AcademicProfile;events:readonly AcademicEvent[];
-  /** In-memory references supplied ONLY by the operator-reviewed bundled-data loader.
-   * Never populate from a user-uploaded JSON field, URL, timestamp, or event ID. */
+  /**
+   * 메모리 안의 검토 근거는 운영 담당자가 검수한 번들 로더에서만 전달한다.
+   * 사용자 업로드 JSON·URL·타임스탬프·행사 ID에서 이 근거를 만들어서는 안 된다.
+   */
   trustedReviewedEvents?:readonly AcademicEvent[];
 }):AcademicAgenda{
   if(!Iso.safeParse(request.asOf).success)throw new RangeError('asOf needs offset-aware ISO time');

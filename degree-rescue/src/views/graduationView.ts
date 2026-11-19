@@ -1,15 +1,14 @@
 import type {AcademicSummary, ForecastSummary} from '../contracts/index.js';
 
 /**
- * 졸업 화면 모델. Values come from the academics track's summary as-is: the UI never adds up
- * credits, decides a requirement or turns a pattern into a confirmed offering.
- * 1 credit unit = 0.5 credit (contracts CreditUnitsSchema).
+ * 졸업 화면의 표시 모델이다. 학사 계산 코어의 결과를 그대로 보여주며 화면에서 학점을 합산하거나 요건 충족을 판정하지 않는다.
+ * 과거 개설 패턴을 확정 개설 정보로 바꾸지 않는다. 1 학점 단위는 0.5학점이다.
  */
 export interface CreditLine { readonly label: string; readonly credits: string }
 
 export interface GraduationView {
   readonly stateText: string;
-  /** Always shown: this screen is support, not an official graduation decision. */
+  /** 이 화면은 비공식 학업 보조 기능이므로 졸업 확정이 아니라는 안내를 항상 표시한다. */
   readonly notOfficialText: string;
   readonly credits: readonly CreditLine[];
   readonly deficits: readonly {readonly id: string; readonly text: string}[];
@@ -51,19 +50,19 @@ const COVERAGE_TEXT: Record<ForecastSummary['items'][number]['coverage'], string
   UNKNOWN: '자료 범위 알 수 없음',
 };
 
-/** "12" units → "6학점", "13" → "6.5학점". */
+/** 학점 단위 12는 6학점, 13은 6.5학점으로 표시한다. */
 export function creditsText(units: number): string {
   return `${units % 2 === 0 ? units / 2 : (units / 2).toFixed(1)}학점`;
 }
 
-/** Shown on the 졸업 section in every state (shown, pending, not shared), not only with numbers. */
+/** 학점 수치가 표시·보류·비공개된 모든 상태에서 졸업 화면에 나타낸다. */
 export const NOT_OFFICIAL_GRADUATION_TEXT = '공식 졸업 판정이 아닙니다. 확정은 학과·학사지원팀에서 확인해 주세요.';
 
 export function buildGraduationView(s: AcademicSummary): GraduationView {
   return {
     stateText: STATE_TEXT[s.state],
     notOfficialText: NOT_OFFICIAL_GRADUATION_TEXT,
-    // Kept separate on purpose: earned, in progress and planned are never summed into one number.
+    // 취득·진행 중·계획 학점은 구분해서 표시하며 하나의 숫자로 합치지 않는다.
     credits: [
       {label: '취득', credits: creditsText(s.earnedCreditUnits)},
       {label: '수강 중', credits: creditsText(s.inProgressCreditUnits)},

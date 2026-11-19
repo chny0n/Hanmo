@@ -5,27 +5,22 @@ import {
 } from './ledger.js';
 
 /**
- * Credit ledger for transcripts whose course codes are not all confirmed (#11).
- *
- * Each row says which kind it is. A RESOLVED row has a confirmed canonical course id and goes to
- * the ordinary ledger unchanged. A NEEDS_REVIEW row has only the source row's opaque token: no
- * course id, no areas. It is never given a placeholder id, never counted, and never dropped
- * silently. It is listed, and every requirement row it could change is held for review.
- *
- * Which rows count as unresolved comes from the caller. The API does not send them yet:
- * see COURSE_IDENTITY_API_CONNECTION.
- * Pure: no clock, network, or randomness.
+ * 학수번호가 전부 확정되지 않은 성적표의 학점 원장이다(#11).
+ * RESOLVED 행은 검증된 대표 과목 ID로 일반 원장에 포함한다. NEEDS_REVIEW 행은 원본 행의 불투명 토큰만 보유하며 가짜 과목 ID를 생성하거나 학점으로 세지 않는다.
+ * 미확정 행은 누락하지 않고 노출하며 영향을 줄 수 있는 요건은 검토 보류한다.
+ * 미확정 여부의 판정은 호출자 책임이고 API는 아직 이 정보를 제공하지 않는다(COURSE_IDENTITY_API_CONNECTION).
+ * 시계·네트워크·난수에 의존하지 않는다.
  */
 
-/** The API adapters still require a canonical course id on every row (#276/#282). */
+/** 현재 API 어댑터(#276/#282)는 모든 행에 대표 학수번호를 요구하므로 아직 연결하지 않았다. */
 export const COURSE_IDENTITY_API_CONNECTION = 'NOT_CONNECTED' as const;
 
 export type ResolvedLedgerAttempt = LedgerAttempt & {identity:'RESOLVED'};
 
-/** A source row whose course code or equivalence is not confirmed. */
+/** 학수번호나 동일 교과목 관계가 검증되지 않은 원본 행이다. */
 export interface UnresolvedLedgerAttempt {
   identity:'NEEDS_REVIEW';
-  /** Opaque token of the source row. Not a course id. */
+  /** 원본 행의 불투명 식별 토큰이며 학수번호가 아니다. */
   attemptToken:string;
   creditUnits:number;
   ledger:LedgerSlot;
@@ -42,11 +37,11 @@ export interface IdentifiedLedgerRequest extends Omit<AcademicLedgerRequest, 'at
 }
 
 export interface UnresolvedCourseSummary {
-  /** Unresolved rows, in input order. */
+  /** 미확정 행의 토큰을 입력 순서대로 보존한다. */
   attemptTokens:string[];
-  /** Resolved rows joined to an unresolved row by a retake link, in input order. */
+  /** 재수강 관계로 미확정 행에 연결된 확정 행 토큰을 입력 순서대로 보존한다. */
   linkedAttemptTokens:string[];
-  /** Requirement rows an unresolved row could change, in request order. */
+  /** 미확정 행이 영향을 줄 수 있는 요건 ID를 요청 순서대로 담는다. */
   affectedRequirementIds:string[];
 }
 
@@ -84,18 +79,10 @@ function checkUnresolved(row:UnresolvedLedgerAttempt):void {
 }
 
 /**
- * The ordinary ledger over RESOLVED rows, plus a list of NEEDS_REVIEW rows and what they hold.
- *
- * - Credits and areas come from RESOLVED rows only. Nothing is added for an unresolved row.
- * - An unresolved row could be any course, including one already on the transcript. So when it is
- *   RECOGNIZED, or a retake link touches it, every requirement row that reads attempts is held
- *   as NEEDS_REVIEW. The counted numbers stay, but SATISFIED or UNSATISFIED is not confirmed.
- * - An unresolved PENDING or EXCLUDED row with no retake link cannot change any requirement row in
- *   the ordinary ledger, whatever course it turns out to be. Rows keep their state.
- * - A resolved row that an unresolved row claims to supersede stays counted. A resolved row that
- *   claims to supersede an unresolved row is held, as the ordinary ledger holds a retake whose
- *   target it cannot see.
- * - With any unresolved row the audit is never READY.
+ * RESOLVED 행만 학점·영역 계산에 사용하고 NEEDS_REVIEW 행은 별도로 기록한다.
+ * 미확정 인정 행이나 재수강 관계는 어떤 과목인지에 따라 요건 판정이 달라지므로 관련 요건을 NEEDS_REVIEW로 보류한다. 기존 계산 수치는 유지한다.
+ * 재수강 관계가 없는 PENDING·EXCLUDED 행은 요건에 영향을 주지 않는다.
+ * 미확정 행과 연결된 재수강은 확정 행의 학점을 임의로 취소하지 않고 검토 대상으로 남긴다.
  */
 export function buildLedgerWithCourseIdentity(input:IdentifiedLedgerRequest):IdentifiedLedgerResult {
   if (!Array.isArray(input.attempts)) throw new TypeError('attempts must be an array');

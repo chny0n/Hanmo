@@ -24,15 +24,15 @@ describe('applySameCourseRules', () => {
   });
 
   it('stops double counting when both the old and the current course were taken', () => {
-    // Without the rule the two look like different courses and both credits count.
+    // 규칙이 없으면 서로 다른 과목으로 간주해 두 과목 학점을 모두 센다.
     const both = [attempt('SYN-A1', 'SYN-OLD', '2023-1'), attempt('SYN-A2', 'SYN-NEW', '2025-1')];
     expect(ledger(both).earnedCreditUnits).toBe(12);
-    // With it they are one course earned twice without an approved retake: the ledger holds both.
+    // 규칙 적용 후에는 한 과목을 승인 없이 두 번 이수한 셈이므로 원장이 두 기록을 검토 보류한다.
     const after = ledger(applySameCourseRules(both, [rule('SYN-R1', ['SYN-OLD'], 'SYN-NEW')]).attempts);
     expect(after.earnedCreditUnits).toBe(0);
     expect(after.state).toBe('NEEDS_REVIEW');
     expect(after.excludedAttempts).toEqual([{attemptToken:'SYN-A1', reason:'NEEDS_REVIEW'}, {attemptToken:'SYN-A2', reason:'NEEDS_REVIEW'}]);
-    // Earned old course plus the current course only in progress: the second one is a duplicate.
+    // 이전 과목은 취득했고 새 과목은 진행 중인 경우 두 번째 기록을 중복으로 본다.
     const {term:_term, ...current} = attempt('SYN-A2', 'SYN-NEW');
     const planned:LedgerAttempt[] = [attempt('SYN-A1', 'SYN-OLD', '2023-1'), {...current, ledger:'IN_PROGRESS'}];
     const after2 = ledger(applySameCourseRules(planned, [rule('SYN-R1', ['SYN-OLD'], 'SYN-NEW')]).attempts);
@@ -60,7 +60,7 @@ describe('applySameCourseRules', () => {
   });
 
   it('never merges look-alike ids without a rule', () => {
-    // one character apart, same prefix: still two courses (#133 decision D)
+    // 접두어가 같고 한 글자만 달라도 공식 규칙이 없다면 두 과목이다(#133 결정 D).
     const out = applySameCourseRules([attempt('SYN-A1', 'SYN-C10101'), attempt('SYN-A2', 'SYN-C10104')], [rule('SYN-R1', ['SYN-OTHER'], 'SYN-NEW')]);
     expect(out).toMatchObject({state:'APPLIED', applied:[], held:[]});
     expect(out.attempts.map(a => a.canonicalCourseId)).toEqual(['SYN-C10101', 'SYN-C10104']);
@@ -105,7 +105,7 @@ describe('applySameCourseRules', () => {
     expect(one).toEqual(two);
     expect(attempts[0]!.canonicalCourseId).toBe('SYN-OLD');
     expect(one.attempts[0]).not.toBe(attempts[0]);
-    // an attempt no rule touches is still a fresh copy, so callers cannot change the input through it
+    // 어떤 규칙도 참조하지 않은 수강 시도도 새 복사본으로 반환해 호출자가 원본을 변경하지 못하게 한다.
     const untouched = Object.freeze(attempt('SYN-A3', 'SYN-KEEP'));
     const kept = applySameCourseRules([untouched], rules).attempts[0]!;
     expect(kept).toEqual(untouched);

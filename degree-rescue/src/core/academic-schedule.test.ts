@@ -87,7 +87,7 @@ describe('academic calendar + graduation continuity',()=>{
     expect(result.items[0]?.appliesTo).toBe('UNKNOWN');
     expect(result.items[0]?.scopeUnknown).toContain('sourceVerification');
     expect(result.dueSoonCount).toBe(0);
-    // An operator's in-memory reference cannot be spoofed by copying the same JSON.
+    // 운영 담당자의 메모리 안 참조는 같은 JSON을 복사하는 것으로 위조할 수 없어야 한다.
     const copied=AcademicEventSchema.parse(JSON.parse(JSON.stringify(uploaded)));
     expect(agenda([copied],profile,NOW,[uploaded]).items[0]?.evidence).toBe('NEEDS_SOURCE_CHECK');
   });

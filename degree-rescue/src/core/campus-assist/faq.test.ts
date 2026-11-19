@@ -58,8 +58,7 @@ describe('same-revision copies cannot decide evidence by input order (#373)',()=
       {...doc,sourceUrl:'https://example.org/synthetic-faq-other'},
       {...doc,effectiveUntil:'2026-12-31'},
       {...doc,verifiedAt:'2026-01-03T00:00:00Z'},
-      // A forged later publication timestamp must NOT turn the SAME
-      // revision ID into a newer approved revision.
+      // 게시 시각을 뒤로 위조해도 동일한 revisionId를 새 승인 판본으로 간주하면 안 된다.
       {...doc,publishedAt:'2026-02-01T00:00:00Z'},
       {...doc,publishedAt:'2026-02-01T00:00:00Z',rights:'REVOKED'},
     ];
@@ -74,13 +73,13 @@ describe('same-revision copies cannot decide evidence by input order (#373)',()=
   it('collapses identical copies, including a different key order, to one source',()=>{
     const reordered=Object.fromEntries(Object.entries(doc).reverse()) as FaqDocument;
     expect(count([doc,{...doc},reordered])).toEqual([1,1,1,1,1,1]);
-    // An explicitly undefined optional field is the same content as an absent one.
+    // 선택 필드가 명시적으로 undefined인 경우와 아예 없는 경우는 내용상 동일하다.
     expect(count([doc,{...doc,effectiveUntil:undefined}])).toEqual([1,1]);
   });
   it('does not fall back to an older approved revision when the newest one conflicts',()=>{
     const v2={...doc,revisionId:'faq-a-v2',publishedAt:'2026-03-01T00:00:00Z',verifiedAt:'2026-03-02T00:00:00Z'};
     expect(count([doc,v2,{...v2,rights:'REVOKED'}]).every(n=>n===0)).toBe(true);
-    // Before v2 was published, only v1 existed and remains citable.
+    // v2 공개 이전에는 v1만 존재했으며 그 판본은 인용 가능한 상태다.
     expect(retrieveFaqEvidence(Q,[doc,v2,{...v2,rights:'REVOKED'}],'2026-02-01T00:00:00Z')).toHaveLength(1);
   });
   it('keeps unrelated documents when one document is quarantined',()=>{

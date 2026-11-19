@@ -1,30 +1,21 @@
 import {assertId, termKey, type LedgerAttempt} from './ledger.js';
 
 /**
- * applySameCourseRules (#133 F②): before the ledger runs, rewrite attempts of an old course to the
- * current course that an official 동일 교과목 rule names, so the ledger treats both as one course:
- * a requirement on the current course is met by the old one, an approved retake from the old course
- * to the new one is recognized, and the two are no longer counted as two courses. Both earned
- * without an approved retake is one course earned twice, which the ledger holds for review.
- *
- * Only explicit rules count. Course ids are opaque: two ids that look alike (same prefix, one
- * character apart) are never merged. A rule that is not APPROVED is not applied; every attempt it
- * would touch is listed as held so the caller can show NEEDS_REVIEW. Not an official recognition of
- * any equivalence: the caller supplies the rules and their approval.
- *
- * A substitute course (대체 이수: either course meets one requirement, both may be credited) is not a
- * same-course rule. It belongs in the requirement itself as a K_OF_N option, not here.
- * Pure: no clock, network, or storage. Inputs are not modified.
+ * 동일 교과목 규칙(#133 F②)을 원장 계산 전에 적용한다.
+ * 공식 규칙의 이전 학수번호를 현재 학수번호로 바꿔 요건 충족·승인 재수강·중복 이수 계산을 일치시킨다.
+ * 명시적으로 승인된 근거가 없는 유사 학수번호는 합치지 않는다. 승인되지 않은 규칙이 영향을 줄 수 있는 수강 시도는 NEEDS_REVIEW로 보류한다.
+ * 대체 이수(둘 중 하나로 요건 충족)는 동일 교과목이 아니므로 K_OF_N 요건에 표현한다.
+ * 입력은 수정하지 않으며 시계·네트워크·저장소에 의존하지 않는다.
  */
 
 export interface SameCourseRule {
   id:string;
-  /** Old course ids. Each must differ from `toCourseId`. */
+  /** 이전 학수번호 목록. 각 값은 toCourseId와 달라야 한다. */
   fromCourseIds:readonly string[];
-  /** The current course every attempt of a `fromCourseIds` course is counted as. */
+  /** 이전 학수번호의 수강 기록을 귀속시킬 현재 학수번호. */
   toCourseId:string;
   state:'APPROVED'|'DRAFT'|'NEEDS_REVIEW';
-  /** Required for APPROVED: the official listing (e.g. the 동일 교과목 table row). */
+  /** 승인 규칙에는 동일 교과목 공식 목록 등 근거 자료가 필요하다. */
   evidenceRefs:readonly string[];
 }
 
@@ -39,12 +30,12 @@ export interface HeldSameCourse {
   attemptToken:string;
   courseId:string;
   ruleIds:string[];
-  /** RULE_NOT_APPROVED: only unapproved rules name this course. AMBIGUOUS: rules name different targets. */
+  /** RULE_NOT_APPROVED는 미승인 규칙만 있는 상태, AMBIGUOUS는 서로 다른 목표 과목을 가리키는 충돌 상태다. */
   reason:'RULE_NOT_APPROVED'|'AMBIGUOUS';
 }
 
 export interface SameCourseResult {
-  /** APPLIED when nothing is held. NEEDS_REVIEW when any attempt is held; held attempts keep their course. */
+  /** 보류 항목이 없으면 APPLIED, 하나라도 있으면 NEEDS_REVIEW다. 보류된 기록의 학수번호는 유지한다. */
   state:'APPLIED'|'NEEDS_REVIEW';
   attempts:LedgerAttempt[];
   applied:AppliedSameCourse[];
@@ -70,8 +61,7 @@ function validate(rules:readonly SameCourseRule[]):void {
     for (const ref of rule.evidenceRefs) assertId(ref, `${rule.id} evidence`);
     if (rule.state === 'APPROVED' && rule.evidenceRefs.length === 0) throw new TypeError(`${rule.id} is APPROVED without evidence`);
   }
-  // A chain (A -> B, B -> C) or a cycle would need an order of application. Refuse it: the caller
-  // writes the composed rule (A -> C) with its own evidence instead.
+  // A→B→C 사슬이나 순환은 적용 순서가 모호하므로 거부한다. 호출자가 근거를 붙인 A→C 합성 규칙을 제공해야 한다.
   const approvedFrom = new Set(rules.filter(r => r.state === 'APPROVED').flatMap(r => r.fromCourseIds));
   for (const rule of rules) {
     if (rule.state === 'APPROVED' && approvedFrom.has(rule.toCourseId)) {
@@ -92,7 +82,7 @@ export function applySameCourseRules(attempts:readonly LedgerAttempt[], rules:re
     if (attempt.term !== undefined) termKey(attempt.term);
   }
 
-  // course id -> rules naming it as an old course
+  // 학수번호별로 이를 이전 과목으로 참조하는 규칙을 수집한다.
   const byFrom = new Map<string, SameCourseRule[]>();
   for (const rule of rules) {
     for (const from of rule.fromCourseIds) byFrom.set(from, [...(byFrom.get(from) ?? []), rule]);
@@ -105,7 +95,7 @@ export function applySameCourseRules(attempts:readonly LedgerAttempt[], rules:re
     const named = byFrom.get(attempt.canonicalCourseId);
     if (!named) return copy;
     const approved = named.filter(r => r.state === 'APPROVED');
-    // Any rule, approved or not, that names another target makes the course ambiguous.
+    // 승인 여부와 관계없이 같은 이전 과목에 서로 다른 목표를 지정하면 모호한 규칙으로 처리한다.
     const targets = new Set(named.map(r => r.toCourseId));
     const ruleIds = named.map(r => r.id).sort();
     if (targets.size > 1) {

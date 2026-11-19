@@ -1,7 +1,7 @@
 import {AcademicRulePackVNextSchema} from '../contracts/index.js';
 export const SYNTHETIC_AS_OF='2026-11-05T00:00:00.000Z';
 const date='2026-01-01T00:00:00.000Z';
-/** Synthetic identities and invented rules; these are not university approval evidence. */
+/** 합성 식별자와 가상 학칙만 사용한다. 학교의 공식 승인 근거가 아니다. */
 export function syntheticAcademicPack(){
   return AcademicRulePackVNextSchema.parse({
     version:'SYN-PACK-1',sourceDocumentVersion:'SYN-DOC-V1',

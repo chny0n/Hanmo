@@ -98,7 +98,7 @@ export const ForecastSummarySchema = z.strictObject({
 });
 export type ForecastSummary = z.infer<typeof ForecastSummarySchema>;
 
-// Additive reviewed academic contracts; legacy v0.1 wire types remain stable.
+// 검토된 학사 계약만 추가한다. 기존 v0.1 통신 자료형은 호환성을 위해 유지한다.
 export * from './vnext.js';
 export * from './double-major.js';
 

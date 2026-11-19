@@ -132,7 +132,7 @@ describe('#371 a cancellation without an exact event date is not ignored',()=>{
     expect(r.state).toBe('PREDICTED');
   });
   it('an old undated cancellation followed by a held edition no longer blocks',()=>{
-    // Published in 2024 (its own archive year), before the 2025 and 2026 editions were held.
+    // 2024년에 게시된 자체 보관 연도의 기록으로 2025·2026 판본이 보류되기 이전에 이미 존재했다.
     const early=undated({publishedAt:'2024-12-05T00:00:00Z',verifiedAt:'2024-12-06T00:00:00Z'});
     const r=forecastActivity([early,...history],AS_OF,2027,'synthetic-dept','orientation');
     expect(r.state).toBe('PREDICTED');

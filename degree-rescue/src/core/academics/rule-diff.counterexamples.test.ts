@@ -4,14 +4,10 @@ import type {LedgerAttempt} from './ledger.js';
 import {compareRulePackRevisions, type ChangedField, type RevisionBlockerCode} from './rule-diff.js';
 
 /**
- * #11 (본선 전): independent counterexamples for the RulePack revision diff (#87).
- * Two synthetic versions differ in one known way; the expected outcome is written by hand
- * from that one change, not computed by the engine. Every value is synthetic (SYN-*).
- *
- * Approval: the engine compares only APPROVED versions. A DRAFT pair is checked to stay blocked.
- * The approved fixtures below carry synthetic reviewer ids for test data only; they are not a
- * school rule approval and no real rule text is used.
- * 1 unit = 0.5학점.
+ * 본선 전 #11의 RulePack 판본 차이(#87) 독립 반례다.
+ * 합성 판본 두 개의 차이를 하나로 제한하고 기대 결과는 코어를 호출하지 않고 사람이 직접 계산한다.
+ * 모든 값은 SYN-* 합성이며 승인 판본끼리만 비교하고 DRAFT는 차단되는지 확인한다.
+ * 승인 판본의 검토자 ID도 테스트용 가상 값이다.
  */
 
 type Pack = AcademicRulePackVNext;
@@ -101,7 +97,7 @@ const clone = <T>(value:T):T => structuredClone(value);
 const replace = (requirements:Req[], id:string, patch:Record<string, unknown>):Req[] =>
   requirements.map(req => (req.id === id ? {...req, ...patch} as Req : req));
 
-/** One labeled change to the next version, and what a correct diff must report for it. */
+/** 다음 판본의 변경점 하나와 그 변경에 대해 정상적인 차이 계산이 반환해야 할 결과다. */
 interface Mutation {
   name:string;
   requirements?:(reqs:Req[]) => Req[];
@@ -216,7 +212,7 @@ describe('DRAFT versions stay DRAFT', () => {
   });
 });
 
-/** mulberry32: small, seeded, and reproducible from the printed seed. */
+/** 작은 고정 시드 난수 생성기(mulberry32)로 출력된 시드만으로 사례를 재현할 수 있다. */
 function rng(seed:number) {
   let a = seed >>> 0;
   return () => {
@@ -230,7 +226,7 @@ function rng(seed:number) {
 
 describe('combined rule changes (seeded)', () => {
   it('reports exactly the union of 1–3 independent changes, 300 rounds', () => {
-    // At most one mutation per requirement so the expected union stays exact.
+    // 요건마다 변경을 하나로 제한해 기대 결과의 합집합을 정확히 유지한다.
     const target = (m:Mutation) => (m.expect as {changed:Array<[string, ChangedField]>}).changed[0]?.[0]
       ?? (m.expect as {removed?:string[]}).removed?.[0] ?? 'ADD';
     for (let seed = 1; seed <= 300; seed += 1) {
@@ -257,8 +253,8 @@ describe('combined rule changes (seeded)', () => {
 });
 
 describe('a course that counts in a different area under the next version', () => {
-  // The next version's table moves SYN-A from GENERAL to MAJOR. The rule pack schema has no
-  // course-to-area table; area membership arrives on the ledger rows. The requirements are identical.
+  // 다음 판본에서 SYN-A의 영역이 GENERAL에서 MAJOR로 바뀐다.
+  // RulePack에는 과목별 영역표가 없어 변경 내용은 원장 행으로 전달한다. 요건 정의 자체는 같다.
   const v1 = approved('SYN-V1', clone(BASE)), v2 = approved('SYN-V2', clone(BASE));
   const moved = ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? {...a, areaIds:['MAJOR', 'HUM']} : a));
   const at = (diff:ReturnType<typeof compareRulePackRevisions>, id:string) => diff.requirements.find(r => r.requirementId === id)!;
@@ -268,7 +264,7 @@ describe('a course that counts in a different area under the next version', () =
     expect(at(diff, 'R-GENERAL')).toMatchObject({definition:'CHANGED', changedFields:['areaMembership'], stateChange:'LOST'});
     expect(at(diff, 'R-MAJOR')).toMatchObject({definition:'CHANGED', changedFields:['areaMembership'], stateChange:'SAME'});
     expect(at(diff, 'R-MAJOR').next?.earnedCreditUnits).toBe(18);
-    // Requirements that do not read the moved areas are untouched.
+    // 이동한 영역을 참조하지 않는 요건은 영향을 받지 않는다.
     expect(at(diff, 'R-TOTAL')).toMatchObject({definition:'UNCHANGED', stateChange:'SAME'});
     expect(at(diff, 'R-SPREAD')).toMatchObject({definition:'UNCHANGED'});
   });
@@ -294,10 +290,10 @@ describe('a course that counts in a different area under the next version', () =
       ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? {...a, term:'2026-1'} : a)),
       ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? {...a, attemptToken:'T-OTHER'} : a)),
       ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? {...a, ledger:'PLANNED' as const} : a)),
-      // Same length, but one row twice and another missing.
+      // 행 수는 같아도 같은 행이 두 번 나타나고 다른 행이 누락된 경우다.
       ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? ATTEMPTS[0]! : a)),
     ]) {
-      // The diff itself refuses the rows, before the ledger sees them.
+      // 원장 계산 전 단계에서 판본 차이 검사가 잘못된 행을 거부한다.
       expect(() => compareRulePackRevisions({asOf:AS_OF, previous:v1, next:v2, attempts:ATTEMPTS, nextAttempts:bad}))
         .toThrow(/^nextAttempts/);
     }

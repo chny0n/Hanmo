@@ -10,14 +10,10 @@ import {
 import {AS_OF, ID, assertId, byCodeUnit} from './ledger.js';
 
 /**
- * RulePack activation gate (A08.6, RULE-EXC-01..RULE-EXC-04).
- * A candidate replaces the active pack only when it is a valid APPROVED pack, is in effect
- * at asOf (effectiveFrom <= asOf < effectiveUntil), carries no blocking warning, and matches an independent inventory of the original document:
- * every clause, every exception attached to the requirement it governs, and every
- * per-role applicability. Otherwise the active pack stays exactly as it was.
- * Numeric exact matches never stand in for clause coverage.
- * This decides activation only. It does not prove the independent inventory is correct.
- * Pure: the caller supplies asOf. No clock, network, storage, or model call.
+ * RulePack 활성화 검사(A08.6, RULE-EXC-01~04).
+ * APPROVED 후보이고 asOf 기준 유효기간 내이며 차단 경고가 없고 독립적인 원문 조항·예외·역할별 적용 목록과 일치할 때만 기존 규칙집을 대체한다.
+ * 숫자가 일치해도 조항 누락을 정당화할 수 없다. 실패 시 기존 객체를 그대로 유지한다.
+ * 독립 목록의 정확성이나 졸업 여부를 판단하는 기능은 아니다. 시계·네트워크·저장소·모델에 의존하지 않는다.
  */
 
 export type MajorRole = z.infer<typeof MajorRoleVNextSchema>;
@@ -38,21 +34,15 @@ export interface RulePackGateIssue {
   sourceClauseId?:string;
 }
 
-/** One clause as an independent reviewer read it from the original document. */
+/** 독립 검토자가 공식 원본에서 확인한 조항 하나다. */
 export interface TrustedSourceClause {
   clauseId:string;
   kind:AcademicClauseVNext['kind'];
   sourceSpanRef:string;
   sourceDocumentId?:string;
-  /**
-   * Requirements (by stable semanticKey) this clause governs. An EXCEPTION listed here
-   * must appear in each such requirement's exceptionClauseIds.
-   */
+  /** 이 조항이 적용되는 의미상 요건 키 목록이다. EXCEPTION은 영향을 주는 모든 요건의 exceptionClauseIds에도 포함되어야 한다. */
   appliesToSemanticKeys?:readonly string[];
-  /**
-   * Who the clause covers, as written. A pack for an included role must apply it; a pack
-   * for an excluded role must not. A role in neither list is unknown applicability.
-   */
+  /** 원문에 명시된 적용·비적용 대상 역할이다. 어느 쪽에도 속하지 않으면 적용 여부를 알 수 없다. */
   includedMajorRoles?:readonly MajorRole[];
   excludedMajorRoles?:readonly MajorRole[];
 }
@@ -65,18 +55,18 @@ export interface TrustedSourceInventory {
 
 export interface RulePackActivationRequest {
   asOf:string;
-  /** Pack in force now, or null. It is returned unchanged unless the candidate passes. */
+  /** 현재 적용 중인 규칙집 또는 null이다. 후보가 검사를 통과하지 못하면 그대로 반환한다. */
   active:AcademicRulePackVNext|null;
-  /** Untrusted until parsed. */
+  /** 스키마 파싱 전에는 신뢰할 수 없는 입력이다. */
   candidate:unknown;
   trustedOriginal:TrustedSourceInventory;
-  /** Optional numeric exact-match result. A full match never overrides another issue. */
+  /** 숫자가 정확히 일치해도 다른 경고나 불일치를 무시하지 않는다. */
   numericCheck?:{matched:number; total:number};
 }
 
 export interface RulePackActivationResult {
   decision:'ACTIVATED'|'HELD';
-  /** The pack in force after this decision. */
+  /** 이번 판정이 끝난 뒤 적용되는 규칙집이다. */
   active:AcademicRulePackVNext|null;
   candidateVersion?:string;
   issues:RulePackGateIssue[];
@@ -97,10 +87,7 @@ function record(value:unknown):Record<string, unknown>|undefined {
     : undefined;
 }
 
-/**
- * Warnings the candidate itself reports, read before schema parsing so that an invalid
- * candidate still shows why it was held. An unreadable warning is kept as OTHER.
- */
+/** 후보 자체의 경고를 스키마 검증 전에 확인해 후보가 잘못돼도 보류 이유를 기록한다. 해석 불가 경고는 OTHER로 유지한다. */
 function reportedIssues(candidate:unknown):{version?:string; issues:RulePackGateIssue[]} {
   const body = record(candidate);
   const version = typeof body?.version === 'string' && ID.test(body.version) ? body.version : undefined;
@@ -168,7 +155,7 @@ function readTrusted(original:TrustedSourceInventory):Map<string, Trusted> {
   return byId;
 }
 
-/** RULE-EXC-01: every original clause is inventoried with the same kind and span; nothing is invented. */
+/** RULE-EXC-01: 모든 원문 조항의 종류와 출처 위치를 목록화하고 없는 조항을 만들지 않는다. */
 function checkInventory(pack:AcademicRulePackVNext, trusted:ReadonlyMap<string, Trusted>, issues:RulePackGateIssue[]):void {
   const supplied = new Map(pack.clauseInventory.map(clause => [clause.clauseId, clause]));
   for (const [clauseId, {clause}] of trusted) {
@@ -187,16 +174,13 @@ function suppliedClause(pack:AcademicRulePackVNext, clauseId:string):AcademicCla
   return pack.clauseInventory.find(clause => clause.clauseId === clauseId);
 }
 
-/**
- * RULE-EXC-02: a clause for an included role must be applied; one for an excluded role
- * must not be. RULE-EXC-03: an applied exception must sit on every requirement it governs.
- */
+/** RULE-EXC-02: 포함 대상에는 적용하고 제외 대상에는 적용하지 않는다. RULE-EXC-03: 적용 예외는 해당 요건 모두와 연결한다. */
 function checkApplicability(pack:AcademicRulePackVNext, trusted:ReadonlyMap<string, Trusted>, issues:RulePackGateIssue[]):void {
   const role = pack.scope.majorRole;
   const bySemanticKey = new Map(pack.requirements.map(requirement => [requirement.semanticKey, requirement]));
   for (const [clauseId, {clause, included, excluded, keys}] of trusted) {
     const supplied = suppliedClause(pack, clauseId);
-    // A clause the candidate omitted is already CLAUSE_MISSING.
+    // 후보에서 누락한 조항은 CLAUSE_MISSING으로 이미 보고한다.
     if (!supplied) continue;
     const roleScoped = included.size > 0 || excluded.size > 0;
     const linked = supplied.coverage.state === 'LINKED';
@@ -251,10 +235,7 @@ function finish(
   return result;
 }
 
-/**
- * Decide whether `candidate` may replace `active`. A HELD result returns the same
- * `active` object it was given; nothing is overwritten.
- */
+/** 후보가 활성 규칙집을 대체할 수 있는지 결정한다. HELD이면 원래 active 객체를 덮어쓰지 않고 그대로 돌려준다. */
 export function decideRulePackActivation(input:RulePackActivationRequest):RulePackActivationResult {
   if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {
     throw new TypeError('asOf must be an ISO-8601 datetime with a timezone offset');
@@ -291,7 +272,7 @@ export function decideRulePackActivation(input:RulePackActivationRequest):RulePa
     || (pack.validationReport && Date.parse(pack.validationReport.checkedAt) > asOfMs)) {
     issues.push({code:'NOT_APPROVED_BY_AS_OF'});
   }
-  // Same interval as selectAcademicRulePackAsOfVNext: effectiveFrom <= asOf < effectiveUntil.
+  // selectAcademicRulePackAsOfVNext와 동일하게 시작 포함·종료 미포함 유효기간(effectiveFrom ≤ asOf < effectiveUntil)을 적용한다.
   if (Date.parse(pack.effectiveFrom) > asOfMs) issues.push({code:'NOT_YET_EFFECTIVE'});
   if (pack.effectiveUntil !== undefined && Date.parse(pack.effectiveUntil) <= asOfMs) issues.push({code:'EXPIRED'});
 

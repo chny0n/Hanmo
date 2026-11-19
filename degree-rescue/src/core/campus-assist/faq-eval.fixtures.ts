@@ -1,7 +1,9 @@
 import type {FaqDocument} from '../../contracts/campus-assist/index.js';
 
-/** #341 retrieval regression set. Every document and number is fictional ("가상"), written by the AI
- * developer for regression only: SYNTHETIC, not a school rule, not independent human Gold. */
+/**
+ * FAQ 검색 회귀 시험 세트(#341)다. 문서와 숫자는 모두 개발자가 작성한 가상 자료(SYNTHETIC)다.
+ * 실제 학교 학칙도 독립 검토자가 만든 골드셋도 아니다.
+ */
 const BASE={sourceUrl:'https://example.org/synthetic/faq-eval',publishedAt:'2026-01-01T00:00:00Z',
   verifiedAt:'2026-01-02T00:00:00Z',effectiveFrom:'2026-01-01',rights:'APPROVED' as const,
   provenance:'SYNTHETIC' as const,accessScope:'PUBLIC' as const};
@@ -32,9 +34,11 @@ export const FAQ_EVAL_DOCUMENTS:readonly FaqDocument[]=docs.map(([id,category,ti
   documentId:'SYN-EVAL-'+id,revisionId:'SYN-EVAL-'+id+'-r1',title,category,paragraphs:[{id:'p1',text}]}));
 
 export type FaqEvalKind='PLAIN'|'COLLOQUIAL'|'TYPO'|'SYNONYM'|'MULTI'|'OFF_TOPIC'|'NEAR_MISS'|'INJECTION';
-/** expect: the document that must be retrieved, or null when the honest answer is NOT_FOUND.
- * TUNED cases were used while choosing stop words, synonyms and the gate; HOLDOUT cases were written
- * afterwards and measured once, so only HOLDOUT says anything about unseen phrasing. */
+/**
+ * expect는 반드시 찾아야 할 문서 ID이고 null은 정직한 결과가 NOT_FOUND인 경우다.
+ * TUNED 사례는 불용어·동의어·검증 문턱값을 조정할 때 사용했다.
+ * HOLDOUT 사례는 이후 작성해 한 번만 측정했으므로 처음 보는 표현에 대한 평가에만 HOLDOUT을 사용한다.
+ */
 export interface FaqEvalCase{question:string;expect:string|null;kind:FaqEvalKind;split:'TUNED'|'HOLDOUT';}
 const at=(split:FaqEvalCase['split'])=>(kind:FaqEvalKind,expect:string|null,...questions:string[]):FaqEvalCase[]=>
   questions.map(question=>({question,kind,split,expect:expect&&'SYN-EVAL-'+expect}));

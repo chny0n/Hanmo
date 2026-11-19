@@ -17,7 +17,7 @@ const output=(key:Mode):HTMLElement=>{
   if(!el)throw new Error('결과 창을 찾지 못했습니다.');
   return el;
 };
-/** No transcript, attempts, grades or raw RulePack are transferred between pages. */
+/** 페이지 사이에 성적표 원본·수강 시도·성적·원시 RulePack을 전송하지 않는다. */
 function clearAuditHint():void{
   try{sessionStorage.removeItem(ACADEMIC_AUDIT_BRIDGE_KEY);}catch{/* storage disabled */}
 }
@@ -34,8 +34,10 @@ function publishAuditHint(audit:ReturnType<typeof buildAcademicLedger>):void{
 const display=(key:Mode,value:unknown):void=>{
   output(key).textContent=JSON.stringify(value,null,2);
 };
-/** A student-readable explanation, not an institution-approved offering decision.
- * Every input (including a plausible official event) is untrusted JSON in this demo. */
+/**
+ * 학생을 위한 설명이지 학교가 승인한 개설 결정은 아니다.
+ * 공식 사건처럼 보이는 값을 포함해 이 시연의 모든 입력 JSON은 검증되지 않은 자료다.
+ */
 function explainOffering(value:ReturnType<typeof forecastOffering>):void{
   const root=document.getElementById('forecast-summary');
   if(!root)return;

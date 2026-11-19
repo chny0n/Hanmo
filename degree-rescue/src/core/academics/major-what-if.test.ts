@@ -5,12 +5,9 @@ import {buildMajorWhatIf, MAJOR_WHAT_IF_CORE_VERSION, type MajorWhatIfRequest, t
   type ProgramOffer, type WhatIfProjection, type WhatIfScenario} from './major-what-if.js';
 
 /**
- * Synthetic only. 1 unit = 0.5학점, so a 3학점 course is 6 units. Every expected figure below is a
- * literal worked out by hand from the attempts and packs, not output of the code under test.
- *
- * Earned courses: A1 A2 (area A), S1 (area A in A packs, area B in B packs = shared by A and B),
- * B1 (area B), C1 (area C), G1 (no program area). B2 is in progress (area B).
- * Unique earned total = 6 courses x 6 = 36 units. The primary total is 260 units, so 224 remain.
+ * 합성 데이터만 사용하며 1단위는 0.5학점, 3학점은 6단위다.
+ * 기대 수치는 테스트 대상 코드의 결과가 아니라 성적표와 규칙집에서 사람이 직접 계산한 상수다.
+ * 취득 과목에는 A1·A2·S1·B1·C1·G1이 있으며 영역 배정은 전공 규칙집에 따라 달라진다.
  */
 const AS_OF = '2026-11-01T00:00:00.000Z';
 const course = (canonicalCourseId:string, over:Partial<DoubleMajorAttempt> = {}):DoubleMajorAttempt => ({
@@ -72,8 +69,8 @@ describe('buildMajorWhatIf (#11, #82)', () => {
   it('changes the double major: hand-checked projections and diff', () => {
     const result = ready(run({action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'}));
     expect(result.coreVersion).toBe(MAJOR_WHAT_IF_CORE_VERSION);
-    // Now: S1 counts for A and B without an overlap rule, so both rows that need it are held and
-    // reported MISSING with the figures without S1: A 12 of 18 (missing 6), B 6 of 12 (missing 6).
+    // 현재 A+B에서 S1은 두 전공에 겹치지만 중복 인정 규칙이 없어 관련 요건을 MISSING으로 보류한다.
+    // S1 제외 시 A는 18단위 중 12단위, B는 12단위 중 6단위를 취득해 각각 6단위 부족하다.
     expect(result.current).toEqual({
       role:'CURRENT', asOf:AS_OF, enrollment:A_WITH_B, degreePath:'DOUBLE_MAJOR', rulePackVersions:['SYN-A-DM-1', 'SYN-B-DM-1'],
       earnedCreditUnits:36, remainingCreditUnits:224,
@@ -86,7 +83,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
       ],
       reviewRequirementIds:['SYN-A-MAJOR-DM', 'SYN-B-MAJOR'],
     });
-    // With C instead of B, S1 is no longer shared: A has 18 of 18. C1 meets C's 6; C2 was never taken.
+    // B 대신 C를 고르면 S1을 공유하지 않으므로 A가 18/18을 충족한다. C1은 C의 6단위를 충족하고 C2는 미이수다.
     expect(result.hypothetical).toEqual({
       role:'HYPOTHETICAL', asOf:AS_OF, enrollment:{primaryProgramId:'SYN-MAJ-A', secondary:{role:'DOUBLE_MAJOR', programId:'SYN-MAJ-C'}},
       degreePath:'DOUBLE_MAJOR', rulePackVersions:['SYN-A-DM-1', 'SYN-C-DM-1'], earnedCreditUnits:36, remainingCreditUnits:224,
@@ -116,9 +113,9 @@ describe('buildMajorWhatIf (#11, #82)', () => {
   });
 
   it('an attempt the ledger set aside undecided flags every unmet row it could feed (review of #217)', () => {
-    // C1 pending recognition: earned total drops to 30 (230 remain). On the C side C1 is C's only area
-    // course, so C's area row is 6 short but held for review; the total is held too. A's area row is met
-    // (A1 A2 S1 = 18) and stays SATISFIED. C's required C2 was never taken, so C1 cannot decide it.
+    // C1이 인정 대기면 취득 총합은 30단위가 되고 230단위가 남는다.
+    // C는 해당 영역 과목이 C1뿐이라 6단위 부족 상태를 검토 보류한다. A 영역은 A1·A2·S1로 18단위 충족한다.
+    // 미이수 필수 과목 C2는 C1로 충족시킬 수 없다.
     const pendingC1 = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? {...a, recognition:'PENDING' as const} : a));
     const result = ready(run({action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'}, {attempts:pendingC1}));
     expect(result.hypothetical.requirements).toEqual([
@@ -129,17 +126,17 @@ describe('buildMajorWhatIf (#11, #82)', () => {
       {requirementId:'SYN-C-REQ', state:'MISSING'},
     ]);
     expect(result.hypothetical.reviewRequirementIds).toEqual(['SYN-A-TOTAL', 'SYN-C-MAJOR']);
-    // Now (A + B): C1 is in neither pack, so only the total gains a flag next to the two overlap holds.
+    // 현재 A+B에서는 C1이 어느 전공 영역에도 속하지 않아 전체 학점에만 보류 표시가 더해진다.
     expect(result.current.reviewRequirementIds).toEqual(['SYN-A-TOTAL', 'SYN-A-MAJOR-DM', 'SYN-B-MAJOR']);
-    // 전공심화 A alone: its area row is 18 short in area A, which pending C1 cannot feed: a plain shortfall.
+    // 전공심화 A 단독은 A영역에서 18단위 부족하며 인정 대기 C1은 이를 채울 수 없다.
     const alone = ready(run({action:'REMOVE_DOUBLE_MAJOR'}, {attempts:pendingC1})).hypothetical;
     expect(alone.requirements.find(r => r.requirementId === 'SYN-A-MAJOR-MD')).toEqual({requirementId:'SYN-A-MAJOR-MD', state:'MISSING', missingCreditUnits:18});
     expect(alone.reviewRequirementIds).toEqual(['SYN-A-TOTAL']);
   });
 
   it('an undecided course flags the required-course and one-of rows that name it, and no others', () => {
-    // F names C1 directly (required) and in a one-of list; C1 is pending, so both are unmet but flagged.
-    // The one-of row without C1 (G1 or G2: neither taken) is a plain shortfall.
+    // F는 C1을 필수와 택일 과목으로 직접 참조하므로 인정 대기 시 둘 다 미충족이지만 보류 표시한다.
+    // C1과 무관한 택일 G1/G2는 둘 다 미이수이므로 확정 부족이다.
     const packF:MajorRulePack = {rulePackVersion:'SYN-F-DM-1', rulePackState:'APPROVED', courseAreas:{},
       requirements:[
         {id:'SYN-F-REQ-C1', kind:'REQUIRED_COURSE', canonicalCourseId:'SYN-C1', evidenceRefs:['EV-SYN-F']},
@@ -176,30 +173,29 @@ describe('buildMajorWhatIf (#11, #82)', () => {
     expect(h.requirements.filter(r => r.requirementId.startsWith('SYN-F')).map(r => r.state))
       .toEqual(['MISSING', 'MISSING', 'MISSING', 'MISSING']);
     expect(h.reviewRequirementIds).toEqual(held ? ['SYN-A-TOTAL', 'SYN-F-SPREAD-C1', 'SYN-F-GROUP-C1'] : []);
-    // C1 contributes no earned credits while unresolved or excluded, on either side of the scenario.
+    // C1이 미확정 또는 제외된 동안에는 변경 전후 어느 쪽에도 취득 학점을 더하지 않는다.
     expect([result.current.earnedCreditUnits, h.earnedCreditUnits]).toEqual([30, 30]);
     expect(h.remainingCreditUnits).toBe(230);
   });
 
   it('a term not ended by asOf and an unapproved retake are undecided too; settled exclusions flag nothing', () => {
     const scenario:WhatIfScenario = {action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'};
-    // A2 "earned" in 2026-2, which has not ended on 2026-11-01: A's area row has A1 + S1 = 12 of 18.
+    // A2가 EARNED로 표시돼도 2026-11-01에는 2026-2가 끝나지 않았으므로 A영역은 A1+S1의 12/18만 취득했다.
     const unended = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-A2' ? {...a, term:'2026-2'} : a));
     const u = ready(run(scenario, {attempts:unended})).hypothetical;
     expect(u.requirements.find(r => r.requirementId === 'SYN-A-MAJOR-DM')).toEqual({requirementId:'SYN-A-MAJOR-DM', state:'MISSING', missingCreditUnits:6});
     expect(u.reviewRequirementIds).toEqual(['SYN-A-TOTAL', 'SYN-A-MAJOR-DM']);
-    // A retake of A1 without approval is held; the first A1 still counts, so every A row stays met and
-    // only the unmet total is flagged.
+    // 승인 없는 A1 재수강은 보류하지만 이전 A1은 계속 인정하므로 A영역은 충족된다. 미충족 총학점만 검토 대상으로 남긴다.
     const retake = [...ATTEMPTS, course('SYN-A1', {attemptToken:'SYN-A1-RETAKE', term:'2026-1', supersedesAttemptToken:'SYN-A1-T'})];
     const r = ready(run(scenario, {attempts:retake})).hypothetical;
     expect(r.requirements.filter(x => x.state === 'SATISFIED').map(x => x.requirementId)).toEqual(['SYN-A-MAJOR-DM', 'SYN-A-REQ', 'SYN-C-MAJOR']);
     expect(r.reviewRequirementIds).toEqual(['SYN-A-TOTAL']);
-    // An official exclusion is settled: C's area row is a plain shortfall, and nothing is flagged.
+    // 공식 제외는 확정된 상태이므로 C 영역은 단순 미충족으로 표시하고 추가 보류 표시가 없다.
     const excluded = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? {...a, recognition:'EXCLUDED' as const} : a));
     const e = ready(run(scenario, {attempts:excluded})).hypothetical;
     expect(e.requirements.find(x => x.requirementId === 'SYN-C-MAJOR')).toEqual({requirementId:'SYN-C-MAJOR', state:'MISSING', missingCreditUnits:6});
     expect(e.reviewRequirementIds).toEqual([]);
-    // A duplicate (the same course in progress and earned) is settled: one counts, no flag.
+    // 같은 과목의 진행 중·취득 기록 중복은 기존 규칙으로 확정 처리하며 하나만 세고 보류하지 않는다.
     const duplicate = [...ATTEMPTS, course('SYN-C1', {attemptToken:'SYN-C1-AGAIN', ledger:'IN_PROGRESS', term:'2026-2'})];
     expect(ready(run(scenario, {attempts:duplicate})).hypothetical.reviewRequirementIds).toEqual([]);
   });
@@ -208,7 +204,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
     const result = ready(run({action:'REMOVE_DOUBLE_MAJOR'}));
     expect(result.hypothetical.degreePath).toBe('ADVANCED_SINGLE');
     expect(result.hypothetical.rulePackVersions).toEqual(['SYN-A-MD-1']);
-    // 전공심화 needs 36 in area A; A1 A2 S1 give 18, so 18 are missing. S1 is not shared any more.
+    // 전공심화는 A영역 36단위가 필요하고 A1·A2·S1은 18단위여서 18단위 부족하다. S1은 이제 공유 과목이 아니다.
     expect(result.hypothetical.requirements).toEqual([
       {requirementId:'SYN-A-TOTAL', state:'MISSING', missingCreditUnits:224},
       {requirementId:'SYN-A-MAJOR-MD', state:'MISSING', missingCreditUnits:18},
@@ -227,7 +223,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
     const asMinor = ready(run({action:'ADD_MINOR', targetMajorId:'SYN-MAJ-C'}, {current:A_ONLY}));
     expect(asMinor.hypothetical.degreePath).toBe('ADVANCED_PLUS_MINOR');
     expect(asMinor.hypothetical.rulePackVersions).toEqual(['SYN-A-MM-1', 'SYN-C-MI-1']);
-    // 전공심화+부전공 needs 30 in area A: 18 earned, 12 missing. The minor row is met by C1.
+    // 전공심화+부전공은 A영역 30단위 중 18단위 취득으로 12단위 부족하고 C1은 부전공 요건을 충족한다.
     expect(asMinor.hypothetical.requirements).toEqual([
       {requirementId:'SYN-A-TOTAL', state:'MISSING', missingCreditUnits:224},
       {requirementId:'SYN-A-MAJOR-MM', state:'MISSING', missingCreditUnits:12},
@@ -242,7 +238,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
   it('changing the primary major keeps the second program and its own pack', () => {
     const result = ready(run({action:'CHANGE_PRIMARY_MAJOR', targetMajorId:'SYN-MAJ-D'}));
     expect(result.hypothetical.rulePackVersions).toEqual(['SYN-D-DM-1', 'SYN-B-DM-1']);
-    // D does not use S1, so B's area row has B1 + S1 = 12 of 12 without any overlap question.
+    // D는 S1을 사용하지 않아 B 영역은 B1+S1로 12/12가 충족되고 중복 인정 문제도 없다.
     expect(result.hypothetical.requirements).toEqual([
       {requirementId:'SYN-D-TOTAL', state:'MISSING', missingCreditUnits:224},
       {requirementId:'SYN-D-MAJOR', state:'MISSING', missingCreditUnits:6},
@@ -276,7 +272,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
     expect(run({action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'}, {programs:draftTarget}))
       .toEqual({state:'BLOCKED_DEPENDENCY', asOf:AS_OF, scenario:{action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'},
         blockers:['RULEPACK_NOT_APPROVED'], coreVersion:MAJOR_WHAT_IF_CORE_VERSION});
-    // An unapproved pack both sides share is a current-side problem only.
+    // 양쪽에서 공유하는 미승인 규칙집은 현재 상태 쪽에서만 문제로 기록한다.
     const draftPrimary = replace(CATALOG, 'SYN-A-DM-1', primaryA('SYN-A-DM-1', 'SYN-A-MAJOR-DM', 18, 'NEEDS_REVIEW'));
     expect(run({action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'}, {programs:draftPrimary}))
       .toMatchObject({state:'BLOCKED_DEPENDENCY', blockers:['CURRENT_RULEPACK_NOT_APPROVED']});
@@ -309,9 +305,9 @@ describe('buildMajorWhatIf (#11, #82)', () => {
   });
 
   it('a change can move a MISSING row by credits only: still MISSING, more credits short', () => {
-    // E uses A1 and A2 (area E). With A + E, A1 and A2 are shared without a rule, so A's area row
-    // without them has only S1: 6 of 18, missing 12 (now: missing 6). A's required A1 depends on a
-    // shared course, so it is held too. E's own row has A1 + A2 = 12 of 6 with them, 0 without.
+    // E는 A1·A2를 E영역으로 사용하므로 A+E에서 두 과목은 미승인 공유 상태다.
+    // A는 이들을 제외하면 S1만 남아 6/18(12 부족)이고 필수 A1도 보류한다.
+    // E는 포함 시 12/6, 제외 시 0/6이다.
     const packE:MajorRulePack = {rulePackVersion:'SYN-E-DM-1', rulePackState:'APPROVED',
       courseAreas:{'SYN-A1':['SYN-AREA-E'], 'SYN-A2':['SYN-AREA-E']},
       requirements:[{id:'SYN-E-MAJOR', kind:'CATEGORY_MINIMUM', areaId:'SYN-AREA-E', requiredCreditUnits:6, evidenceRefs:['EV-SYN-E']}]};
@@ -351,7 +347,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
       ? {...offer, degreePath:'UNKNOWN' as never} : offer);
     expect(() => run({action:'CHANGE_PRIMARY_MAJOR',targetMajorId:'SYN-MAJ-D'}, {programs:malformed}))
       .toThrow('Primary pack SYN-MAJ-D needs a supported degree path');
-    // A legitimate, canonical contract path must not be downgraded to UNKNOWN.
+    // 정상적인 정식 계약 경로를 UNKNOWN으로 강등해서는 안 된다.
     const canonical=CATALOG.map(offer => offer.role === 'PRIMARY_MAJOR'
       && offer.programId === 'SYN-MAJ-A'
       && offer.degreePath === 'MAJOR_DEEPENING'
@@ -361,8 +357,8 @@ describe('buildMajorWhatIf (#11, #82)', () => {
   });
 
   it('undoing a change swaps the two sides, on seeded random transcripts', () => {
-    // Metamorphic check that does not re-derive the answer: "drop B" seen from A+B must equal
-    // "add B" seen from A alone with the sides swapped, and the same for B→C vs C→B and minors.
+    // 변환 관계 검사: A+B에서 B 제거와 A 단독에서 B 추가는 앞뒤 결과를 바꾸면 같아야 한다.
+    // B→C와 C→B, 부전공 변경도 같은 대칭성을 검사한다.
     let seed = 20261104;
     const rng = () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -381,7 +377,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
       swapped(at(A_WITH_B, {action:'REMOVE_DOUBLE_MAJOR'}), at(A_ONLY, {action:'ADD_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-B'}));
       swapped(at(A_WITH_B, {action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-C'}), at(withC, {action:'CHANGE_DOUBLE_MAJOR', targetMajorId:'SYN-MAJ-B'}));
       swapped(at(minorC, {action:'REMOVE_MINOR'}), at(A_ONLY, {action:'ADD_MINOR', targetMajorId:'SYN-MAJ-C'}));
-      // Independent count: the unique earned total is 6 units per distinct earned course, on both sides.
+      // 전공 변경 전후 모두 대표 취득 과목 수에 과목당 6단위를 곱한 고유 취득 총합을 따로 확인한다.
       const earned = 6 * new Set(attempts.filter(a => a.ledger === 'EARNED').map(a => a.canonicalCourseId)).size;
       const r = ready(at(A_WITH_B, {action:'CHANGE_PRIMARY_MAJOR', targetMajorId:'SYN-MAJ-D'}));
       expect([r.current.earnedCreditUnits, r.hypothetical.earnedCreditUnits]).toEqual([earned, earned]);
@@ -422,8 +418,8 @@ describe('buildMajorWhatIf (#11, #82)', () => {
 });
 
 describe('second-program packs approved for one primary major (#249 review W1)', () => {
-  // C as a double major has one pack per primary major. Hand figures: C1 (area C) is the only C
-  // course earned (6 units). For A the C pack needs 6 of area C; for D it needs 12, so 6 are missing.
+  // 이중전공 C는 주전공별 규칙집을 가진다. 취득된 C 과목은 C1(6단위)뿐이다.
+  // 주전공 A에선 C 영역 6단위 필요로 충족, 주전공 D에선 12단위 필요로 6단위 부족하다.
   const cForA = (state:MajorRulePack['rulePackState'] = 'APPROVED') => packC('SYN-C-DM-FOR-A', 'SYN-CA', state);
   const cForD = (state:MajorRulePack['rulePackState'] = 'APPROVED'):MajorRulePack => ({
     rulePackVersion:'SYN-C-DM-FOR-D', rulePackState:state, courseAreas:{'SYN-C1':['SYN-AREA-C']},
@@ -441,7 +437,7 @@ describe('second-program packs approved for one primary major (#249 review W1)',
     const result = ready(run(toD, {current:A_WITH_C, programs:scoped()}));
     expect(result.current.rulePackVersions).toEqual(['SYN-A-DM-1', 'SYN-C-DM-FOR-A']);
     expect(result.hypothetical.rulePackVersions).toEqual(['SYN-D-DM-1', 'SYN-C-DM-FOR-D']);
-    // Now: A's area row has A1 + A2 + S1 = 18 of 18 (C does not share S1); C for A has C1 = 6 of 6.
+    // 현재 A는 A1+A2+S1로 18/18이고 C와 S1을 공유하지 않는다. A용 C 규칙은 C1로 6/6을 충족한다.
     expect(result.current.requirements).toEqual([
       {requirementId:'SYN-A-TOTAL', state:'MISSING', missingCreditUnits:224},
       {requirementId:'SYN-A-MAJOR-DM', state:'SATISFIED'},
@@ -449,7 +445,7 @@ describe('second-program packs approved for one primary major (#249 review W1)',
       {requirementId:'SYN-CA-MAJOR', state:'SATISFIED'},
       {requirementId:'SYN-CA-REQ', state:'MISSING'},
     ]);
-    // With D: no course is in area D (6 missing); C for D needs 12 of area C and has 6.
+    // D를 주전공으로 바꾸면 D영역 취득 과목이 없어 6단위 부족하고 D용 C 규칙은 12단위 중 6단위가 부족하다.
     expect(result.hypothetical.requirements).toEqual([
       {requirementId:'SYN-D-TOTAL', state:'MISSING', missingCreditUnits:224},
       {requirementId:'SYN-D-MAJOR', state:'MISSING', missingCreditUnits:6},
@@ -500,7 +496,7 @@ describe('second-program packs approved for one primary major (#249 review W1)',
 
   it('the catalog refuses ambiguous or malformed scoping', () => {
     const add = (offer:ProgramOffer) => () => run(toD, {current:A_WITH_C, programs:[...scoped(), offer]});
-    // A program-wide pack next to per-primary packs would leave the choice to list order.
+    // 전공 공통 규칙집과 주전공별 규칙집을 함께 허용하면 목록 순서가 선택을 좌우하므로 혼합을 거부한다.
     expect(add({role:'DOUBLE_MAJOR', programId:'SYN-MAJ-C', pack:packC('SYN-C-DM-ANY', 'SYN-CX')})).toThrow(/mixes/);
     expect(add({role:'DOUBLE_MAJOR', programId:'SYN-MAJ-C', primaryProgramId:'SYN-MAJ-A', pack:packC('SYN-C-DM-FOR-A-2', 'SYN-CY')}))
       .toThrow(/more than once/);
@@ -510,7 +506,7 @@ describe('second-program packs approved for one primary major (#249 review W1)',
       .toThrow(TypeError);
     expect(add({role:'PRIMARY_MAJOR', programId:'SYN-MAJ-E', degreePath:'DOUBLE_MAJOR', primaryProgramId:'SYN-MAJ-A',
       pack:{...primaryD, rulePackVersion:'SYN-E-PM-1'}} as unknown as ProgramOffer)).toThrow(/cannot name a primaryProgramId/);
-    // The same program as a minor is a different offer and may keep one program-wide pack.
+    // 같은 프로그램이라도 부전공 선택은 별도 제안이므로 전공 공통 규칙집 하나를 유지할 수 있다.
     expect(add({role:'MINOR', programId:'SYN-MAJ-E', pack:packC('SYN-E-MI-1', 'SYN-EM')})).not.toThrow();
   });
 });

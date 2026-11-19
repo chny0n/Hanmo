@@ -2,8 +2,8 @@ import {describe, expect, it} from 'vitest';
 import {importWisTimetable, withoutBlocks, type TimetableImportRequest} from './wis-timetable.js';
 
 /**
- * Synthetic pages only: the layout mirrors a saved wis.hufs.ac.kr 강의시간표 page, but every
- * code, title, name, room, and note is made up. No real timetable is stored in the repo.
+ * 합성 HTML 페이지만 사용한다. 저장된 학교 강의시간표의 레이아웃만 재현하며 학수번호·강좌명·교수명·강의실·비고는 모두 가상 값이다.
+ * 실제 학교 시간표 원문은 저장소에 포함하지 않는다.
  */
 const SAVED = '<!-- saved from url=(0057)https://wis.hufs.ac.kr/src08/jsp/lecture/LECTURE2020L.jsp -->';
 const HEADER = ['No.', '개설영역', '학년', '학수번호', '교과목명', '강의계획서', '속성<br>Attributes', '담당교수',
@@ -11,7 +11,7 @@ const HEADER = ['No.', '개설영역', '학년', '학수번호', '교과목명',
 
 interface Row {no?:number; area?:string; grade?:string; code:string; title:string; attrs?:string[];
   credits?:string; hours?:string; time?:string; note?:string; year?:string; sessn?:string;
-  /** Syllabus cell: a link (default), empty (no syllabus), or other text. */
+  /** 강의계획서 셀은 기본 링크·계획서 없음(빈 값)·비정상 텍스트 중 하나로 만든다. */
   syllabus?:'LINK'|'NONE'|'TEXT'; linkCode?:string; titleLinkCode?:string; dropLastCell?:boolean; dropNumberCell?:boolean}
 
 const ATTR_CLASS:Record<string, string> = {'전필':'req', 'R':'req', 'ENG':'eng', 'FRE':'eng', 'F':'eng', '팀티칭':'team', '온라인':'online', 'P/F':'pf'};
@@ -20,7 +20,7 @@ const link = (row:Row, code = row.code) =>
 const syllabusCell = (row:Row) =>
   row.syllabus === 'NONE' ? '' : row.syllabus === 'TEXT' ? '준비중' : link(row, row.linkCode ?? row.code);
 const tr = (row:Row, index:number) => {
-  // Like the real page, the title cell also opens the syllabus, except for a course without one.
+  // 실제 페이지처럼 제목 셀에서도 강의계획서를 연다. 계획서가 없는 과목은 제외한다.
   const title = row.syllabus === 'NONE' ? row.title
     : `<div onclick="javascript:lecture_open('${row.year ?? '2026'}','${row.sessn ?? '3'}','A','${row.titleLinkCode ?? row.code}')">${row.title}</div>`;
   const cells = [`${row.no ?? index + 1}`, row.area ?? '전공', row.grade ?? '2', row.code, title, syllabusCell(row),
@@ -29,7 +29,7 @@ const tr = (row:Row, index:number) => {
   const kept = cells.slice(row.dropNumberCell ? 1 : 0, row.dropLastCell ? -1 : undefined);
   return `<tr>${kept.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
 };
-/** The real page also draws one card per course, with the same code and, if any, the syllabus link. */
+/** 실제 페이지는 과목당 카드 하나를 생성한다. 카드의 코드와 강의계획서 링크는 표와 같아야 한다. */
 const card = (row:Row) => `<div class="sch-card"><div class="sch-card-top"><div>
   <div class="sch-card-code">${row.code} · ${row.area ?? '전공'} ${row.grade ?? '2'}</div><div class="sch-card-name">${row.title}</div></div>
   ${row.syllabus === 'NONE' ? '' : link(row)}</div></div>`;
@@ -187,19 +187,19 @@ describe('importWisTimetable', () => {
     expect(result.rows.map(row => [row.area, row.areaLabel, row.gradeYear, row.needsReview]))
       .toEqual([['BASIC', '가상단과대학', null, false], ['BASIC', '대학기초', null, false]]);
     expect(result.issues).toEqual([]);
-    // a global-campus list carries "(글로벌)"
+    // 글로벌캠퍼스 학과 목록에는 '(글로벌)' 표기가 포함된다.
     const global = importWisTimetable(request(page([basicRows[0]!]).replace('<table>', `${fields('가상단과대학 (글로벌)')}<table>`)));
     expect(global.rows[0]).toMatchObject({area:'BASIC', needsReview:false});
 
-    // Without the list (a 전공 tab page) the same label stays unknown, and a blank 학년 stays unreadable.
+    // 학과 목록이 없는 전공 탭에서는 같은 표시도 UNKNOWN으로 두고 빈 학년은 판독 불가다.
     const noList = importWisTimetable(request(page(basicRows)));
     expect(noList.rows.map(row => row.area)).toEqual(['OTHER', 'OTHER']);
     expect(noList.issues.map(issue => issue.code)).toEqual(['BAD_GRADE', 'UNKNOWN_AREA', 'BAD_GRADE', 'UNKNOWN_AREA']);
-    // A label the list does not name, or the "전체" choice itself, is not 기초.
+    // 기초 분야 목록에 없는 표기와 '전체' 선택지 자체는 기초 과목이 아니다.
     const other = importWisTimetable(request(page([{code:'SYN730101', title:'가상', area:'다른단과대학', grade:''},
       {code:'SYN740101', title:'가상 전체', area:'전체', grade:''}]).replace('<table>', `${withList}<table>`)));
     expect(other.rows.map(row => row.area)).toEqual(['OTHER', 'OTHER']);
-    // A blank 학년 is accepted only on a 기초 row; an unreadable one is flagged on any row.
+    // 빈 학년은 기초 영역 행에서만 허용한다. 해석 불가 학년은 모든 행에 경고한다.
     const mixed = importWisTimetable(request(page([{code:'SYN750101', title:'가상 전공', grade:''},
       {code:'SYN760101', title:'가상 기초', area:'대학기초', grade:'일'}]).replace('<table>', `${withList}<table>`)));
     expect(mixed.issues).toEqual([{row:1, code:'BAD_GRADE', detail:'grade ""'}, {row:2, code:'BAD_GRADE', detail:'grade "일"'}]);
@@ -210,7 +210,7 @@ describe('importWisTimetable', () => {
     const rows:Row[] = [{code:'SYN810101', title:'가상 기초', area:'가상단과대학', grade:''}];
     const areaOf = (extra:string) => importWisTimetable(request(page(rows).replace('<table>', `${extra}<table>`))).rows[0]!.area;
     const opts = '<option value="70">전체&nbsp;(서울)</option><option value="71">가상단과대학&nbsp;(서울)</option>';
-    // Accepted: attribute order, quoting, case, whitespace, entities and markup inside the option text.
+    // 속성 순서·따옴표 종류·대소문자·공백·HTML 엔티티 및 option 내부 마크업 차이를 수용한다.
     for (const select of [
       `<select id="x" class="y" name="ag_basic_fld_cd">${opts}</select>`,
       `<select name='ag_basic_fld_cd' id="x">${opts}</select>`,
@@ -220,8 +220,7 @@ describe('importWisTimetable', () => {
       `<select name="ag_basic_fld_cd"><option>가상단과대학 (글로벌)</option></select>`,
       `<select name="ag_basic_fld_cd">${opts}</select><select name="ag_basic_fld_cd">${opts}</select>`,
     ]) expect(areaOf(select), select).toBe('BASIC');
-    // Refused (stays OTHER): look-alike names, a list inside an HTML comment, disagreeing lists,
-    // an empty list, only "전체", or a label that differs from the row's 개설영역.
+    // 유사 속성 이름, HTML 주석 속 목록, 서로 다른 목록, 빈 목록, '전체'만 있는 목록 또는 표의 개설영역과 불일치하는 항목은 OTHER로 남긴다.
     for (const select of [
       `<select data-name="ag_basic_fld_cd">${opts}</select>`,
       `<select name="ag_basic_fld_cd2">${opts}</select>`,
@@ -248,7 +247,7 @@ describe('importWisTimetable', () => {
 
   it('refuses a table that lists fewer courses than its card list', () => {
     expect(() => importWisTimetable(request(page(ROWS.slice(0, 2), {cards:ROWS})))).toThrow(/1 course\(s\) missing from the table/);
-    // A last row that lost its number cell is not a data row, so the card list is what catches it.
+    // 마지막 행에서 번호 셀이 없어지면 데이터 행으로 파싱되지 않으므로 카드 목록과 비교해 누락을 검출한다.
     expect(() => importWisTimetable(request(page([...ROWS, {code:'SYN090101', title:'가상 마지막', dropNumberCell:true}]))))
       .toThrow(/table and card list disagree/);
     expect(() => importWisTimetable(request(page(ROWS, {cards:ROWS.slice(0, 2)})))).toThrow(/1 only in the table/);
@@ -283,7 +282,7 @@ describe('script and comment blocks are cut before rows are read (CodeQL #1-#6)'
   it('a closing tag with a space or attributes still ends the script', () => {
     for (const close of ['</script >', '</SCRIPT  >', '</script data-x="1">']) {
       const html = page(ROWS).replace('<script>', `<script>${FAKE}`).replace('</script>', close);
-      // Before: the regex needed exactly "</script>", so the fake row was read and the import refused it.
+      // 예전 정규식은 정확한 </script>만 인식해 가짜 행을 읽었고, 결국 가져오기를 거부했다.
       expect(importWisTimetable(request(html)).rows.map(r => r.rawCode)).toEqual(ROWS.map(r => r.code));
     }
   });
@@ -295,9 +294,9 @@ describe('script and comment blocks are cut before rows are read (CodeQL #1-#6)'
   it('an opening "<script" or "<!--" with no closing tag is kept, as the earlier regex did', () => {
     expect(withoutBlocks('keep<script>var x = 1;', 'script')).toBe('keep<script>var x = 1;');
     expect(withoutBlocks('keep<!-- open', 'comment')).toBe('keep<!-- open');
-    // a closed block before an unclosed one is still cut
+    // 닫힌 블록 다음에 닫히지 않은 블록이 있어도 먼저 닫힌 블록은 제거한다.
     expect(withoutBlocks('a<script>x</script>b<script>y', 'script')).toBe('ab<script>y');
-    // an attribute value that spells "<script" does not eat the table after it
+    // HTML 속성값 속의 <script 문자열 때문에 뒤에 있는 실제 표를 제거하면 안 된다.
     const table = '<table><tr><td>OK</td></tr></table>';
     expect(withoutBlocks(`<div title="<script">x</div>${table}`, 'script')).toBe(`<div title="<script">x</div>${table}`);
     const html = page(ROWS).replace('<table>', '<div title="<script">x</div><table>');
@@ -318,21 +317,21 @@ describe('script and comment blocks are cut before rows are read (CodeQL #1-#6)'
     expect(withoutBlocks('no blocks here', 'comment')).toBe('no blocks here');
     expect(withoutBlocks('<script>a</scripts>b</script>c', 'script')).toBe('c');
   });
-  // PR #431 review (이름 비공개): two counterexamples to the first version of withoutBlocks.
+  // 첫 withoutBlocks 구현에 대한 PR #431 검토에서 발견된 두 반례다.
   it('a "<script" written inside an HTML comment is not a tag and does not eat the table', () => {
     const table = '<table><tr><td>OK</td></tr></table>';
     expect(withoutBlocks(`<!-- Example: <script src='example.js'> -->\n${table}`, 'script'))
       .toBe(`<!-- Example: <script src='example.js'> -->\n${table}`);
-    // a real script after the comment is still cut; the comment stays
+    // HTML 주석 뒤의 실제 스크립트는 제거하되 주석은 그 단계에서 유지한다.
     expect(withoutBlocks(`<!-- <script> -->a<script>x</script>b`, 'script')).toBe('<!-- <script> -->ab');
-    // an unclosed comment keeps everything after it as comment text
+    // 닫히지 않은 HTML 주석은 뒤쪽 텍스트도 주석으로 취급한다.
     expect(withoutBlocks('a<!-- <script>x', 'script')).toBe('a<!-- <script>x');
-    // the whole import keeps its rows when such a comment sits before the table
+    // 표 앞의 그런 주석이 있어도 전체 가져오기는 실제 표 행을 유지해야 한다.
     const html = page(ROWS).replace('<table>', `<!-- Example: <script src='example.js'> --><table>`);
     expect(importWisTimetable(request(html)).rows.map(r => r.rawCode)).toEqual(ROWS.map(r => r.code));
   });
   it('cut positions stay right when text before or after a block changes length when lowercased', () => {
-    // "İ" (U+0130) lowercases to two code units; only A-Z may be lowered for the search.
+    // İ(U+0130)는 소문자로 바뀌면 코드 단위가 두 개가 된다. 탐색 위치를 보존하려면 A~Z만 소문자로 변환한다.
     const table = '<table><tr><td>OK</td></tr></table>';
     expect(withoutBlocks(`İİİİİİ<script>var x=1</script>${table}`, 'script')).toBe(`İİİİİİ${table}`);
     expect(withoutBlocks(`İİİ<!--note-->${table}`, 'comment')).toBe(`İİİ${table}`);
@@ -352,7 +351,7 @@ describe('commented timetable markup is not approved source data (#431 follow-up
     const result = importWisTimetable(request(html));
     expect(result.rows.map(row => row.rawCode)).toEqual(ROWS.map(row => row.code));
     expect(result.term).toEqual({year:2026, session:'2', academicTerm:'2026-2'});
-    // Keep parsing the browser-saved provenance comment from the raw page.
+    // 브라우저에 저장된 HTML의 출처 주석은 원시 페이지에서 계속 해석한다.
     expect(result.source.savedFromUrl).toBe('https://wis.hufs.ac.kr/src08/jsp/lecture/LECTURE2020L.jsp');
   });
   it('keeps a real table after a script string containing an HTML comment opener', () => {

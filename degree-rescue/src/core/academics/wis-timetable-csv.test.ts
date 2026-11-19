@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import type {TimetableImport, TimetableRow} from './wis-timetable.js';
 import {SAVED_CURRICULUM_CSV_HEADERS, toSavedCurriculumCsv} from './wis-timetable-csv.js';
 
-/** Synthetic only: made-up codes, titles, and department label. */
+/** 가상의 학수번호·강좌명·학과 표시를 사용한 합성 자료다. */
 const row = (no:number, over:Partial<TimetableRow> = {}):TimetableRow => ({
   no, area:'MAJOR', areaLabel:'전공', gradeYear:2, rawCode:`SYN0${no}0101`, code:{status:'NEEDS_REVIEW'}, title:`가상 과목 ${no}`,
   attributes:[], instructionLanguage:null, otherAttributes:[], creditUnits:6, hours:3,
@@ -36,7 +36,7 @@ describe('toSavedCurriculumCsv', () => {
       '',
     ]);
     expect(out).toMatchObject({rows:2, campus:'UNKNOWN', withheld:[]});
-    // 이수구분 and notes travel beside the CSV, one entry per exported line.
+    // 이수구분과 비고는 CSV 바깥에서 내보낸 행마다 한 건씩 보존한다.
     expect(out.details).toEqual([
       {rawCode:'SYN010101', completion:'REQUIRED', attributes:['REQUIRED', 'FOREIGN_LANGUAGE'], instructionLanguage:'ENG',
         note:'21학번부터 전필', noteHints:{prerequisite:false, cohort:true, restriction:false, equivalent:false}},
