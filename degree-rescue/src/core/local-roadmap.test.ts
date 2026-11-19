@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {ROADMAP_KEY,readRoadmap,saveRoadmap,exportRoadmap,
+import {ROADMAP_KEY,ROADMAP_MAX_BYTES,readRoadmap,saveRoadmap,exportRoadmap,
   parseRoadmapBackup,clearRoadmap,type RoadmapStorage} from './local-roadmap.js';
 
 const parseProfile=(x:unknown):{major:string}=>{
@@ -69,6 +69,16 @@ describe('explicit local academic profile backup',()=>{
   it('rejects UTF-8 payloads exceeding 1MiB',()=>{
     expect(()=>saveRoadmap(memory().storage,{profile:{major:'가'.repeat(350000)},progress:{}},
       parseProfile,steps,time)).toThrow(/1MiB/);
+  });
+  it('checks the formatted export size, not only its compact serialized size',()=>{
+    const envelope={schemaVersion:1,updatedAt:time,exportedAt:time,
+      sourceRevision:'hanmo-degree-rescue-v1',
+      payload:{profile:{major:''},progress:{}}};
+    const baseSize=new TextEncoder().encode(JSON.stringify(envelope)).length;
+    const value={profile:{major:'x'.repeat(ROADMAP_MAX_BYTES-baseSize-1)},progress:{}};
+    expect(new TextEncoder().encode(JSON.stringify({...envelope,payload:value})).length)
+      .toBeLessThan(ROADMAP_MAX_BYTES);
+    expect(()=>exportRoadmap(value,parseProfile,steps,time)).toThrow(/1MiB/);
   });
   it('rejects missing profile and unknown source revisions',()=>{
     expect(()=>exportRoadmap({profile:undefined,progress:{}},parseProfile,steps,time)).toThrow();
