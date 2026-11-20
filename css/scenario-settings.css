@@ -25,80 +25,46 @@
 .hanmo-toggle-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .hanmo-toggle-actions button{border:1px solid #698ba2;border-radius:7px;padding:8px 12px;background:#123348;color:white;cursor:pointer}
 .hanmo-toggle-actions button:hover{background:#214d64}
-#workshop-root[hidden],#workshop-root [hidden]{display:none!important}
-#workshop-root{box-sizing:border-box;width:min(1100px,calc(100% - 32px));margin:32px auto 50px;padding:26px 29px;
-  border:1px solid #43647d;border-radius:18px;color:#f5f8fa;background:#061926;font:15px/1.65 "Noto Sans KR",system-ui,sans-serif}
-#workshop-root *{box-sizing:border-box}
-#workshop-root h1{font-size:30px;font-weight:750;margin:8px 0 12px}
-#workshop-root h2{font-size:22px;margin:0}
-#workshop-root h3{font-size:18px;margin:0 0 10px}
-#workshop-root h4{font-size:15px;margin:0 0 9px}
-#workshop-root p{line-height:1.65}
-#workshop-root button{font:inherit;cursor:pointer;padding:10px 16px;border-radius:8px;min-height:43px}
-#workshop-root button:focus-visible,#workshop-root input:focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
-#workshop-root .hanmo-inline-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:13px;border-bottom:1px solid #3d657c}
-#workshop-root .hanmo-inline-tools p{margin:0;max-width:760px;color:#cedce5;font-size:13px}
-#workshop-root .hanmo-inline-tools button{flex-shrink:0;background:#17394d;border:1px solid #5b7b90;color:white}
-#workshop-root .workshop-eyebrow,#workshop-root .kicker{color:#b9d9ec;font-size:12px;font-weight:800;letter-spacing:.05em}
-#workshop-root .workshop-intro,#workshop-root .workshop-help{font-size:13px;color:#bfd1de}
-#workshop-root .workshop-safety{padding:13px 17px;margin:19px 0;background:#292216;border-left:4px solid #e8be75;color:#ffdda9;font-size:13px}
-#workshop-root .workshop-stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;list-style:none;padding:0;margin:20px 0}
-#workshop-root .workshop-stepper li{padding:12px;background:#0e2b3d;border:1px solid #40617a;border-radius:8px;font-size:13px;color:#bcd2df}
-#workshop-root .workshop-stepper li span{margin-right:6px}
-#workshop-root .workshop-stepper li[aria-current="step"]{color:#ffe2a3;border-color:#f4c76c}
-#workshop-root .workshop-stepper li[data-complete="true"]{color:#9fdabb;border-color:#4a8c63}
-#workshop-root .workshop-status{padding:12px 15px;background:#0f3851;color:#deedf9;border-radius:8px;font-size:13px}
-#workshop-root .workshop-error{min-height:21px;font-size:13px;color:#ffd69d}
-#workshop-root .workshop-section-title{display:flex;align-items:baseline;justify-content:space-between;gap:15px;margin:23px 0 15px;flex-wrap:wrap}
-#workshop-root .workshop-section-title p{color:#b6cddd;margin:0;font-size:13px}
-#workshop-root .workshop-catalog{border:0;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-#workshop-root .workshop-catalog legend{font-weight:750;margin-bottom:12px;padding:0 3px}
-#workshop-root .catalog-option{display:flex;align-items:start;gap:10px;background:#0a2637;border:1px solid #42627c;
-  padding:15px;border-radius:10px;cursor:pointer;min-width:0}
-#workshop-root .catalog-option:has(input:checked){border-color:#ecc175;background:#13394c}
-#workshop-root .catalog-option input{margin:5px 0 0;width:19px;height:19px;accent-color:#f4c76c;flex:none}
-#workshop-root .catalog-option span>span,#workshop-root .catalog-option strong,#workshop-root .catalog-option small{display:block}
-#workshop-root .catalog-option strong{font-size:15px;margin:5px 0}
-#workshop-root .catalog-option small{font-size:12px;color:#b7cfdd}
-#workshop-root .option-meta{font-size:12px;color:#efd297}
-#workshop-root .workshop-consent{display:flex;gap:12px;align-items:start;background:#0f2736;border:1px solid #4b697e;
-  border-radius:9px;margin:19px 0;padding:15px;font-size:13px}
-#workshop-root .workshop-consent input{width:20px;height:20px;accent-color:#f4c76c}
-#workshop-root .button-primary{background:#f4c76c;border:1px solid transparent;color:#06141e;font-weight:800}
-#workshop-root .button-primary:hover{background:#ffda89}
-#workshop-root .button-muted{background:#18384c;color:#fff;border:1px solid #617d92}
-#workshop-root .button-muted:hover{background:#254c62}
-#workshop-root .workshop-stage-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin:16px 0}
-#workshop-root .workshop-panel{min-width:0;padding:20px;background:#0b2839;border:1px solid #49677d;border-radius:12px}
-#workshop-root .workshop-scene-desc{color:#dae7f1;font-size:14px}
-#workshop-root .workshop-actions{display:grid;gap:9px;margin:18px 0}
-#workshop-root .workshop-actions button{text-align:left;width:100%}
-#workshop-root .workshop-actions button[data-risk="true"]{background:#42301e;color:#ffdfb2;border-color:#b08b5b}
-#workshop-root .phase-pill,#workshop-root .map-pill{display:inline-flex;color:#fee0a6;background:#22465c;border-radius:50px;padding:4px 10px;font-size:12px}
-#workshop-root .workshop-timeline{padding-left:24px;color:#c5d7e5;font-size:13px}
-#workshop-root .workshop-timeline li{margin:9px 0}
-#workshop-root .workshop-timeline li span{display:block;color:#a7becf}
-#workshop-root .queue-preview,#workshop-root .alternatives{margin:18px 0;padding:14px;background:#0c3144;border:1px dashed #658fa7;border-radius:9px}
-#workshop-root .queue-preview p,#workshop-root .alternatives p{font-size:13px;color:#c9dce7}
-#workshop-root .queue-track{height:10px;background:#27485a;border-radius:8px;overflow:hidden;margin:11px 0}
-#workshop-root .queue-fill{height:100%;background:#edc16e;transition:width .15s}
-#workshop-root .workshop-report-hero{padding:20px;border:1px solid #4c6c84;border-radius:12px;background:#123b52}
-#workshop-root .workshop-report-hero p{color:#bbd4e3}
-#workshop-root .workshop-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}
-#workshop-root .workshop-metrics div{padding:13px;background:#0d3246;border:1px solid #4e7087;border-radius:9px}
-#workshop-root .workshop-metrics strong{display:block;color:#f4cf81;font-size:20px}
-#workshop-root .workshop-metrics span{display:block;font-size:12px;color:#b7d2e0}
-#workshop-root .feedback-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-#workshop-root .feedback-list li{padding:12px;background:#113448;border:1px solid #40647c;border-radius:8px;font-size:13px}
-#workshop-root .feedback-list li strong,#workshop-root .feedback-list li span{display:block}
-#workshop-root .feedback-list li span{color:#c4d9e7}
-#workshop-root .workshop-mistakes{border-left:3px solid #f4c76c;margin-top:17px}
-#workshop-root .workshop-report-actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-#workshop-root .workshop-mapping{margin-top:25px!important;padding:18px;border:1px solid #506e83;border-radius:10px;background:#0b2535}
-#workshop-root .workshop-mapping p{font-size:13px;color:#c6d8e5}
-#workshop-root .mapping-details{display:flex;flex-wrap:wrap;gap:14px}
-#workshop-root .mapping-details dd,#workshop-root .mapping-details dt{font-size:12px;color:#c5d9e6}
-@media(max-width:850px){.hanmo-toggle-grid,#workshop-root .workshop-catalog,#workshop-root .workshop-stage-grid{grid-template-columns:1fr}
- #workshop-root .workshop-metrics{grid-template-columns:repeat(2,1fr)}
- #workshop-root .hanmo-inline-tools{flex-direction:column;align-items:start}}
-@media(prefers-reduced-motion:reduce){#workshop-root .queue-fill{transition:none}}
+
+/* Synthetic drill stays inside vsugang.html and never affects practice/selectZone. */
+#incident-practice[hidden],#incident-practice [hidden]{display:none!important}
+#incident-practice{box-sizing:border-box;width:min(1050px,calc(100% - 36px));margin:32px auto 65px;
+ background:#071b29;border:1px solid #496c83;border-radius:16px;padding:25px 30px;color:#f5f8fa;
+ font:15px/1.65 "Noto Sans KR",system-ui,sans-serif;position:relative}
+#incident-practice *{box-sizing:border-box}
+#incident-practice button{cursor:pointer;min-height:44px;border:1px solid #507c94;border-radius:9px;
+ background:#123b51;color:#f8f8f8;font-family:inherit;font-size:14px;font-weight:700;line-height:1.35;padding:10px 17px}
+#incident-practice button:hover{background:#225a73}
+#incident-practice button:focus-visible,#incident-practice input:focus-visible{outline:3px solid #ffcb73;outline-offset:3px}
+.hanmo-incident-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;
+ border-bottom:1px solid #43667c;padding-bottom:15px;margin-bottom:16px;flex-wrap:wrap}
+.hanmo-incident-heading h2{font-size:27px;font-weight:750;margin:0}
+.hanmo-incident-kicker{font-size:12px;color:#b6d4e6;margin:0 0 5px}
+.hanmo-incident-warning{padding:12px 16px;border-left:4px solid #f4c76c;
+ background:#2a2417;color:#ffdea6;font-size:13px;margin:15px 0 24px}
+.hanmo-incident-base{border:1px solid #45667a;border-radius:12px;padding:15px 20px;display:flex;gap:15px;flex-wrap:wrap}
+.hanmo-incident-base legend{font-weight:800;padding:0 8px}
+.hanmo-incident-base p{width:100%;margin:0;font-size:13px;color:#d1dde6}
+.hanmo-incident-base label{display:flex;align-items:center;gap:9px;background:#153249;border:1px solid #476c84;
+ border-radius:8px;padding:10px 13px;font-size:14px;cursor:pointer}
+.hanmo-incident-base input{accent-color:#f4c76c;width:18px;height:18px}
+.hanmo-incident-search{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin:20px 0}
+#incident-search{background:#f4c76c!important;color:#061b2b!important;border-color:#f4c76c!important}
+#incident-status{font-size:13px;color:#c9dfeb;flex:1}
+.hanmo-incident-candidates{padding:18px;background:#0e3044;border:1px solid #466780;border-radius:10px}
+.hanmo-incident-candidates h3{font-size:17px;margin:0 0 13px}
+.hanmo-candidate-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.hanmo-candidate-grid button{text-align:center}
+.hanmo-candidate-grid button[data-conflict="true"]{border-color:#ba8655}
+.hanmo-incident-feedback{font-size:14px;padding:14px 18px;background:#143249;border-radius:9px;
+ border:1px solid #3f718e;min-height:56px}
+.hanmo-incident-feedback[data-result="error"]{background:#3b241e;border-color:#b67861;color:#ffdbc8}
+.hanmo-incident-feedback[data-result="success"]{background:#143c2f;border-color:#639580;color:#d7f4e5}
+.hanmo-example-404{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;
+ background:#06121ff7;color:#fff}
+.hanmo-example-404 h2{font-size:clamp(27px,4vw,44px);font-weight:800;margin:0}
+.hanmo-example-404 p{max-width:630px;line-height:1.8;color:#d0e0eb;margin:0}
+.hanmo-example-404>div{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+@media(max-width:700px){#incident-practice{padding:19px 15px}.hanmo-candidate-grid{grid-template-columns:1fr}
+ .hanmo-toggle-grid{grid-template-columns:1fr}}
