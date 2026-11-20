@@ -73,12 +73,12 @@ for(const id of ['scenario-settings','incident-practice','incident-search',
 }
 for(const file of ['js/incident-courses.js','js/scenario-settings.js','css/scenario-settings.css'])
   await must(file);
-if((menu.match(/data-scenario-toggle=/g)||[]).length!==4)
-  throw Error('Four independently selected OFF-by-default incident toggles required');
+if((menu.match(/data-scenario-toggle=/g)||[]).length!==3)
+  throw Error('Three independently selected OFF-by-default incident toggles required');
 if((menu.match(/data-alt-course=/g)||[]).length!==3)
   throw Error('Three numbered substitute courses required');
-if(menu.includes('data-scenario-toggle="COMPOSITE"'))
-  throw Error('Composite switch must not exist');
+if(menu.includes('data-scenario-toggle="COMPOSITE"')||menu.includes('data-scenario-toggle="LAST_NONE"'))
+  throw Error('Composite or removed no-alternative switch must not exist');
 for(const page of [root]){
  // Landing must not advertise a standalone incident exercise.
  if(page.includes('scenario-workshop.html')||page.includes('vsugang.html#scenario-settings'))
@@ -92,4 +92,4 @@ for(const p of htmlRoutes){
     throw Error('Dead standalone scenario link from '+p);
 }
 console.log('Student preview smoke: '+studentPages.length+' student pages, '+
-  linkCount+' links, '+ariaCount+' ARIA references; four independent incidents are OFF-by-default settings within vsugang.html.');
+  linkCount+' links, '+ariaCount+' ARIA references; three independent incidents are OFF-by-default settings within vsugang.html.');

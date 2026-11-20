@@ -1,4 +1,4 @@
-/* In-page mock-registration incidents. Four independent switches, all OFF by default.
+/* In-page mock-registration incidents. Three independent switches, all OFF by default.
  * Never modifies the protected HUFS imitation pages or their controllers.
  */
 (function(root,factory){
@@ -78,7 +78,7 @@
         button.setAttribute('data-conflict',conflict?'true':'false');
       }
       if(logic.noAlternative(base)){
-        controls.status.textContent='대체과목 없음: 1·2·3번이 모두 기존 과목과 시간이 겹칩니다.';
+        controls.status.textContent='선택한 기본과목 1·2·3번과 모든 대체과목의 시간이 겹칩니다.';
       }else{
         controls.status.textContent='후보 1·2·3번에서 선택하세요. 기존 과목과 같은 번호만 시간표가 겹칩니다.';
       }

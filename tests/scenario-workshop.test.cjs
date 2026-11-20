@@ -169,10 +169,10 @@ test('copy produces clearly synthetic human-readable review text only on direct 
   assert.doesNotMatch(copied,/실제 수강신청 완료/);
   assert.equal(lab.getReview().source,'SYNTHETIC');
 });
-test('four composable incident switches and numbered candidates exist in the original SETTING menu',()=>{
+test('three composable incident switches and numbered candidates exist in the original SETTING menu',()=>{
   const root=path.join(__dirname,'..');
   const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
-  assert.equal([...html.matchAll(/data-scenario-toggle="/g)].length,4);
+  assert.equal([...html.matchAll(/data-scenario-toggle="/g)].length,3);
   assert.equal([...html.matchAll(/data-base-course="/g)].length,3);
   assert.equal([...html.matchAll(/data-alt-course="/g)].length,3);
   assert.equal(html.includes('COMPOSITE'),false,'no separate composite option');

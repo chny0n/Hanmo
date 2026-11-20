@@ -6,7 +6,7 @@
 })(typeof globalThis==='object'?globalThis:this,function(){
   'use strict';
   const IDS=Object.freeze([1,2,3]);
-  const OPTIONS=Object.freeze(['LAST_VALID','LAST_CONFLICT','LAST_NONE','RECONNECT']);
+  const OPTIONS=Object.freeze(['LAST_VALID','LAST_CONFLICT','RECONNECT']);
   function selection(items){
     if(!Array.isArray(items))return [];
     return IDS.filter(n=>items.includes(n));
@@ -17,7 +17,7 @@
   }
   function initialCourses(incidents){
     const on=enabled(incidents);
-    return on.includes('LAST_NONE')?[1,2,3]:on.includes('LAST_CONFLICT')?[1,2]:[1];
+    return on.includes('LAST_CONFLICT')?[1,2]:[1];
   }
   function candidates(base){
     const picked=selection(base);

@@ -22,16 +22,16 @@ test('index links directly to all student functions and existing practice routes
  assert.ok(!src.includes('scenario-workshop.html'), 'dead standalone page link');
  assert.ok(!src.includes('href="./degree-rescue/'), 'no academic UI link to old folder');
 });
-test('four independently selected incidents are OFF by default; no standalone or composite UI',()=>{
+test('three independently selected incidents are OFF by default; no standalone or composite UI',()=>{
  const html=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
  assert.match(html,/id="scenario-settings"/);
  assert.match(html,/id="incident-practice"/);
  assert.match(html,/id="incident-search"/);
  assert.match(html,/id="incident-404"/);
- assert.equal((html.match(/data-scenario-toggle="/g)||[]).length,4);
+ assert.equal((html.match(/data-scenario-toggle="/g)||[]).length,3);
  assert.equal((html.match(/data-alt-course="/g)||[]).length,3);
  assert.doesNotMatch(html,/data-scenario-toggle="[^"]+"\s+checked/);
- assert.doesNotMatch(html,/data-scenario-toggle="COMPOSITE"|workshop-preset/);
+ assert.doesNotMatch(html,/data-scenario-toggle="(?:COMPOSITE|LAST_NONE)"|workshop-preset/);
  assert.equal(fs.existsSync(path.join(ROOT,'html/scenario-workshop.html')),false);
  assert.equal(fs.existsSync(path.join(ROOT,'html/scenario-lab.html')),false);
  for(const page of student){

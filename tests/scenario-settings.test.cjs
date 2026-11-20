@@ -49,19 +49,20 @@ test('three same-number candidate conflicts and other numbers are accepted',()=>
  assert.equal(logic.choose([1,2],3).ok,true);
  assert.equal(logic.noAlternative([1,2,3]),true);
  assert.equal(logic.noAlternative([1,2]),false);
- assert.deepEqual(logic.initialCourses(['LAST_NONE']),[1,2,3]);
+ assert.deepEqual(logic.initialCourses(['LAST_VALID','LAST_CONFLICT']),[1,2]);
+ assert.deepEqual(logic.enabled(['LAST_NONE']),[],'removed setting must not re-enable an old scenario');
  for(const n of [1,2,3])assert.equal(logic.choose([1,2,3],n).ok,false);
  assert.throws(()=>logic.choose([1,2,3],4),/1~3/);
  assert.equal(logic.delayMs(0),0);assert.equal(logic.delayMs(1),6000);
 });
-test('four independent OFF toggles do not alter original route',()=>{
+test('three independent OFF toggles do not alter original route',()=>{
  const h=harness();assert.deepEqual(h.app.getEnabled(),[]);
  h.host.goPractice(2);assert.equal(h.host.lastOriginal,2);
  assert.equal(h.ids['incident-practice'].hidden,true);
  assert.equal(logic.OPTIONS.includes('COMPOSITE'),false);
 });
 test('combined selected toggles, mandatory search, and candidate click flow',()=>{
- const h=harness();h.toggles[1].checked=true;h.toggles[3].checked=true;
+ const h=harness();h.toggles[1].checked=true;h.toggles[2].checked=true;
  h.host.getSettingValue();assert.deepEqual(h.app.getEnabled(),['LAST_CONFLICT','RECONNECT']);
  h.host.goPractice(3);assert.equal(h.ids['incident-practice'].hidden,false);
  assert.equal(h.ids['incident-candidates'].hidden,true);
@@ -77,11 +78,13 @@ test('combined selected toggles, mandatory search, and candidate click flow',()=
  h.ids['incident-exit'].fire('click');assert.equal(h.ids['incident-practice'].hidden,true);
  assert.equal(h.cache.size,0);
 });
-test('no alternative occurs when 1, 2 and 3 are all already selected',()=>{
- const h=harness();h.toggles[2].checked=true;h.host.getSettingValue();
+test('all three selected courses naturally conflict without a dedicated scenario option',()=>{
+ const h=harness();h.toggles[1].checked=true;h.host.getSettingValue();
  h.host.goPractice(1);
+ assert.deepEqual(h.app.getBase(),[1,2]);
+ h.bases[2].checked=true;h.bases[2].fire('change');
  assert.deepEqual(h.app.getBase(),[1,2,3]);h.ids['incident-search'].fire('click');
- assert.match(h.ids['incident-status'].textContent,/대체과목 없음/);
+ assert.match(h.ids['incident-status'].textContent,/모든 대체과목의 시간이 겹칩니다/);
  for(const alt of h.alts){alt.fire('click');assert.match(h.ids['incident-feedback'].textContent,/수강신청이 불가/);}
  h.bases[2].checked=false;h.bases[2].fire('change');
  assert.equal(h.ids['incident-candidates'].hidden,true,'new search required after changing base');
@@ -89,7 +92,7 @@ test('no alternative occurs when 1, 2 and 3 are all already selected',()=>{
  assert.match(h.ids['incident-feedback'].textContent,/수강신청이 가능/);
 });
 test('404 refresh resumes, does not replay 404, and a new navigation remains OFF',()=>{
- const h=harness();h.toggles[3].checked=true;h.host.getSettingValue();h.host.goPractice(1);
+ const h=harness();h.toggles[2].checked=true;h.host.getSettingValue();h.host.goPractice(1);
  h.timers.at(-1).fn();assert.equal(h.app.is404(),true);
  h.ids['incident-404-refresh'].fire('click');assert.equal(h.host.reloads,1);
  const reloaded=harness(h.cache,'reload');
