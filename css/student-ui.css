@@ -70,3 +70,13 @@ a.hanmo-card:hover{transform:translateY(-2px);border-color:#7aadc7;box-shadow:0 
 /* An explicit top navigation replaces every academic sidebar. Preserve the PC-only device guard. */
 @media(max-width:1250px){.hanmo-topbar{align-items:flex-start;flex-direction:column}.hanmo-topbar nav{justify-content:flex-start}}
 @media(max-width:830px){.hanmo-main{padding:20px 16px 45px}.hanmo-hero{padding:28px 22px}.hanmo-card-grid,.hanmo-card-grid.two,.hanmo-fields{grid-template-columns:1fr}.hanmo-topbar{padding:15px}}
+
+/* Shared horizontal navigation on existing legacy-adjacent pages. */
+.hanmo-topbar .hanmo-nav-inline{display:flex;align-items:center;justify-content:flex-end;gap:5px 12px;flex-wrap:wrap}
+.hanmo-topbar .hanmo-nav-inline a{color:#e6eff6;text-decoration:none;font-size:13px;font-weight:650;padding:7px 8px;border-radius:7px;white-space:nowrap}
+.hanmo-topbar .hanmo-nav-inline a:hover,
+.hanmo-topbar .hanmo-nav-inline a[aria-current="page"]{background:#1a4b70;color:#fff}
+.hanmo-practice-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:13px;margin:0 auto 24px;max-width:900px}
+.hanmo-practice-links a{background:#123f5d;border:1px solid #7296ad;border-radius:11px;color:#e8f4fa;padding:10px 14px;font-size:14px;text-decoration:none;font-weight:750}
+.hanmo-practice-links a:hover{background:#1a597a}
+@media(max-width:1250px){.hanmo-topbar .hanmo-nav-inline{justify-content:flex-start}}
