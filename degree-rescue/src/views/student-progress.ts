@@ -109,7 +109,7 @@ export function explainProvisionalExclusions(
     const origin=attemptToken.startsWith('LOCAL:')?'record':'plan';
     const prefix=origin==='record'?'LOCAL:':`SCENARIO:${result.scenario}:`;
     const ordinal=attemptToken.slice(prefix.length);
-    if(!attemptToken.startsWith(prefix)||!/^[1-9]\\d*$/.test(ordinal)){
+    if(!attemptToken.startsWith(prefix)||!/^[1-9]\d*$/.test(ordinal)){
       throw new Error('학점 합산에서 제외된 기록의 식별자를 확인할 수 없습니다.');
     }
     const row=origin==='record'?records[Number(ordinal)-1]:result.rows[Number(ordinal)-1];
