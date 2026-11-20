@@ -14,10 +14,10 @@ test('public student pages live under html and never request pasted HTML or JSON
    assert.doesNotMatch(html,/planner-sidebar|class="[^"]*sidebar/i);
  }
 });
-test('index links directly to all student functions and existing practice routes',()=>{
+test('index contains only academic links and no duplicate simulation entry',()=>{
  const src=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
  for(const name of student)assert.ok(src.includes('./html/'+name+'.html'),name);
- for(const name of ['vsugang'])assert.ok(src.includes('./html/'+name+'.html'),name);
+ assert.doesNotMatch(src,/<a[^>]+href="\.\/html\/vsugang\.html"/,'home must not link to legacy mock registration');
  assert.doesNotMatch(src,/scenario-settings|scenario-workshop|돌발상황 연습/,'no standalone incident link on home');
  assert.ok(!src.includes('scenario-workshop.html'), 'dead standalone page link');
  assert.ok(!src.includes('href="./degree-rescue/'), 'no academic UI link to old folder');
@@ -93,6 +93,8 @@ test('academic entry handoff and three A/B/C plans integrate into existing pages
  assert.ok(progress.includes('../js/academic-progress.js'));
  assert.ok(progress.includes('../css/academic-progress.css'));
  assert.doesNotMatch(progress,/class="planner-sidebar"|type="file"|<textarea/);
+ const plannerNav=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
+ assert.doesNotMatch(plannerNav,/href="\.\/vsugang\.html"/,'remove old mock-registration card');
 });
 
 test('home is a navigation-only page; the Hanmo brand is the single home link',()=>{
@@ -105,14 +107,18 @@ test('home is a navigation-only page; the Hanmo brand is the single home link',(
  assert.doesNotMatch(home,/<a[^>]*>홈<\/a>/);
  const allowed=[
   './html/planner.html','./html/academic-timeline.html','./html/forecast.html',
-  './html/catalog.html','./html/academic-progress.html','./html/vsugang.html'
+  './html/catalog.html','./html/academic-progress.html'
  ];
  const links=[...home.matchAll(/<a[^>]+href="([^"]+)"/g)].map(match=>match[1]);
  assert.deepEqual(links,['./index.html',...allowed]);
+ assert.doesNotMatch(home,/<a[^>]+href="\.\/html\/vsugang\.html"/,'no mock link in homepage topbar');
  for(const page of student){
   const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
   assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
   assert.doesNotMatch(html,/<a href="\.\.\/index\.html">홈<\/a>/,page);
+  const bar=html.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  assert.ok(bar,'missing topbar on '+page);
+  assert.doesNotMatch(bar,/<a[^>]+href="\.\/vsugang\.html"[^>]*>/,'remove mock registration nav: '+page);
  }
  for(const page of ['vsugang','developer','result']){
   const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
