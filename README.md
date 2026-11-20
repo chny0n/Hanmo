@@ -2,7 +2,7 @@
   <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo_color.png" width="84" alt="한모 로고"></a>
 
   <h1>Hanmo Develop</h1>
-  <p><strong>수강신청 연습에서, 다음 학기의 준비까지.</strong><br>한국외국어대학교 학생을 위한 비공식 모의수강신청 · 학업 도우미 개발 프로젝트</p>
+  <p><strong>수강신청 연습에서, 다음 학기의 준비까지.</strong><br>HUFS · 한국외국어대학교 학생을 위한 비공식 모의수강신청 · 학업 도우미 개발 프로젝트</p>
 
   <p>
     <a href="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml"><img alt="Academic CI" src="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
@@ -14,7 +14,7 @@
   <p><a href="#-프로젝트-소개">소개</a> · <a href="#-미리보기">미리보기</a> · <a href="#-기능-현황">기능 현황</a> · <a href="#-로컬-실행">시작하기</a> · <a href="docs/architecture.md">설계</a> · <a href="https://github.com/ot4562-glitch/Hanmo_develop/issues">이슈</a></p>
 </div>
 
-![한모 개발 프로젝트 소개. 모의수강신청, 학사 공지, 강의 전망을 표현한 배너](docs/images/hanmo-hero.svg)
+![HUFS 한모 개발 프로젝트 배너 — 수강신청 연습에서 다음 학기의 준비까지](docs/images/hanmo-hero-hufs.svg)
 
 ## ✦ 프로젝트 소개
 
