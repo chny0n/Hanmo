@@ -125,6 +125,7 @@
     const errors=byId('scenario-errors');
     const variant=byId('scenario-variant');
     let session=null;
+    let latestInteractionError=null;
     const make=(tag,value)=>{
       const el=doc.createElement(tag);
       el.textContent=value;
@@ -143,12 +144,14 @@
       details.textContent='연습 모드 '+info.mode+' · 시드 '+info.seed
         +' · 가상 경과 '+(info.elapsedVirtualMs/1000).toFixed(1)+'초'
         +' · 중복 신청 시도 '+info.duplicateAttempts+'건 · 출처: 가상 연습';
-      errors.textContent=info.lastError??'';
+      errors.textContent=latestInteractionError??'';
       for(const action of actionsFor(info.state)){
         const button=make('button',action.label);
         button.type='button';
         button.addEventListener('click',()=>{
+          const before=session.errors.length;
           session=step(session,action);
+          latestInteractionError=session.errors.length>before?sessionInfo(session).lastError:null;
           render();
         });
         steps.append(button);
@@ -176,6 +179,7 @@
           enabled:true,
         };
         session=engine.createScenario(configFor(data));
+        latestInteractionError=null;
         render();
       } catch (error) {
         session=null;render();
@@ -183,7 +187,7 @@
       }
     });
     byId('scenario-reset').addEventListener('click',()=>{
-      session=null;byId('scenario-enabled').checked=false;
+      session=null;latestInteractionError=null;byId('scenario-enabled').checked=false;
       render();
     });
     byId('scenario-kind').addEventListener('change',()=>{
