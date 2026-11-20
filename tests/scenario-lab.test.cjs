@@ -94,3 +94,71 @@ test('standalone preview keeps synchronous PC gate and does not import legacy ha
   const source=fs.readFileSync(path.join(__dirname,'../js/scenario-lab.js'),'utf8');
   assert.equal(/\b(?:localStorage|sessionStorage|fetch|XMLHttpRequest)\s*\./.test(source),false);
 });
+
+test('standalone mount is OFF until consent, clears resolved errors, and resets ephemeral inputs',()=>{
+  function node(tag='div'){
+    const handlers={};
+    return {
+      tagName:tag.toUpperCase(),textContent:'',value:'',checked:false,
+      disabled:false,children:[],type:'',
+      addEventListener:(type,fn)=>{handlers[type]=fn;},
+      trigger:(type)=>{assert.equal(typeof handlers[type],'function');handlers[type]({preventDefault(){}});},
+      replaceChildren(){this.children=[];},
+      append(child){this.children.push(child);},
+    };
+  }
+  const ids=['scenario-lab','scenario-form','scenario-status','scenario-actions',
+    'scenario-history','scenario-details','scenario-errors','scenario-variant',
+    'scenario-kind','scenario-mode','scenario-seed','scenario-enabled','scenario-reset'];
+  const nodes=Object.fromEntries(ids.map(id=>[id,node()]));
+  const doc={getElementById:id=>nodes[id]??null,createElement:node};
+  nodes['scenario-kind'].value='LAST_COURSE_FAIL';
+  nodes['scenario-mode'].value='SELECT';
+  nodes['scenario-seed'].value='2';
+  nodes['scenario-variant'].value='VALID';
+  const lab=ui.mount(doc);
+  assert.equal(lab.getSummary(),null);
+  assert.match(nodes['scenario-status'].textContent,/꺼짐/);
+  nodes['scenario-form'].trigger('submit');
+  assert.equal(lab.getSummary(),null);
+  assert.match(nodes['scenario-errors'].textContent,/직접 동의/);
+  nodes['scenario-enabled'].checked=true;
+  nodes['scenario-form'].trigger('submit');
+  assert.equal(lab.getSummary().state,'READY');
+  function click(label){
+    const action=nodes['scenario-actions'].children.find(x=>x.textContent===label);
+    assert.ok(action,'No action: '+label);
+    action.trigger('click');
+  }
+  click('처음 N-1개 신청 확인');
+  click('마지막 목표 과목 신청');
+  click('대체 과목 찾기');
+  click('유효 대안 없음 판단');
+  assert.equal(lab.getSummary().state,'SEARCH_ALTERNATIVE');
+  assert.match(nodes['scenario-errors'].textContent,/유효한 가상/);
+  click('대체 과목 직접 선택');
+  assert.equal(lab.getSummary().state,'REPLACED');
+  assert.equal(nodes['scenario-errors'].textContent,'');
+  assert.equal(nodes['scenario-history'].children.length,4);
+  nodes['scenario-reset'].trigger('click');
+  assert.equal(lab.getSummary(),null);
+  assert.equal(nodes['scenario-enabled'].checked,false);
+  assert.equal(nodes['scenario-history'].children.length,0);
+
+  nodes['scenario-kind'].value='RECONNECT_RECOVERY';
+  nodes['scenario-kind'].trigger('change');
+  assert.equal(nodes['scenario-variant'].disabled,true);
+  nodes['scenario-enabled'].checked=true;
+  nodes['scenario-form'].trigger('submit');
+  click('가상 신청 클릭');
+  click('중복 신청 시도(오류 학습)');
+  assert.match(nodes['scenario-errors'].textContent,/허용되지 않은/);
+  click('가상 접속 단절 체험');
+  assert.equal(nodes['scenario-errors'].textContent,'');
+  click('모의 재접속');
+  click('가상 대기열 통과');
+  click('가상 신청 상태 조회');
+  assert.equal(lab.getSummary().state,'UNKNOWN');
+  assert.equal(lab.getSummary().duplicateAttempts,1);
+  assert.equal(nodes['scenario-actions'].children.length,1); // terminal explanation, no buttons
+});
