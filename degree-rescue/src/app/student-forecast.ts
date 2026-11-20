@@ -19,8 +19,8 @@ function p(message:string):HTMLParagraphElement{
 }
 function render(title:string,detail:string,sub:string,notice:string):void{
   const heading=document.createElement('h3');heading.textContent=title;
-  response.replaceChildren(heading,p(detail),p(sub));
-  status.textContent=notice;
+  (response as HTMLElement).replaceChildren(heading,p(detail),p(sub));
+  (status as HTMLElement).textContent=notice;
 }
 const kstParts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'numeric'})
   .formatToParts(new Date());
