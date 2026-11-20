@@ -48,7 +48,7 @@
     const config=validate(input);
     const last=engine.createScenario(lastConfig(config));
     return frozen({config,phase:config.enabled?'LAST':'OFF',last,reconnect:null,
-      cancellationMistakes:0,
+      cancellationMistakes:0,intermissionElapsedMs:0,
       events:frozen([]),errors:frozen([])});
   }
   function state(session) {
@@ -72,11 +72,14 @@
     })]);
   }
   function elapsed(session) {
-    return session.last.elapsedVirtualMs+(session.reconnect?.elapsedVirtualMs??0);
+    return session.last.elapsedVirtualMs+session.intermissionElapsedMs+
+      (session.reconnect?.elapsedVirtualMs??0);
   }
   function dispatch(session,event) {
     if(!session || !Object.isFrozen(session) || !session.config)throw new TypeError('Invalid composite session');
     if(!event || typeof event!=='object'||typeof event.type!=='string')throw new TypeError('Invalid composite action');
+    if(event.elapsedVirtualMs!==undefined && (!Number.isSafeInteger(event.elapsedVirtualMs) ||
+        event.elapsedVirtualMs<0 || event.elapsedVirtualMs>3600000))throw new RangeError('Invalid virtual time');
     if(session.phase==='OFF'||isTerminal(session))return session;
     if(session.phase==='LAST'){
       const previous=session.last;
@@ -85,20 +88,21 @@
       const changed=next.actions.length!==previous.actions.length;
       const nextPhase=LAST_TERMINAL.has(next.state)?'CANCEL_CHOICE':'LAST';
       const updated=frozen({...session,last:next,phase:nextPhase});
-      if(!changed)return frozen({...updated,errors:frozen([...session.errors,
-        frozen({phase:'LAST',eventType:event.type,code:next.errors.at(-1)?.code??'INVALID_TRANSITION'})])});
+      if(!changed)return updated;
       return frozen({...updated,events:append(updated,event,'LAST',next.state)});
     }
     if(session.phase==='CANCEL_CHOICE'){
       if(event.type!=='KEEP_REGISTRATION'&&event.type!=='MISTAKEN_CANCEL')
         return error(session,event,'INVALID_TRANSITION');
       const updated=frozen({...session,phase:'READY_RECONNECT',
-        cancellationMistakes:session.cancellationMistakes+(event.type==='MISTAKEN_CANCEL'?1:0)});
+        cancellationMistakes:session.cancellationMistakes+(event.type==='MISTAKEN_CANCEL'?1:0),
+        intermissionElapsedMs:session.intermissionElapsedMs+(event.elapsedVirtualMs??0)});
       return frozen({...updated,events:append(updated,event,'CANCELLATION','READY_RECONNECT')});
     }
     if(session.phase==='READY_RECONNECT'){
       if(event.type!=='CONTINUE_RECONNECT')return error(session,event,'INVALID_TRANSITION');
-      const updated=frozen({...session,phase:'RECONNECT',reconnect:engine.createScenario(reconnectConfig(session.config))});
+      const updated=frozen({...session,phase:'RECONNECT',reconnect:engine.createScenario(reconnectConfig(session.config)),
+        intermissionElapsedMs:session.intermissionElapsedMs+(event.elapsedVirtualMs??0)});
       return frozen({...updated,events:append(updated,event,'RECOVERY','ACTIVE')});
     }
     const previous=session.reconnect;
@@ -106,8 +110,7 @@
     if(next===previous)return session;
     const changed=next.actions.length!==previous.actions.length;
     const updated=frozen({...session,reconnect:next});
-    if(!changed)return frozen({...updated,errors:frozen([...session.errors,
-      frozen({phase:'RECONNECT',eventType:event.type,code:next.errors.at(-1)?.code??'INVALID_TRANSITION'})])});
+    if(!changed)return updated;
     return frozen({...updated,events:append(updated,event,'RECONNECT',next.state)});
   }
   function isTerminal(session) {
