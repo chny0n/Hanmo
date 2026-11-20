@@ -33,6 +33,11 @@
     MISTAKEN_CANCEL:'가상 취소 실수',
     CONTINUE_RECONNECT:'다음 위기로 이동',
   });
+  const ERROR_LABELS=Object.freeze({
+    ALTERNATIVE_INVALID:'시간·학점·선수요건·중복·영역 조건을 충족하지 않는 대체과목을 선택했습니다.',
+    VALID_ALTERNATIVE_EXISTS:'가능한 가상 대체과목이 있는데 유효 대안이 없다고 판단했습니다.',
+    INVALID_TRANSITION:'허용되지 않은 단계 또는 중복 신청을 시도했습니다. 실제 신청 처리는 수행되지 않았습니다.',
+  });
   function validate(value) {
     if(!value || typeof value!=='object'||Array.isArray(value)
       ||value.source!=='SYNTHETIC'
@@ -90,6 +95,16 @@
       :disposition==='NEEDS_REVIEW'?'다시 확인할 행동이 있습니다.'
       :disposition==='AWAIT_VERIFICATION'?'결과 불명을 확인한 채 종료했습니다.'
       :'가상 연습의 필수 대응을 완료했습니다.';
+    const mistakes=report.errors.map((error,i)=>Object.freeze({
+      index:i+1,
+      actionLabel:ACTIONS[error.eventType??error.type]??'잘못된 단계 조작',
+      description:ERROR_LABELS[error.code]??'현재 단계에서 허용되지 않는 가상 행동입니다.',
+      nextAction:error.code==='ALTERNATIVE_INVALID'
+        ?'대체과목의 모든 제약을 확인한 뒤 선택하세요.'
+        :error.code==='VALID_ALTERNATIVE_EXISTS'
+        ?'대체 가능 과목이 남아 있는지 다시 확인하세요.'
+        :'가상 신청 결과와 단계 상태를 확인한 뒤 계속 진행하세요.',
+    }));
     const timeline=report.actions.map((action,i)=>Object.freeze({
       index:i+1,phase:action.phase??(report.scenarioId==='LAST_COURSE_FAIL'?'LAST':'RECONNECT'),
       label:ACTIONS[action.type]??'단계 기록',
@@ -108,7 +123,7 @@
       elapsedVirtualMs:report.elapsedVirtualMs,
       duplicateAttempts:duplication,cancellationMistakes:cancellation,
       errorCount:errors,facts:Object.freeze(facts),
-      timeline:Object.freeze(timeline),
+      mistakes:Object.freeze(mistakes),timeline:Object.freeze(timeline),
     });
   }
   function plainText(review) {
@@ -119,6 +134,7 @@
       '상태: '+review.title,
       '가상 경과: '+(review.elapsedVirtualMs/1000).toFixed(1)+'초',
       ...review.facts.map(f=>'· '+f.label+': '+f.description),
+      ...review.mistakes.map(f=>'· 다시 확인: '+f.actionLabel+' — '+f.description+' '+f.nextAction),
       review.notice,
     ];
     return lines.join('\n');
