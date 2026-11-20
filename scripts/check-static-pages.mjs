@@ -64,7 +64,7 @@ for(const page of studentPages){
 const root=await readFile(join(dist,'index.html'),'utf8');
 if(!root.includes('class="hanmo-topbar"')||
    !root.includes('class="hanmo-brand"')||
-   /<main\\b|academic-entry|<section\\b|<aside\\b|<footer\\b/.test(root))
+   /<main\b|academic-entry|<section\b|<aside\b|<footer\b/.test(root))
   throw Error('Home must show only the top navigation bar');
 for(const page of studentPages){
   const body=await readFile(join(dist,page),'utf8');
