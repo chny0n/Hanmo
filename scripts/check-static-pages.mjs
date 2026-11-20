@@ -1,0 +1,75 @@
+import {readFile,stat,readdir} from 'node:fs/promises';
+import {resolve,join,sep} from 'node:path';
+
+const here=resolve(import.meta.dirname,'..');
+const dist=join(here,'dist');
+const studentPages=[
+  'html/planner.html','html/academic-timeline.html','html/forecast.html',
+  'html/catalog.html','html/academic-progress.html',
+];
+const htmlRoutes=[
+  'index.html',...studentPages,
+  'html/scenario-workshop.html','html/scenario-lab.html',
+  'html/vsugang.html','html/practice.html','html/selectZone.html',
+  'html/result.html','html/developer.html',
+];
+const exists=async(path)=>{try{return (await stat(path)).isFile();}catch{return false;}};
+const must=async(name)=>{if(!await exists(join(dist,name)))throw Error('Missing staged asset '+name);};
+for(const name of [
+  'index.html','css/student-ui.css','js/student-forecast.js',
+  'js/student-preferences.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js',
+  'data/academic-notices-reference.json','html/pc-only.html','js/pc-only.js',
+  ...htmlRoutes,
+])await must(name);
+if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
+if((await readdir(dist)).includes('degree-rescue'))throw Error('Academic student pages must not live under /degree-rescue/');
+let linkCount=0,ariaCount=0;
+for(const page of htmlRoutes){
+  const body=await readFile(join(dist,page),'utf8');
+  const pc=page==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
+  const guard=body.indexOf('<script src="'+pc+'"></script>');
+  if(guard<0||guard>body.indexOf('</head>'))throw Error('PC-only guard missing or async: '+page);
+}
+for(const page of studentPages){
+  const body=await readFile(join(dist,page),'utf8');
+  if(/<textarea\b|<input\b[^>]*type=["']file["']/i.test(body))
+    throw Error('A student page still requires raw HTML/JSON input: '+page);
+  if(/planner-sidebar|<aside\s+class=["'].*sidebar/i.test(body))
+    throw Error('Left sidebar is forbidden on '+page);
+  if(!body.includes('class="hanmo-topbar"'))throw Error('Missing top menu: '+page);
+  const ids=[...body.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
+  const set=new Set(ids);
+  if(set.size!==ids.length)throw Error('Duplicate DOM id: '+page);
+  for(const [,references] of body.matchAll(/aria-(?:labelledby|describedby)="([^"]+)"/g)){
+    for(const id of references.trim().split(/\s+/)){
+      if(!set.has(id))throw Error('Broken ARIA ref '+page+' #'+id);
+      ariaCount++;
+    }
+  }
+  for(const [,target] of body.matchAll(/(?:src|href)="([^"]+)"/g)){
+    if(/^(?:https?:|mailto:|tel:|data:)/i.test(target))continue;
+    if(target.startsWith('#')){
+      if(!set.has(target.slice(1)))throw Error('Dead fragment: '+page+' '+target);
+      linkCount++;continue;
+    }
+    if(!/^\.?\.\//.test(target))throw Error('Unsupported student-relative URL: '+page+' '+target);
+    const url=new URL(target,'https://preview.invalid/'+page);
+    if(url.origin!=='https://preview.invalid')throw Error('Link leaves QA');
+    const resolved=resolve(dist,decodeURIComponent(url.pathname).replace(/^\//,''));
+    if(!resolved.startsWith(dist+sep)||!await exists(resolved))
+      throw Error('Broken student link: '+page+' '+target);
+    linkCount++;
+  }
+}
+const root=await readFile(join(dist,'index.html'),'utf8');
+for(const path of studentPages){
+  if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
+}
+if(!root.includes('./html/scenario-workshop.html')||!root.includes('./html/vsugang.html'))
+  throw Error('Root main menu missing exercise navigation');
+const workshop=await readFile(join(dist,'html/scenario-workshop.html'),'utf8');
+if(!workshop.includes('id="workshop-consent"')||
+  !workshop.includes('id="workshop-mode"')||!workshop.includes('id="workshop-seed"'))
+  throw Error('Scenario safe opt-in or runtime anchors removed');
+console.log('Student preview smoke: '+studentPages.length+' human-facing pages, '+
+  linkCount+' links, '+ariaCount+' ARIA references; no uploads, raw JSON, sidebars or CNAME.');

@@ -28,8 +28,15 @@ test('scenario UI preserves explicit opt-in, but technical seed/mode are no long
  assert.doesNotMatch(src,/class="workshop-config"/);
 });
 test('academic public assets are still under html; engine remains independently typechecked',()=>{
- const stage=fs.readFileSync(path.join(ROOT,'degree-rescue/scripts/stage-static.mjs'),'utf8');
+ const stage=fs.readFileSync(path.join(ROOT,'scripts/stage-static.mjs'),'utf8');
  assert.ok(stage.includes("join(dist,'data')"));
  assert.ok(!stage.includes("join(dist,'degree-rescue')"));
  assert.ok(stage.includes('student-forecast.js'));
+});
+
+test('academic package is flat: no nested source package remains',()=>{
+ const root=path.join(ROOT,'degree-rescue');
+ assert.equal(fs.existsSync(root),false);
+ assert.ok(fs.existsSync(path.join(ROOT,'js','academic','core','forecast','offering.ts')));
+ assert.ok(fs.existsSync(path.join(ROOT,'package.json')));
 });
