@@ -17,7 +17,8 @@ function createDoc() {
     'workshop-actions','workshop-live-steps','workshop-virtual-metrics',
     'workshop-report-type','workshop-report-title','workshop-report-summary',
     'workshop-feedback','workshop-metrics','workshop-replay-timeline',
-    'workshop-report-notice','workshop-retry','workshop-new-seed','workshop-change',
+    'workshop-report-notice','workshop-mistakes','workshop-mistake-list',
+    'workshop-retry','workshop-new-seed','workshop-change',
     'workshop-copy','workshop-copy-status',
   ];
   function node(tag='div') {
@@ -89,6 +90,7 @@ test('student LAST scenario completes using a valid manually chosen synthetic al
   assert.equal(lab.getState(),'REPLACED');
   assert.equal(h.nodes['workshop-report'].hidden,false);
   assert.equal(lab.getReview().disposition,'OBSERVED_CORRECT');
+  assert.equal(h.nodes['workshop-mistakes'].hidden,true);
   assert.ok(h.nodes['workshop-feedback'].children.length>=2);
   assert.equal(h.nodes['workshop-report-heading'].focusCount,1);
   assert.equal(lab.getReview().timeline.length,4);
@@ -108,6 +110,9 @@ test('time conflict cannot be treated as a successful alternative',()=>{
   assert.match(h.nodes['workshop-error'].textContent,/제약/);
   h.click('DECLARE_NO_ALTERNATIVE');
   assert.equal(lab.getReview().disposition,'NEEDS_REVIEW');
+  assert.equal(h.nodes['workshop-mistakes'].hidden,false);
+  assert.equal(h.nodes['workshop-mistake-list'].children.length,1);
+  assert.match(h.nodes['workshop-mistake-list'].children[0].textContent,/제약/);
   assert.equal(lab.getReview().lastLabel,'유효한 대체과목이 없음을 확인함');
   assert.equal(h.nodes['workshop-error'].textContent,'');
 });
@@ -127,6 +132,8 @@ test('reconnect UNKNOWN never auto-submits twice and remains distinct from succe
   h.click('VERIFY');
   assert.equal(lab.getState(),'UNKNOWN');
   assert.equal(lab.getReview().disposition,'NEEDS_REVIEW');
+  assert.equal(h.nodes['workshop-mistakes'].hidden,false);
+  assert.equal(h.nodes['workshop-mistake-list'].children.length,1);
   assert.match(h.nodes['workshop-report-notice'].textContent,/반복하면 안 됩니다/);
 });
 test('composite UI handles failure, mistaken cancellation, queue and terminal review',()=>{
@@ -178,6 +185,8 @@ test('all five catalog options, static HTML bindings, WCAG references and PC gat
     assert.ok(html.includes('src="'+script+'"'));
   assert.ok(html.includes('href="../css/scenario-workshop.css"'));
   assert.ok(html.includes('UNMAPPED'));
+  assert.ok(html.includes('id="workshop-mistake-list"'));
+  assert.ok(html.includes('class="mapping-details"'));
   assert.ok(html.includes('role="alert"'));
   assert.ok(html.includes('role="status"'));
   for(const forbidden of ['../js/selectZone.js','../js/practice.js','../js/result.js',
@@ -193,4 +202,17 @@ test('workshop controller is stateless outside this page and no raw data persist
   h.nodes['workshop-stop'].trigger('click');
   assert.equal(lab.getSummary(),null);
   assert.equal(h.nodes['workshop-live-steps'].children.length,0);
+});
+
+test('static workshop references resolve only to packaged local assets',()=>{
+  const base=path.join(__dirname,'..','html');
+  const html=fs.readFileSync(path.join(base,'scenario-workshop.html'),'utf8');
+  const refs=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(match=>match[1]);
+  for(const ref of refs){
+    if(ref.startsWith('#'))continue;
+    assert.ok(ref.startsWith('./')||ref.startsWith('../'), 'unexpected remote URL: '+ref);
+    const resolved=path.resolve(base,ref);
+    assert.ok(resolved.startsWith(path.resolve(base,'..')+path.sep),'asset must remain local');
+    assert.ok(fs.statSync(resolved).isFile(),'broken preview target '+ref);
+  }
 });
