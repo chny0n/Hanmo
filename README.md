@@ -36,25 +36,16 @@
 
 > **미리보기 안내:** 위 이미지는 `main` 브랜치의 현재 기능·화면 구성을 바탕으로 다시 제작한 **설명용 시각화**이며 실제 브라우저 화면 캡처가 아닙니다. 공지의 전공별 적용 대상, 공식 강의 개설 원장, 최신 강좌·교수 데이터는 검수·연결 전입니다. [실제 화면 소스 보기](html/) · [QA 배포 워크플로](.github/workflows/deploy-pages.yml)
 
-### 학사종합지원센터 검토용 SVG 자료 4종
+### 학사종합지원센터 참고 SVG 4종
 
-**글자 겹침 없이 핵심만 표현한 SVG 4장**입니다. 그림을 누르면 확대해서 볼 수 있습니다. (비공식 프로젝트)
+<sub>작은 미리보기입니다. 클릭하면 원본 SVG로 확대됩니다.</sub>
 
-**01 · 프로젝트 개요**
-
-[![한모 프로젝트의 모의수강신청·학업정보·학업계획](docs/images/hanmo-01-project-overview.svg)](docs/images/hanmo-01-project-overview.svg)
-
-**02 · 페이지 이동**
-
-[![한모 홈에서 모의신청과 학업 지원으로 나뉘는 구조](docs/images/hanmo-02-page-map.svg)](docs/images/hanmo-02-page-map.svg)
-
-**03 · 자료 연결**
-
-[![공식 자료·권리 검수·Supabase 연결과 자료 상태](docs/images/hanmo-03-data-flow.svg)](docs/images/hanmo-03-data-flow.svg)
-
-**04 · 개발 단계**
-
-[![학업 화면부터 4차 코드 전환까지 개발 계획](docs/images/hanmo-04-roadmap.svg)](docs/images/hanmo-04-roadmap.svg)
+<table><tr>
+<td align="center" width="25%"><a href="docs/images/hanmo-01-project-overview.svg"><img src="docs/images/hanmo-01-project-overview.svg" alt="01 · 개요" width="190"></a><br><sub>01 · 개요</sub></td>
+<td align="center" width="25%"><a href="docs/images/hanmo-02-page-map.svg"><img src="docs/images/hanmo-02-page-map.svg" alt="02 · 페이지" width="190"></a><br><sub>02 · 페이지</sub></td>
+<td align="center" width="25%"><a href="docs/images/hanmo-03-data-flow.svg"><img src="docs/images/hanmo-03-data-flow.svg" alt="03 · 데이터" width="190"></a><br><sub>03 · 데이터</sub></td>
+<td align="center" width="25%"><a href="docs/images/hanmo-04-roadmap.svg"><img src="docs/images/hanmo-04-roadmap.svg" alt="04 · 로드맵" width="190"></a><br><sub>04 · 로드맵</sub></td>
+</tr></table>
 
 [**학사종합지원센터 참고용 설명서 (그림 4장 + 검토 요청사항)**](docs/academic-support-center-brief.md) · [아키텍처 기준 문서](docs/architecture.md)
 
