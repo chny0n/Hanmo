@@ -62,6 +62,17 @@ for(const page of studentPages){
   }
 }
 const root=await readFile(join(dist,'index.html'),'utf8');
+if(!root.includes('class="hanmo-topbar"')||
+   !root.includes('class="hanmo-brand"')||
+   /<main\\b|academic-entry|<section\\b|<aside\\b|<footer\\b/.test(root))
+  throw Error('Home must show only the top navigation bar');
+for(const page of studentPages){
+  const body=await readFile(join(dist,page),'utf8');
+  if(!body.includes('class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"'))
+    throw Error('Hanmo brand must link to home: '+page);
+  if(/<a href="\.\.\/index\.html">홈<\/a>/.test(body))
+    throw Error('Redundant home menu entry: '+page);
+}
 for(const path of studentPages){
   if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
 }

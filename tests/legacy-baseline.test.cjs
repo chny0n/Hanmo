@@ -307,7 +307,8 @@ test('each actual HTML page loads classic scripts in order without global collis
     // The registration menu may load isolated, opt-in synthetic controllers;
     // the three original classic scripts and their order must remain unchanged.
     const originalScripts=page==='html/vsugang.html'?scripts.slice(0,3):scripts;
-    assert.equal(originalScripts.length,page==='index.html'?2:3,page+' original script count');
+    // Home now intentionally contains only the shared top navigation.
+    assert.equal(originalScripts.length,page==='index.html'?0:3,page+' original script count');
     if(page==='html/vsugang.html')assert.deepEqual(scripts.slice(3),[
       'incident-courses.js','scenario-settings.js',
     ],'isolated synthetic scripts must load only after original settings/gnb/hanmoSys');

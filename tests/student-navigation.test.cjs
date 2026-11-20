@@ -94,3 +94,29 @@ test('academic entry handoff and three A/B/C plans integrate into existing pages
  assert.ok(progress.includes('../css/academic-progress.css'));
  assert.doesNotMatch(progress,/class="planner-sidebar"|type="file"|<textarea/);
 });
+
+test('home is a navigation-only page; the Hanmo brand is the single home link',()=>{
+ const home=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+ assert.match(home,/<body class="hanmo-ui">/);
+ assert.match(home,/<nav class="hanmo-topbar"/);
+ assert.match(home,/<a class="hanmo-brand" href="\.\/index\.html" aria-label="한모 홈으로 이동"/);
+ assert.doesNotMatch(home,/<main\b|academic-entry|<section\b|<aside\b|<footer\b/);
+ assert.doesNotMatch(home,/src=['"]\.\/js\/(?:gnb|index)\.js|ChannelIO|class=['"](?:container|headerNotice|deviceCheck)/);
+ assert.doesNotMatch(home,/<a[^>]*>홈<\/a>/);
+ const allowed=[
+  './html/planner.html','./html/academic-timeline.html','./html/forecast.html',
+  './html/catalog.html','./html/academic-progress.html','./html/vsugang.html'
+ ];
+ const links=[...home.matchAll(/<a[^>]+href="([^"]+)"/g)].map(match=>match[1]);
+ assert.deepEqual(links,['./index.html',...allowed]);
+ for(const page of student){
+  const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
+  assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
+  assert.doesNotMatch(html,/<a href="\.\.\/index\.html">홈<\/a>/,page);
+ }
+ for(const page of ['vsugang','developer','result']){
+  const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
+  assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
+  assert.doesNotMatch(html,/<a href="\.\.\/index\.html">홈<\/a>/,page);
+ }
+});
