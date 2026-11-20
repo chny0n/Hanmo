@@ -146,6 +146,28 @@ test('home restores the original mock registration layout without the academic-e
  }
 });
 
+test('home uses a viewport-fitted main below the topbar without hiding classic functions',()=>{
+ const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+ const css=fs.readFileSync(path.join(ROOT,'css/home-fit.css'),'utf8');
+ const script=fs.readFileSync(path.join(ROOT,'js/home-fit.js'),'utf8');
+ assert.match(html,/<body class="hanmo-home">/);
+ assert.match(html,/<div class="home-fit-content">/);
+ assert.match(html,/href="\.\/css\/home-fit\.css"/);
+ assert.match(html,/src="\.\/js\/home-fit\.js" defer/);
+ assert.match(css,/body\.hanmo-home\s*\{/);
+ assert.match(css,/height:\s*100dvh/);
+ assert.match(css,/body\.hanmo-home > main\s*\{/);
+ assert.match(css,/flex:\s*1 1 auto/);
+ assert.match(css,/overflow:\s*hidden/);
+ assert.match(css,/--home-fit-scale/);
+ assert.match(script,/content\.scrollHeight/);
+ assert.match(script,/main\.clientHeight/);
+ for(const item of ["class='notice blueBox'","class='mainNotice blueBox'",
+   "class='buttonContainer'","수강신청 연습하기","새로고침","개발자 소개"])
+  assert.ok(html.includes(item),'missing original homepage element '+item);
+ assert.doesNotMatch(html,/academic-entry|학사 준비도 한모에서/);
+});
+
 test('every non-imitation topbar puts the editable self-declared student summary before rightmost 내정보',()=>{
  for(const page of ['index.html',...student.map(x=>'html/'+x+'.html'),
    'html/vsugang.html','html/developer.html','html/result.html']){

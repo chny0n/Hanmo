@@ -19,6 +19,7 @@ for(const name of [
   'js/student-preferences.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js',
   'js/student-entry.js','js/academic-progress.js','css/academic-progress.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
+  'js/home-fit.js','css/home-fit.css',
   'data/academic-notices-reference.json','html/pc-only.html','js/pc-only.js',
   ...htmlRoutes,
 ])await must(name);
@@ -74,6 +75,11 @@ for(const needed of [
 ]){
   if(!root.includes(needed))throw Error('Original home element or script missing: '+needed);
 }
+if(!root.includes('<body class="hanmo-home">')||
+   !root.includes('class="home-fit-content"')||
+   !root.includes('href="./css/home-fit.css"')||
+   !root.includes('src="./js/home-fit.js" defer'))
+  throw Error('Home must fit its topbar and announcements into a single viewport');
 if(!root.includes('onclick="location.reload()"'))
   throw Error('Home refresh button must work on a GitHub Pages project path');
 for(const page of studentPages){
