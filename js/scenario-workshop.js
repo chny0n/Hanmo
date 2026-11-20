@@ -13,7 +13,7 @@
   if(onNode)module.exports=api;
   else {
     root.HanmoScenarioWorkshop=api;
-    if(root.document)api.mount(root.document);
+    if(root.document)root.HanmoWorkshopSession=api.mount(root.document);
   }
 })(typeof globalThis==='object'?globalThis:this,function(engine,composite,review) {
   'use strict';

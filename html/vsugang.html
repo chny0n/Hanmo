@@ -15,7 +15,7 @@
 		<meta charset='UTF-8'>
 		<meta name="description" content="한국외대 재학생을 위한 모의수강신청 사이트">
 		<meta name="keyword" content="한모, 한국외국어대학교 모의수강신청, HUFS, HUFS수강연습, 외대수강연습, HUFS연습, 외대연습, 수강연습, 한국외대, 한국외대 수강신청, 한국외대 수강신청 연습, 수강신청 연습, 한국외국어대학교, 외대, 외대 수강신청, 외대 수강신청 연습, 수강신청, 수강신청 모의연습, 한국외대 수강신청 모의연습, 한국외대 수강신청 연습, 외대 수강신청 모의연습, sugangpractice, vsugangpractice, 한국외국어대학교 수강신청 모의연습">
-        <meta name="viewpo rt" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
 		<link href="../img/hanmo_color.png" rel="shortcut icon" type="image/x-icon">
 		<link href="../css/gnb.css" rel="stylesheet" type="text/css">
 		<link href="../css/vsugang.css" rel="stylesheet" type="text/css">
@@ -23,6 +23,7 @@
 		<link href="../css/normalize.css" rel="stylesheet" type="text/css">
 		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
 	  <link rel="stylesheet" href="../css/student-ui.css">
+  <link rel="stylesheet" href="../css/scenario-settings.css">
 </head>
     <body>
 		<script>
@@ -57,7 +58,7 @@
     <a href="./catalog.html">강의 검색</a>
     <a href="./academic-progress.html">학점 정리</a>
     <a href="./vsugang.html">기존 모의신청</a>
-    <a href="./scenario-workshop.html">돌발상황 연습</a>
+    <a href="#scenario-settings">돌발상황 연습</a>
   </div>
 </nav>
 		<main>
@@ -82,9 +83,21 @@
 							</fieldset>
 						</li>
 					</ul>
-					<div class='settingButton' onclick='getSettingValue()'>
+<fieldset id="scenario-settings" class="hanmo-incident-options" aria-describedby="scenario-settings-note">
+<legend>돌발상황 연습 <small>모두 기본 OFF</small></legend>
+<p id="scenario-settings-note">이 설정은 현재 화면을 떠나면 OFF로 돌아갑니다. 실제 학교 서버를 끊거나 HTTP 404를 발생시키지 않습니다.</p>
+<div class="hanmo-toggle-grid">
+<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="LAST_VALID"><span><strong>마지막 과목 신청 실패</strong><small>정원 마감 뒤 유효한 대체 과목 판단</small></span><em>OFF</em></label>
+<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="LAST_CONFLICT"><span><strong>대체과목 시간 충돌</strong><small>가상 대체과목이 시간표와 겹침</small></span><em>OFF</em></label>
+<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="LAST_NONE"><span><strong>대체과목 없음</strong><small>학점 조건상 신청할 수 있는 대안 없음</small></span><em>OFF</em></label>
+<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="RECONNECT"><span><strong>가상 404·접속 끊김</strong><small>실제 연결은 끊지 않고 재접속·결과 불명 연습</small></span><em>OFF</em></label>
+<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="COMPOSITE"><span><strong>복합 돌발상황</strong><small>실패·취소 실수·가상 접속 끊김 연속 연습</small></span><em>OFF</em></label>
+</div>
+<div class="hanmo-toggle-actions"><button type="button" id="scenario-all-on">모두 ON</button><button type="button" id="scenario-all-off">모두 OFF</button></div>
+</fieldset>
+					<button type='button' class='settingButton' onclick='getSettingValue()'>
 						확인
-					</div>
+					</button>
 				</div>
 			</section>
 			<section class='f-dirt-down'>
@@ -98,7 +111,7 @@
 				</section>
 				<section class='container'>
           <div class="hanmo-practice-links" aria-label="추가 연습 바로가기">
-            <a href="./scenario-workshop.html">돌발상황 연습: 정원 마감·재접속 체험 →</a>
+            <a href="#scenario-settings">돌발상황 연습 설정 열기 →</a>
             <a href="./planner.html">학업 플래너로 이동 →</a>
           </div>
 					<div class='grid'>
@@ -126,7 +139,7 @@
 								수강신청할 과목을 신속하게 담을 수 있도록 연습할 수 있어요.
 							</p>
 						</div>
-						<div class='setting' style='grid-area: set;' onclick='openSettingPanel()'>
+						<div class='setting' style='grid-area: set;' onclick='openSettingPanel()' onkeydown='if(event.key === "Enter" || event.key === " "){event.preventDefault();openSettingPanel();}' role='button' tabindex='0' aria-label='모의신청 설정 열기'>
 							<h2>
 								SETTING
 							</h2>
@@ -135,6 +148,148 @@
 					</div>
 				</section>
 			</section>
+<section id="workshop-root" class="hanmo-scenario-embedded" aria-label="현재 설정에서 켠 가상 돌발상황 연습" tabindex="-1" hidden>
+<div class="hanmo-inline-tools">
+  <p>선택한 BASIC/TIME/SELECT 모드의 <strong>가상 돌발상황 연습</strong>입니다. 원본 한국외대 모방 화면을 바꾸지 않으며, 종료하면 메뉴로 돌아옵니다.</p>
+  <button id="workshop-exit" type="button">모드 선택으로 돌아가기</button>
+</div>
+<div class="workshop-eyebrow">가상 수강신청 · 판단 연습</div>
+    <h1>돌발상황에 대비하는 모의수강신청</h1>
+    <p class="workshop-intro">신청 실패, 대체과목 검토, 가상 접속 단절까지 직접 판단하며 연습합니다. <strong>학교 계정·실제 수강신청·이수 학점과는 연결되지 않습니다.</strong></p>
+    <div class="workshop-safety" role="note">
+      <strong>실제 신청과 분리된 안전한 연습</strong>
+      모든 과목과 대기열은 가상입니다. 이 연습은 실제 인터넷을 끊거나 학교 서버로 신청하지 않습니다. 페이지를 나가면 기록이 사라집니다.
+    </div>
+    <ol class="workshop-stepper" aria-label="연습 순서">
+      <li id="workshop-step-setup" aria-current="step"><span>01</span> 시나리오 고르기</li>
+      <li id="workshop-step-run"><span>02</span> 상황 대처하기</li>
+      <li id="workshop-step-review"><span>03</span> 결과 복기하기</li>
+    </ol>
+    <p id="workshop-status" role="status" aria-live="polite" class="workshop-status">시나리오 꺼짐 · 기존 연습에는 영향 없음</p>
+    <p id="workshop-error" role="alert" class="workshop-error"></p>
+
+    <section id="workshop-setup" aria-labelledby="workshop-setup-heading">
+      <div class="workshop-section-title">
+        <div><p class="kicker">STEP 01</p><h2 id="workshop-setup-heading">어떤 상황을 연습할까요?</h2></div>
+        <p>난이도와 가상의 강좌 조건을 선택하세요.</p>
+      </div>
+      <form id="workshop-form" aria-describedby="workshop-form-help">
+        <fieldset class="workshop-catalog">
+          <legend>시나리오 카탈로그</legend>
+          <label class="catalog-option">
+            <input type="radio" name="workshop-preset" value="LAST_VALID" checked>
+            <span><span class="option-meta">초급 · 정원 마감</span><strong>마지막 과목 신청 실패</strong>
+              <small>유효 대체과목을 스스로 찾아 신청할 수 있을까요?</small></span>
+          </label>
+          <label class="catalog-option">
+            <input type="radio" name="workshop-preset" value="LAST_CONFLICT">
+            <span><span class="option-meta">중급 · 시간 충돌</span><strong>대체과목도 신청 불가</strong>
+              <small>시간표가 충돌하는 가상 대안을 제외하세요.</small></span>
+          </label>
+          <label class="catalog-option">
+            <input type="radio" name="workshop-preset" value="LAST_NONE">
+            <span><span class="option-meta">중급 · 학점 제약</span><strong>유효 대안 없음</strong>
+              <small>대체 강좌가 없을 때 잘못된 신청을 피하세요.</small></span>
+          </label>
+          <label class="catalog-option">
+            <input type="radio" name="workshop-preset" value="RECONNECT">
+            <span><span class="option-meta">초급~중급 · 접속 단절</span><strong>재접속 후 신청 확인</strong>
+              <small>가상 대기열을 지나 결과 불명에 대응하세요.</small></span>
+          </label>
+          <label class="catalog-option">
+            <input type="radio" name="workshop-preset" value="COMPOSITE">
+            <span><span class="option-meta">고급 · 복합 위기</span><strong>마지막 실패 + 취소 실수 + 재접속</strong>
+              <small>한 번의 연습에서 연속된 판단을 복기합니다.</small></span>
+          </label>
+        </fieldset>
+        <input type="hidden" id="workshop-mode" value="SELECT">
+        <input type="hidden" id="workshop-seed" value="2">
+        <p id="workshop-form-help" class="workshop-help">상황을 하나 선택하고 시작해 보세요. 실제 수강신청에는 영향이 없고, 종료하면 연습 기록이 사라집니다.</p>
+        <label class="workshop-consent" for="workshop-consent">
+          <input id="workshop-consent" type="checkbox">
+          <span>학교의 실제 신청이 아닌 <strong>가상 연습이라는 점을 확인했어요.</strong></span>
+        </label>
+        <button type="submit" id="workshop-start" class="button-primary">선택한 시나리오 시작하기</button>
+      </form>
+    </section>
+
+    <section id="workshop-run" hidden aria-labelledby="workshop-run-heading">
+      <div class="workshop-section-title">
+        <div><p class="kicker">STEP 02</p><h2 id="workshop-run-heading" tabindex="-1">현재 상황에 대처하세요</h2></div>
+        <button type="button" id="workshop-stop" class="button-muted">연습 종료·초기화</button>
+      </div>
+      <div class="workshop-stage-grid">
+        <article class="workshop-panel">
+          <p id="workshop-phase" class="phase-pill">가상 연습</p>
+          <h3 id="workshop-scene-title">준비 중</h3>
+          <p id="workshop-scene-description" class="workshop-scene-desc"></p>
+          <p id="workshop-progress" class="workshop-help"></p>
+          <div id="workshop-queue" class="queue-preview" hidden aria-label="가상 대기열 진행">
+            <strong>가상 재접속 대기열</strong>
+            <div class="queue-track"><div id="workshop-queue-fill" class="queue-fill"></div></div>
+            <p>실제 대기 인원·서버 상태가 아닙니다. 진행 버튼으로 직접 다음 단계로 이동합니다.</p>
+          </div>
+          <section id="workshop-alternatives" class="alternatives" hidden aria-labelledby="workshop-alternatives-heading">
+            <h4 id="workshop-alternatives-heading">검토할 가상 대체 과목</h4>
+            <div id="workshop-alternative-details"></div>
+          </section>
+          <div id="workshop-actions" class="workshop-actions" role="group" aria-label="가상 시나리오 선택 행동"></div>
+        </article>
+        <aside class="workshop-panel">
+          <h3>이번 연습의 판단 기록</h3>
+          <p id="workshop-virtual-metrics" class="workshop-help"></p>
+          <ol id="workshop-live-steps" class="workshop-timeline" aria-live="polite"></ol>
+        </aside>
+      </div>
+      <div class="workshop-safety">신청 성공이나 미처리 여부는 <strong>가상 결과 조회</strong>를 거쳐서만 표시합니다. 결과 불명 상태는 성공으로 간주하지 않습니다.</div>
+    </section>
+
+    <section id="workshop-report" hidden aria-labelledby="workshop-report-heading">
+      <div class="workshop-section-title">
+        <div><p class="kicker">STEP 03</p><h2 id="workshop-report-heading" tabindex="-1">가상 연습 결과 복기</h2></div>
+        <p>클릭 속도보다 판단의 정확성을 먼저 확인하세요.</p>
+      </div>
+      <article class="workshop-report-hero">
+        <p id="workshop-report-type" class="phase-pill">연습 결과</p>
+        <h3 id="workshop-report-title"></h3>
+        <p id="workshop-report-summary"></p>
+      </article>
+      <div id="workshop-metrics" class="workshop-metrics" aria-label="연습 지표"></div>
+      <div class="workshop-stage-grid">
+        <section class="workshop-panel">
+          <h3>판단별 피드백</h3>
+          <ul id="workshop-feedback" class="feedback-list"></ul>
+        </section>
+        <section class="workshop-panel">
+          <h3>연습 단계별 기록</h3>
+          <ol id="workshop-replay-timeline" class="workshop-timeline"></ol>
+        </section>
+      </div>
+      <section id="workshop-mistakes" class="workshop-panel workshop-mistakes" hidden aria-labelledby="workshop-mistakes-heading">
+        <h3 id="workshop-mistakes-heading">다시 살펴볼 가상 행동</h3>
+        <p>실수한 행동의 이유를 확인하고 같은 시드로 다시 연습해 보세요.</p>
+        <ol id="workshop-mistake-list" class="workshop-timeline"></ol>
+      </section>
+      <p id="workshop-report-notice" class="workshop-safety"></p>
+      <div class="workshop-report-actions">
+        <button id="workshop-retry" class="button-primary" type="button">같은 시드로 다시 연습</button>
+        <button id="workshop-new-seed" class="button-muted" type="button">다른 시드로 다시 연습</button>
+        <button id="workshop-change" class="button-muted" type="button">다른 시나리오 선택</button>
+        <button id="workshop-copy" class="button-muted" type="button">복기 내용 텍스트로 복사</button>
+      </div>
+      <p id="workshop-copy-status" role="status" aria-live="polite"></p>
+    </section>
+
+    
+    <details class="workshop-mapping" style="margin:24px 0">
+      <summary>연습용 과목과 실제 강좌의 차이</summary>
+      <p>UNMAPPED · 이 연습은 실제 한국외국어대학교의 강좌·분반·학점 자료와 연결되지 않습니다.</p>
+      <dl class="mapping-details">
+        <div><dt>연습 과목</dt><dd>가상으로 만든 예시</dd></div>
+        <div><dt>실제 강좌</dt><dd>확인된 연결 정보 없음</dd></div>
+      </dl>
+    </details>
+</section>
 			<section class='f-dirt-up'>
 				<section class='adfit'>
 					<ins class="kakao_ad_area" style="display:none;" data-ad-unit = "DAN-b3RfXepcKF3cMeyf" data-ad-width = "728" data-ad-height = "90"></ins>
@@ -145,6 +300,11 @@
 		<script src="../js/vsugang.js"></script>
 		<script src="../js/gnb.js"></script>
 		<script src='../js/hanmoSys.js'></script>
+<script src="../js/scenario-engine.js"></script>
+<script src="../js/scenario-composite.js"></script>
+<script src="../js/scenario-review.js"></script>
+<script src="../js/scenario-workshop.js"></script>
+<script src="../js/scenario-settings.js"></script>
     </body>
 
 </html>
