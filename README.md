@@ -40,16 +40,21 @@
 
 **글자 겹침 없이 핵심만 표현한 SVG 4장**입니다. 그림을 누르면 확대해서 볼 수 있습니다. (비공식 프로젝트)
 
-<table>
-<tr>
-<td width="50%"><a href="docs/images/hanmo-01-project-overview.svg"><img src="docs/images/hanmo-01-project-overview.svg" alt="한모 프로젝트 개요 — 모의신청, 학업 탐색, 로컬 입력, 정보 안전 원칙" width="640"></a><br><b>01 · 프로젝트 개요</b></td>
-<td width="50%"><a href="docs/images/hanmo-02-page-map.svg"><img src="docs/images/hanmo-02-page-map.svg" alt="페이지 연결 구조 — 홈, 모의신청 3개 모드, 학업 지원 페이지" width="640"></a><br><b>02 · 페이지 구조와 이동</b></td>
-</tr>
-<tr>
-<td><a href="docs/images/hanmo-03-data-flow.svg"><img src="docs/images/hanmo-03-data-flow.svg" alt="학사자료 연결·승인 파이프라인과 미연결·자료 없음·오프라인·검증 실패·정상 상태" width="640"></a><br><b>03 · 승인 데이터와 오류 상태</b></td>
-<td><a href="docs/images/hanmo-04-roadmap.svg"><img src="docs/images/hanmo-04-roadmap.svg" alt="한모 개발 4단계 — 학업 플랫폼, 모의신청 안정화, 승인자료 연계, JavaScript 전환" width="640"></a><br><b>04 · 개발 단계 및 협의사항</b></td>
-</tr>
-</table>
+**01 · 프로젝트 개요**
+
+[![한모 프로젝트의 모의수강신청·학업정보·학업계획](docs/images/hanmo-01-project-overview.svg)](docs/images/hanmo-01-project-overview.svg)
+
+**02 · 페이지 이동**
+
+[![한모 홈에서 모의신청과 학업 지원으로 나뉘는 구조](docs/images/hanmo-02-page-map.svg)](docs/images/hanmo-02-page-map.svg)
+
+**03 · 자료 연결**
+
+[![공식 자료·권리 검수·Supabase 연결과 자료 상태](docs/images/hanmo-03-data-flow.svg)](docs/images/hanmo-03-data-flow.svg)
+
+**04 · 개발 단계**
+
+[![학업 화면부터 4차 코드 전환까지 개발 계획](docs/images/hanmo-04-roadmap.svg)](docs/images/hanmo-04-roadmap.svg)
 
 [**학사종합지원센터 참고용 설명서 (그림 4장 + 검토 요청사항)**](docs/academic-support-center-brief.md) · [아키텍처 기준 문서](docs/architecture.md)
 
