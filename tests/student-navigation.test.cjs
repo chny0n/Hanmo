@@ -60,10 +60,14 @@ test('new views preserve original Hanmo palette, watermark and shared layers',()
  const views=fs.readFileSync(path.join(ROOT,'css','hanmo-views.css'),'utf8');
  assert.ok(tokens.includes('--hm-night:#000e18'));
  assert.ok(views.includes('background.svg'));
- for(const name of ['planner','forecast','catalog','academic-timeline','academic-progress','scenario-workshop','scenario-lab']){
+ for(const name of student){
    const html=fs.readFileSync(path.join(ROOT,'html',name+'.html'),'utf8');
    assert.match(html,/class="hanmo-schoolmark"/);
  }
+ const originalMenu=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+ assert.match(originalMenu,/class='titleContainer'/);
+ assert.match(originalMenu,/id="workshop-root"/);
+ assert.match(originalMenu,/href="\.\.\/css\/scenario-settings\.css"/);
 });
 
 test('in-page incident workflow keeps default OFF and original practice contracts',()=>{
