@@ -9,7 +9,6 @@ const studentPages=[
 ];
 const htmlRoutes=[
   'index.html',...studentPages,
-  'html/scenario-workshop.html','html/scenario-lab.html',
   'html/vsugang.html','html/practice.html','html/selectZone.html',
   'html/result.html','html/developer.html',
 ];
@@ -65,11 +64,22 @@ const root=await readFile(join(dist,'index.html'),'utf8');
 for(const path of studentPages){
   if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
 }
-if(!root.includes('./html/scenario-workshop.html')||!root.includes('./html/vsugang.html'))
+if(!root.includes('./html/vsugang.html#scenario-settings')||!root.includes('./html/vsugang.html'))
   throw Error('Root main menu missing exercise navigation');
-const workshop=await readFile(join(dist,'html/scenario-workshop.html'),'utf8');
-if(!workshop.includes('id="workshop-consent"')||
+const workshop=await readFile(join(dist,'html/vsugang.html'),'utf8');
+if(!workshop.includes('id="scenario-settings"')||
+  !workshop.includes('id="workshop-root"')||
+  !workshop.includes('id="workshop-consent"')||
   !workshop.includes('id="workshop-mode"')||!workshop.includes('id="workshop-seed"'))
-  throw Error('Scenario safe opt-in or runtime anchors removed');
-console.log('Student preview smoke: '+studentPages.length+' human-facing pages, '+
-  linkCount+' links, '+ariaCount+' ARIA references; no uploads, raw JSON, sidebars or CNAME.');
+  throw Error('Incident settings or synthetic in-page anchors removed');
+if((workshop.match(/data-scenario-toggle=/g)||[]).length!==5)
+  throw Error('Five opt-in incident toggles required');
+for(const oldPage of ['html/scenario-workshop.html','html/scenario-lab.html'])
+  if(await exists(join(dist,oldPage)))throw Error('Standalone synthetic page remains: '+oldPage);
+for(const p of htmlRoutes){
+  const html=await readFile(join(dist,p),'utf8');
+  if(/(?:href|src)=["'][^"']*scenario-(?:workshop|lab)\.html/i.test(html))
+    throw Error('Dead standalone scenario link from '+p);
+}
+console.log('Student preview smoke: '+studentPages.length+' student pages, '+
+  linkCount+' links, '+ariaCount+' ARIA references; incidents are OFF-by-default options within vsugang.html.');
