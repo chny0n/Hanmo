@@ -79,18 +79,15 @@ test('preview rejects wrong seed, mode, event kind, and unbounded input',()=>{
   assert.throws(()=>ui.configFor({...base,variant:'AUTO_APPROVE'}),/대체 조건/);
   assert.throws(()=>engine.createScenario(ui.configFor({...base,mode:'REAL'})),/mode/);
 });
-test('standalone preview keeps synchronous PC gate and does not import legacy handlers',()=>{
-  const page=fs.readFileSync(path.join(__dirname,'../html/scenario-lab.html'),'utf8');
+test('scenario engine remains pure after removing the standalone preview HTML',()=>{
+  assert.equal(fs.existsSync(path.join(__dirname,'../html/scenario-lab.html')),false);
+  const page=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
   assert.match(page,/<script src="\.\.\/js\/pc-only\.js"><\/script>/);
   assert.ok(page.indexOf('../js/pc-only.js')<page.indexOf('</head>'));
-  assert.ok(page.indexOf('../js/scenario-engine.js')<page.indexOf('../js/scenario-lab.js'));
-  assert.ok(page.includes('id="scenario-enabled"'));
+  assert.ok(page.indexOf('../js/scenario-engine.js')<page.indexOf('../js/scenario-workshop.js'));
+  assert.ok(page.includes('id="scenario-settings"'));
   assert.ok(page.includes('role="status"'));
   assert.ok(page.includes('role="alert"'));
-  for(const forbidden of ['../js/selectZone.js','../js/practice.js','../js/result.js',
-    '<script src="https:', 'hanmo.academic.v1.']){
-    assert.equal(page.includes(forbidden),false,'unexpected external/legacy dependency: '+forbidden);
-  }
   const source=fs.readFileSync(path.join(__dirname,'../js/scenario-lab.js'),'utf8');
   assert.equal(/\b(?:localStorage|sessionStorage|fetch|XMLHttpRequest)\s*\./.test(source),false);
 });

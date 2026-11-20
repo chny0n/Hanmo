@@ -169,21 +169,22 @@ test('copy produces clearly synthetic human-readable review text only on direct 
   assert.doesNotMatch(copied,/실제 수강신청 완료/);
   assert.equal(lab.getReview().source,'SYNTHETIC');
 });
-test('all five catalog options, static HTML bindings, WCAG references and PC gate are present',()=>{
+test('five incident presets are integrated inside the existing SETTING page',()=>{
   const root=path.join(__dirname,'..');
-  const html=fs.readFileSync(path.join(root,'html/scenario-workshop.html'),'utf8');
+  const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
   assert.equal([...html.matchAll(/name="workshop-preset"/g)].length,5);
+  assert.equal([...html.matchAll(/data-scenario-toggle="/g)].length,5);
   const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
-  const keySet=new Set(ids);
-  assert.equal(keySet.size,ids.length,'no duplicate HTML IDs');
-  for(const match of html.matchAll(/\b(?:for|aria-labelledby|aria-describedby)="([^"]+)"/g)) {
-    for(const id of match[1].split(/\s+/))assert.ok(keySet.has(id),'missing accessible target '+id);
+  const known=new Set(ids);
+  assert.equal(known.size,ids.length,'duplicate HTML IDs');
+  for(const ref of html.matchAll(/\b(?:for|aria-labelledby|aria-describedby)="([^"]+)"/g)){
+    for(const id of ref[1].trim().split(/\s+/))assert.ok(known.has(id),'missing accessible target '+id);
   }
   assert.ok(html.indexOf('../js/pc-only.js')<html.indexOf('</head>'));
   for(const script of ['../js/scenario-engine.js','../js/scenario-composite.js',
-    '../js/scenario-review.js','../js/scenario-workshop.js'])
+    '../js/scenario-review.js','../js/scenario-workshop.js','../js/scenario-settings.js'])
     assert.ok(html.includes('src="'+script+'"'));
-  assert.ok(html.includes('href="../css/scenario-workshop.css"'));
+  assert.ok(html.includes('href="../css/scenario-settings.css"'));
   assert.ok(html.includes('UNMAPPED'));
   assert.ok(html.includes('id="workshop-mistake-list"'));
   assert.ok(html.includes('class="mapping-details"'));
@@ -192,6 +193,7 @@ test('all five catalog options, static HTML bindings, WCAG references and PC gat
   for(const forbidden of ['../js/selectZone.js','../js/practice.js','../js/result.js',
     'id="json-input"','name="studentId"'])assert.equal(html.includes(forbidden),false);
 });
+
 test('workshop controller is stateless outside this page and no raw data persistence/network',()=>{
   const code=fs.readFileSync(path.join(__dirname,'../js/scenario-workshop.js'),'utf8');
   for(const item of ['localStorage.','sessionStorage.','fetch(','XMLHttpRequest(','WebSocket('])
@@ -204,15 +206,18 @@ test('workshop controller is stateless outside this page and no raw data persist
   assert.equal(h.nodes['workshop-live-steps'].children.length,0);
 });
 
-test('static workshop references resolve only to packaged local assets',()=>{
-  const base=path.join(__dirname,'..','html');
-  const html=fs.readFileSync(path.join(base,'scenario-workshop.html'),'utf8');
-  const refs=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(match=>match[1]);
-  for(const ref of refs){
-    if(ref.startsWith('#'))continue;
-    assert.ok(ref.startsWith('./')||ref.startsWith('../'), 'unexpected remote URL: '+ref);
-    const resolved=path.resolve(base,ref);
-    assert.ok(resolved.startsWith(path.resolve(base,'..')+path.sep),'asset must remain local');
-    assert.ok(fs.statSync(resolved).isFile(),'broken preview target '+ref);
+test('inline scenario assets resolve and old standalone pages are absent',()=>{
+  const root=path.join(__dirname,'..');
+  const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
+  for(const asset of ['scenario-engine.js','scenario-composite.js','scenario-review.js',
+    'scenario-workshop.js','scenario-settings.js']){
+    const url='../js/'+asset;
+    assert.ok(html.includes('src="'+url+'"'));
+    assert.ok(fs.statSync(path.resolve(root,'html',url)).isFile(),asset);
+  }
+  assert.ok(fs.statSync(path.resolve(root,'css/scenario-settings.css')).isFile());
+  for(const deleted of ['html/scenario-workshop.html','html/scenario-lab.html',
+    'css/scenario-workshop.css','css/scenario-lab.css']){
+    assert.equal(fs.existsSync(path.join(root,deleted)),false,deleted+' must not exist');
   }
 });

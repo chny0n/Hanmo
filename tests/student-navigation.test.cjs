@@ -17,16 +17,27 @@ test('public student pages live under html and never request pasted HTML or JSON
 test('index links directly to all student functions and existing practice routes',()=>{
  const src=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
  for(const name of student)assert.ok(src.includes('./html/'+name+'.html'),name);
- for(const name of ['vsugang','scenario-workshop'])assert.ok(src.includes('./html/'+name+'.html'),name);
+ for(const name of ['vsugang'])assert.ok(src.includes('./html/'+name+'.html'),name);
+ assert.ok(src.includes('./html/vsugang.html#scenario-settings'), 'incident settings must be linked directly');
+ assert.ok(!src.includes('scenario-workshop.html'), 'dead standalone page link');
  assert.ok(!src.includes('href="./degree-rescue/'), 'no academic UI link to old folder');
 });
-test('scenario UI preserves explicit opt-in, but technical seed/mode are no longer form fields',()=>{
- const src=fs.readFileSync(path.join(ROOT,'html/scenario-workshop.html'),'utf8');
- assert.match(src,/id="workshop-consent" type="checkbox"/);
- assert.match(src,/type="hidden" id="workshop-mode" value="SELECT"/);
- assert.match(src,/type="hidden" id="workshop-seed" value="2"/);
- assert.doesNotMatch(src,/class="workshop-config"/);
+test('incident scenarios are OFF by default inside the existing mode settings',()=>{
+  const src=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+  assert.match(src,/id="scenario-settings"/);
+  assert.match(src,/id="workshop-consent" type="checkbox"/);
+  assert.match(src,/type="hidden" id="workshop-mode" value="SELECT"/);
+  assert.match(src,/type="hidden" id="workshop-seed" value="2"/);
+  assert.doesNotMatch(src,/data-scenario-toggle="[^"]+"\s+checked/);
+  assert.doesNotMatch(src,/class="workshop-config"/);
+  assert.equal(fs.existsSync(path.join(ROOT,'html/scenario-workshop.html')),false);
+  assert.equal(fs.existsSync(path.join(ROOT,'html/scenario-lab.html')),false);
+  for(const name of student){
+    const html=fs.readFileSync(path.join(ROOT,'html',name+'.html'),'utf8');
+    assert.ok(!html.includes('scenario-workshop.html'),name);
+  }
 });
+
 test('academic public assets are still under html; engine remains independently typechecked',()=>{
  const stage=fs.readFileSync(path.join(ROOT,'scripts/stage-static.mjs'),'utf8');
  assert.ok(stage.includes("join(dist,'data')"));
@@ -53,4 +64,10 @@ test('new views preserve original Hanmo palette, watermark and shared layers',()
    const html=fs.readFileSync(path.join(ROOT,'html',name+'.html'),'utf8');
    assert.match(html,/class="hanmo-schoolmark"/);
  }
+});
+
+test('in-page incident workflow keeps default OFF and original practice contracts',()=>{
+  const source=fs.readFileSync(path.join(ROOT,'js/scenario-settings.js'),'utf8');
+  assert.ok(source.includes('Zero overhead, original behavior exactly.'));
+  assert.ok(!source.includes('sessionStorage.')&&!source.includes('localStorage.setItem(\'hanmoIncident'));
 });

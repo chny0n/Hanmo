@@ -9,8 +9,13 @@ on:
       - 'tests/scenario-composite.test.cjs'
       - 'tests/scenario-review.test.cjs'
       - 'tests/scenario-workshop.test.cjs'
-      - 'html/scenario-workshop.html'
-      - 'css/scenario-workshop.css'
+      - 'html/vsugang.html'
+      - 'js/scenario-settings.js'
+      - 'css/scenario-settings.css'
+      - 'tests/scenario-settings.test.cjs'
+      - 'tests/scenario-lab.test.cjs'
+      - 'js/scenario-lab.js'
+
       - '.github/workflows/scenario-workshop-ci.yml'
 permissions:
   contents: read
@@ -31,12 +36,15 @@ jobs:
           node --check js/scenario-composite.js
           node --check js/scenario-review.js
           node --check js/scenario-workshop.js
+          node --check js/scenario-settings.js
       - name: All synthetic workflows, decisions, and DOM contracts
         run: |
           node --test tests/scenario-engine.test.cjs \
             tests/scenario-composite.test.cjs \
             tests/scenario-review.test.cjs \
-            tests/scenario-workshop.test.cjs
+            tests/scenario-workshop.test.cjs \
+            tests/scenario-settings.test.cjs \
+            tests/scenario-lab.test.cjs
       - name: Prepare independent PC-only local preview
         run: |
           mkdir -p preview
