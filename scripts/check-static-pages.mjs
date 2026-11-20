@@ -64,16 +64,26 @@ const root=await readFile(join(dist,'index.html'),'utf8');
 for(const path of studentPages){
   if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
 }
-if(!root.includes('./html/vsugang.html#scenario-settings')||!root.includes('./html/vsugang.html'))
+if(!root.includes('./html/vsugang.html'))
   throw Error('Root main menu missing exercise navigation');
-const workshop=await readFile(join(dist,'html/vsugang.html'),'utf8');
-if(!workshop.includes('id="scenario-settings"')||
-  !workshop.includes('id="workshop-root"')||
-  !workshop.includes('id="workshop-consent"')||
-  !workshop.includes('id="workshop-mode"')||!workshop.includes('id="workshop-seed"'))
-  throw Error('Incident settings or synthetic in-page anchors removed');
-if((workshop.match(/data-scenario-toggle=/g)||[]).length!==5)
-  throw Error('Five opt-in incident toggles required');
+const menu=await readFile(join(dist,'html/vsugang.html'),'utf8');
+for(const id of ['scenario-settings','incident-practice','incident-search',
+ 'incident-candidates','incident-404','incident-404-refresh','incident-404-back']){
+ if(!menu.includes('id="'+id+'"'))throw Error('Missing in-menu incident UI: '+id);
+}
+for(const file of ['js/incident-courses.js','js/scenario-settings.js','css/scenario-settings.css'])
+  await must(file);
+if((menu.match(/data-scenario-toggle=/g)||[]).length!==4)
+  throw Error('Four independently selected OFF-by-default incident toggles required');
+if((menu.match(/data-alt-course=/g)||[]).length!==3)
+  throw Error('Three numbered substitute courses required');
+if(menu.includes('data-scenario-toggle="COMPOSITE"'))
+  throw Error('Composite switch must not exist');
+for(const page of [root]){
+ // Landing must not advertise a standalone incident exercise.
+ if(page.includes('scenario-workshop.html')||page.includes('vsugang.html#scenario-settings'))
+   throw Error('Standalone incident link remains on landing');
+}
 for(const oldPage of ['html/scenario-workshop.html','html/scenario-lab.html'])
   if(await exists(join(dist,oldPage)))throw Error('Standalone synthetic page remains: '+oldPage);
 for(const p of htmlRoutes){
@@ -82,4 +92,4 @@ for(const p of htmlRoutes){
     throw Error('Dead standalone scenario link from '+p);
 }
 console.log('Student preview smoke: '+studentPages.length+' student pages, '+
-  linkCount+' links, '+ariaCount+' ARIA references; incidents are OFF-by-default options within vsugang.html.');
+  linkCount+' links, '+ariaCount+' ARIA references; four independent incidents are OFF-by-default settings within vsugang.html.');

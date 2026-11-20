@@ -169,11 +169,13 @@ test('copy produces clearly synthetic human-readable review text only on direct 
   assert.doesNotMatch(copied,/실제 수강신청 완료/);
   assert.equal(lab.getReview().source,'SYNTHETIC');
 });
-test('five incident presets are integrated inside the existing SETTING page',()=>{
+test('four composable incident switches and numbered candidates exist in the original SETTING menu',()=>{
   const root=path.join(__dirname,'..');
   const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
-  assert.equal([...html.matchAll(/name="workshop-preset"/g)].length,5);
-  assert.equal([...html.matchAll(/data-scenario-toggle="/g)].length,5);
+  assert.equal([...html.matchAll(/data-scenario-toggle="/g)].length,4);
+  assert.equal([...html.matchAll(/data-base-course="/g)].length,3);
+  assert.equal([...html.matchAll(/data-alt-course="/g)].length,3);
+  assert.equal(html.includes('COMPOSITE'),false,'no separate composite option');
   const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
   const known=new Set(ids);
   assert.equal(known.size,ids.length,'duplicate HTML IDs');
@@ -181,15 +183,12 @@ test('five incident presets are integrated inside the existing SETTING page',()=
     for(const id of ref[1].trim().split(/\s+/))assert.ok(known.has(id),'missing accessible target '+id);
   }
   assert.ok(html.indexOf('../js/pc-only.js')<html.indexOf('</head>'));
-  for(const script of ['../js/scenario-engine.js','../js/scenario-composite.js',
-    '../js/scenario-review.js','../js/scenario-workshop.js','../js/scenario-settings.js'])
+  for(const script of ['../js/incident-courses.js','../js/scenario-settings.js'])
     assert.ok(html.includes('src="'+script+'"'));
+  for(const text of ['404 예시화면 입니다','id="incident-search"','id="incident-404-refresh"',
+    'id="incident-404-back"','id="incident-practice"'])
+    assert.ok(html.includes(text),text);
   assert.ok(html.includes('href="../css/scenario-settings.css"'));
-  assert.ok(html.includes('UNMAPPED'));
-  assert.ok(html.includes('id="workshop-mistake-list"'));
-  assert.ok(html.includes('class="mapping-details"'));
-  assert.ok(html.includes('role="alert"'));
-  assert.ok(html.includes('role="status"'));
   for(const forbidden of ['../js/selectZone.js','../js/practice.js','../js/result.js',
     'id="json-input"','name="studentId"'])assert.equal(html.includes(forbidden),false);
 });
@@ -206,18 +205,15 @@ test('workshop controller is stateless outside this page and no raw data persist
   assert.equal(h.nodes['workshop-live-steps'].children.length,0);
 });
 
-test('inline scenario assets resolve and old standalone pages are absent',()=>{
-  const root=path.join(__dirname,'..');
-  const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
-  for(const asset of ['scenario-engine.js','scenario-composite.js','scenario-review.js',
-    'scenario-workshop.js','scenario-settings.js']){
-    const url='../js/'+asset;
-    assert.ok(html.includes('src="'+url+'"'));
-    assert.ok(fs.statSync(path.resolve(root,'html',url)).isFile(),asset);
-  }
-  assert.ok(fs.statSync(path.resolve(root,'css/scenario-settings.css')).isFile());
-  for(const deleted of ['html/scenario-workshop.html','html/scenario-lab.html',
-    'css/scenario-workshop.css','css/scenario-lab.css']){
-    assert.equal(fs.existsSync(path.join(root,deleted)),false,deleted+' must not exist');
-  }
+test('in-page incident scripts exist, no standalone exercise pages remain',()=>{
+ const root=path.join(__dirname,'..');
+ const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
+ for(const asset of ['incident-courses.js','scenario-settings.js']){
+  const url='../js/'+asset;assert.ok(html.includes('src="'+url+'"'));
+  assert.ok(fs.statSync(path.join(root,'js',asset)).isFile(),asset);
+ }
+ assert.ok(fs.statSync(path.join(root,'css/scenario-settings.css')).isFile());
+ for(const deleted of ['html/scenario-workshop.html','html/scenario-lab.html']){
+  assert.equal(fs.existsSync(path.join(root,deleted)),false,deleted);
+ }
 });
