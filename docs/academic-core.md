@@ -2,7 +2,7 @@
 
 한모의 학생용 화면은 모두 저장소 루트 **`html/`** 폴더에서 제공됩니다. `js/academic/`은 TypeScript 학업 계산 코어와 단위 테스트, `data/`는 학사자료, `scripts/`는 검증·배포 빌드 스크립트를 담는 폴더이며 공개 웹사이트에서 `/degree-rescue/` URL을 제공하지 않습니다.
 
-학생용 기능 바로가기: [학업 플래너](../html/planner.html) · [학사 공지](../html/academic-timeline.html) · [개설 전망](../html/forecast.html) · [강의 검색 안내](../html/catalog.html) · [학점 정리](../html/academic-progress.html) · [가상 돌발상황 연습](../html/scenario-workshop.html).
+학생용 기능 바로가기: [학업 플래너](../html/planner.html) · [학사 공지](../html/academic-timeline.html) · [개설 전망](../html/forecast.html) · [강의 검색 안내](../html/catalog.html) · [학점 정리](../html/academic-progress.html) · [가상 돌발상황 설정(기본 OFF)](../html/vsugang.html#scenario-settings).
 
 ## 학생용 UX 계약
 

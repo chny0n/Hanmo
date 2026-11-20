@@ -79,20 +79,15 @@ test('preview rejects wrong seed, mode, event kind, and unbounded input',()=>{
   assert.throws(()=>ui.configFor({...base,variant:'AUTO_APPROVE'}),/대체 조건/);
   assert.throws(()=>engine.createScenario(ui.configFor({...base,mode:'REAL'})),/mode/);
 });
-test('standalone preview keeps synchronous PC gate and does not import legacy handlers',()=>{
-  const page=fs.readFileSync(path.join(__dirname,'../html/scenario-lab.html'),'utf8');
-  assert.match(page,/<script src="\.\.\/js\/pc-only\.js"><\/script>/);
-  assert.ok(page.indexOf('../js/pc-only.js')<page.indexOf('</head>'));
-  assert.ok(page.indexOf('../js/scenario-engine.js')<page.indexOf('../js/scenario-lab.js'));
-  assert.ok(page.includes('id="scenario-enabled"'));
-  assert.ok(page.includes('role="status"'));
-  assert.ok(page.includes('role="alert"'));
-  for(const forbidden of ['../js/selectZone.js','../js/practice.js','../js/result.js',
-    '<script src="https:', 'hanmo.academic.v1.']){
-    assert.equal(page.includes(forbidden),false,'unexpected external/legacy dependency: '+forbidden);
-  }
-  const source=fs.readFileSync(path.join(__dirname,'../js/scenario-lab.js'),'utf8');
-  assert.equal(/\b(?:localStorage|sessionStorage|fetch|XMLHttpRequest)\s*\./.test(source),false);
+test('pure synthetic engine stays testable without an extra public scenario page',()=>{
+ const page=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
+ assert.ok(page.indexOf('../js/pc-only.js')<page.indexOf('</head>'));
+ assert.ok(page.indexOf('../js/incident-courses.js')<page.indexOf('../js/scenario-settings.js'));
+ assert.ok(page.includes('id="scenario-settings"'));
+ assert.ok(page.includes('404 예시화면 입니다'));
+ assert.ok(page.includes('role="status"'));
+ const source=fs.readFileSync(path.join(__dirname,'../js/scenario-lab.js'),'utf8');
+ assert.equal(/\b(?:localStorage|sessionStorage|fetch|XMLHttpRequest)\s*\./.test(source),false);
 });
 
 test('standalone mount is OFF until consent, clears resolved errors, and resets ephemeral inputs',()=>{

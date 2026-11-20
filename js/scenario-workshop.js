@@ -1,8 +1,8 @@
 /*
- * #49/#50/#62 Figma-ready independent student workflow controller.
+ * #49/#50/#62 Synthetic student workflow controller mounted inside the existing mock-registration settings page.
  * No localStorage/sessionStorage, fetch, campus API, or legacy mutation.
  * #71 Windows Chrome/Edge gate must pass before attaching this to original
- * BASIC/TIME/SELECT handlers. The page only uses synthetic scenario engines.
+ * BASIC/TIME/SELECT handlers. The inline panel only uses synthetic scenario engines.
  */
 (function(root,factory) {
   const onNode=typeof module!=='undefined'&&module.exports;
@@ -13,7 +13,7 @@
   if(onNode)module.exports=api;
   else {
     root.HanmoScenarioWorkshop=api;
-    if(root.document)api.mount(root.document);
+    if(root.document)root.HanmoWorkshopSession=api.mount(root.document);
   }
 })(typeof globalThis==='object'?globalThis:this,function(engine,composite,review) {
   'use strict';
@@ -42,7 +42,7 @@
     READY_RECONNECT:['다음 위기: 재접속','복합 위기의 첫 단계를 마쳤습니다. 가상 접속 단절 연습으로 진행하세요.'],
     ACTIVE:['가상 신청 요청 준비','신청 클릭 직후 접속 단절되는 가상 상황을 체험합니다.'],
     REQUEST_SENT:['가상 신청 요청 전송','응답을 확인하기 전 중복 신청하지 마세요.'],
-    VIRTUAL_DROP:['가상 연결 단절','실제 통신은 정상입니다. 모의 재접속을 시작하세요.'],
+    VIRTUAL_DROP:['가상 404·접속 끊김','실제 HTTP 404 오류나 통신 단절은 일으키지 않습니다. 모의 재접속을 시작하세요.'],
     RECONNECT_QUEUE:['가상 대기열','가상 대기열 단계를 직접 통과하세요. 실제 대기시간/인원과 무관합니다.'],
     RECONCILE:['가상 신청 상태 확인','성공·미처리·결과 불명은 가상 결과 조회 후에만 구분됩니다.'],
     CONFIRMED:['가상 신청 성공 확인','연습 결과일 뿐 실제 학교 수강신청 완료가 아닙니다.'],
