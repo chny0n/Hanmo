@@ -74,3 +74,7 @@ body.hanmo-lab #scenario-errors{color:#efc98c}
 body.hanmo-lab #scenario-lab a{color:var(--hm-gold)}
 @media(max-width:700px){.hanmo-main{padding:20px 16px}.hanmo-schoolmark h2{font-size:22px}
  .hanmo-hero{padding:24px 18px}body.hanmo-workshop main{padding:0 16px}}
+
+/* Fill the document around standalone exercises. */
+html:has(body.hanmo-lab),html:has(body.hanmo-workshop){background:var(--hm-night)!important;color:var(--hm-white)}
+body.hanmo-lab{min-height:100vh}
