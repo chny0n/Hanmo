@@ -53,6 +53,6 @@ test('resize and ad height remeasure fit and preserve navigation offset',()=>{
  assert.equal(x.vars['--vsugang-footer-height'],'240px');
  assert.ok(Number(x.cssvars['--vsugang-fit-scale'])<1);
  x.main.clientHeight=310;
- x.events.resize();x.flush();
+ x.events.pageshow();x.flush();
  assert.equal(x.cls.has('vsugang-compact-scroll'),true);
 });

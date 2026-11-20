@@ -31,6 +31,7 @@
       if(!frame)frame=window.requestAnimationFrame(fit);
     }
     window.addEventListener('resize',schedule,{passive:true});
+    window.addEventListener('pageshow',schedule,{passive:true});
     if(typeof ResizeObserver==='function'){
       const observer=new ResizeObserver(schedule);
       for(const element of [main,bar,landing,footer])if(element)observer.observe(element);
