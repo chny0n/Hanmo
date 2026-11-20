@@ -36,7 +36,7 @@ function harness(){
     location:{href:null,hash:''},
     localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,String(v))},
     validSetting:(p,r,w)=>Number.isInteger(p)&&p>=1&&p<=15&&Number.isInteger(r)&&r>=1&&r<=p&&(w==='yes'||w==='no'),
-    goPractice(mode){tracking.original.push(mode);this.location.href='practice.html';},
+    goPractice(mode){tracking.original.push(mode);host.location.href='practice.html';},
     getSettingValue(){tracking.saves++},
     openSettingPanel(){tracking.opened++},
     HanmoWorkshopSession:{reset(){tracking.resets++}},
