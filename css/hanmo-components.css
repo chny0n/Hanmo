@@ -80,3 +80,23 @@ a.hanmo-card:hover{background:#112c3d;border-color:#72a7c5;transform:translateY(
 @media(max-width:1250px){.hanmo-topbar{flex-direction:column;align-items:center}.hanmo-topbar nav,.hanmo-topbar .hanmo-nav-inline{justify-content:center}}
 @media(max-width:830px){.hanmo-card-grid,.hanmo-card-grid.two,.hanmo-fields{grid-template-columns:1fr}.hanmo-topbar{padding:12px}}
 @media(prefers-reduced-motion:reduce){a.hanmo-card,.hanmo-progress-fill{transition:none}}
+
+
+/* One profile-driven top navigation: branding on the left, editable information on the right. */
+.hanmo-topbar{flex-wrap:wrap;column-gap:24px;row-gap:5px}
+.hanmo-topbar nav,.hanmo-topbar .hanmo-nav-inline{flex:1 1 780px;min-width:0;gap:5px 10px;justify-content:flex-end;flex-wrap:wrap}
+.hanmo-topbar nav a,.hanmo-topbar .hanmo-nav-inline a{border-radius:0}
+.hanmo-topbar .hanmo-profile-summary{display:inline-block;max-width:min(510px,100%);
+  border-left:1px solid #45647a;padding:6px 3px 6px 13px;margin-left:7px;
+  color:#d2e3ee;font-size:12px;line-height:1.65;font-weight:550;
+  white-space:normal;overflow-wrap:anywhere;text-align:right}
+.hanmo-topbar .hanmo-me-link{flex-shrink:0;border-bottom:2px solid #f4c76c;font-weight:800!important}
+.hanmo-topbar .hanmo-me-link[aria-current="page"]{color:#f4c76c!important}
+@media(max-width:1250px){
+  .hanmo-topbar{flex-direction:row;align-items:center;justify-content:space-between}
+  .hanmo-topbar nav,.hanmo-topbar .hanmo-nav-inline{justify-content:flex-end}
+}
+@media(max-width:950px){
+  .hanmo-topbar nav,.hanmo-topbar .hanmo-nav-inline{flex-basis:100%;justify-content:flex-end}
+  .hanmo-topbar .hanmo-profile-summary{max-width:100%}
+}
