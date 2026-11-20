@@ -18,7 +18,7 @@
 
 ## 제품 개발의 네 단계
 
-1. **1단계 (독립 학업 플랫폼):** `degree-rescue/` 내부에 **TypeScript 계산 코어 + 정적 HTML/CSS** 학업·졸업 기능을 구현합니다. TypeScript는 배포 시 JavaScript로 빌드합니다. 이 단계에서는 기존 한모 `index.html`, `html/`, `js/`, `css/`, `img/`, `CNAME`을 **수정하지 않습니다**.
+1. **1단계 (통합 학업 플랫폼):** `js/academic/`에 TypeScript 계산 코어, `html/`에 정적 학업 화면, `css/`에 스타일을 둡니다. TypeScript는 배포 시 JavaScript로 빌드합니다. 원본 한국외대 수강신청 모방 화면 `html/practice.html`, `html/selectZone.html`과 원래 동작·PC-only/CNAME을 보호합니다. 학생용 화면과 홈은 승인된 변경 범위 안에서 수정할 수 있습니다.
 2. **2단계 (기존 모의수강신청 시나리오):** 원개발자의 **사전 협의·승인 후** BASIC/TIME/SELECT에 실패·대체과목·재접속 시나리오를 추가합니다. 이 단계의 **유지보수 원본은 기존 JavaScript·HTML·CSS**이며 기존 페이지를 React/TypeScript로 재구축하지 않습니다. 기본 모드의 키보드·포커스·타이머·결과 동작을 유지합니다.
 3. **3단계 (Supabase):** 1단계 TypeScript와 2단계 JavaScript를 병행 유지합니다. **우리 팀은** DB·학사자료 수집/갱신·독립 검수·API·보안·운영의 상세 **설계와 인계**를 담당합니다. **실제 개설·실연동·소유·비용·운영**은 임창용 님과 협의한 승인 책임자가 수행합니다. **설계 인계만으로 3단계 제품 완료가 아니며**, 실연동과 제품 검증 후에만 4단계로 넘어갑니다.
 4. **4단계 (JavaScript 소스 통일):** 3단계 Supabase 실연동과 전체 제품 안정화가 확인된 뒤 1단계 TypeScript 원본 및 테스트를 **JavaScript + JSDoc/`checkJs` 등 정적 검사**로 점진 전환합니다. 이전 TypeScript 코어와 계산 결과·예외·출처 상태를 비교 검증하며 기존 JavaScript와 Supabase 데이터 계약을 유지합니다. 생성된 JavaScript 번들 파일을 직접 수정하지 않습니다.

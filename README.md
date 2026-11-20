@@ -51,6 +51,17 @@
 | **3 · Supabase 연동** | **Free($0)만 사용**하며 임창용 님이 프로젝트를 운영 관리합니다. 장애 발생 시 개발팀이 공동으로 진단·복구하고, 무료 한도 초과가 우려되면 유료 전환 대신 최적화·정적 스냅샷 대체를 적용합니다. |
 | **4 · JavaScript 이관** | 실연동과 안정화 이후 계산 결과를 비교하며 TypeScript 소스를 JavaScript/JSDoc으로 옮깁니다. |
 
+## 코드 구조
+
+- `html/` — 모든 학생용 화면과 원본 BASIC/TIME/SELECT 페이지
+- `css/` — 원래 한모 디자인을 바탕으로 한 공통 스타일 및 화면별 CSS
+- `js/` — 기존 모의신청 JavaScript와 `js/academic/` TypeScript 학업 계산 코어
+- `data/` — 공개 검토 가능한 학사 공지 제목 스냅샷
+- `scripts/`, `tests/` — 루트에서 실행하는 빌드·검증 및 회귀 테스트
+- `docs/` — 현행 아키텍처, 학업 코어 가이드, 이식 출처
+
+모든 빌드는 루트에서 `npm install --ignore-scripts --no-audit --no-fund && npm run check`를 실행하며 공개 결과물은 `dist/`에 생성됩니다. 옛 `degree-rescue/` 하위 프로젝트는 없습니다.
+
 ## 문서와 기여
 
 - 제품 범위와 구현 기준은 [아키텍처](docs/architecture.md)에서 확인합니다.
