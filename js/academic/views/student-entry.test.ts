@@ -17,6 +17,10 @@ describe('1차 성적표 없는 학생 진입 흐름',()=>{
   it('accepts campus and major without transcript or official-rule claims',()=>{
     expect(normalizeStudentEntry({campus:'SEOUL',major:' 경제학부 ',doubleMajor:' ',cohort:''}))
       .toEqual({schemaVersion:1,campus:'SEOUL',major:'경제학부'});
+    expect(normalizeStudentEntry({campus:'SEOUL',major:'경제학전공',minor:'통계학부',cohort:'2024'}))
+      .toMatchObject({campus:'SEOUL',minor:'통계학부',cohort:2024});
+    expect(()=>normalizeStudentEntry({campus:'SEOUL',major:'경제학전공',minor:'통계학부',
+      doubleMajor:'경영학부'})).toThrow(/하나만/);
     expect(normalizeStudentEntry({campus:'GLOBAL',major:'국제학부',doubleMajor:'컴퓨터공학과',cohort:'2022'}))
       .toMatchObject({campus:'GLOBAL',cohort:2022,doubleMajor:'컴퓨터공학과'});
   });

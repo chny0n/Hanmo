@@ -10,6 +10,7 @@ export interface StudentEntry {
   campus:StudentCampus;
   major:string;
   doubleMajor?:string;
+  minor?:string;
   cohort?:number;
 }
 
@@ -32,6 +33,8 @@ export function normalizeStudentEntry(raw:unknown):StudentEntry {
   }
   const major=requireText(v.major,'주전공',true);
   const doubleMajor=requireText(v.doubleMajor??'','이중전공',false);
+  const minor=requireText(v.minor??'','부전공',false);
+  if(doubleMajor&&minor)throw new RangeError('이중전공과 부전공 중 하나만 선택해 주세요.');
   const cohortValue=v.cohort;
   let cohort:number|undefined;
   if(cohortValue!==undefined&&cohortValue!==null&&cohortValue!==''){
@@ -43,7 +46,7 @@ export function normalizeStudentEntry(raw:unknown):StudentEntry {
     cohort=year;
   }
   return {schemaVersion:1,campus:v.campus,major,
-    ...(doubleMajor?{doubleMajor}:{}),...(cohort===undefined?{}:{cohort})};
+    ...(doubleMajor?{doubleMajor}:{}),...(minor?{minor}:{}),...(cohort===undefined?{}:{cohort})};
 }
 
 /** 세션 저장에 실패해도 기존 프로필과 이수 자료는 변경되지 않는다. */
