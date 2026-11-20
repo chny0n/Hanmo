@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/app/main.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/app.js && esbuild src/app/catalog.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/catalog.js && esbuild src/app/academic-timeline.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/academic-timeline.js && node scripts/stage-static.mjs",
+    "build": "esbuild src/app/main.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/app.js && esbuild src/app/catalog.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/catalog.js && esbuild src/app/academic-timeline.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/academic-timeline.js && esbuild src/app/student-forecast.ts --bundle --platform=browser --format=iife --target=es2022 --outfile=public/student-forecast.js && node scripts/stage-static.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run src/core src/views",
     "check": "npm run typecheck && npm run test && npm run build && npm run smoke",
