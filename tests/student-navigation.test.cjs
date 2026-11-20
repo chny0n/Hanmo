@@ -79,6 +79,15 @@ test('in-page incident workflow keeps default OFF and original practice contract
   assert.ok(!source.includes('fetch(')&&!source.includes('XMLHttpRequest('));
 });
 
+test('planner uses the shared top navigation instead of four duplicate feature cards',()=>{
+ const body=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
+ assert.match(body,/<header class="hanmo-topbar">/);
+ assert.match(body,/id="planner-profile"/);
+ assert.doesNotMatch(body,/무엇을 준비하시나요\?|필요한 기능을 골라 들어가세요\./);
+ assert.doesNotMatch(body,/<nav class="hanmo-card-grid"|aria-label="학업 기능 메뉴"/);
+ assert.doesNotMatch(body,/class="hanmo-card" href="\.(?:\/academic-timeline|\/forecast|\/catalog|\/academic-progress)\.html"/);
+});
+
 test('academic entry handoff and three A/B/C plans integrate into existing pages without a sidebar',()=>{
  const planner=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
  const notices=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
