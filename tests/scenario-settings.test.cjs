@@ -15,16 +15,17 @@ function harness(resume=null,navType='navigate'){
  const cache=new Map(resume||[]),timers=[];const listeners={};
  const ids={};for(const name of ['scenario-settings','incident-practice','incident-feedback','incident-base','incident-candidates',
   'incident-search','incident-status','incident-mode','incident-404','incident-exit','incident-404-refresh','incident-404-back',
-  'scenario-all-on','scenario-all-off'])ids[name]=node();
+  ])ids[name]=node();
  ids['incident-practice'].hidden=true;ids['incident-candidates'].hidden=true;ids['incident-404'].hidden=true;
- const toggles=logic.OPTIONS.map(id=>{let n=node({'data-scenario-toggle':id});n.badge={textContent:'OFF'};return n});
+ const toggles=logic.OPTIONS.map(id=>node({'data-scenario-toggle':id}));
+ const negatives=logic.OPTIONS.map(id=>{const n=node({'data-scenario-off':id});n.checked=true;return n});
  const bases=logic.IDS.map(id=>node({'data-base-course':String(id)}));
  const alts=logic.IDS.map(id=>node({'data-alt-course':String(id)}));
  const form={'.printValue':node(),'.psugangVal':node(),'.vsugangVal':node(),
   'input[name="waitingYN"]:checked':node(),'.setting':node()};
  form['.psugangVal'].value='3';form['.vsugangVal'].value='2';form['input[name="waitingYN"]:checked'].value='no';
  const doc={getElementById:id=>ids[id]??null,
-  querySelectorAll:q=>({'[data-scenario-toggle]':toggles,'[data-base-course]':bases,'[data-alt-course]':alts}[q]||[]),
+  querySelectorAll:q=>({'[data-scenario-toggle]':toggles,'[data-scenario-off]':negatives,'[data-base-course]':bases,'[data-alt-course]':alts}[q]||[]),
   querySelector:q=>form[q]||null};
  const host={localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,String(v))},
   sessionStorage:{getItem:k=>cache.get(k)??null,setItem:(k,v)=>cache.set(k,String(v)),removeItem:k=>cache.delete(k)},
@@ -40,7 +41,7 @@ function harness(resume=null,navType='navigate'){
   openSettingPanel(){host.opens=(host.opens||0)+1},
  };
  const app=ui.mount(doc,host);assert.ok(app);
- return {app,host,doc,ids,toggles,bases,alts,store,cache,timers,listeners,form};
+ return {app,host,doc,ids,toggles,negatives,bases,alts,store,cache,timers,listeners,form};
 }
 test('three same-number candidate conflicts and other numbers are accepted',()=>{
  assert.deepEqual(logic.initialCourses(['LAST_CONFLICT']),[1,2]);
@@ -60,6 +61,27 @@ test('three independent OFF toggles do not alter original route',()=>{
  h.host.goPractice(2);assert.equal(h.host.lastOriginal,2);
  assert.equal(h.ids['incident-practice'].hidden,true);
  assert.equal(logic.OPTIONS.includes('COMPOSITE'),false);
+});
+test('each legacy-style yes/no radio group defaults to no and can be toggled independently',()=>{
+ const h=harness();
+ assert.equal(h.toggles.length,3);
+ assert.ok(h.toggles.every(x=>!x.checked));
+ assert.ok(h.negatives.every(x=>x.checked));
+ h.toggles[1].checked=true;h.toggles[1].fire('change');
+ assert.equal(h.negatives[1].checked,false);
+ assert.ok(h.negatives.filter(x=>x.checked).length===2);
+ h.host.getSettingValue();
+ assert.deepEqual(h.app.getEnabled(),['LAST_CONFLICT']);
+ h.host.openSettingPanel();
+ assert.equal(h.toggles[1].checked,true);
+ assert.equal(h.negatives[1].checked,false);
+ h.negatives[1].checked=true;h.negatives[1].fire('change');
+ assert.equal(h.toggles[1].checked,false);
+ h.host.getSettingValue();
+ assert.deepEqual(h.app.getEnabled(),[]);
+ assert.ok(h.negatives.every(x=>x.checked));
+ h.host.goPractice(1);
+ assert.equal(h.host.lastOriginal,1,'turning no on restores legacy practice route');
 });
 test('combined selected toggles, mandatory search, and candidate click flow',()=>{
  const h=harness();h.toggles[1].checked=true;h.toggles[2].checked=true;

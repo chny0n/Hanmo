@@ -17,7 +17,11 @@
     const byId=id=>doc.getElementById(id);
     const settings=byId('scenario-settings'),work=byId('incident-practice');
     const toggles=Array.from(doc.querySelectorAll('[data-scenario-toggle]'));
+    const noOptions=Array.from(doc.querySelectorAll('[data-scenario-off]'));
+    const noById=new Map(noOptions.map(input=>[input.getAttribute('data-scenario-off'),input]));
     if(!settings||!work||toggles.length!==PRESETS.length||
+       noOptions.length!==PRESETS.length||noById.size!==PRESETS.length||
+       toggles.some(input=>!noById.has(input.getAttribute('data-scenario-toggle')))||
        typeof host.goPractice!=='function'||typeof host.getSettingValue!=='function'||
        typeof host.openSettingPanel!=='function')return null;
     const controls={
@@ -35,8 +39,8 @@
     const getChecks=()=>toggles.filter(x=>x.checked).map(x=>x.getAttribute('data-scenario-toggle'));
     function refresh(){
       for(const toggle of toggles){
-        const b=toggle.closest('label')?.querySelector('em');
-        if(b)b.textContent=toggle.checked?'ON':'OFF';
+        const no=noById.get(toggle.getAttribute('data-scenario-toggle'));
+        if(no)no.checked=!toggle.checked;
       }
     }
     function summary(){
@@ -163,8 +167,16 @@
       refresh();return result;
     };
     for(const t of toggles)t.addEventListener('change',refresh);
-    byId('scenario-all-on')?.addEventListener('click',()=>{for(const t of toggles)t.checked=true;refresh();});
-    byId('scenario-all-off')?.addEventListener('click',()=>{for(const t of toggles)t.checked=false;refresh();});
+    for(const no of noOptions){
+      no.addEventListener('change',()=>{
+        if(no.checked){
+          const yes=toggles.find(input=>
+            input.getAttribute('data-scenario-toggle')===no.getAttribute('data-scenario-off'));
+          if(yes)yes.checked=false;
+        }
+        refresh();
+      });
+    }
     for(const input of doc.querySelectorAll('[data-base-course]')){
       input.addEventListener('change',()=>{
         base=logic.selection(Array.from(doc.querySelectorAll('[data-base-course]'))

@@ -118,8 +118,15 @@ for(const id of ['scenario-settings','incident-practice','incident-search',
 }
 for(const file of ['js/incident-courses.js','js/scenario-settings.js','css/scenario-settings.css'])
   await must(file);
-if((menu.match(/data-scenario-toggle=/g)||[]).length!==3)
-  throw Error('Three independently selected OFF-by-default incident toggles required');
+if((menu.match(/data-scenario-toggle=/g)||[]).length!==3||
+   (menu.match(/data-scenario-off=/g)||[]).length!==3)
+  throw Error('Three independent yes/no radio pairs are required');
+for(const preset of ['LAST_VALID','LAST_CONFLICT','RECONNECT']){
+  if(!menu.includes('name="incident-'+preset+'" value="no" data-scenario-off="'+preset+'" checked'))
+    throw Error('Incident setting must default to No: '+preset);
+}
+if(/학업 플래너로 이동|scenario-all-on|scenario-all-off/.test(menu))
+  throw Error('Legacy-mode landing has an obsolete extra link or bulk incident control');
 if((menu.match(/data-alt-course=/g)||[]).length!==3)
   throw Error('Three numbered substitute courses required');
 if(menu.includes('data-scenario-toggle="COMPOSITE"')||menu.includes('data-scenario-toggle="LAST_NONE"'))

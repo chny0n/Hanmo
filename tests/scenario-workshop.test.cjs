@@ -169,10 +169,18 @@ test('copy produces clearly synthetic human-readable review text only on direct 
   assert.doesNotMatch(copied,/실제 수강신청 완료/);
   assert.equal(lab.getReview().source,'SYNTHETIC');
 });
-test('three composable incident switches and numbered candidates exist in the original SETTING menu',()=>{
+test('three original-style yes/no incident controls and numbered candidates exist in SETTING',()=>{
   const root=path.join(__dirname,'..');
   const html=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
   assert.equal([...html.matchAll(/data-scenario-toggle="/g)].length,3);
+  assert.equal([...html.matchAll(/data-scenario-off="/g)].length,3);
+  for(const preset of ['LAST_VALID','LAST_CONFLICT','RECONNECT']){
+    assert.ok(html.includes('name="incident-'+preset+'" value="yes"'),preset+' yes radio');
+    assert.ok(html.includes('name="incident-'+preset+'" value="no"'),preset+' no radio');
+    assert.ok(html.includes('data-scenario-off="'+preset+'" checked'),preset+' defaults no');
+  }
+  assert.ok(!html.includes('학업 플래너로 이동 →'));
+  assert.ok(!html.includes('scenario-all-on')&&!html.includes('scenario-all-off'));
   assert.equal([...html.matchAll(/data-base-course="/g)].length,3);
   assert.equal([...html.matchAll(/data-alt-course="/g)].length,3);
   assert.equal(html.includes('COMPOSITE'),false,'no separate composite option');

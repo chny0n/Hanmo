@@ -8,23 +8,17 @@
 .settingPanel>ul li{margin-bottom:12px}
 .settingPanel .textbox{height:37px;color:#f2f5f8;background:#0f2535;border:1px solid #66849c;border-radius:7px;padding:5px 10px}
 .settingPanel .settingButton{align-self:flex-end;margin-top:20px;min-height:44px;border:0;flex:none}
-.hanmo-incident-options{border:1px solid #4e6d83;border-radius:12px;padding:13px 15px;margin:18px 0 0}
-.hanmo-incident-options legend{font-size:17px;font-weight:800;color:#f8d18c;padding:0 7px}
-.hanmo-incident-options legend small{color:#ccd7de;font-weight:500;font-size:12px}
-.hanmo-incident-options p{margin:4px 0 14px;color:#c6d6e0;font-size:12px;line-height:1.65}
-.hanmo-toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.hanmo-scenario-toggle{display:flex;align-items:center;gap:10px;padding:12px;background:#0d2332;border:1px solid #35566b;
-  border-radius:9px;color:#fff;cursor:pointer;min-width:0}
-.hanmo-scenario-toggle:has(input:checked){background:#193846;border-color:#f0c46f}
-.hanmo-scenario-toggle input{width:19px;height:19px;flex:none;accent-color:#f4c76c}
-.hanmo-scenario-toggle span{display:grid;gap:3px;min-width:0}
-.hanmo-scenario-toggle strong{font-size:13px}
-.hanmo-scenario-toggle small{color:#b9cad7;font-size:11px;line-height:1.5}
-.hanmo-scenario-toggle em{margin-left:auto;font-style:normal;color:#adc2d1;font-size:11px;font-weight:800}
-.hanmo-scenario-toggle:has(input:checked) em{color:#f7d494}
-.hanmo-toggle-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-.hanmo-toggle-actions button{border:1px solid #698ba2;border-radius:7px;padding:8px 12px;background:#123348;color:white;cursor:pointer}
-.hanmo-toggle-actions button:hover{background:#214d64}
+/* Reuse the simple native yes/no radio presentation of the legacy waiting-time setting. */
+.hanmo-incident-options{border:0;padding:0;margin:6px 0 0;min-width:0}
+.hanmo-incident-options>legend{font-size:15px;font-weight:700;color:#fff;padding:0;margin-bottom:7px}
+.hanmo-incident-options>p{margin:0 0 12px;color:#c6d6e0;font-size:12px;line-height:1.6}
+.hanmo-incident-choice{min-width:0;border:1px solid #506b7b;padding:9px 12px 8px;margin:0 0 11px}
+.hanmo-incident-choice legend{font-size:14px;font-weight:600;color:#fff;padding:0 5px}
+.hanmo-incident-choice label{display:inline-flex;align-items:center;gap:7px;margin-right:22px;min-height:32px;
+  color:#f2f5f8;font-size:14px;cursor:pointer}
+.hanmo-incident-choice input{width:16px;height:16px;accent-color:#b9b9b9}
+.hanmo-incident-choice input:focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
+.hanmo-incident-choice small{display:block;margin:5px 0 0;color:#bacad5;font-size:11px;line-height:1.6}
 
 /* Synthetic drill stays inside vsugang.html and never affects practice/selectZone. */
 #incident-practice[hidden],#incident-practice [hidden]{display:none!important}
@@ -67,4 +61,4 @@
 .hanmo-example-404 p{max-width:630px;line-height:1.8;color:#d0e0eb;margin:0}
 .hanmo-example-404>div{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
 @media(max-width:700px){#incident-practice{padding:19px 15px}.hanmo-candidate-grid{grid-template-columns:1fr}
- .hanmo-toggle-grid{grid-template-columns:1fr}}
+}

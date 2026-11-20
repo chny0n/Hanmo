@@ -84,14 +84,26 @@
 						</li>
 					</ul>
 <fieldset id="scenario-settings" class="hanmo-incident-options" aria-describedby="scenario-settings-note">
-<legend>돌발상황 연습 <small>모두 기본 OFF</small></legend>
-<p id="scenario-settings-note">각 상황을 따로 선택해 원하는 조합으로 연습하세요. 기본은 모두 OFF이며 실제 HTTP 404·학교 서버 오류는 발생시키지 않습니다.</p>
-<div class="hanmo-toggle-grid">
-<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="LAST_VALID"><span><strong>마지막 과목 신청 실패</strong><small>마지막 과목 정원 마감 후 대체과목 검색</small></span><em>OFF</em></label>
-<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="LAST_CONFLICT"><span><strong>대체과목 시간 충돌</strong><small>같은 번호는 시간 충돌, 다른 번호는 신청 가능</small></span><em>OFF</em></label>
-<label class="hanmo-scenario-toggle"><input type="checkbox" data-scenario-toggle="RECONNECT"><span><strong>가상 404·접속 끊김</strong><small>시작 후 0~6초 사이 예시 화면 · 새로고침/뒤로 복귀</small></span><em>OFF</em></label>
-</div>
-<div class="hanmo-toggle-actions"><button type="button" id="scenario-all-on">모두 ON</button><button type="button" id="scenario-all-off">모두 OFF</button></div>
+  <legend>돌발상황 연습 (기본값: 아니오)</legend>
+  <p id="scenario-settings-note">기존 접속 대기 시간 설정과 같은 예/아니오 방식입니다. 원하는 상황만 예로 설정한 뒤 확인을 누르세요.</p>
+  <fieldset class="hanmo-incident-choice">
+    <legend>마지막 과목 신청 실패</legend>
+    <label><input type="radio" name="incident-LAST_VALID" value="yes" data-scenario-toggle="LAST_VALID"><span>예</span></label>
+    <label><input type="radio" name="incident-LAST_VALID" value="no" data-scenario-off="LAST_VALID" checked><span>아니오</span></label>
+    <small>마지막 과목 정원 마감 후 대체과목 검색</small>
+  </fieldset>
+  <fieldset class="hanmo-incident-choice">
+    <legend>대체과목 시간 충돌</legend>
+    <label><input type="radio" name="incident-LAST_CONFLICT" value="yes" data-scenario-toggle="LAST_CONFLICT"><span>예</span></label>
+    <label><input type="radio" name="incident-LAST_CONFLICT" value="no" data-scenario-off="LAST_CONFLICT" checked><span>아니오</span></label>
+    <small>같은 번호는 시간 충돌, 다른 번호는 신청 가능</small>
+  </fieldset>
+  <fieldset class="hanmo-incident-choice">
+    <legend>가상 404·접속 끊김</legend>
+    <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
+    <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
+    <small>시작 후 0~6초 사이 404 예시 화면 표시</small>
+  </fieldset>
 </fieldset>
 					<button type='button' class='settingButton' onclick='getSettingValue()'>
 						확인
@@ -108,7 +120,6 @@
 					</div>
 				</section>
 				<section class='container'>
-          <div class="hanmo-practice-links"><a href="./planner.html">학업 플래너로 이동 →</a></div>
 					<div class='grid'>
 						<div style='grid-area: b' onclick='goPractice(1)'>
 							<h2>

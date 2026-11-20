@@ -29,6 +29,12 @@ test('three independently selected incidents are OFF by default; no standalone o
  assert.match(html,/id="incident-search"/);
  assert.match(html,/id="incident-404"/);
  assert.equal((html.match(/data-scenario-toggle="/g)||[]).length,3);
+ assert.equal((html.match(/data-scenario-off="/g)||[]).length,3);
+ assert.ok(!html.includes('학업 플래너로 이동 →'));
+ assert.ok(!html.includes('scenario-all-on')&&!html.includes('scenario-all-off'));
+ for(const key of ['LAST_VALID','LAST_CONFLICT','RECONNECT']){
+  assert.ok(html.includes('name="incident-'+key+'" value="no" data-scenario-off="'+key+'" checked'));
+ }
  assert.equal((html.match(/data-alt-course="/g)||[]).length,3);
  assert.doesNotMatch(html,/data-scenario-toggle="[^"]+"\s+checked/);
  assert.doesNotMatch(html,/data-scenario-toggle="(?:COMPOSITE|LAST_NONE)"|workshop-preset/);
