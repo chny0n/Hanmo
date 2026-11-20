@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # wait for visible artifact metadata before deploying
   pages: write
   id-token: write
 
@@ -29,6 +30,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -62,6 +65,33 @@ jobs:
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: degree-rescue/dist
+          name: ${{ env.PAGES_ARTIFACT_NAME }}
+      # GitHub's artifact list can lag immediately after upload. Wait only for
+      # this run attempt's artifact, without re-uploading or deleting artifacts.
+      - name: Wait for the exact Pages artifact to become visible
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 12); do
+            if names="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" --jq '.artifacts[].name')"; then
+              count="$(printf '%s\n' "$names" | grep -Fxc -- "$PAGES_ARTIFACT_NAME" || true)"
+              if [ "$count" -eq 1 ]; then
+                echo "Exactly one current-attempt Pages artifact is visible."
+                exit 0
+              fi
+              if [ "$count" -gt 1 ]; then
+                echo "::error::Duplicate artifact names in current attempt; not deploying."
+                exit 1
+              fi
+            else
+              echo "::warning::Artifact metadata API not ready (attempt $attempt)."
+            fi
+            sleep 3
+          done
+          echo "::error::Current-attempt Pages artifact did not become visible."
+          exit 1
       - name: Deploy QA preview
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
