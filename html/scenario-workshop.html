@@ -142,6 +142,11 @@
           <ol id="workshop-replay-timeline" class="workshop-timeline"></ol>
         </section>
       </div>
+      <section id="workshop-mistakes" class="workshop-panel workshop-mistakes" hidden aria-labelledby="workshop-mistakes-heading">
+        <h3 id="workshop-mistakes-heading">다시 살펴볼 가상 행동</h3>
+        <p>실수한 행동의 이유를 확인하고 같은 시드로 다시 연습해 보세요.</p>
+        <ol id="workshop-mistake-list" class="workshop-timeline"></ol>
+      </section>
       <p id="workshop-report-notice" class="workshop-safety"></p>
       <div class="workshop-report-actions">
         <button id="workshop-retry" class="button-primary" type="button">같은 시드로 다시 연습</button>
@@ -156,6 +161,12 @@
       <h2 id="workshop-map-heading">가상 과목과 실제 강좌의 연결 상태</h2>
       <p>이 작업 화면에는 검수된 강의·분반 변환표를 연결하지 않았습니다. 가상 과목 ID로 실제 강의 존재·개설·학점 인정을 추정하지 않습니다.</p>
       <div class="mapping-status"><span class="map-pill">UNMAPPED · 확인된 변환표 없음</span><span>과목·캠퍼스·학기·판본 검수 후에만 연결 예정</span></div>
+      <dl class="mapping-details">
+        <div><dt>가상 과목</dt><dd>SYN-LAST / SYN-ALT-1 / SYN-REQUEST</dd></div>
+        <div><dt>실제 강좌·분반</dt><dd>공식 검수된 ID 없음</dd></div>
+        <div><dt>캠퍼스·학기</dt><dd>적용 범위 미확인</dd></div>
+        <div><dt>강의 원장 판본</dt><dd>승인된 자료 미연결</dd></div>
+      </dl>
     </section>
     <footer>
       <p>한모 2차 개발용 독립 시연 UI · PC 전용 정책 유지 · 학교 수강신청 시스템 또는 기존 연습 저장 데이터와 분리</p>
