@@ -18,6 +18,7 @@ for(const name of [
   'index.html','css/student-ui.css','js/student-forecast.js',
   'js/student-preferences.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js',
   'js/student-entry.js','js/academic-progress.js','css/academic-progress.css',
+  'js/student-profile-bar.js','css/hanmo-flat.css',
   'data/academic-notices-reference.json','html/pc-only.html','js/pc-only.js',
   ...htmlRoutes,
 ])await must(name);
@@ -94,6 +95,21 @@ for(const page of [...studentPages,'html/vsugang.html','html/result.html','html/
     throw Error('Missing consistent home brand link on '+page);
   if(/href="\.\/vsugang\.html"|<a[^>]+>홈<\/a>/.test(bar))
     throw Error('Redundant mock-registration or home item in topbar: '+page);
+}
+for(const page of ['index.html',...studentPages,'html/vsugang.html','html/result.html','html/developer.html']){
+  const body=await readFile(join(dist,page),'utf8');
+  const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  if(!bar||!bar.includes('data-profile-summary'))
+    throw Error('Student profile is not accessible from shared navigation: '+page);
+  const expectedHref=page==='index.html'?'./html/planner.html':'./planner.html';
+  const last=bar.match(/<a class="hanmo-me-link" href="([^"]+)"[^>]*>내정보<\/a>/)?.[1];
+  if(last!==expectedHref||bar.indexOf('data-profile-summary')>bar.indexOf('class="hanmo-me-link"'))
+    throw Error('내정보 must be the rightmost topbar action: '+page);
+}
+for(const page of studentPages){
+  const html=await readFile(join(dist,page),'utf8');
+  if(/class="hanmo-hero"|class="hanmo-eyebrow"/.test(html))
+    throw Error('Redundant page-introduction block remains: '+page);
 }
 const menu=await readFile(join(dist,'html/vsugang.html'),'utf8');
 for(const id of ['scenario-settings','incident-practice','incident-search',

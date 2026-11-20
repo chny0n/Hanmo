@@ -124,8 +124,8 @@ test('home restores the original mock registration layout without the academic-e
  assert.doesNotMatch(home,/<a[^>]*href="\.\/html\/vsugang\.html"[^>]*>/,'do not restore redundant topbar link');
  const bar=home.match(/<nav class="hanmo-topbar"[\s\S]*?<\/nav>/)?.[0];
  assert.ok(bar);
- const allowed=['./index.html','./html/planner.html','./html/academic-timeline.html',
-   './html/forecast.html','./html/catalog.html','./html/academic-progress.html'];
+ const allowed=['./index.html','./html/academic-timeline.html',
+   './html/forecast.html','./html/catalog.html','./html/academic-progress.html','./html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
  assert.match(home,/onclick="location\.href='\.\/html\/vsugang\.html'"/);
  assert.match(home,/onclick="location\.reload\(\)"/);
@@ -138,4 +138,46 @@ test('home restores the original mock registration layout without the academic-e
    const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
    assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
  }
+});
+
+test('every non-imitation topbar puts the editable self-declared student summary before rightmost 내정보',()=>{
+ for(const page of ['index.html',...student.map(x=>'html/'+x+'.html'),
+   'html/vsugang.html','html/developer.html','html/result.html']){
+  const html=fs.readFileSync(path.join(ROOT,page),'utf8');
+  const isHome=page==='index.html';
+  const bar=html.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  assert.ok(bar,'missing shared bar: '+page);
+  assert.ok(bar.includes('data-profile-summary'),'missing local profile summary: '+page);
+  assert.ok(html.includes((isHome?'./js/':'../js/')+'student-profile-bar.js'),'missing profile controller: '+page);
+  const links=[...bar.matchAll(/<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
+  const final=links.at(-1);
+  assert.equal(final?.[1],isHome?'./html/planner.html':'./planner.html',page+' rightmost link');
+  assert.equal(final?.[2],'내정보',page+' rightmost label');
+  assert.ok(bar.indexOf('data-profile-summary')<bar.indexOf('class="hanmo-me-link"'),page+' profile precedes account link');
+  assert.doesNotMatch(bar,/학업 플래너|>홈<\/a>|기본 모의신청/);
+ }
+});
+test('academic pages have no repeated marketing introduction or rounded section wrappers',()=>{
+ const flat=fs.readFileSync(path.join(ROOT,'css/hanmo-flat.css'),'utf8');
+ const imported=fs.readFileSync(path.join(ROOT,'css/student-ui.css'),'utf8');
+ assert.ok(imported.includes('hanmo-flat.css'));
+ assert.match(flat,/body\.hanmo-ui \.hanmo-card/);
+ assert.match(flat,/border-radius:0/);
+ for(const name of student){
+  const html=fs.readFileSync(path.join(ROOT,'html',name+'.html'),'utf8');
+  assert.doesNotMatch(html,/class="hanmo-hero"|class="hanmo-eyebrow"/,name);
+  assert.doesNotMatch(html,/한모는 학생이 만든 비공식 학업 보조 서비스입니다/,name);
+  assert.ok(html.includes('class="hanmo-schoolmark"'),name);
+ }
+ const profile=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
+ for(const id of ['planner-profile','planner-secondary-kind','planner-cohort','planner-double'])
+  assert.ok(profile.includes('id="'+id+'"'));
+ assert.match(profile,/<title>내정보 \| 한모<\/title>/);
+ assert.match(profile,/id="planner-cohort"[^>]*required/);
+ assert.doesNotMatch(profile,/CAMPUS LIFE|ACADEMIC PLANNER|내 전공 공지를 찾고/);
+ const blocker=fs.readFileSync(path.join(ROOT,'html/pc-only.html'),'utf8');
+ assert.doesNotMatch(blocker,/border-radius:20px/);
+ // Protected registration imitation files remain unchanged by this UI-only test.
+ for(const name of ['practice.html','selectZone.html'])
+  assert.ok(fs.existsSync(path.join(ROOT,'html',name)));
 });

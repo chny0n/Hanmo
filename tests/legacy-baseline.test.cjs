@@ -303,7 +303,7 @@ test('each actual HTML page loads classic scripts in order without global collis
   for(const page of pages){
     const html=fs.readFileSync(path.join(ROOT,page),'utf8');
     const scripts=[...html.matchAll(/<script\s+src=['"](?:\.\/|\.\.\/)js\/([^'"]+\.js)['"]/g)]
-      .map(match=>match[1]).filter(file=>file!=='pc-only.js');
+      .map(match=>match[1]).filter(file=>file!=='pc-only.js'&&file!=='student-profile-bar.js');
     // The registration menu may load isolated, opt-in synthetic controllers;
     // the three original classic scripts and their order must remain unchanged.
     const originalScripts=page==='html/vsugang.html'?scripts.slice(0,3):scripts;
