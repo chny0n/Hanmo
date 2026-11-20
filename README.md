@@ -11,7 +11,7 @@
     <img alt="비공식 개발 프로젝트" src="https://img.shields.io/badge/status-development-567D6F?labelColor=00131F">
   </p>
 
-  <p><a href="#-프로젝트-소개">소개</a> · <a href="#-미리보기">미리보기</a> · <a href="#-기능-현황">기능 현황</a> · <a href="#-로컬-실행">시작하기</a> · <a href="docs/architecture.md">설계</a> · <a href="https://github.com/ot4562-glitch/Hanmo_develop/issues">이슈</a></p>
+  <p><a href="#-프로젝트-소개">소개</a> · <a href="#-미리보기">미리보기</a> · <a href="#-기능-현황">기능 현황</a> · <a href="#-로컬-실행">시작하기</a> · <a href="#search-flow">검색 흐름도</a> · <a href="docs/architecture.md">설계</a> · <a href="https://github.com/ot4562-glitch/Hanmo_develop/issues">이슈</a></p>
 </div>
 
 ![HUFS 한모 개발 프로젝트 배너 — 수강신청 연습에서 다음 학기의 준비까지](docs/images/hanmo-hero-hufs.svg)
@@ -49,6 +49,38 @@
 | **학점 정리** | 직접 입력한 학점 합산 및 학기별 A/B/C 계획 비교 | 공식 이수 판정·졸업 가능 여부 아님 · 비필수 기능 |
 
 **핵심 원칙:** 확인된 사실과 가상 시연을 분리하고, 공지·학칙의 근거와 적용 대상을 확인할 수 없는 경우 **‘확인 필요’**로 남깁니다. 한국어 학사 FAQ, 개설·행사 시기 전망과 졸업 요건 계산 코어는 검증 상태에 따라 별도 확장합니다.
+
+<a id="search-flow"></a>
+
+## ✧ 학업 검색 · 데이터 흐름
+
+**설계 목표:** 학생이 오타·띄어쓰기·약칭을 포함해 질문하더라도 **공지 / 강의 / FAQ**를 구분해 관련성 높은 자료를 찾고, 확인되지 않은 학사정보는 확정 답변으로 표시하지 않습니다.
+
+```mermaid
+flowchart TD
+    A["허가된 학사 공지·강의·FAQ"] --> B["출처 권리·문서 판본·독립 검수"]
+    B --> C{"공개 승인?"}
+    C -->|미승인| H["확인 필요 · 공식 원문 안내"]
+    C -->|승인| D["공통 승인 스냅샷"]
+    Q["학생 검색어"] --> N["한국어 정규화: 약칭·오타·띄어쓰기"]
+    N --> I["검색 의도 분류: 공지·강의·FAQ"]
+    I --> F["캠퍼스·전공·학번·학기·판본 필터"]
+    D --> F
+    F --> R["학수번호 정확검색 + BM25 후보 순위화"]
+    R --> G{"근거·적용 범위·철회 상태 유효?"}
+    G -->|통과| O["관련성 순위 · 원문 링크 · 검수 시각 표시"]
+    G -->|불명확·철회| H
+    classDef source fill:#0d3042,stroke:#467c96,color:#eff6fc
+    classDef accent fill:#3c321e,stroke:#f4c76c,color:#f4c76c
+    classDef output fill:#163b34,stroke:#79b1a6,color:#eff6fc
+    class A,B,D,Q,N,I,F,R source
+    class C,G accent
+    class O,H output
+```
+
+> **구현 상태를 구분합니다.** 현재 FAQ **코어**에 문자 2-gram BM25 및 일부 약칭·오타 처리가 있지만, 공개 공지 화면은 제목 부분일치 검색이고 강의 검색은 **가상 예시 전용**입니다. 위 그림은 **통합 검색의 목표 흐름**이지 현재 전체 기능이 완료됐다는 의미가 아닙니다. 실제 학사자료 연결은 출처 허가·독립 검수·승인 이후에만 진행합니다.
+
+검색 품질은 [#53 질의·랭킹 구현](https://github.com/ot4562-glitch/Hanmo_develop/issues/53)과 [#40 골드셋 평가](https://github.com/ot4562-glitch/Hanmo_develop/issues/40), 중요공지 분류는 [#51](https://github.com/ot4562-glitch/Hanmo_develop/issues/51)에서 검증하며, **미근거 마감·철회 판본·잘못된 적용 대상이 결과에 섞이면 공개를 보류**합니다.
 
 ## ◌ 로컬 실행
 
