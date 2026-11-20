@@ -112,7 +112,7 @@ test('time conflict cannot be treated as a successful alternative',()=>{
   assert.equal(lab.getReview().disposition,'NEEDS_REVIEW');
   assert.equal(h.nodes['workshop-mistakes'].hidden,false);
   assert.equal(h.nodes['workshop-mistake-list'].children.length,1);
-  assert.match(h.nodes['workshop-mistake-list'].children[0].textContent,/제약/);
+  assert.match(h.nodes['workshop-mistake-list'].children[0].textContent,/충족하지 않는/);
   assert.equal(lab.getReview().lastLabel,'유효한 대체과목이 없음을 확인함');
   assert.equal(h.nodes['workshop-error'].textContent,'');
 });
