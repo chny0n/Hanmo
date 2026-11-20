@@ -20,6 +20,7 @@ for(const name of [
   'js/student-entry.js','js/academic-progress.js','css/academic-progress.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
   'js/home-fit.js','css/home-fit.css',
+  'js/vsugang-fit.js','css/vsugang-fit.css',
   'data/academic-notices-reference.json','html/pc-only.html','js/pc-only.js',
   ...htmlRoutes,
 ])await must(name);
@@ -118,6 +119,15 @@ for(const page of studentPages){
     throw Error('Redundant page-introduction block remains: '+page);
 }
 const menu=await readFile(join(dist,'html/vsugang.html'),'utf8');
+if(!menu.includes('<body class="hanmo-vsugang">')||
+   !menu.includes('href="../css/vsugang-fit.css"')||
+   !menu.includes('src="../js/vsugang-fit.js" defer'))
+  throw Error('Mode menu must load viewport fitting below the topbar');
+const fitStyles=await readFile(join(dist,'css/vsugang-fit.css'),'utf8');
+if(!fitStyles.includes('vsugang-compact-scroll')||
+   !fitStyles.includes('--vsugang-topbar-bottom')||
+   !fitStyles.includes('#incident-practice:not([hidden])'))
+  throw Error('Missing viewport and settings accessibility protection');
 for(const id of ['scenario-settings','incident-practice','incident-search',
  'incident-candidates','incident-404','incident-404-refresh','incident-404-back']){
  if(!menu.includes('id="'+id+'"'))throw Error('Missing in-menu incident UI: '+id);

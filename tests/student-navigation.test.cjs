@@ -168,6 +168,21 @@ test('home uses a viewport-fitted main below the topbar without hiding classic f
  assert.doesNotMatch(html,/academic-entry|학사 준비도 한모에서/);
 });
 
+test('vsugang menu fits under the navigation while settings and incident remain accessible',()=>{
+ const html=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+ const css=fs.readFileSync(path.join(ROOT,'css/vsugang-fit.css'),'utf8');
+ const js=fs.readFileSync(path.join(ROOT,'js/vsugang-fit.js'),'utf8');
+ for(const expected of ['<body class="hanmo-vsugang">','../css/vsugang-fit.css',
+   '../js/vsugang-fit.js','BASIC MODE','TIME MODE','SELECT','SETTING'])
+  assert.ok(html.includes(expected),'missing mode-menu contract '+expected);
+ for(const expected of ['height:100dvh','--vsugang-fit-scale','--vsugang-topbar-bottom',
+   'vsugang-compact-scroll','overflow-y:auto','#incident-practice:not([hidden])'])
+  assert.ok(css.includes(expected),'missing viewport protection '+expected);
+ assert.ok(js.includes('landing.scrollHeight'));
+ assert.ok(js.includes('main.clientHeight'));
+ assert.equal((html.match(/data-scenario-off="/g)||[]).length,3);
+});
+
 test('every non-imitation topbar puts the editable self-declared student summary before rightmost 내정보',()=>{
  for(const page of ['index.html',...student.map(x=>'html/'+x+'.html'),
    'html/vsugang.html','html/developer.html','html/result.html']){
