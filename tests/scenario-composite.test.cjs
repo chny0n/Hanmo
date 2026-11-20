@@ -61,7 +61,8 @@ test('wrong stage action is rejected without silently progressing',()=>{
 test('seed and decisions reproduce the same composite report exactly',()=>{
   assert.deepEqual(summary(run()),summary(run()));
   assert.deepEqual(summary(run('LAST','NONE')),summary(run('LAST','NONE')));
-  assert.strictEqual(step(run(),'SUBMIT'),run()); // terminal cannot retry
+  const completed=run();
+  assert.strictEqual(step(completed,'SUBMIT'),completed); // terminal cannot retry
 });
 test('reconnect duplicate submit increments error counter without second request',()=>{
   let s=run('LAST');
