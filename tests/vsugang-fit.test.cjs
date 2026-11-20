@@ -48,9 +48,9 @@ test('at high zoom only main gets scrollable and nav stays visible',()=>{
 });
 test('resize and ad height remeasure fit and preserve navigation offset',()=>{
  const x=harness({height:900,width:1400,h:700,w:1100});
- x.footer.getBoundingClientRect=()=>({height:165});
+ x.footer.getBoundingClientRect=()=>({height:240});
  x.events.resize();x.flush();
- assert.equal(x.vars['--vsugang-footer-height'],'165px');
+ assert.equal(x.vars['--vsugang-footer-height'],'240px');
  assert.ok(Number(x.cssvars['--vsugang-fit-scale'])<1);
  x.main.clientHeight=310;
  x.events.resize();x.flush();
