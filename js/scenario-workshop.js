@@ -160,6 +160,7 @@
       'workshop-actions','workshop-live-steps','workshop-virtual-metrics',
       'workshop-report-type','workshop-report-title','workshop-report-summary',
       'workshop-feedback','workshop-metrics','workshop-replay-timeline','workshop-report-notice',
+      'workshop-mistakes','workshop-mistake-list',
       'workshop-retry','workshop-new-seed','workshop-change','workshop-copy',
       'workshop-copy-status',
     ].map(id=>[id,byId(id)]));
@@ -186,7 +187,8 @@
     }
     function clearRendered(){
       for(const id of ['workshop-actions','workshop-live-steps','workshop-feedback',
-        'workshop-metrics','workshop-replay-timeline','workshop-alternative-details']){
+        'workshop-metrics','workshop-replay-timeline','workshop-alternative-details',
+        'workshop-mistake-list']){
         el[id].replaceChildren();
       }
     }
@@ -292,6 +294,13 @@
         li.setAttribute('data-status',row.status);
         li.append(make('strong',row.label),make('span',row.description));
         el['workshop-feedback'].append(li);
+      }
+      el['workshop-mistakes'].hidden=currentReview.mistakes.length===0;
+      el['workshop-mistake-list'].replaceChildren();
+      for(const mistake of currentReview.mistakes){
+        const li=make('li',mistake.actionLabel+' · '+mistake.description);
+        li.append(make('span','다음 행동: '+mistake.nextAction));
+        el['workshop-mistake-list'].append(li);
       }
       el['workshop-replay-timeline'].replaceChildren();
       for(const action of currentReview.timeline){
