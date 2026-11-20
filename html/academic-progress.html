@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <script src="../js/pc-only.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="학점·이수 현황 · 한모 학생용 학업 도우미">
+  <title>학점·이수 현황 | 한모</title>
+  <link rel="icon" href="../img/hanmo_color.png">
+  <link rel="stylesheet" href="../css/student-ui.css">
+  <script src="../js/student-progress.js" defer></script>
+</head>
+<body class="hanmo-ui">
+  <a class="hanmo-skip" href="#main">본문으로 이동</a>
+  <header class="hanmo-topbar">
+  <a class="hanmo-brand" href="../index.html"><img src="../img/hanmo_white.svg" width="29" height="24" alt="">한모 <span>HUFS 학업 도우미</span></a>
+  <nav aria-label="주요 서비스">
+    <a href="../index.html">홈</a>
+    <a href="./planner.html">학업 플래너</a>
+    <a href="./academic-timeline.html">학사 공지</a>
+    <a href="./forecast.html">강의 개설 전망</a>
+    <a href="./catalog.html">강의 검색</a>
+    <a href="./academic-progress.html" aria-current="page">학점 정리</a>
+    <a href="./vsugang.html">기본 모의신청</a>
+    <a href="./scenario-workshop.html">돌발상황 연습</a>
+  </nav>
+</header>
+  <main id="main" class="hanmo-main" tabindex="-1"><section class="hanmo-hero"><p class="hanmo-eyebrow">CREDIT NOTE</p><h1>학점·이수 현황 정리</h1><p>공식 졸업 판정이 아닌 개인 메모입니다. 학교에서 확인한 숫자를 입력하면 단순 합계만 계산합니다.</p></section>
+<div class="hanmo-note" role="note"><strong>안내</strong> 한모는 학생이 만든 비공식 학업 보조 서비스입니다. 공지·개설·졸업 자격은 반드시 <a href="https://hufs.ac.kr/" target="_blank" rel="noopener noreferrer">학교 공식 안내</a>에서 확인하세요.</div>
+<div class="hanmo-card-grid two">
+<section class="hanmo-card" aria-labelledby="progress-form-title">
+  <h2 id="progress-form-title">내 학점 간단 정리</h2>
+  <p style="margin:10px 0 18px">이수 구분·재수강·학칙은 계산하지 않아요. 이 기기에도 입력값을 자동 저장하지 않습니다.</p>
+  <form class="hanmo-form" id="credit-form">
+    <div class="hanmo-fields">
+      <label class="hanmo-field" for="credit-target">내가 확인한 목표 학점<input id="credit-target" type="number" min="1" max="400" step="0.5" placeholder="예: 134" required></label>
+      <label class="hanmo-field" for="credit-earned">취득 학점<input id="credit-earned" type="number" min="0" max="400" step="0.5" placeholder="예: 64" required></label>
+      <label class="hanmo-field" for="credit-going">수강 중 학점<input id="credit-going" type="number" min="0" max="100" step="0.5" value="0"></label>
+      <label class="hanmo-field" for="credit-planned">예정 학점<input id="credit-planned" type="number" min="0" max="100" step="0.5" value="0"></label>
+    </div>
+    <div class="hanmo-actions"><button type="submit" class="hanmo-btn">학점 정리하기</button><button id="credit-reset" type="reset" class="hanmo-btn secondary">입력 지우기</button></div>
+  </form>
+</section>
+<section class="hanmo-card" aria-labelledby="credit-summary-title">
+  <h2 id="credit-summary-title">내 계산 결과</h2>
+  <div class="hanmo-result" id="credit-summary" role="status" aria-live="polite"><h3>숫자를 입력하면 결과가 표시됩니다.</h3><p>재수강·교과 구분·학칙 적용은 학교의 공식 판정과 다를 수 있습니다.</p></div>
+  <div class="hanmo-progress-track" aria-hidden="true"><div id="credit-bar" class="hanmo-progress-fill"></div></div>
+  <p class="hanmo-status" id="credit-status"></p>
+  <p style="margin-top:16px">정확한 이수요건은 본인의 교육과정 적용연도와 공식 학교 안내에서 확인하세요.</p>
+</section>
+</div></main>
+  <footer class="hanmo-footer">© 한모 · 비공식 학습 지원 · 학교 로그인·자동 수강신청·성적표 업로드 없음</footer>
+</body>
+</html>
