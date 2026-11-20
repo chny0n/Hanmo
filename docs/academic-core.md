@@ -1,6 +1,6 @@
 # 한모 학업 코어 · 학생용 UI
 
-한모의 학생용 화면은 모두 저장소 루트 **`html/`** 폴더에서 제공됩니다. `degree-rescue/`는 TypeScript 학업 계산 코어, 데이터 검증, 번들 빌드, 단위 테스트를 위한 내부 소스 폴더이며 공개 웹사이트에서 `/degree-rescue/` URL을 제공하지 않습니다.
+한모의 학생용 화면은 모두 저장소 루트 **`html/`** 폴더에서 제공됩니다. `js/academic/`은 TypeScript 학업 계산 코어와 단위 테스트, `data/`는 학사자료, `scripts/`는 검증·배포 빌드 스크립트를 담는 폴더이며 공개 웹사이트에서 `/degree-rescue/` URL을 제공하지 않습니다.
 
 학생용 기능 바로가기: [학업 플래너](../html/planner.html) · [학사 공지](../html/academic-timeline.html) · [개설 전망](../html/forecast.html) · [강의 검색 안내](../html/catalog.html) · [학점 정리](../html/academic-progress.html) · [가상 돌발상황 연습](../html/scenario-workshop.html).
 
@@ -17,11 +17,10 @@
 ## 개발·검증
 
 ```bash
-cd degree-rescue
 npm install --ignore-scripts --no-audit --no-fund
 npm run check
 ```
 
-검사는 TypeScript 타입 검사, 기존 합성 모델 회귀 테스트, 학생용 번들 생성, `html/` 링크/접근성/PC 정책, 비개발자 입력 보안 및 GitHub Pages 정적 번들을 확인합니다. 산출물은 `degree-rescue/dist/`이며 폴더명은 **빌드 결과 디렉터리**일 뿐 학생 방문 URL은 아닙니다. `dist/CNAME`은 만들지 않습니다.
+검사는 TypeScript 타입 검사, 기존 합성 모델 회귀 테스트, 학생용 번들 생성, `html/` 링크/접근성/PC 정책, 비개발자 입력 보안 및 GitHub Pages 정적 번들을 확인합니다. 산출물은 `dist/`이며 폴더명은 **빌드 결과 디렉터리**일 뿐 학생 방문 URL은 아닙니다. `dist/CNAME`은 만들지 않습니다.
 
 학교 자료 사용권 및 출처 확인은 [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) 회신 전까지 보류하며, 공식 학적·강의·접수일을 임의 확정하지 않습니다. PR 병합 및 운영 사이트 배포는 별도 승인 대상입니다.

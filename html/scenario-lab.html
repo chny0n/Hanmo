@@ -7,39 +7,10 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="한모 2차 합성 시나리오 별도 시연 - 실제 신청과 학적에 영향 없음">
   <title>한모 | 돌발 상황 연습 독립 미리보기</title>
-  <style>
-    :root{font-family:system-ui,"Noto Sans KR",sans-serif;color:#19364e;background:#eef3f8;}
-    *{box-sizing:border-box;}
-    body{margin:0;}
-    main{max-width:880px;margin:30px auto;padding:24px;background:#fff;border-radius:12px;box-shadow:0 5px 18px #15395b17;}
-    h1{font-size:27px;line-height:1.4;margin:8px 0;}
-    h2{font-size:18px;line-height:1.5;}
-    p,li{line-height:1.65;}
-    .lead,.safety{color:#456277;}
-    .safety{border-left:4px solid #bd8120;background:#fff8eb;padding:12px 14px;margin:18px 0;}
-    form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:24px 0;}
-    label{font-weight:700;display:grid;gap:7px;}
-    input,select,button{font:inherit;min-height:42px;padding:9px 12px;}
-    input,select{width:100%;border-radius:7px;border:1px solid #acbecb;background:#fff;}
-    input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #b7801a;outline-offset:3px;}
-    .checkbox{display:flex;align-items:center;gap:10px;grid-column:1/-1;}
-    .checkbox input{width:19px;height:19px;flex:0 0 auto;}
-    button{background:#205883;color:#fff;border:0;border-radius:8px;cursor:pointer;}
-    button:hover{background:#14466d;}
-    .controls{grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap;}
-    .controls button:nth-child(2){background:#e3ebf2;color:#1b486a;}
-    #scenario-status{padding:14px;border-radius:8px;background:#eaf3fa;font-weight:700;}
-    #scenario-actions{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0;}
-    #scenario-details{color:#456277;font-size:14px;}
-    #scenario-errors{color:#985000;font-weight:700;min-height:1.6em;}
-    #scenario-history{padding-left:24px;}
-    footer{padding-top:15px;border-top:1px solid #dae4eb;font-size:13px;color:#466074;}
-    a{color:#164e81;}
-    @media(max-width:600px){main{border-radius:0;margin:0;padding:18px;}form{grid-template-columns:1fr;}}
-  </style>
+  <link rel="stylesheet" href="../css/scenario-lab.css">
   <link rel="stylesheet" href="../css/student-ui.css">
 </head>
-<body>
+<body class="hanmo-lab">
   <nav class="hanmo-topbar" aria-label="전체 기능 바로가기">
   <a class="hanmo-brand" href="../index.html"><img src="../img/hanmo_white.svg" width="29" height="24" alt="">한모 <span>HUFS 학업 도우미</span></a>
   <div class="hanmo-nav-inline">
@@ -53,7 +24,12 @@
   </div>
 </nav>
 <main id="scenario-lab">
-    <p><a href="./scenario-workshop.html">2차 전체 학생용 UI 미리보기 열기</a> · <a href="./vsugang.html">기존 BASIC/TIME/SELECT 연습으로 돌아가기</a></p>
+  <div class="hanmo-schoolmark" aria-label="한국외국어대학교 모의수강신청 한모">
+    <h2>한국외국어대학교 모의수강신청</h2>
+    <div class="hanmo-markline" aria-hidden="true"><span></span><img src="../img/hanmo_white.svg" alt=""><span></span></div>
+  </div>
+
+    <p><a href="./scenario-workshop.html">돌발상황 연습 전체 화면 열기</a> · <a href="./vsugang.html">기존 BASIC/TIME/SELECT 연습으로 돌아가기</a></p>
     <h1>돌발상황 연습 · 기본 체험</h1>
     <p class="lead">마지막 과목 신청 실패와 가상 재접속을 연습합니다. 모든 과목·대기·결과는 합성 사례입니다.</p>
     <p class="safety"><strong>주의:</strong> 기존 한모 연습 화면, 실제 학교 수강신청, 성적·이수 기록과 연결되지 않습니다. 연결 끊기·자동 신청·학교 로그인·외부 API 요청을 수행하지 않으며 이 페이지를 떠나면 시연 내용이 사라집니다.</p>
@@ -80,7 +56,7 @@
       <p id="scenario-instructions" class="lead">실제 수강신청과 다른 가상 체험입니다. 아래 체크를 확인한 뒤 시작하세요.</p>
       <div class="controls">
         <button id="scenario-start" type="submit">동의 후 가상 연습 시작</button>
-        <button id="scenario-reset" type="button">시연 종료·초기화</button>
+        <button id="scenario-reset" type="button">연습 종료·다시 시작</button>
       </div>
     </form>
     <section aria-labelledby="simulation-title">
@@ -92,7 +68,7 @@
       <h2>연습 행동 기록</h2>
       <ol id="scenario-history" aria-live="polite"></ol>
     </section>
-    <footer>2차 개발용 별도 시연 · 연습 결과와 실제 개설·수강신청·학점은 무관합니다.</footer>
+    <footer>가상 모의신청 체험 · 연습 결과와 실제 개설·수강신청·학점은 무관합니다.</footer>
   </main>
   <script src="../js/scenario-engine.js"></script>
   <script src="../js/scenario-lab.js"></script>

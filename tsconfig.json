@@ -17,6 +17,6 @@
     "allowImportingTsExtensions": true
   },
   "include": [
-    "src/**/*.ts"
+    "js/academic/**/*.ts"
   ]
 }
