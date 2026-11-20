@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run src/core src/views",
     "check": "npm run typecheck && npm run test && npm run build && npm run smoke",
-    "smoke": "node scripts/check-static-pages.mjs"
+    "smoke": "node scripts/check-static-pages.mjs && node --test ../tests/student-navigation.test.cjs"
   },
   "dependencies": {
     "zod": "4.6.7",
