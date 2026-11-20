@@ -1,5 +1,6 @@
 import {
   compareProvisionalScenario,normalizeStudentCourse,normalizePlanCourse,upcomingTerms,
+  explainProvisionalExclusions,provisionalTermBreakdown,
   SCENARIO_TERMS,MAX_COURSES,type ScenarioId,type StudentCourse,type StudentPlanCourse,
 } from '../views/student-progress.js';
 import {creditsText} from '../views/graduationView.js';
@@ -106,12 +107,32 @@ function renderAll():void{
       card.append(text('p','대상 학기: '+result.terms.join(' · ')));
       const planned=text('p','계획 학점 '+creditsText(result.audit.plannedCreditUnits));
       planned.className='important';card.append(planned);
+      const termList=document.createElement('ul');termList.className='term-breakdown';
+      for(const term of provisionalTermBreakdown(result)){
+        const courseCount=term.countedCourses+'과목';
+        const omitted=term.excludedCourses?' · 합산 제외/보류 '+term.excludedCourses+'건':'';
+        termList.append(text('li',term.term+' · 계획 학점 '+creditsText(term.countedCreditUnits)
+          +' ('+courseCount+omitted+')'));
+      }
+      card.append(termList);
       card.append(text('p','입력 과목 '+result.rows.length+'건 · 취득 학점 '+creditsText(result.audit.earnedCreditUnits)
         +' · 수강 중 '+creditsText(result.audit.inProgressCreditUnits)));
       const note=text('p','자료 부족 · 공식 학칙·분반이 없어 졸업 가능 시점/계획 추천을 판정하지 않습니다.');
       note.className='warning';card.append(note);
-      if(result.audit.excludedAttempts.length>0)card.append(text('p',
-        '중복·시점·인정 상태 등 검토할 기록 '+result.audit.excludedAttempts.length+'건'));
+      const exclusions=explainProvisionalExclusions(result,records);
+      if(exclusions.length){
+        const details=document.createElement('details');details.className='exclusion-details';
+        details.append(text('summary','학점 합산에서 제외·보류된 입력 '+exclusions.length+'건 · 이유 확인'));
+        const list=document.createElement('ul');list.className='exclusion-list';
+        for(const excluded of exclusions){
+          const item=document.createElement('li');
+          item.append(text('strong',(excluded.origin==='record'?'내 과목 기록':'이 계획의 과목')
+            +' · '+excluded.courseId+' · '+excluded.term));
+          item.append(text('span',excluded.explanation+' 다음 확인: '+excluded.nextAction));
+          list.append(item);
+        }
+        details.append(list);card.append(details);
+      }
       root.append(card);
     }
   }catch(error){

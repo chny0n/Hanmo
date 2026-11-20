@@ -1,5 +1,6 @@
 import {describe,it,expect} from 'vitest';
-import {creditUnits,normalizeStudentCourse,upcomingTerms,compareProvisionalScenario} from './student-progress.js';
+import {creditUnits,normalizeStudentCourse,upcomingTerms,compareProvisionalScenario,
+  explainProvisionalExclusions,provisionalTermBreakdown} from './student-progress.js';
 
 const AS_OF='2026-11-20T08:00:00+09:00';
 const record={courseId:'ECON101',credits:3,term:'2025-1',slot:'EARNED' as const};
@@ -55,4 +56,30 @@ describe('#63 local-only student graduation/ABC scenario preview',()=>{
     expect(r.audit.state).toBe('INSUFFICIENT_DATA');
     expect(r.audit.caveats.some(x=>x.includes('rule pack'))).toBe(true);
   });
+  it('shows credited semesters separately and explains a duplicate plan without inventing official credit',()=>{
+    const r=compareProvisionalScenario({asOf:AS_OF,scenario:'A',records:[record],plans:[
+      {courseId:'ECON101',credits:3,term:'2027-1'},
+      {courseId:'ECON201',credits:2.5,term:'2027-2'},
+      {courseId:'ECON202',credits:3,term:'2027-2'},
+    ]});
+    expect(provisionalTermBreakdown(r)).toEqual([
+      {term:'2027-1',countedCreditUnits:0,countedCourses:0,excludedCourses:1},
+      {term:'2027-2',countedCreditUnits:11,countedCourses:2,excludedCourses:0},
+    ]);
+    expect(explainProvisionalExclusions(r,[record])).toMatchObject([
+      {origin:'plan',courseId:'ECON101',term:'2027-1',reason:'DUPLICATE'},
+    ]);
+    expect(r.audit.state).toBe('INSUFFICIENT_DATA');
+    expect(r.audit.requirements).toHaveLength(0);
+  });
+  it('identifies which self-reported future earned course is on hold',()=>{
+    const future={...record,term:'2027-1'};
+    const r=compareProvisionalScenario({asOf:AS_OF,scenario:'B',records:[future],plans:[]});
+    expect(explainProvisionalExclusions(r,[future])).toMatchObject([
+      {origin:'record',courseId:'ECON101',term:'2027-1',reason:'NEEDS_REVIEW'},
+    ]);
+    expect(provisionalTermBreakdown(r)).toHaveLength(3);
+    expect(r.audit.earnedCreditUnits).toBe(0);
+  });
+
 });
