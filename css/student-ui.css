@@ -1,0 +1,82 @@
+/* Source-derived HANMO tokens. Public student UI only; original practice/selectZone assets are untouched. */
+:root {
+  --hm-navy:#062947;--hm-navy-soft:#173c60;--hm-accent:#28618d;--hm-ink:#20384c;
+  --hm-muted:#5b7184;--hm-paper:#fff;--hm-canvas:#f0f5f9;--hm-line:#d3e0e9;
+  --hm-focus:#b8872c;--hm-gold:#e8b875;--hm-radius:16px;--hm-gap:20px;
+  font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;
+}
+*{box-sizing:border-box}
+body.hanmo-ui{margin:0;background:var(--hm-canvas);color:var(--hm-ink);line-height:1.6;min-height:100vh}
+.hanmo-ui a{color:var(--hm-accent);text-underline-offset:3px}
+.hanmo-ui input,.hanmo-ui select,.hanmo-ui button{font:inherit}
+.hanmo-ui a:focus-visible,.hanmo-ui button:focus-visible,.hanmo-ui input:focus-visible,.hanmo-ui select:focus-visible{outline:3px solid var(--hm-focus);outline-offset:3px}
+.hanmo-skip{position:absolute;left:12px;top:-90px;z-index:99;background:#fff;padding:9px 14px}
+.hanmo-skip:focus{top:12px}
+.hanmo-topbar{display:flex;align-items:center;justify-content:space-between;gap:22px;min-height:77px;padding:15px max(24px,calc((100% - 1340px)/2));background:var(--hm-navy);color:#fff}
+.hanmo-brand{display:inline-flex;align-items:center;gap:9px;flex:none;color:#fff!important;text-decoration:none;font-size:20px;font-weight:850;letter-spacing:-.04em}
+.hanmo-brand img{object-fit:contain}
+.hanmo-brand span{font-size:12px;letter-spacing:0;font-weight:500;color:#bcd5e6}
+.hanmo-topbar nav{display:flex;gap:5px 12px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.hanmo-topbar nav a{color:#e6eff6;text-decoration:none;font-size:13px;font-weight:650;padding:7px 8px;border-radius:7px;white-space:nowrap}
+.hanmo-topbar nav a:hover,.hanmo-topbar nav a[aria-current="page"]{background:#1a4b70;color:#fff}
+.hanmo-main{max-width:1220px;margin:0 auto;padding:38px 26px 70px}
+.hanmo-hero{padding:36px 40px;border-radius:24px;background:linear-gradient(130deg,#062947,#174f71);color:#fff;margin-bottom:27px}
+.hanmo-eyebrow{margin:0 0 8px;color:#a7d9ee;font-size:12px;font-weight:800;letter-spacing:.06em}
+.hanmo-hero h1{font-size:clamp(28px,3vw,39px);margin:0 0 9px;line-height:1.3;letter-spacing:-.035em}
+.hanmo-hero p{margin:0;color:#d7e5ef;max-width:870px;font-size:15px}
+.hanmo-section-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin:28px 0 16px}
+.hanmo-section-title h2{font-size:23px;margin:0;letter-spacing:-.025em}
+.hanmo-section-title p{font-size:13px;color:var(--hm-muted);margin:0}
+.hanmo-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--hm-gap)}
+.hanmo-card-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.hanmo-card{background:var(--hm-paper);border:1px solid var(--hm-line);border-radius:var(--hm-radius);padding:26px;min-width:0}
+a.hanmo-card{display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--hm-ink);min-height:205px;transition:transform .15s,border-color .15s,box-shadow .15s}
+a.hanmo-card:hover{transform:translateY(-2px);border-color:#7aadc7;box-shadow:0 12px 26px #082c4a12}
+.hanmo-card h2,.hanmo-card h3{margin:0;font-size:21px;letter-spacing:-.02em}
+.hanmo-card p{margin:0;color:var(--hm-muted);font-size:14px}
+.hanmo-card .more{margin-top:auto;color:var(--hm-accent);font-size:13px;font-weight:800}
+.hanmo-tag{display:inline-flex;align-items:center;align-self:flex-start;padding:5px 9px;background:#e8f2fa;color:#20557e;border-radius:7px;font-size:12px;font-weight:700}
+.hanmo-tag.wait{background:#fff4df;color:#795016}
+.hanmo-note{background:#fffaf0;border:1px solid #eed9b6;border-left:4px solid #c78d29;border-radius:9px;padding:16px 19px;color:#66512e;font-size:13px;line-height:1.8;margin:18px 0 27px}
+.hanmo-note strong{margin-right:7px}
+.hanmo-form{display:grid;gap:18px}
+.hanmo-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.hanmo-field{display:grid;gap:8px;font-size:14px;font-weight:750;color:var(--hm-ink)}
+.hanmo-field input,.hanmo-field select{border:1px solid #b6cbd9;background:#fff;color:var(--hm-ink);min-height:47px;padding:10px 13px;border-radius:10px;width:100%;min-width:0}
+.hanmo-field small{font-weight:400;font-size:12px;color:var(--hm-muted)}
+.hanmo-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.hanmo-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none!important;border:1px solid transparent;border-radius:10px;background:var(--hm-accent);color:white!important;padding:11px 19px;min-height:45px;font-weight:750;font-size:14px}
+.hanmo-btn:hover{background:#184c72}
+.hanmo-btn.secondary{background:#e8f1f8;border-color:#c8dce8;color:var(--hm-navy)!important}
+.hanmo-btn.secondary:hover{background:#dceaf4}
+.hanmo-btn:disabled{cursor:not-allowed;opacity:.55}
+.hanmo-result{border:1px solid #c9dbe7;border-radius:14px;background:#f5f9fc;padding:20px;min-height:100px;margin-top:18px}
+.hanmo-result h3{font-size:17px;margin:0 0 7px}
+.hanmo-result p{font-size:14px;color:var(--hm-muted);margin:7px 0}
+.hanmo-empty{border:1px dashed #b8cbd9;border-radius:12px;background:#f8fbff;padding:26px;text-align:center;color:var(--hm-muted);font-size:14px}
+.hanmo-list{display:grid;gap:14px;padding:0;margin:0;list-style:none}
+.hanmo-item{background:#fff;border:1px solid var(--hm-line);border-radius:12px;padding:18px 20px}
+.hanmo-item h3{font-size:17px;margin:5px 0 9px;line-height:1.5}
+.hanmo-item p{font-size:13px;color:var(--hm-muted);margin:5px 0}
+.hanmo-item a{font-weight:750;font-size:13px}
+.hanmo-status{min-height:24px;color:#315b76;font-size:13px;line-height:1.7}
+.hanmo-filter{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:18px 0}
+.hanmo-filter .hanmo-field{flex:1 1 180px}
+.hanmo-metric{background:#e9f3fb;padding:18px;border-radius:14px}
+.hanmo-metric strong{display:block;font-size:27px;color:#174f71}
+.hanmo-progress-track{height:12px;background:#d8e4ed;border-radius:99px;margin:14px 0 4px;overflow:hidden}
+.hanmo-progress-fill{height:100%;background:#3982ab;width:0;transition:width .15s}
+.hanmo-footer{text-align:center;padding:24px;border-top:1px solid var(--hm-line);font-size:12px;color:var(--hm-muted)}
+/* An explicit top navigation replaces every academic sidebar. Preserve the PC-only device guard. */
+@media(max-width:1250px){.hanmo-topbar{align-items:flex-start;flex-direction:column}.hanmo-topbar nav{justify-content:flex-start}}
+@media(max-width:830px){.hanmo-main{padding:20px 16px 45px}.hanmo-hero{padding:28px 22px}.hanmo-card-grid,.hanmo-card-grid.two,.hanmo-fields{grid-template-columns:1fr}.hanmo-topbar{padding:15px}}
+
+/* Shared horizontal navigation on existing legacy-adjacent pages. */
+.hanmo-topbar .hanmo-nav-inline{display:flex;align-items:center;justify-content:flex-end;gap:5px 12px;flex-wrap:wrap}
+.hanmo-topbar .hanmo-nav-inline a{color:#e6eff6;text-decoration:none;font-size:13px;font-weight:650;padding:7px 8px;border-radius:7px;white-space:nowrap}
+.hanmo-topbar .hanmo-nav-inline a:hover,
+.hanmo-topbar .hanmo-nav-inline a[aria-current="page"]{background:#1a4b70;color:#fff}
+.hanmo-practice-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:13px;margin:0 auto 24px;max-width:900px}
+.hanmo-practice-links a{background:#123f5d;border:1px solid #7296ad;border-radius:11px;color:#e8f4fa;padding:10px 14px;font-size:14px;text-decoration:none;font-weight:750}
+.hanmo-practice-links a:hover{background:#1a597a}
+@media(max-width:1250px){.hanmo-topbar .hanmo-nav-inline{justify-content:flex-start}}
