@@ -78,3 +78,19 @@ test('in-page incident workflow keeps default OFF and original practice contract
   assert.ok(source.includes('sessionStorage'),'reload recovery must have short-lived scoped state');
   assert.ok(!source.includes('fetch(')&&!source.includes('XMLHttpRequest('));
 });
+
+test('academic entry handoff and three A/B/C plans integrate into existing pages without a sidebar',()=>{
+ const planner=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
+ const notices=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
+ const progress=fs.readFileSync(path.join(ROOT,'html/academic-progress.html'),'utf8');
+ for(const id of ['planner-campus','planner-major','planner-double','planner-cohort','planner-go-notices'])
+  assert.ok(planner.includes('id="'+id+'"'),id);
+ assert.ok(planner.includes('../js/student-entry.js'));
+ assert.ok(notices.includes('id="notice-context"'));
+ for(const id of ['record-form','record-rows','credit-overview','scenario-choice',
+  'plan-form','scenario-comparison','plan-term','plan-course'])
+  assert.ok(progress.includes('id="'+id+'"'),id);
+ assert.ok(progress.includes('../js/academic-progress.js'));
+ assert.ok(progress.includes('../css/academic-progress.css'));
+ assert.doesNotMatch(progress,/class="planner-sidebar"|type="file"|<textarea/);
+});

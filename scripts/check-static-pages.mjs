@@ -17,6 +17,7 @@ const must=async(name)=>{if(!await exists(join(dist,name)))throw Error('Missing 
 for(const name of [
   'index.html','css/student-ui.css','js/student-forecast.js',
   'js/student-preferences.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js',
+  'js/student-entry.js','js/academic-progress.js','css/academic-progress.css',
   'data/academic-notices-reference.json','html/pc-only.html','js/pc-only.js',
   ...htmlRoutes,
 ])await must(name);

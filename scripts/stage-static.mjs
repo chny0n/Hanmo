@@ -5,8 +5,11 @@ import {resolve,join} from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const compiled=join(root,'.build','student-forecast.js');
+const compiledEntry=join(root,'.build','student-entry.js');
+const compiledProgress=join(root,'.build','academic-progress.js');
 const exists=async p=>{try{return(await stat(p)).isFile()}catch{return false}};
-if(!await exists(compiled))throw Error('Missing generated student forecast bundle; run npm run build.');
+for(const filename of [compiled,compiledEntry,compiledProgress])
+  if(!await exists(filename))throw Error('Missing generated academic JS bundle: '+filename);
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 await copyFile(join(root,'index.html'),join(dist,'index.html'));
@@ -17,10 +20,12 @@ await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(root,'data','academic-notices-reference.json'),
   join(dist,'data','academic-notices-reference.json'));
 await copyFile(compiled,join(dist,'js','student-forecast.js'));
+await copyFile(compiledEntry,join(dist,'js','student-entry.js'));
+await copyFile(compiledProgress,join(dist,'js','academic-progress.js'));
 for(const name of [
  'index.html','html/planner.html','html/forecast.html','html/catalog.html',
  'html/academic-timeline.html','html/academic-progress.html',
- 'html/vsugang.html','js/student-forecast.js','data/academic-notices-reference.json',
+ 'html/vsugang.html','js/student-forecast.js','js/student-entry.js','js/academic-progress.js','data/academic-notices-reference.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into QA artifact');
 const rootEntries=await readdir(dist);

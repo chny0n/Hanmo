@@ -9,6 +9,7 @@
   <link rel="icon" href="../img/hanmo_color.png">
   <link rel="stylesheet" href="../css/student-ui.css">
   <script src="../js/student-preferences.js" defer></script>
+  <script src="../js/student-entry.js" defer></script>
 </head>
 <body class="hanmo-ui">
   <a class="hanmo-skip" href="#main">본문으로 이동</a>
@@ -36,17 +37,23 @@
 </section>
 <div class="hanmo-note" role="note"><strong>안내</strong> 한모는 학생이 만든 비공식 학업 보조 서비스입니다. 공지·개설·졸업 자격은 반드시 <a href="https://hufs.ac.kr/" target="_blank" rel="noopener noreferrer">학교 공식 안내</a>에서 확인하세요.</div>
 <section class="hanmo-card" aria-labelledby="profile-title">
-  <div class="hanmo-section-title"><h2 id="profile-title">내 학업 조건</h2><p>필요할 때만 저장할 수 있어요. 이 브라우저 밖으로 보내지지 않습니다.</p></div>
+  <div class="hanmo-section-title"><h2 id="profile-title">내 학업 조건</h2><p>필요할 때만 이 브라우저에 저장할 수 있어요. 공지 확인 버튼은 현재 탭에 임시 전달만 합니다.</p></div>
   <form class="hanmo-form" id="planner-profile">
     <div class="hanmo-fields">
       <label class="hanmo-field" for="planner-campus">캠퍼스
         <select id="planner-campus" required><option value="">캠퍼스를 선택하세요</option><option value="SEOUL">서울캠퍼스</option><option value="GLOBAL">글로벌캠퍼스</option></select>
       </label>
       <label class="hanmo-field" for="planner-major">주전공
-        <input id="planner-major" type="text" maxlength="80" autocomplete="off" placeholder="예: 경제학전공" required>
+        <input id="planner-major" type="text" maxlength="100" autocomplete="off" placeholder="예: 경제학전공" required>
+      </label>
+      <label class="hanmo-field" for="planner-double">이중전공 (선택)
+        <input id="planner-double" type="text" maxlength="100" autocomplete="off" placeholder="해당 없다면 비워두세요">
+      </label>
+      <label class="hanmo-field" for="planner-cohort">입학년도 (선택)
+        <input id="planner-cohort" type="number" min="2010" max="2100" step="1" placeholder="예: 2024">
       </label>
     </div>
-    <div class="hanmo-actions"><button class="hanmo-btn" type="submit">이 브라우저에 선택 저장</button><button class="hanmo-btn secondary" id="planner-clear" type="button">저장된 선택 지우기</button></div>
+    <div class="hanmo-actions"><button class="hanmo-btn" type="submit">이 브라우저에 선택 저장</button><button class="hanmo-btn secondary" id="planner-clear" type="button">저장된 선택 지우기</button><button class="hanmo-btn" id="planner-go-notices" type="button">내 전공 공지 확인하기 →</button></div>
     <p class="hanmo-status" id="planner-message" role="status" aria-live="polite">선택하지 않아도 아래 기능을 이용할 수 있어요.</p>
   </form>
 </section>
