@@ -76,8 +76,16 @@ for(const page of studentPages){
 for(const path of studentPages){
   if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
 }
-if(!root.includes('./html/vsugang.html'))
-  throw Error('Root main menu missing exercise navigation');
+if(root.includes('<a href="./html/vsugang.html"')||/기존 모의신청|기본 모의신청/.test(root))
+  throw Error('Home topbar must not expose a redundant mock-registration link');
+for(const page of [...studentPages,'html/vsugang.html','html/result.html','html/developer.html']){
+  const body=await readFile(join(dist,page),'utf8');
+  const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  if(!bar||!bar.includes('class="hanmo-brand" href="../index.html"'))
+    throw Error('Missing consistent home brand link on '+page);
+  if(/href="\.\/vsugang\.html"|<a[^>]+>홈<\/a>/.test(bar))
+    throw Error('Redundant mock-registration or home item in topbar: '+page);
+}
 const menu=await readFile(join(dist,'html/vsugang.html'),'utf8');
 for(const id of ['scenario-settings','incident-practice','incident-search',
  'incident-candidates','incident-404','incident-404-refresh','incident-404-back']){
