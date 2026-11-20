@@ -97,32 +97,36 @@ test('academic entry handoff and three A/B/C plans integrate into existing pages
  assert.doesNotMatch(plannerNav,/href="\.\/vsugang\.html"/,'remove old mock-registration card');
 });
 
-test('home is a navigation-only page; the Hanmo brand is the single home link',()=>{
+test('home restores the original mock registration layout without the academic-entry promo block',()=>{
  const home=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
- assert.match(home,/<body class="hanmo-ui">/);
  assert.match(home,/<nav class="hanmo-topbar"/);
  assert.match(home,/<a class="hanmo-brand" href="\.\/index\.html" aria-label="한모 홈으로 이동"/);
- assert.doesNotMatch(home,/<main\b|academic-entry|<section\b|<aside\b|<footer\b/);
- assert.doesNotMatch(home,/src=['"]\.\/js\/(?:gnb|index)\.js|ChannelIO|class=['"](?:container|headerNotice|deviceCheck)/);
+ assert.match(home,/<main>/);
+ for(const tag of ["class='titleContainer'","class='notice blueBox'","class='mainNotice blueBox'",
+   "class='buttonContainer'","class='headerNotice'","class='deviceCheck'"])
+   assert.ok(home.includes(tag),'restore original page structure '+tag);
+ for(const txt of ['수강신청 연습하기','새로고침','개발자 소개','NOTICE','이용 제한 시간'])
+   assert.ok(home.includes(txt),'restore original content '+txt);
+ for(const asset of ['./css/gnb.css','./css/index.css','./css/layout.css',
+   './js/gnb.js','./js/index.js'])
+   assert.ok(home.includes(asset),'restore original asset '+asset);
+ assert.doesNotMatch(home,/academic-entry|학사 준비도 한모에서|수강신청 전부터 졸업 준비까지/);
  assert.doesNotMatch(home,/<a[^>]*>홈<\/a>/);
- const allowed=[
-  './html/planner.html','./html/academic-timeline.html','./html/forecast.html',
-  './html/catalog.html','./html/academic-progress.html'
- ];
- const links=[...home.matchAll(/<a[^>]+href="([^"]+)"/g)].map(match=>match[1]);
- assert.deepEqual(links,['./index.html',...allowed]);
- assert.doesNotMatch(home,/<a[^>]+href="\.\/html\/vsugang\.html"/,'no mock link in homepage topbar');
+ assert.doesNotMatch(home,/<a[^>]*href="\.\/html\/vsugang\.html"[^>]*>/,'do not restore redundant topbar link');
+ const bar=home.match(/<nav class="hanmo-topbar"[\s\S]*?<\/nav>/)?.[0];
+ assert.ok(bar);
+ const allowed=['./index.html','./html/planner.html','./html/academic-timeline.html',
+   './html/forecast.html','./html/catalog.html','./html/academic-progress.html'];
+ assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
+ assert.match(home,/onclick="location\.href='\.\/html\/vsugang\.html'"/);
+ assert.match(home,/onclick="location\.reload\(\)"/);
  for(const page of student){
-  const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
-  assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
-  assert.doesNotMatch(html,/<a href="\.\.\/index\.html">홈<\/a>/,page);
-  const bar=html.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
-  assert.ok(bar,'missing topbar on '+page);
-  assert.doesNotMatch(bar,/<a[^>]+href="\.\/vsugang\.html"[^>]*>/,'remove mock registration nav: '+page);
+   const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
+   assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
+   assert.doesNotMatch(html,/<a href="\.\.\/index\.html">홈<\/a>/,page);
  }
  for(const page of ['vsugang','developer','result']){
-  const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
-  assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
-  assert.doesNotMatch(html,/<a href="\.\.\/index\.html">홈<\/a>/,page);
+   const html=fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
+   assert.match(html,/<a class="hanmo-brand" href="\.\.\/index\.html" aria-label="한모 홈으로 이동"/,page);
  }
 });

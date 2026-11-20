@@ -64,8 +64,17 @@ for(const page of studentPages){
 const root=await readFile(join(dist,'index.html'),'utf8');
 if(!root.includes('class="hanmo-topbar"')||
    !root.includes('class="hanmo-brand"')||
-   /<main\b|academic-entry|<section\b|<aside\b|<footer\b/.test(root))
-  throw Error('Home must show only the top navigation bar');
+   /academic-entry|학사 준비도 한모에서/.test(root))
+  throw Error('Home must show original content without the academic promo');
+for(const needed of [
+  "class='titleContainer'","class='notice blueBox'","class='mainNotice blueBox'",
+  "class='buttonContainer'","수강신청 연습하기","새로고침","개발자 소개",
+  "./css/index.css","./css/layout.css","./js/gnb.js","./js/index.js"
+]){
+  if(!root.includes(needed))throw Error('Original home element or script missing: '+needed);
+}
+if(!root.includes('onclick="location.reload()"'))
+  throw Error('Home refresh button must work on a GitHub Pages project path');
 for(const page of studentPages){
   const body=await readFile(join(dist,page),'utf8');
   if(!body.includes('class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"'))
