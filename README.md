@@ -36,7 +36,7 @@
 
 > **미리보기 안내:** 위 이미지는 `main` 브랜치의 현재 기능·화면 구성을 바탕으로 다시 제작한 **설명용 시각화**이며 실제 브라우저 화면 캡처가 아닙니다. 공지의 전공별 적용 대상, 공식 강의 개설 원장, 최신 강좌·교수 데이터는 검수·연결 전입니다. [실제 화면 소스 보기](html/) · [QA 배포 워크플로](.github/workflows/deploy-pages.yml)
 
-### 학사종합지원센터 참고 SVG 4종
+### 아키텍쳐 참고
 
 <sub>작은 미리보기입니다. 클릭하면 원본 SVG로 확대됩니다.</sub>
 
@@ -47,7 +47,7 @@
 <td align="center" width="25%"><a href="docs/images/hanmo-04-roadmap.svg"><img src="docs/images/hanmo-04-roadmap.svg" alt="04 · 로드맵" width="190"></a><br><sub>04 · 로드맵</sub></td>
 </tr></table>
 
-[**학사종합지원센터 참고용 설명서 (그림 4장 + 검토 요청사항)**](docs/academic-support-center-brief.md) · [아키텍처 기준 문서](docs/architecture.md)
+[**아키텍쳐 참고 설명서 (SVG 4장 + 검토 사항)**](docs/academic-support-center-brief.md) · [아키텍처 기준 문서](docs/architecture.md)
 
 > 학교 학사자료와 Supabase는 **아직 실연동 전**입니다. 공식 서비스가 아닙니다.
 
