@@ -66,6 +66,8 @@
     RECONNECT_QUEUE:[['QUEUE_FINISHED','가상 대기열 통과']],
     RECONCILE:[['VERIFY','가상 신청 내역 확인']],
   });
+  const DIFFICULTY_LABELS=Object.freeze({BEGINNER:'초급',INTERMEDIATE:'중급',ADVANCED:'고급'});
+  const PHASE_LABELS=Object.freeze({LAST:'마지막 신청',CANCELLATION:'취소 판단',RECOVERY:'재접속 준비',RECONNECT:'재접속'});
   const ACTION_NAMES=Object.freeze({
     CONFIRM_PREVIOUS:'이전 과목 신청 확인',
     ATTEMPT_LAST:'마지막 과목 신청',
@@ -229,10 +231,10 @@
       view('run');
       const state=getState(config,session),summary=getSummary(config,session);
       const label=STATES[state]??['알 수 없는 가상 상태','시나리오 상태를 확인해 주세요.'];
-      el['workshop-phase'].textContent=PRESETS[config.preset].difficulty+' · '+config.mode;
+      el['workshop-phase'].textContent=DIFFICULTY_LABELS[config.difficulty]+' · '+config.mode;
       el['workshop-scene-title'].textContent=label[0];
       el['workshop-scene-description'].textContent=label[1];
-      el['workshop-progress'].textContent='현재 단계: '+state+' · 기록된 행동 '+summary.actions.length+'건';
+      el['workshop-progress'].textContent='현재 상황: '+label[0]+' · 기록된 행동 '+summary.actions.length+'건';
       el['workshop-status'].textContent='가상 연습 진행 중 · '+label[0];
       el['workshop-error'].textContent=lastError??'';
       el['workshop-virtual-metrics'].textContent='가상 경과 '+(summary.elapsedVirtualMs/1000).toFixed(1)
@@ -256,7 +258,7 @@
       el['workshop-live-steps'].replaceChildren();
       for(const action of summary.actions.slice(-15)){
         const li=make('li',ACTION_NAMES[action.type]??'단계 기록');
-        li.append(make('span',action.state+' · 가상 '+(action.elapsedVirtualMs/1000).toFixed(1)+'초'));
+        li.append(make('span',(STATES[action.state]?.[0]??'단계 완료')+' · 가상 '+(action.elapsedVirtualMs/1000).toFixed(1)+'초'));
         el['workshop-live-steps'].append(li);
       }
       renderActions(state);
@@ -293,8 +295,10 @@
       }
       el['workshop-replay-timeline'].replaceChildren();
       for(const action of currentReview.timeline){
-        const li=make('li',action.index+'. '+action.label);
-        li.append(make('span',action.phase+' · '+action.state+' · 가상 '+(action.elapsedVirtualMs/1000).toFixed(1)+'초'));
+        const li=make('li',action.label);
+        li.append(make('span',(PHASE_LABELS[action.phase]??'가상 연습')+' · '
+          +(STATES[action.state]?.[0]??'상황 종료')+' · 가상 '
+          +(action.elapsedVirtualMs/1000).toFixed(1)+'초'));
         el['workshop-replay-timeline'].append(li);
       }
       focus('workshop-report-heading');
