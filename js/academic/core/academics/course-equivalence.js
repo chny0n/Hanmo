@@ -9,7 +9,7 @@ import {assertId, termKey} from './ledger.js';
  * 입력은 수정하지 않으며 시계·네트워크·저장소에 의존하지 않는다.
  */
 
-/** @typedef {import('./ledger.js').LedgerAttempt} LedgerAttempt */
+/** @typedef {import('./ledger.js').LedgerAttempt} SameCourseLedgerAttempt */
 /**
  * @typedef {{
  *   id:string,fromCourseIds:readonly string[],toCourseId:string,
@@ -27,7 +27,7 @@ import {assertId, termKey} from './ledger.js';
  */
 /**
  * @typedef {{
- *   state:'APPLIED'|'NEEDS_REVIEW',attempts:LedgerAttempt[],
+ *   state:'APPLIED'|'NEEDS_REVIEW',attempts:SameCourseLedgerAttempt[],
  *   applied:AppliedSameCourse[],held:HeldSameCourse[]
  * }} SameCourseResult
  * 보류 대상의 학수번호는 원본 상태로 남겨 둔다.
@@ -63,7 +63,7 @@ function validate(rules) {
   }
 }
 
-/** @param {readonly LedgerAttempt[]} attempts @param {readonly SameCourseRule[]} rules @returns {SameCourseResult} 승인된 동일 과목 규칙의 적용 결과 */
+/** @param {readonly SameCourseLedgerAttempt[]} attempts @param {readonly SameCourseRule[]} rules @returns {SameCourseResult} 승인된 동일 과목 규칙의 적용 결과 */
 export function applySameCourseRules(attempts,rules) {
   if (!Array.isArray(attempts)) throw new TypeError('attempts must be an array');
   validate(rules);
