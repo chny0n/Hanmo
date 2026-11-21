@@ -1,0 +1,695 @@
+// @ts-check
+/** @typedef {z.infer<typeof AcademicTermVNextSchema>} AcademicTermVNext */
+/** @typedef {z.infer<typeof AcademicDegreePathVNextSchema>} AcademicDegreePathVNext */
+/** @typedef {z.infer<typeof AcademicRuleScopeVNextSchema>} AcademicRuleScopeVNext */
+/** @typedef {z.infer<typeof AcademicRequirementVNextSchema>} AcademicRequirementVNext */
+/** @typedef {z.infer<typeof AcademicClauseVNextSchema>} AcademicClauseVNext */
+/** @typedef {z.infer<typeof AcademicRulePackVNextSchema>} AcademicRulePackVNext */
+/** @typedef {{ sourceDocumentSha256:string;; sourceDocuments?:readonly {documentId:string;sourceDocumentSha256:string}[]|undefined;; clauses:readonly Pick<AcademicClauseVNext,'clauseId'|'kind'|'sourceSpanRef'|'sourceDocumentId'>[]; }} AcademicTrustedSourceInventoryVNext */
+/** @typedef {z.infer<typeof AcademicAuditVNextSchema>} AcademicAuditVNext */
+/** @typedef {z.infer<typeof OfferingOutlookVNextSchema>} OfferingOutlookVNext */
+import { z } from 'zod';
+const CreditUnitsSchema = z.number().int().nonnegative(); // 1단위는 0.5학점이다.
+/**
+ * 병합된 TASK-00 PR #13의 후속 검토 결과다.
+ * 기존 V1 통신 계약은 변경하지 않고, 4개 작업 영역 검토 전까지 엄격한 추가 스키마는 선택적으로 사용한다.
+ * 스키마 검증은 자료의 내부 일관성만 확인하며 학교 공식 요건, 출처의 완전성, 실제 학점 인정 또는 졸업 자격을 보증하지 않는다.
+ */
+const Id = z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_.:-]+$/);
+const DateTime = z.iso.datetime({ offset: true });
+const PositiveUnits = CreditUnitsSchema.refine(value => value > 0, {
+    message: 'Minimum must be positive',
+});
+const RequirementRef = z.array(Id).min(1).max(100);
+export const AcademicTermVNextSchema = z.string().regex(/^(19|20|21)\d{2}-[12]$/, { message: 'Regular semester must be YYYY-1 or YYYY-2' });
+export const MajorRoleVNextSchema = z.enum([
+    'PRIMARY_MAJOR', 'DOUBLE_MAJOR', 'MINOR',
+]);
+export const AcademicDegreePathVNextSchema = z.enum([
+    'DOUBLE_MAJOR', 'ADVANCED_SINGLE', 'ADVANCED_PLUS_MINOR',
+]);
+export const AcademicDegreePathSelectionVNextSchema = z.enum([
+    'DOUBLE_MAJOR', 'ADVANCED_SINGLE', 'ADVANCED_PLUS_MINOR', 'UNSELECTED',
+]);
+export const AcademicRuleScopeVNextSchema = z.strictObject({
+    campus: Id,
+    primaryMajor: Id,
+    secondaryMajor: Id.optional(),
+    majorRole: MajorRoleVNextSchema,
+    admissionType: Id,
+    curriculumVersion: Id,
+    degreePath: AcademicDegreePathVNextSchema.optional(),
+    track: Id.refine(v => v !== 'UNDECIDED' && v !== 'UNSELECTED', { message: 'A rule scope needs a concrete track' }).optional(),
+    cohortFrom: z.number().int().min(1900).max(2100),
+    cohortTo: z.number().int().min(1900).max(2100),
+}).superRefine((v, ctx) => {
+    if (v.cohortFrom > v.cohortTo)
+        ctx.addIssue({
+            code: 'custom', path: ['cohortTo'], message: 'Reversed admissions cohort',
+        });
+    if (v.majorRole === 'PRIMARY_MAJOR' && v.secondaryMajor)
+        ctx.addIssue({
+            code: 'custom', path: ['secondaryMajor'], message: 'Primary-major scope cannot imply second major',
+        });
+    if (v.majorRole !== 'PRIMARY_MAJOR' && !v.secondaryMajor)
+        ctx.addIssue({
+            code: 'custom', path: ['secondaryMajor'], message: 'Second-major/minor identity required',
+        });
+});
+const RequirementBase = {
+    id: Id,
+    /** 판본이 바뀌어도 유지되는 의미상 식별자이며 제목을 바탕으로 임의 생성한 ID가 아니다. */
+    semanticKey: Id,
+    sourceClauseIds: RequirementRef,
+    exceptionClauseIds: z.array(Id).max(100),
+    evidenceRefs: RequirementRef,
+};
+export const AcademicRequirementVNextSchema = z.discriminatedUnion('kind', [
+    z.strictObject({ ...RequirementBase, kind: z.literal('CREDIT_TOTAL'),
+        requiredCreditUnits: PositiveUnits }),
+    z.strictObject({ ...RequirementBase, kind: z.literal('CATEGORY_MINIMUM'),
+        areaId: Id, requiredCreditUnits: PositiveUnits }),
+    z.strictObject({ ...RequirementBase, kind: z.literal('REQUIRED_COURSE'),
+        canonicalCourseId: Id }),
+    z.strictObject({ ...RequirementBase, kind: z.literal('K_OF_N'),
+        courseIds: z.array(Id).min(2).max(100),
+        k: z.number().int().positive() }),
+    z.strictObject({ ...RequirementBase, kind: z.literal('AREA_SPREAD'),
+        areaIds: z.array(Id).min(2).max(30), minAreas: z.number().int().positive(),
+        requiredCreditUnits: PositiveUnits }),
+    z.strictObject({ ...RequirementBase, kind: z.literal('GROUP_CHOICE'),
+        groups: z.array(z.array(Id).min(1).max(10)).min(2).max(10),
+        k: z.number().int().positive() }),
+    z.strictObject({ ...RequirementBase, kind: z.literal('NON_CREDIT'),
+        criterionId: Id, verificationMode: z.enum(['OFFICIAL', 'MANUAL', 'GPA_NOT_COLLECTED']) }),
+]).superRefine((r, ctx) => {
+    for (const key of ['sourceClauseIds', 'exceptionClauseIds', 'evidenceRefs']) {
+        if (new Set(r[key]).size !== r[key].length)
+            ctx.addIssue({
+                code: 'custom', path: [key], message: 'Duplicate reference',
+            });
+    }
+    if (r.kind === 'AREA_SPREAD') {
+        if (r.minAreas > r.areaIds.length || new Set(r.areaIds).size !== r.areaIds.length)
+            ctx.addIssue({ code: 'custom', path: ['areaIds'], message: 'Distinct areas and feasible minimum required' });
+    }
+    if (r.kind === 'GROUP_CHOICE') {
+        const courses = r.groups.flat();
+        if (r.k > r.groups.length || new Set(courses).size !== courses.length)
+            ctx.addIssue({ code: 'custom', path: ['groups'], message: 'Groups must be disjoint and k cannot exceed their count' });
+    }
+    if (r.kind === 'K_OF_N') {
+        if (r.k > r.courseIds.length)
+            ctx.addIssue({
+                code: 'custom', path: ['k'], message: 'k exceeds available courses',
+            });
+        if (new Set(r.courseIds).size !== r.courseIds.length)
+            ctx.addIssue({
+                code: 'custom', path: ['courseIds'], message: 'Duplicate canonical course IDs',
+            });
+    }
+});
+export const AcademicClauseVNextSchema = z.strictObject({
+    clauseId: Id,
+    kind: z.enum(['RULE', 'EXCEPTION', 'FOOTNOTE', 'SCOPE', 'PROCEDURE']),
+    /** LLM을 실행하기 전에 원본 문서의 조항을 별도로 대조·목록화해야 한다. */
+    sourceSpanRef: Id,
+    sourceDocumentId: Id.optional(),
+    coverage: z.discriminatedUnion('state', [
+        z.strictObject({
+            state: z.literal('LINKED'), requirementIds: RequirementRef,
+        }),
+        z.strictObject({
+            state: z.literal('NOT_APPLICABLE'), reason: z.string().trim().min(8).max(300),
+            independentlyReviewedBy: Id,
+        }),
+        z.strictObject({
+            state: z.literal('UNREVIEWED'), reason: z.string().trim().min(1),
+        }),
+    ]),
+});
+const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
+export const AcademicSourceDocumentVNextSchema = z.strictObject({
+    documentId: Id,
+    url: z.url().refine(value => new URL(value).protocol === 'https:', { message: 'Official source must use HTTPS' }),
+    version: Id, sha256, publishedAt: DateTime,
+});
+const SourceDocumentHashes = z.array(z.strictObject({ documentId: Id, sha256 })).min(1).max(10);
+export const AcademicRulePackVNextSchema = z.strictObject({
+    version: Id,
+    supersedesVersion: Id.optional(),
+    sourceDocumentVersion: Id,
+    sourceDocumentUrl: z.url().refine(value => new URL(value).protocol === 'https:', {
+        message: 'Official source must use HTTPS',
+    }),
+    sourceDocumentSha256: sha256,
+    sourcePublishedAt: DateTime,
+    sourceDocuments: z.array(AcademicSourceDocumentVNextSchema).min(1).max(10).optional(),
+    effectiveFrom: DateTime,
+    effectiveUntil: DateTime.optional(),
+    scope: AcademicRuleScopeVNextSchema,
+    state: z.enum(['DRAFT', 'NEEDS_REVIEW', 'APPROVED']),
+    requirements: z.array(AcademicRequirementVNextSchema).min(1).max(200),
+    clauseInventory: z.array(AcademicClauseVNextSchema).min(1).max(500),
+    /** 차단 경고가 하나라도 있는 검토 후보는 활성화하지 않는다. */
+    validationReport: z.strictObject({
+        checkedAt: DateTime,
+        sourceDocumentSha256: sha256,
+        sourceDocumentHashes: SourceDocumentHashes.optional(),
+        blockingIssues: z.array(z.strictObject({
+            code: z.enum([
+                'NUMERIC_SOURCE_MISMATCH', 'CLAUSE_MISSING', 'EXCEPTION_SCOPE_CONFLICT',
+                'SOURCE_CONTRADICTION', 'PROMPT_INJECTION', 'UNVERIFIED_ORIGINAL',
+                'UNKNOWN_APPLICABILITY', 'OTHER',
+            ]),
+            sourceClauseId: Id.optional(),
+        })).max(200),
+    }).optional(),
+    /** 담당자가 원본과 독립적으로 대조한 조항 목록을 직접 확인·확약한다. */
+    inventoryReviewedBy: Id.optional(),
+    approvedBy: Id.optional(),
+    independentlyCheckedBy: Id.optional(),
+    approvedAt: DateTime.optional(),
+}).superRefine((v, ctx) => {
+    const problem = (path, message) => ctx.addIssue({
+        code: 'custom', path, message,
+    });
+    if (v.supersedesVersion === v.version)
+        problem(['supersedesVersion'], 'Cannot supersede itself');
+    if (v.effectiveUntil && Date.parse(v.effectiveUntil) <= Date.parse(v.effectiveFrom))
+        problem(['effectiveUntil'], 'Invalid effective period');
+    if (v.approvedAt && Date.parse(v.approvedAt) < Date.parse(v.sourcePublishedAt))
+        problem(['approvedAt'], 'Approval predates original publication');
+    if (Date.parse(v.sourcePublishedAt) > Date.parse(v.effectiveUntil ?? '9999-12-31T23:59:59.000Z'))
+        problem(['sourcePublishedAt'], 'Publication after expired effectiveness');
+    if (v.state !== 'APPROVED' && (v.approvedBy || v.independentlyCheckedBy || v.approvedAt))
+        problem(['state'], 'Draft must not carry official sign-off');
+    if (v.state === 'APPROVED') {
+        if (!v.approvedBy || !v.independentlyCheckedBy || !v.approvedAt
+            || v.approvedBy === v.independentlyCheckedBy)
+            problem(['approvedBy'], 'Approval requires two distinct humans and timestamp');
+        if (!v.inventoryReviewedBy || v.inventoryReviewedBy === v.approvedBy)
+            problem(['inventoryReviewedBy'], 'Independently checked source inventory required');
+        if (!v.validationReport || v.validationReport.blockingIssues.length > 0
+            || v.validationReport.sourceDocumentSha256 !== v.sourceDocumentSha256
+            || (v.approvedAt && Date.parse(v.validationReport.checkedAt) > Date.parse(v.approvedAt)))
+            problem(['validationReport'], 'Blocking warnings, unverified source or late check prevent approval');
+    }
+    const documents = v.sourceDocuments;
+    if (documents) {
+        const byId = new Map(documents.map(d => [d.documentId, d]));
+        if (byId.size !== documents.length)
+            problem(['sourceDocuments'], 'Duplicate source document ID');
+        if (!documents.some(d => d.url === v.sourceDocumentUrl && d.version === v.sourceDocumentVersion
+            && d.sha256 === v.sourceDocumentSha256 && d.publishedAt === v.sourcePublishedAt))
+            problem(['sourceDocuments'], 'Legacy primary source must identify one exact document');
+        for (const [i, c] of v.clauseInventory.entries())
+            if (!c.sourceDocumentId || !byId.has(c.sourceDocumentId))
+                problem(['clauseInventory', i, 'sourceDocumentId'], 'Every clause needs its exact source document');
+        const hashes = v.validationReport?.sourceDocumentHashes;
+        if (v.state === 'APPROVED' || hashes) {
+            if (!hashes || hashes.length !== documents.length || new Set(hashes.map(h => h.documentId)).size !== hashes.length
+                || hashes.some(h => byId.get(h.documentId)?.sha256 !== h.sha256))
+                problem(['validationReport', 'sourceDocumentHashes'], 'Every source document requires the matching independent hash');
+        }
+        for (const [i, d] of documents.entries()) {
+            if (v.approvedAt && Date.parse(d.publishedAt) > Date.parse(v.approvedAt)
+                || v.validationReport && Date.parse(d.publishedAt) > Date.parse(v.validationReport.checkedAt))
+                problem(['sourceDocuments', i, 'publishedAt'], 'Document publication must precede its check and approval');
+        }
+    }
+    else if (v.clauseInventory.some(c => c.sourceDocumentId !== undefined) || v.validationReport?.sourceDocumentHashes) {
+        problem(['sourceDocuments'], 'Document-bound clauses and checks require the document inventory');
+    }
+    const reqIds = new Set(), semanticKeys = new Set();
+    for (const [i, req] of v.requirements.entries()) {
+        if (reqIds.has(req.id))
+            problem(['requirements', i, 'id'], 'Duplicate requirement ID');
+        reqIds.add(req.id);
+        if (semanticKeys.has(req.semanticKey))
+            problem([
+                'requirements', i, 'semanticKey',
+            ], 'Duplicate semantic requirement key');
+        semanticKeys.add(req.semanticKey);
+    }
+    const inventory = new Map();
+    for (const [i, c] of v.clauseInventory.entries()) {
+        if (inventory.has(c.clauseId))
+            problem([
+                'clauseInventory', i, 'clauseId',
+            ], 'Duplicate original clause ID');
+        inventory.set(c.clauseId, c);
+        if (c.coverage.state === 'UNREVIEWED' && v.state === 'APPROVED')
+            problem(['clauseInventory', i, 'coverage'], 'Unreviewed original clause');
+        if (c.coverage.state === 'NOT_APPLICABLE' && v.state === 'APPROVED'
+            && c.coverage.independentlyReviewedBy === v.approvedBy)
+            problem(['clauseInventory', i, 'coverage'], 'One approver cannot self-exempt clause');
+        if (c.coverage.state === 'LINKED') {
+            if (new Set(c.coverage.requirementIds).size !== c.coverage.requirementIds.length)
+                problem(['clauseInventory', i, 'coverage', 'requirementIds'], 'Duplicate requirement');
+            for (const id of c.coverage.requirementIds)
+                if (!reqIds.has(id))
+                    problem([
+                        'clauseInventory', i, 'coverage', 'requirementIds',
+                    ], 'Clause links unknown requirement');
+        }
+    }
+    for (const [i, req] of v.requirements.entries()) {
+        for (const [key, expectedKind] of [
+            ['sourceClauseIds', 'source'], ['exceptionClauseIds', 'exception'],
+        ]) {
+            for (const id of req[key]) {
+                const clause = inventory.get(id);
+                if (!clause || clause.coverage.state !== 'LINKED'
+                    || !clause.coverage.requirementIds.includes(req.id)
+                    || (expectedKind === 'exception' && clause.kind !== 'EXCEPTION')) {
+                    problem(['requirements', i, key], 'Missing reciprocal original clause mapping');
+                }
+            }
+        }
+    }
+    // 출처 목록 자체에서 조항이 누락될 수 있다. JSON만으로 원본의 완전성을 증명할 수 없으므로 사람의 원문 대조가 추가로 필요하다.
+    for (const [i, clause] of v.clauseInventory.entries()) {
+        if (clause.coverage.state !== 'LINKED')
+            continue;
+        for (const id of clause.coverage.requirementIds) {
+            const req = v.requirements.find(r => r.id === id);
+            if (req && !([...req.sourceClauseIds, ...req.exceptionClauseIds]
+                .includes(clause.clauseId)))
+                problem(['clauseInventory', i, 'coverage'], 'Clause not reciprocally mapped');
+        }
+    }
+});
+/**
+ * @param {AcademicRulePackVNext} pack
+ * @param {AcademicTrustedSourceInventoryVNext} original
+ * @returns {boolean} 실행 결과
+ */
+export function verifyAcademicSourceCoverageVNext(pack, original) {
+    if (pack.sourceDocumentSha256 !== original.sourceDocumentSha256
+        || pack.clauseInventory.length !== original.clauses.length)
+        return false;
+    if (pack.sourceDocuments) {
+        const docs = original.sourceDocuments;
+        if (!docs || docs.length !== pack.sourceDocuments.length || new Set(docs.map(d => d.documentId)).size !== docs.length)
+            return false;
+        const trusted = new Map(docs.map(d => [d.documentId, d.sourceDocumentSha256]));
+        if (pack.sourceDocuments.some(d => trusted.get(d.documentId) !== d.sha256))
+            return false;
+    }
+    else if (original.sourceDocuments !== undefined)
+        return false;
+    const actual = new Map();
+    for (const clause of pack.clauseInventory) {
+        if (actual.has(clause.clauseId))
+            return false;
+        actual.set(clause.clauseId, clause);
+    }
+    const seen = new Set();
+    for (const clause of original.clauses) {
+        if (seen.has(clause.clauseId))
+            return false;
+        seen.add(clause.clauseId);
+        const supplied = actual.get(clause.clauseId);
+        if (!supplied || supplied.kind !== clause.kind
+            || supplied.sourceSpanRef !== clause.sourceSpanRef
+            || supplied.sourceDocumentId !== clause.sourceDocumentId)
+            return false;
+    }
+    return true;
+}
+/** APPROVED 판본의 필수 수집 경계다. 실제 출처 검증 책임은 호출자에게 있다. */
+/**
+ * @param {unknown} candidate
+ * @param {AcademicTrustedSourceInventoryVNext} trustedOriginal
+ * @returns {AcademicRulePackVNext|null} 실행 결과
+ */
+export function parseApprovedAcademicRulePackVNext(candidate, trustedOriginal) {
+    const checked = AcademicRulePackVNextSchema.safeParse(candidate);
+    if (!checked.success || checked.data.state !== 'APPROVED')
+        return null;
+    return verifyAcademicSourceCoverageVNext(checked.data, trustedOriginal)
+        ? checked.data : null;
+}
+/**
+ * @param {AcademicRulePackVNext} previous
+ * @param {AcademicRulePackVNext} next
+ * @returns {boolean} 실행 결과
+ */
+export function stableAcademicRequirementIdsVNext(previous, next) {
+    if (next.supersedesVersion !== previous.version)
+        return false;
+    const oldKeys = new Map(previous.requirements.map(r => [r.semanticKey, r.id]));
+    const oldIds = new Map(previous.requirements.map(r => [r.id, r.semanticKey]));
+    for (const r of next.requirements) {
+        if (oldKeys.has(r.semanticKey) && oldKeys.get(r.semanticKey) !== r.id)
+            return false;
+        if (oldIds.has(r.id) && oldIds.get(r.id) !== r.semanticKey)
+            return false;
+    }
+    return true;
+}
+/**
+ * @param {readonly AcademicRulePackVNext[]} candidates
+ * @param {{
+    asOf:string;campus:string;primaryMajor:string;secondaryMajor?:string;
+    majorRole:z.infer<typeof MajorRoleVNextSchema>;admissionType:string;
+    curriculumVersion:string;admissionYear:number;degreePath?:string;track?:string;
+  }} request
+ * @returns {AcademicRulePackVNext|null} 실행 결과
+ */
+export function selectAcademicRulePackAsOfVNext(candidates, request) {
+    const at = Date.parse(request.asOf);
+    if (!Number.isFinite(at) || !Number.isInteger(request.admissionYear))
+        return null;
+    const baseCandidates = candidates.filter(p => {
+        if (p.state !== 'APPROVED' || !p.approvedAt)
+            return false;
+        if (Date.parse(p.sourcePublishedAt) > at || Date.parse(p.approvedAt) > at
+            || Date.parse(p.effectiveFrom) > at
+            || (p.effectiveUntil && Date.parse(p.effectiveUntil) <= at))
+            return false;
+        const s = p.scope;
+        return s.campus === request.campus && s.primaryMajor === request.primaryMajor
+            && s.secondaryMajor === request.secondaryMajor
+            && s.majorRole === request.majorRole && s.admissionType === request.admissionType
+            && s.curriculumVersion === request.curriculumVersion
+            && s.cohortFrom <= request.admissionYear && request.admissionYear <= s.cohortTo;
+    });
+    const axes = ['degreePath', 'track'];
+    const selected = (value) => !!value && value !== 'UNSELECTED' && value !== 'UNDECIDED';
+    // 두 분류 축에서 명확히 불일치하는 항목을 먼저 제외한다. 다른 학위 경로의 트랙을 현재 경로에 잘못 적용하지 않는다.
+    const applicable = baseCandidates.filter(p => axes.every(axis => p.scope[axis] === undefined
+        || !selected(request[axis]) || p.scope[axis] === request[axis]));
+    for (const axis of axes)
+        if (!selected(request[axis]) && applicable.some(p => p.scope[axis] !== undefined))
+            return null;
+    if (!applicable.length)
+        return null;
+    // 이전 판본 기록이 있더라도 새로운 분류 축이 무관하다는 근거는 아니다. 대체 연결 사슬도 마찬가지다.
+    for (const axis of ['degreePath', 'track'])
+        if (applicable.some(p => p.scope[axis] !== undefined) && applicable.some(p => p.scope[axis] === undefined))
+            return null;
+    // 분기된 규칙, 연결되지 않은 중복 규칙, 동일한 판본 ID를 거부한다.
+    if (new Set(applicable.map(p => p.version)).size !== applicable.length)
+        return null;
+    const byVersion = new Map(applicable.map(p => [p.version, p]));
+    const heads = applicable.filter(p => !applicable.some(x => x.supersedesVersion === p.version));
+    if (heads.length !== 1)
+        return null;
+    const head = heads[0];
+    let cursor = head;
+    const chain = new Set();
+    while (cursor && !chain.has(cursor.version)) {
+        chain.add(cursor.version);
+        if (!cursor.supersedesVersion)
+            break;
+        const prior = byVersion.get(cursor.supersedesVersion);
+        if (!prior)
+            break;
+        if (!stableAcademicRequirementIdsVNext(prior, cursor))
+            return null;
+        cursor = prior;
+    }
+    return chain.size === applicable.length ? head : null;
+}
+export const AcademicRequirementProgressVNextSchema = z.strictObject({
+    requirementId: Id,
+    state: z.enum(['SATISFIED', 'UNSATISFIED', 'NEEDS_REVIEW', 'NOT_APPLICABLE', 'NOT_CHECKED']),
+    requiredCreditUnits: CreditUnitsSchema.optional(),
+    earnedCreditUnits: CreditUnitsSchema.optional(),
+    remainingCreditUnits: CreditUnitsSchema.optional(),
+    projectedCreditUnits: CreditUnitsSchema.optional(),
+    matchedCoursesCount: z.number().int().nonnegative().optional(),
+    requiredCoursesCount: z.number().int().positive().optional(),
+    matchedAreasCount: z.number().int().min(0).max(30).optional(),
+    requiredAreasCount: z.number().int().min(1).max(30).optional(),
+    matchedGroupsCount: z.number().int().min(0).max(10).optional(),
+    requiredGroupsCount: z.number().int().min(1).max(10).optional(),
+    evidenceRefs: z.array(Id).max(100),
+    /** NOT_CHECKED는 GPA 정보가 없는 경우에만 사용하며 검사를 통과한 것으로 처리하지 않는다. */
+    notCheckedReason: z.literal('GPA_NOT_COLLECTED').optional(),
+    notApplicableReason: z.string().trim().min(8).max(300).optional(),
+}).superRefine((v, ctx) => {
+    for (const [matched, required] of [['matchedAreasCount', 'requiredAreasCount'], ['matchedGroupsCount', 'requiredGroupsCount']]) {
+        if ((v[matched] === undefined) !== (v[required] === undefined)
+            || v.state === 'SATISFIED' && v[matched] !== undefined && v[matched] < v[required])
+            ctx.addIssue({ code: 'custom', path: [matched], message: 'Composite progress requires paired counts and sufficient earned matches' });
+    }
+    if (v.state === 'SATISFIED' && v.remainingCreditUnits !== undefined
+        && v.remainingCreditUnits !== 0)
+        ctx.addIssue({
+            code: 'custom', path: ['remainingCreditUnits'], message: 'Cannot satisfy missing credits',
+        });
+    if (v.state === 'NOT_CHECKED' && !v.notCheckedReason)
+        ctx.addIssue({
+            code: 'custom', path: ['notCheckedReason'], message: 'Unmeasured GPA must be explicit',
+        });
+    if (v.state !== 'NOT_CHECKED' && v.notCheckedReason)
+        ctx.addIssue({
+            code: 'custom', path: ['notCheckedReason'], message: 'Not-checked reason in wrong state',
+        });
+    if (v.state === 'NOT_APPLICABLE' && !v.notApplicableReason)
+        ctx.addIssue({ code: 'custom', path: ['notApplicableReason'],
+            message: 'Official nonapplicability needs justification' });
+    if (v.state === 'SATISFIED' && !v.evidenceRefs.length)
+        ctx.addIssue({
+            code: 'custom', path: ['evidenceRefs'], message: 'Satisfied state requires evidence',
+        });
+    if (v.matchedCoursesCount !== undefined && v.requiredCoursesCount !== undefined
+        && v.matchedCoursesCount > v.requiredCoursesCount)
+        ctx.addIssue({
+            code: 'custom', path: ['matchedCoursesCount'], message: 'Duplicate required course match',
+        });
+});
+export const AcademicPlanIssueVNextSchema = z.strictObject({
+    code: z.enum([
+        'CREDIT_CAP_EXCEEDED', 'PREREQUISITE_MISSING', 'TIMETABLE_CONFLICT',
+        'REQUIRED_COURSE_UNOFFERED', 'SEARCH_LIMIT_REVIEW', 'NEEDS_REVIEW',
+    ]),
+    courseRefs: z.array(Id).max(20),
+    evidenceRefs: z.array(Id).max(30),
+    reasonCode: z.enum([
+        'EXCEEDS_APPROVED_LIMIT', 'UNMET_OFFICIAL_PREREQUISITE',
+        'ALL_VERIFIED_SECTIONS_OVERLAP', 'COURSE_NOT_CONFIRMED',
+        'ALLOCATION_SEARCH_LIMIT', 'UNKNOWN',
+    ]).optional(),
+}).superRefine((v, ctx) => {
+    const mandatory = {
+        CREDIT_CAP_EXCEEDED: 'EXCEEDS_APPROVED_LIMIT',
+        PREREQUISITE_MISSING: 'UNMET_OFFICIAL_PREREQUISITE',
+        TIMETABLE_CONFLICT: 'ALL_VERIFIED_SECTIONS_OVERLAP',
+    };
+    if (mandatory[v.code] && v.reasonCode !== mandatory[v.code])
+        ctx.addIssue({
+            code: 'custom', path: ['reasonCode'],
+            message: 'Planning blocker needs a verified, specific reason',
+        });
+});
+export const AcademicAuditVNextSchema = z.strictObject({
+    state: z.enum(['READY', 'NEEDS_REVIEW', 'INSUFFICIENT_DATA']),
+    rulePackVersion: Id,
+    asOf: DateTime,
+    earnedCreditUnits: CreditUnitsSchema,
+    inProgressCreditUnits: CreditUnitsSchema,
+    plannedCreditUnits: CreditUnitsSchema,
+    projectedUniqueCreditUnits: CreditUnitsSchema,
+    pendingRecognitionCreditUnits: CreditUnitsSchema,
+    areaProgress: z.array(z.strictObject({
+        areaId: Id, earnedCreditUnits: CreditUnitsSchema,
+        projectedCreditUnits: CreditUnitsSchema,
+    })).max(30),
+    excludedAttempts: z.array(z.strictObject({
+        attemptToken: Id,
+        reason: z.enum(['RETAKE_SUPERSEDED', 'DUPLICATE', 'PENDING_RECOGNITION',
+            'OFFICIAL_EXCLUSION', 'NEEDS_REVIEW']),
+    })).max(150),
+    requirements: z.array(AcademicRequirementProgressVNextSchema).max(200),
+    planIssues: z.array(AcademicPlanIssueVNextSchema).max(100),
+    caveats: z.array(z.string().trim().min(1).max(300)).max(50),
+}).superRefine((v, ctx) => {
+    if (v.projectedUniqueCreditUnits < v.earnedCreditUnits
+        || v.projectedUniqueCreditUnits > v.earnedCreditUnits +
+            v.inProgressCreditUnits + v.plannedCreditUnits)
+        ctx.addIssue({ code: 'custom', path: ['projectedUniqueCreditUnits'],
+            message: 'Projected credits cannot create extra or lose earned credits' });
+    if (new Set(v.areaProgress.map(a => a.areaId)).size !== v.areaProgress.length)
+        ctx.addIssue({ code: 'custom', path: ['areaProgress'], 'message': 'Duplicate area' });
+    if (new Set(v.requirements.map(r => r.requirementId)).size !== v.requirements.length)
+        ctx.addIssue({ code: 'custom', path: ['requirements'], message: 'Duplicate requirement result' });
+    if (new Set(v.excludedAttempts.map(r => r.attemptToken)).size !== v.excludedAttempts.length)
+        ctx.addIssue({ code: 'custom', path: ['excludedAttempts'], message: 'Duplicate attempts' });
+    if (v.state === 'READY' && v.requirements.some(r => r.state === 'NEEDS_REVIEW'
+        || r.state === 'NOT_CHECKED'))
+        ctx.addIssue({
+            code: 'custom', path: ['state'], message: 'Unverified requirements block READY',
+        });
+});
+/**
+ * @param {AcademicRulePackVNext} pack
+ * @param {AcademicAuditVNext} audit
+ * @returns {boolean} 실행 결과
+ */
+export function validateAcademicAuditAgainstPackVNext(pack, audit) {
+    if (audit.rulePackVersion !== pack.version || pack.state !== 'APPROVED')
+        return false;
+    if (!pack.approvedAt || Date.parse(pack.approvedAt) > Date.parse(audit.asOf)
+        || Date.parse(pack.sourcePublishedAt) > Date.parse(audit.asOf)
+        || Date.parse(pack.effectiveFrom) > Date.parse(audit.asOf)
+        || (pack.effectiveUntil && Date.parse(pack.effectiveUntil) <= Date.parse(audit.asOf)))
+        return false;
+    const ids = new Set(pack.requirements.map(r => r.id));
+    return audit.requirements.length === ids.size && audit.requirements.every(r => ids.has(r.requirementId))
+        && audit.requirements.every(r => {
+            const rule = pack.requirements.find(rule => rule.id === r.requirementId);
+            if (rule.kind === 'AREA_SPREAD' && (r.requiredAreasCount !== rule.minAreas
+                || r.matchedAreasCount === undefined || r.requiredCreditUnits !== rule.requiredCreditUnits))
+                return false;
+            if (rule.kind === 'GROUP_CHOICE' && (r.requiredGroupsCount !== rule.k || r.matchedGroupsCount === undefined))
+                return false;
+            if (rule.kind === 'NON_CREDIT' && rule.verificationMode === 'GPA_NOT_COLLECTED')
+                return r.state === 'NOT_CHECKED'
+                    && r.notCheckedReason === 'GPA_NOT_COLLECTED';
+            return r.state !== 'NOT_CHECKED';
+        });
+}
+/**
+ * @param {AcademicRulePackVNext} pack
+ * @param {readonly string[]} refs
+ * @returns {boolean} 실행 결과
+ */
+export function validateAcademicNoticeRequirementRefsVNext(pack, refs) {
+    const ids = new Set(pack.requirements.map(x => x.id));
+    return new Set(refs).size === refs.length && refs.every(ref => ids.has(ref));
+}
+export const AcademicCourseCodeResolutionVNextSchema = z.discriminatedUnion('status', [
+    z.strictObject({ status: z.literal('NEEDS_REVIEW') }),
+    z.strictObject({ status: z.literal('RESOLVED'), canonicalCourseId: Id,
+        sectionId: z.string().regex(/^\d{2}$/).optional() }),
+]);
+/**
+ * 학교의 학수번호·분반 형식을 독립적으로 확인하기 전에는 과목과 분반 번호를 분리하지 않는다.
+ * 공백 코드나 이름 유사도로 번호를 추측하지 않는다.
+ */
+/**
+ * @param {{
+  rawCode:string;
+  sourceFormatReviewed:boolean;
+  approvedFormat:'COURSE_7_ONLY'|'COURSE_7_SECTION_2';
+}} input
+ * @returns {z.infer<typeof AcademicCourseCodeResolutionVNextSchema>} 실행 결과
+ */
+export function resolveAcademicCourseCodeVNext(input) {
+    if (!input.sourceFormatReviewed)
+        return { status: 'NEEDS_REVIEW' };
+    const code = input.rawCode.trim().toUpperCase();
+    const match = input.approvedFormat === 'COURSE_7_SECTION_2'
+        ? /^([A-Z0-9]{7})(\d{2})$/.exec(code)
+        : /^([A-Z0-9]{7})$/.exec(code);
+    if (!match)
+        return { status: 'NEEDS_REVIEW' };
+    return AcademicCourseCodeResolutionVNextSchema.parse({
+        status: 'RESOLVED', canonicalCourseId: match[1],
+        ...(input.approvedFormat === 'COURSE_7_SECTION_2' ? { sectionId: match[2] } : {}),
+    });
+}
+export const AcademicOfferingObservationVNextSchema = z.strictObject({
+    term: AcademicTermVNextSchema,
+    state: z.enum(['OFFERED', 'CONFIRMED_NOT_OFFERED', 'UNKNOWN']),
+    coverage: z.enum(['COMPLETE_TERM_CATALOG', 'PARTIAL', 'NOTICE_ONLY']),
+    sourceRef: Id,
+    publishedAt: DateTime,
+    verifiedAt: DateTime,
+}).refine(v => Date.parse(v.verifiedAt) >= Date.parse(v.publishedAt), {
+    path: ['verifiedAt'], message: 'Evidence cannot be verified before publication',
+});
+export const AcademicOfficialEventVNextSchema = z.strictObject({
+    eventId: Id,
+    kind: z.enum(['RESEARCH_LEAVE', 'RETIREMENT', 'STAFF_CHANGE', 'CURRICULUM_CHANGE',
+        'COURSE_CANCELLED', 'REPLACEMENT_CONFIRMED']),
+    sourceRef: Id,
+    publishedAt: DateTime,
+    verifiedAt: DateTime,
+    effectiveFrom: DateTime,
+    impact: z.enum(['POTENTIAL_ASSIGNMENT_CHANGE', 'EXPLICIT_COURSE_STATUS']),
+    affectedCourseIds: z.array(Id).min(1).max(30),
+    effectiveUntil: DateTime.optional(),
+}).superRefine((v, ctx) => {
+    if (Date.parse(v.verifiedAt) < Date.parse(v.publishedAt))
+        ctx.addIssue({ code: 'custom', path: ['verifiedAt'],
+            message: 'Cannot verify event before publication' });
+    if (v.effectiveUntil && Date.parse(v.effectiveUntil) <= Date.parse(v.effectiveFrom))
+        ctx.addIssue({ code: 'custom', path: ['effectiveUntil'],
+            message: 'Reversed official-event effective period' });
+});
+export const OfferingOutlookVNextSchema = z.strictObject({
+    courseId: Id,
+    targetTerm: AcademicTermVNextSchema,
+    asOf: DateTime,
+    modelVersion: Id,
+    signal: z.enum([
+        'CONFIRMED_OFFERED', 'CONFIRMED_NOT_OFFERED', 'HISTORICAL_PATTERN',
+        'EVENT_REVIEW', 'INSUFFICIENT_DATA', 'UNKNOWN',
+    ]),
+    sourcePublishedAt: DateTime.optional(),
+    evidenceRefs: z.array(Id).max(50),
+    observations: z.array(AcademicOfferingObservationVNextSchema).max(20),
+    officialEvents: z.array(AcademicOfficialEventVNextSchema).max(30),
+    sameSeasonObservedTerms: z.number().int().nonnegative(),
+    sameSeasonOfferedTerms: z.number().int().nonnegative(),
+    alternatives: z.array(z.strictObject({
+        courseId: Id,
+        status: z.enum(['OFFICIALLY_APPROVED', 'NEEDS_REVIEW']),
+        evidenceRef: Id.optional(),
+    })).max(20),
+    caveat: z.string().trim().min(1).max(300),
+}).superRefine((v, ctx) => {
+    const issue = (path, message) => ctx.addIssue({
+        code: 'custom', path, message,
+    });
+    const asOf = Date.parse(v.asOf), term = parseTerm(v.targetTerm);
+    if (v.sourcePublishedAt && Date.parse(v.sourcePublishedAt) > asOf)
+        issue(['sourcePublishedAt'], 'Published after historical asOf');
+    if (new Set(v.observations.map(o => o.term)).size !== v.observations.length)
+        issue(['observations'], 'Duplicate term observation');
+    const complete = v.observations.filter(o => o.coverage === 'COMPLETE_TERM_CATALOG'
+        && o.state !== 'UNKNOWN' && o.term.endsWith('-' + term.season));
+    const count = complete.length, offered = complete.filter(o => o.state === 'OFFERED').length;
+    if (v.sameSeasonObservedTerms !== count || v.sameSeasonOfferedTerms !== offered)
+        issue(['sameSeasonObservedTerms'], 'Counts must equal independently verified observations');
+    for (const [i, o] of v.observations.entries()) {
+        if (o.term >= v.targetTerm || Date.parse(o.publishedAt) > asOf
+            || Date.parse(o.verifiedAt) > asOf)
+            issue(['observations', i], 'No future offering history in asOf replay');
+    }
+    for (const [i, e] of v.officialEvents.entries()) {
+        if (Date.parse(e.publishedAt) > asOf || Date.parse(e.verifiedAt) > asOf)
+            issue(['officialEvents', i], 'Future official event leakage');
+        if (!e.affectedCourseIds.includes(v.courseId))
+            issue(['officialEvents', i, 'affectedCourseIds'], 'Unrelated official event');
+    }
+    if (v.signal === 'HISTORICAL_PATTERN' && count < 3)
+        issue(['signal'], 'Pattern requires at least 3 complete same-season terms');
+    if (v.signal === 'EVENT_REVIEW' && !v.officialEvents.some(e => e.impact === 'POTENTIAL_ASSIGNMENT_CHANGE'))
+        issue(['signal'], 'EVENT_REVIEW needs a reviewed official event');
+    if (v.signal === 'CONFIRMED_NOT_OFFERED' && v.officialEvents.some(e => e.impact === 'POTENTIAL_ASSIGNMENT_CHANGE')
+        && !v.officialEvents.some(e => e.kind === 'COURSE_CANCELLED'
+            && e.impact === 'EXPLICIT_COURSE_STATUS'))
+        issue(['signal'], 'Research leave or staff changes do not prove non-offering');
+    if (v.signal.startsWith('CONFIRMED_')
+        && (!v.sourcePublishedAt || !v.evidenceRefs.length))
+        issue(['sourcePublishedAt'], 'Confirmed status needs official published evidence');
+    for (const [i, a] of v.alternatives.entries()) {
+        if (a.courseId === v.courseId)
+            issue(['alternatives', i], 'Not an alternative');
+        if (a.status === 'OFFICIALLY_APPROVED' && !a.evidenceRef)
+            issue(['alternatives', i, 'evidenceRef'], 'Official substitute needs evidence');
+    }
+});
+/**
+ * @param {string} term
+ * @returns {{year:number;season:string}} 실행 결과
+ */
+function parseTerm(term) {
+    return { year: Number(term.slice(0, 4)), season: term.slice(-1) };
+}

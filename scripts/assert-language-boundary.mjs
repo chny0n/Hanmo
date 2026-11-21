@@ -5,7 +5,6 @@ import {readFileSync,readdirSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const baseline=JSON.parse(readFileSync(resolve(root,'scripts/baselines/ts-migration.json'),'utf8'));
 // Windows 체크아웃의 줄바꿈이 달라도 Git 저장소의 원본 blob 해시를 사용한다.
 // Git 실행이 불가능한 정적 아카이브에서는 파일 내용으로 계산한다.
 function blobSha(path){
@@ -30,16 +29,7 @@ function list(dir,prefix=''){
 const files=list(root);
 const all=files.filter(path=>/\.(?:ts|tsx|mts|cts)$/.test(path));
 const academicJs=files.filter(path=>/^js\/academic\/.+\.js$/.test(path));
-const permitted=new Map(baseline.files.map(x=>[x.path,x.sha]));
-if(permitted.size!==baseline.files.length)throw Error('Duplicate TypeScript inventory entries');
-for(const path of all){
-  const original=permitted.get(path);
-  if(!original)throw new Error('New TypeScript prohibited: '+path+
-    '. Write JavaScript + JSDoc instead.');
-  const hash=blobSha(path);
-  if(hash!==original)throw new Error('Existing TypeScript was edited: '+path+
-    '. Convert its source and tests to JavaScript in a scoped PR.');
-}
+if(all.length)throw Error('저장소에 TypeScript 소스가 남아 있습니다: '+all.join(', '));
 for(const path of academicJs){
   const source=readFileSync(resolve(root,path),'utf8');
   if(!/^\uFEFF?\/\/ @ts-check\b/.test(source)){
@@ -47,5 +37,4 @@ for(const path of academicJs){
   }
 }
 console.log('JSDoc-checked academic JS: '+academicJs.length+' files');
-console.log('Existing TypeScript left to migrate: '+all.length+
-  '/'+baseline.files.length+' (no new/edited TS)');
+console.log('TypeScript 소스 파일: 0개 (JavaScript 전용)');

@@ -1,7 +1,7 @@
 // @ts-check
 import {faqClauses,faqWords,isGenericFaqWord,synonymsOf,textBigrams,wordBigrams,wordMatches} from './faq-text.js';
 
-/** 검색 가능한 문단 한 건이다. 출처 이용권·판본·asOf 필터는 먼저 faq.ts에서 수행한다. */
+/** 검색 가능한 문단 한 건이다. 출처 이용권·판본·asOf 필터는 먼저 faq.js에서 수행한다. */
 /** @typedef {{key:string,title:string,text:string}} FaqSearchItem */
 /** @typedef {{key:string,score:number,matchedWords:number}} FaqSearchHit */
 /** @typedef {{limit?:number,minMatchedShare?:number}} FaqSearchOptions */

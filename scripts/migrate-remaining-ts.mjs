@@ -67,7 +67,7 @@ function docsOf(sf){
 for(const path of old){
   const absolute=join(root,path);
   const input=readFileSync(absolute,'utf8');
-  const sf=ts.createSourceFile(path,input,ts.ScriptTarget.Latest,true,path.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);
+  const sf=ts.createSourceFile(path,input,ts.ScriptTarget.Latest,true,path.endsWith('.js')?ts.ScriptKind.TSX:ts.ScriptKind.TS);
   if(sf.parseDiagnostics.length)throw Error(path+': TypeScript 구문 오류 '+sf.parseDiagnostics.map(d=>d.messageText).join(','));
   const {defs,before}=docsOf(sf);
   let annotated=input;
@@ -80,7 +80,7 @@ for(const path of old){
   if(converted.diagnostics?.length)throw Error(path+': 변환 진단 '+converted.diagnostics.map(d=>d.messageText).join(','));
   let output='// @ts-check\n'+(defs.length?defs.join('\n')+'\n':'')+converted.outputText;
   // 코드나 검사 도구가 아직 참조하는 TypeScript 원본 경로를 JavaScript에 맞춘다.
-  output=output.replace(/(\.test|\.property)?\.tsx?\b/g,match=>match.replace(/\.tsx?$/,'.js'));
+  output=output.replace(/(\.test|\.property)?\.js?\b/g,match=>match.replace(/\.js?$/,'.js'));
   const next=absolute.replace(/\.(?:ts|tsx|mts|cts)$/,'.js');
   if(existsSync(next))throw Error('JS 파일과 이름 충돌: '+next);
   writeFileSync(next,output);
@@ -94,14 +94,14 @@ for(const path of walk(root)){
   if(path.startsWith('js/')&&!path.startsWith('js/academic/'))continue;
   if(path.startsWith('scripts/baselines/'))continue;
   const absolute=join(root,path),input=readFileSync(absolute,'utf8');
-  const updated=input.replace(/(\.test|\.property)?\.tsx?\b/g,match=>match.replace(/\.tsx?$/,'.js'));
+  const updated=input.replace(/(\.test|\.property)?\.js?\b/g,match=>match.replace(/\.js?$/,'.js'));
   if(updated!==input)writeFileSync(absolute,updated);
 }
 
 // 이제 입력 소스는 JavaScript다. TypeScript 전용 파일명·커맨드를 제거한다.
 const packagePath=join(root,'package.json');
 const pkg=JSON.parse(readFileSync(packagePath,'utf8'));
-pkg.scripts.build=pkg.scripts.build.replaceAll('.ts --bundle','.js --bundle');
+pkg.scripts.build=pkg.scripts.build.replaceAll('.js --bundle','.js --bundle');
 delete pkg.scripts.typecheck;
 pkg.scripts['check:syntax']='node scripts/check-js-syntax.mjs';
 pkg.scripts.check=pkg.scripts.check.replace('npm run typecheck','npm run check:syntax');

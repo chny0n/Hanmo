@@ -51,7 +51,7 @@ test('academic public assets are still under html; engine remains independently 
 test('academic package is flat: no nested source package remains',()=>{
  const root=path.join(ROOT,'degree-rescue');
  assert.equal(fs.existsSync(root),false);
- assert.ok(fs.existsSync(path.join(ROOT,'js','academic','core','forecast','offering.ts')));
+ assert.ok(fs.existsSync(path.join(ROOT,'js','academic','core','forecast','offering.js')));
  assert.ok(fs.existsSync(path.join(ROOT,'package.json')));
 });
 
