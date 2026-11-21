@@ -1,3 +1,4 @@
+// @ts-check
 import {z} from 'zod';
 import {AcademicAuditVNextSchema} from './vnext.js';
 
@@ -41,7 +42,8 @@ export const OwnerDoubleMajorAuditSchema=z.strictObject({
   versions:z.strictObject({profile:Ref.nullable(),transcript:Ref.nullable(),projection:Ref}),
   caveats:z.array(z.string().min(1).max(300)).min(1).max(50),
 }).superRefine((value,ctx)=>{
-  const problem=(message:string)=>ctx.addIssue({code:'custom',message});
+  /** @param {string} message @returns {void} 계약 오류 기록 */
+  const problem=(message)=>ctx.addIssue({code:'custom',message});
   if(!value.caveats.includes('NOT_OFFICIAL_GRADUATION_DECISION'))problem('Computed advice must disclaim official graduation');
   if(new Set(value.missingInputs).size!==value.missingInputs.length)problem('Duplicate missing inputs');
   if(value.status==='INPUT_REQUIRED'){
@@ -77,7 +79,7 @@ export const OwnerDoubleMajorAuditSchema=z.strictObject({
       overlap.sharedCourses.some(course=>!visible.has(course.courseId))||overlap.sharedCourses.reduce((sum,course)=>sum+course.creditUnits,0)>overlap.sharedCreditUnits)problem('Invalid shared-course disclosure/totals');
     if(overlap.status==='COVERED_BY_APPROVED_RULE'&&(!overlap.evidenceRefs.length||value.doubleMajor.rulePack.state!=='APPROVED'))problem('Covered overlap needs approved evidence');
     if(overlap.status==='NONE'&&(overlap.sharedCreditUnits!==0||overlap.sharedCourses.length||value.disclosure.withheldSharedCourseCount))problem('No overlap cannot carry shared credits');
-    for(const role of ['primary','doubleMajor'] as const){
+    for(const role of /** @type {const} */ (['primary','doubleMajor'])){
       const rows=value[role].audit?.requirements??[];
       const impacts=overlap.rowImpacts[role],held=overlap.heldRequirementIds[role];
       if(new Set(held).size!==held.length||new Set(impacts.map(row=>row.requirementId)).size!==impacts.length||
@@ -88,4 +90,4 @@ export const OwnerDoubleMajorAuditSchema=z.strictObject({
   }
   if(value.evidenceLinks.some(link=>Date.parse(link.verifiedAt)>Date.parse(value.asOf)))problem('Future evidence');
 });
-export type OwnerDoubleMajorAudit=z.infer<typeof OwnerDoubleMajorAuditSchema>;
+/** @typedef {z.infer<typeof OwnerDoubleMajorAuditSchema>} OwnerDoubleMajorAudit */

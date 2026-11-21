@@ -1,3 +1,4 @@
+// @ts-check
 import {z} from 'zod';
 import {AcademicPlanIssueVNextSchema,AcademicTermVNextSchema,
   CreditUnitsSchema} from '../academics/index.js';
@@ -72,10 +73,11 @@ export const OwnerStudyPlanCheckResponseSchema=z.strictObject({
   disclosure:Disclosure,
   approval:OwnerPlanCheckApprovalReceiptSchema.optional(),
 }).superRefine((v,ctx)=>{
-  const problem=(path:(string|number)[],message:string)=>ctx.addIssue({
+  /** @param {(string|number)[]} path @param {string} message @returns {void} 승인 경계 위반 기록 */
+  const problem=(path,message)=>ctx.addIssue({
     code:'custom',path,message,
   });
-  for(const required of ['NOT_OFFICIAL_REGISTRATION','NOT_GRADUATION_DECISION'] as const)
+  for(const required of /** @type {const} */ (['NOT_OFFICIAL_REGISTRATION','NOT_GRADUATION_DECISION']))
     if(!v.caveats.includes(required))problem(['caveats'],'Missing '+required);
   if(v.creditCapUnits!==undefined&&!v.approval)
     problem(['creditCapUnits'],'Unverified term cap must not be shown');
@@ -87,7 +89,8 @@ export const OwnerStudyPlanCheckResponseSchema=z.strictObject({
   ]);
   if(!v.approval&&v.planIssues.some(item=>officialCodes.has(item.code)))
     problem(['planIssues'],'Unreviewed rules cannot produce confirmed warnings');
-  const sources=new Set<string>();
+  /** @type {Set<string>} */
+  const sources=new Set();
   for(const [i,link] of v.evidenceLinks.entries()){
     if(sources.has(link.evidenceRef))
       problem(['evidenceLinks',i,'evidenceRef'],'Duplicate evidence ref');
@@ -114,7 +117,7 @@ export const OwnerStudyPlanCheckResponseSchema=z.strictObject({
   if(v.state==='READY'){
     if(!v.approval||v.creditCapUnits===undefined)
       problem(['state'],'READY requires independently approved RulePack and cap');
-    for(const k of ['rulePack','plan','catalog','transcript'] as const)
+    for(const k of /** @type {const} */ (['rulePack','plan','catalog','transcript']))
       if(!v.versions[k])problem(['versions',k],'READY requires '+k+' version');
     if(v.planIssues.some(issue=>issue.code==='NEEDS_REVIEW'
       ||issue.code==='SEARCH_LIMIT_REVIEW')||v.unchecked.length>0)
@@ -150,5 +153,5 @@ export const OwnerStudyPlanCheckResponseSchema=z.strictObject({
     if(item.courseId&&!visible.has(item.courseId))
       problem(['unchecked',i,'courseId'],'Unchecked course outside approved visibility');
 });
-export type OwnerStudyPlanCheckRequest=z.infer<typeof OwnerStudyPlanCheckRequestSchema>;
-export type OwnerStudyPlanCheckResponse=z.infer<typeof OwnerStudyPlanCheckResponseSchema>;
+/** @typedef {z.infer<typeof OwnerStudyPlanCheckRequestSchema>} OwnerStudyPlanCheckRequest */
+/** @typedef {z.infer<typeof OwnerStudyPlanCheckResponseSchema>} OwnerStudyPlanCheckResponse */

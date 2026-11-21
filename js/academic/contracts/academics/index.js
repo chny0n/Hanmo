@@ -1,9 +1,10 @@
+// @ts-check
 import {z} from 'zod';
 
 export const CourseStateSchema = z.enum(['이수완료', '수강중']);
-export const COURSE_CSV_HEADERS = [
+export const COURSE_CSV_HEADERS = /** @type {const} */ ([
   '학기', '학수번호', '과목명', '학점', '이수구분', '이수상태',
-] as const;
+]);
 export const CreditUnitsSchema = z.number().int().nonnegative(); // 1단위는 0.5학점이다.
 export const LedgerSchema = z.enum(['EARNED', 'IN_PROGRESS', 'PLANNED']);
 export const CourseRecordSchema = z.strictObject({
@@ -14,7 +15,7 @@ export const CourseRecordSchema = z.strictObject({
   category: z.string().trim(), // 원본 영역을 보존한다. 공식 규칙 검토 후에만 변환한다.
   ledger: LedgerSchema,
 });
-export type CourseRecord = z.infer<typeof CourseRecordSchema>;
+/** @typedef {z.infer<typeof CourseRecordSchema>} CourseRecord */
 
 export const RequirementSchema = z.strictObject({
   id: z.string().min(1),
@@ -44,7 +45,7 @@ export const RulePackSchema = z.strictObject({
     if (!requirement.exceptionCoverageComplete) ctx.addIssue({code:'custom',path:['requirements',index,'exceptionCoverageComplete'],message:'Unreviewed exception clause'});
   }
 });
-export type RulePack = z.infer<typeof RulePackSchema>;
+/** @typedef {z.infer<typeof RulePackSchema>} RulePack */
 
 export const AcademicDeficitSchema = z.strictObject({
   requirementId: z.string().min(1),
@@ -62,7 +63,7 @@ export const AcademicSummarySchema = z.strictObject({
   deficits: z.array(AcademicDeficitSchema),
   caveats: z.array(z.string().min(1)),
 });
-export type AcademicSummary = z.infer<typeof AcademicSummarySchema>;
+/** @typedef {z.infer<typeof AcademicSummarySchema>} AcademicSummary */
 
 export const OfferingSignalSchema = z.enum([
   'CONFIRMED_OFFERED', 'CONFIRMED_NOT_OFFERED', 'HISTORICAL_PATTERN',
@@ -90,13 +91,13 @@ export const OfferingOutlookSchema = z.strictObject({
     ctx.addIssue({code:'custom',message:'official confirmation requires published evidence'});
   }
 });
-export type OfferingOutlook = z.infer<typeof OfferingOutlookSchema>;
+/** @typedef {z.infer<typeof OfferingOutlookSchema>} OfferingOutlook */
 export const ForecastSummarySchema = z.strictObject({
   asOf: z.iso.datetime({offset:true}),
   items: z.array(OfferingOutlookSchema).max(20),
   status: z.enum(['READY','PARTIAL','INSUFFICIENT_DATA']),
 });
-export type ForecastSummary = z.infer<typeof ForecastSummarySchema>;
+/** @typedef {z.infer<typeof ForecastSummarySchema>} ForecastSummary */
 
 // 검토된 학사 계약만 추가한다. 기존 v0.1 통신 자료형은 호환성을 위해 유지한다.
 export * from './vnext.js';

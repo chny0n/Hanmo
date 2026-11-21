@@ -1,3 +1,4 @@
+// @ts-check
 import {z} from 'zod';
 
 /** 학내 지원 기능 세 가지의 엄격한 공통 계약이다. 이 계약만으로 출처 사용권을 승인하거나 합성 예시를 학교 사실로 바꿀 수 없다. */
@@ -21,7 +22,7 @@ export const ActivityRecordSchema = z.strictObject({
   rights:CampusRightsSchema, provenance:CampusProvenanceSchema,
   venue:z.string().max(160).optional(),
 });
-export type ActivityRecord = z.infer<typeof ActivityRecordSchema>;
+/** @typedef {z.infer<typeof ActivityRecordSchema>} ActivityRecord */
 /** NCP 이전 단계에서 운영자가 관리하는 채널 목록이다. 실시간 크롤링 권한이나 독립적인 이용 허가 증명이 아니다. */
 export const ActivityOrganizationSchema=z.strictObject({
   organizationId:Id,displayName:z.string().trim().min(2).max(160),
@@ -29,7 +30,7 @@ export const ActivityOrganizationSchema=z.strictObject({
   aliases:z.array(z.string().trim().min(2).max(160)).max(20),
   verifiedAt:Iso,
 });
-export type ActivityOrganization=z.infer<typeof ActivityOrganizationSchema>;
+/** @typedef {z.infer<typeof ActivityOrganizationSchema>} ActivityOrganization */
 export const ActivityChannelSchema=z.strictObject({
   channelId:Id,organizationId:Id,sourceBaseUrl:Source,
   verifiedAt:Iso,effectiveFrom:Iso,effectiveUntil:Iso.optional(),
@@ -37,7 +38,7 @@ export const ActivityChannelSchema=z.strictObject({
   status:z.enum(['ACTIVE','REMOVED']),
   reviewRef:Id,
 });
-export type ActivityChannel=z.infer<typeof ActivityChannelSchema>;
+/** @typedef {z.infer<typeof ActivityChannelSchema>} ActivityChannel */
 
 export const ActivityForecastSchema = z.strictObject({
   organizationId:Id, seriesId:Id, targetYear:z.number().int().min(2000).max(2200),
@@ -47,7 +48,7 @@ export const ActivityForecastSchema = z.strictObject({
   observedYears:z.array(z.number().int().min(2000).max(2200)).max(20),
   evidenceRefs:z.array(Id).max(20), reason:z.string().min(1).max(500),
 });
-export type ActivityForecast = z.infer<typeof ActivityForecastSchema>;
+/** @typedef {z.infer<typeof ActivityForecastSchema>} ActivityForecast */
 
 export const ExchangeApplicantSchema = z.strictObject({
   duration:z.union([z.literal(1),z.literal(2)]),
@@ -58,7 +59,7 @@ export const ExchangeApplicantSchema = z.strictObject({
   language:z.strictObject({test:Id,score:z.number().finite().nonnegative(),expiresOn:Day}).optional(),
   departureOn:Day.optional(),
 });
-export type ExchangeApplicant = z.infer<typeof ExchangeApplicantSchema>;
+/** @typedef {z.infer<typeof ExchangeApplicantSchema>} ExchangeApplicant */
 /** 학기 제한은 판본이 명시된 승인 공식 출처에서만 가져온다. 없으면 UNKNOWN이다. */
 const SemesterRangeSchema=z.strictObject({min:z.number().int().min(0).max(15),
   max:z.number().int().min(0).max(15)}).refine(v=>v.min<=v.max);
@@ -81,20 +82,20 @@ export const ExchangePolicySchema = z.strictObject({
   /** 공식 확인된 교류 대학과 학기 범위다. 미확인 대학은 UNKNOWN을 유지한다. */
   partnerId:Id,
 });
-export type ExchangePolicy = z.infer<typeof ExchangePolicySchema>;
+/** @typedef {z.infer<typeof ExchangePolicySchema>} ExchangePolicy */
 export const ExchangeCheckSchema = z.strictObject({
   code:z.enum(['TRACK','GPA','SEMESTERS','TRANSFER','CANCELLATION','PARTNER_GPA','LANGUAGE']),
   status:z.enum(['PASS','FAIL','UNKNOWN','NOT_APPLICABLE']),
   explanation:z.string().min(1).max(300),
   sourceRevision:Id.optional(),
 });
-export type ExchangeCheck = z.infer<typeof ExchangeCheckSchema>;
+/** @typedef {z.infer<typeof ExchangeCheckSchema>} ExchangeCheck */
 export const ExchangeResultSchema = z.strictObject({
   asOf:Iso, policyRevision:Id.optional(), result:z.enum(['PASS','FAIL','UNKNOWN']),
   checks:z.array(ExchangeCheckSchema).length(7),
   disclaimer:z.literal('제시된 기준에 대한 참고 결과이며 공식 지원 자격·선발 결과가 아닙니다.'),
 });
-export type ExchangeResult = z.infer<typeof ExchangeResultSchema>;
+/** @typedef {z.infer<typeof ExchangeResultSchema>} ExchangeResult */
 
 /** 검토된 개별 공개 부서 연락처만 예외로 취급한다. 도메인 전체의 개인정보 예외로 확대하지 않는다. */
 export const FaqPublicContactsSchema = z.array(z.string().max(254).regex(
@@ -111,7 +112,7 @@ export const FaqDocumentSchema = z.strictObject({
     publicContacts:FaqPublicContactsSchema.optional(),
   })).min(1).max(20),
 });
-export type FaqDocument = z.infer<typeof FaqDocumentSchema>;
+/** @typedef {z.infer<typeof FaqDocumentSchema>} FaqDocument */
 export const FaqCitationSchema = z.strictObject({
   citationId:Id, quote:z.string().trim().min(1).max(500),
 });
@@ -121,7 +122,7 @@ export const FaqCandidateSchema = z.strictObject({
   needsHumanConfirmation:z.literal(true),
   suggestedLinks:z.array(z.enum(['/exchange','/activities','/notices'])).max(3),
 });
-export type FaqCandidate = z.infer<typeof FaqCandidateSchema>;
+/** @typedef {z.infer<typeof FaqCandidateSchema>} FaqCandidate */
 
 export const ActivityArchiveResponseSchema=z.strictObject({
   asOf:Iso,sourceVersion:Id,items:z.array(ActivityRecordSchema).max(200),
@@ -153,7 +154,7 @@ export const FaqAskResponseSchema=z.discriminatedUnion('status',[
     usage:z.strictObject({promptTokens:z.number().int().nonnegative(),completionTokens:z.number().int().positive(),
       totalTokens:z.number().int().positive()})}),
 ]);
-export type FaqAskResponse=z.infer<typeof FaqAskResponseSchema>;
+/** @typedef {z.infer<typeof FaqAskResponseSchema>} FaqAskResponse */
 
 /*
  * #44 근거 문단 인덱스 계약 (순수 코어 이식 단계, 매니페스트 항목은 #42와 합의 전 초안).
@@ -161,7 +162,7 @@ export type FaqAskResponse=z.infer<typeof FaqAskResponseSchema>;
  * 판본 JSON에 적힌 검수 시각·URL은 자기 선언이며, 매니페스트에 같은 내용 해시로 등재된 판본만 인덱스에 들어간다.
  */
 export const EvidenceKindSchema=z.enum(['NOTICE','FAQ']);
-export type EvidenceKind=z.infer<typeof EvidenceKindSchema>;
+/** @typedef {z.infer<typeof EvidenceKindSchema>} EvidenceKind */
 /** 적용 조건. 값이 없으면 '전체 대상'이 아니라 '미기재'이며, 학생 적용 판정은 하위 코어에서 UNKNOWN으로 다룬다. */
 export const EvidenceConditionsSchema=z.strictObject({
   campuses:z.array(z.enum(['SEOUL','GLOBAL'])).min(1).max(2).optional(),
@@ -171,10 +172,10 @@ export const EvidenceConditionsSchema=z.strictObject({
     .refine(r=>r.from===undefined||r.until===undefined||r.from<=r.until,'reversed range').optional(),
   majors:z.array(Id).min(1).max(50).optional(),
 });
-export type EvidenceConditions=z.infer<typeof EvidenceConditionsSchema>;
+/** @typedef {z.infer<typeof EvidenceConditionsSchema>} EvidenceConditions */
 /** 다른 문서 판본을 근거로 삼는 문단 참조(예: 수강신청 FAQ → 수강신청 공지 r2). */
 export const EvidenceRefSchema=z.strictObject({kind:EvidenceKindSchema,documentId:Id,revisionId:Id});
-export type EvidenceRef=z.infer<typeof EvidenceRefSchema>;
+/** @typedef {z.infer<typeof EvidenceRefSchema>} EvidenceRef */
 export const EvidenceRevisionSchema=z.strictObject({
   kind:EvidenceKindSchema, documentId:Id, revisionId:Id,
   title:z.string().trim().min(2).max(200), sourceUrl:Source,
@@ -190,11 +191,11 @@ export const EvidenceRevisionSchema=z.strictObject({
   })).max(40),
 }).refine(r=>r.state==='CANCELLED'||r.paragraphs.length>0,'paragraphs required')
   .refine(r=>!r.effectiveFrom||!r.effectiveUntil||r.effectiveFrom<=r.effectiveUntil,'reversed effective range');
-export type EvidenceRevision=z.infer<typeof EvidenceRevisionSchema>;
+/** @typedef {z.infer<typeof EvidenceRevisionSchema>} EvidenceRevision */
 const Sha256=z.string().regex(/^[0-9a-f]{64}$/);
 export const EvidenceManifestSchema=z.strictObject({
   snapshotId:Id, indexRevision:Id, builtAt:Iso, provenance:CampusProvenanceSchema,
   entries:z.array(z.strictObject({kind:EvidenceKindSchema,documentId:Id,revisionId:Id,contentSha256:Sha256})).max(10000),
 }).refine(m=>new Set(m.entries.map(e=>e.kind+'\u0000'+e.documentId)).size===m.entries.length,
   'one manifest entry per document');
-export type EvidenceManifest=z.infer<typeof EvidenceManifestSchema>;
+/** @typedef {z.infer<typeof EvidenceManifestSchema>} EvidenceManifest */
