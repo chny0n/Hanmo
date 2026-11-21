@@ -41,17 +41,21 @@ export function creditUnits(raw) {
     ||!Number.isSafeInteger(raw*2))throw new RangeError('학점은 0.5~30 사이에서 0.5학점 단위로 입력해 주세요.');
   return raw*2;
 }
-/** @param {StudentCourse} raw @returns {StudentCourse} 검증한 로컬 이수 기록 */
+/** @param {StudentPlanCourse & {slot:unknown}} raw @returns {StudentCourse} 검증한 로컬 이수 기록 */
 export function normalizeStudentCourse(raw) {
   const slot=raw.slot;
   if(slot!=='EARNED'&&slot!=='IN_PROGRESS')throw new RangeError('취득 또는 수강 중을 선택해 주세요.');
-  return {courseId:courseCode(raw.courseId),credits:creditUnits(raw.credits)/2,
-    term:academicTerm(raw.term),slot};
+  return {...normalizePlanCourse(raw),slot};
 }
 /** @param {StudentPlanCourse} raw @returns {StudentPlanCourse} 검증한 계획 기록 */
 export function normalizePlanCourse(raw) {
   return {courseId:courseCode(raw.courseId),credits:creditUnits(raw.credits)/2,
     term:academicTerm(raw.term)};
+}
+
+/** @param {number} units @returns {string} 0.5학점 단위로 저장한 값을 화면에 표시한다. */
+export function creditsText(units) {
+  return `${units % 2 === 0 ? units / 2 : (units / 2).toFixed(1)}학점`;
 }
 
 /** KST 기준으로 다음 정규학기부터 연속한 2~4개 학기만 후보로 제공한다. */

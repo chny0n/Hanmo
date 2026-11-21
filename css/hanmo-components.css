@@ -36,10 +36,6 @@ a.hanmo-card:hover{background:#112c3d;border-color:#72a7c5;transform:translateY(
 .hanmo-tag{display:inline-flex;align-self:flex-start;background:#173f5b;color:#c2e7f5;padding:5px 9px;font-size:12px;
   border-radius:7px;font-weight:750}
 .hanmo-tag.wait{background:#463924;color:#ffe3ae}
-.hanmo-note{padding:15px 20px;background:#201e1a;border:1px solid #5d4d35;border-left:4px solid var(--hm-gold);
-  border-radius:9px;color:#f4dcad;font-size:13px;line-height:1.8;margin:20px 0}
-.hanmo-note a{color:#ffdc9b!important}
-.hanmo-note strong{margin-right:7px}
 .hanmo-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .hanmo-form{display:grid;gap:18px}
 .hanmo-field{display:grid;gap:7px;font-size:14px;font-weight:650;color:var(--hm-white)}

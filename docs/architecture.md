@@ -64,7 +64,7 @@
 
 우리 팀은 **1·2차의 실제 구현과 검증**에 집중합니다. 원개발자가 모방 페이지를 원사이트와 비교해 **직접 제작**했고, `selectZone` 변경은 프로젝트 범위 안에서 진행해도 된다고 사용자에게 답변한 것으로 전달받았습니다. 이는 보호된 학교 서버 소스를 확보했다는 뜻이 아니며, 해당 허락만으로 기본 SELECT 대기열·확인창 동작을 파괴해도 된다는 뜻은 아닙니다(§5.3). **Supabase 사용 또한 원개발자가 허용한다고 답변한 것으로 사용자에게서 확인했습니다.** 실제 Supabase Free($0) 프로젝트의 소유·관리 책임은 **임창용 님**으로 유지하고, 계정·접근 권한·비밀키·실연동 승인과 학교 학사자료 사용권은 별도입니다. 3차 설계 인계만으로 실연동 완료나 **4차 최종 제품 인수**를 선언하지 않습니다. [운영 책임 #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29)
 
-**현재 작업 원칙(2026-11-21 재확정):** UI/UX를 현재 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일 기준으로 **동결**합니다. 신규 HTML/CSS·메뉴·표시문구의 리디자인은 하지 않고, UI 파일의 예외 수정은 사용자 승인·시각/PC 실기기 QA가 필요합니다. **신규·기존 학업/NLP/데이터 기능과 테스트는 JavaScript + JSDoc만 사용**하며 `.ts`/`.tsx`/`.mts`/`.cts` 소스는 허용하지 않습니다. [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102) 병합 후 `main`은 학업 JS 98개·TS 0개이며, 3차 실DB·학교 권리 승인과 소스 언어 통일은 별도입니다. 이는 학교 데이터 실연동/최종 인수 승인과 다릅니다.
+**현재 작업 원칙(2026-11-21 재확정):** UI/UX를 현재 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일 기준으로 **동결**합니다. 신규 HTML/CSS·메뉴·표시문구의 리디자인은 하지 않고, UI 파일의 예외 수정은 사용자 승인·시각/PC 실기기 QA가 필요합니다. **신규·기존 학업/NLP/데이터 기능과 테스트는 JavaScript + JSDoc만 사용**하며 `.ts`/`.tsx`/`.mts`/`.cts` 소스는 허용하지 않습니다. [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102) 병합 이후 학업 소스와 테스트는 JavaScript로 유지하며, 3차 실DB·학교 권리 승인과 소스 언어 통일은 별도입니다. 이는 학교 데이터 실연동/최종 인수 승인과 다릅니다.
 
 ## 3. 시스템 구성
 
@@ -467,7 +467,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 **결정(2026-11-21):** 모든 새 학업·NLP·검색·데이터 연동 코어·테스트는 JavaScript + JSDoc으로 작성합니다. 과거 TypeScript로 이식하거나 작성했던 코어·테스트도 JavaScript/JSDoc으로 통일합니다. 새 `.ts`/`.tsx`/`.mts`/`.cts` 파일 추가는 금지합니다.
 
-- **즉시 이관:** 처음 인벤토리 TS 98개를 병합된 [PR #100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)과 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)에서 모두 전환했습니다. `.ts`/`.tsx`/`.mts`/`.cts` 0개, 학업 JS 98개, `tsconfig.json` 제거 및 `jsconfig.json` 전환을 소스 게이트로 관리합니다. 3차 Supabase 데이터/운영 인수는 이관 착수의 선행 조건이 아닙니다.
+- **즉시 이관:** 처음 인벤토리 TS 98개를 병합된 [PR #100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)과 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)에서 모두 전환했습니다. `.ts`/`.tsx`/`.mts`/`.cts` 0개, `tsconfig.json` 제거 및 `jsconfig.json` 전환을 소스 게이트로 관리합니다. 3차 Supabase 데이터/운영 인수는 이관 착수의 선행 조건이 아닙니다.
 - **검증:** 작은 코드 PR마다 이전 구현의 입력/결과·예외·근거·정정/철회·`NEEDS_REVIEW`·`STALE`·로컬 저장·API 계약과 JS 구현을 비교합니다. JSDoc `// @ts-check`, Zod/런타임 검증, Node/Vitest·빌드·PC 브라우저 회귀를 유지하고 출력 번들을 직접 편집하지 않습니다.
 - **UI 동결:** HTML/CSS·최상위 UI JavaScript·이미지는 §3.3의 기준선 58개를 변경하지 않습니다. 필요한 예외는 사용자 승인·UI/원본 QA와 함께 별도 처리합니다. 소스 이관은 화면 재디자인의 허가가 아닙니다.
 - **기술 예외:** Supabase SQL·RLS·마이그레이션은 적절한 SQL을 유지합니다. 자료 수집·브라우저 어댑터는 신규 JavaScript로 작성합니다.

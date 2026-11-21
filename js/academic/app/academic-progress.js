@@ -2,8 +2,11 @@
 /** @typedef {import("../views/student-progress.js").ScenarioId} ScenarioId */
 /** @typedef {import("../views/student-progress.js").StudentCourse} StudentCourse */
 /** @typedef {import("../views/student-progress.js").StudentPlanCourse} StudentPlanCourse */
-import { compareProvisionalScenario, normalizeStudentCourse, normalizePlanCourse, upcomingTerms, explainProvisionalExclusions, provisionalTermBreakdown, SCENARIO_TERMS, MAX_COURSES, } from '../views/student-progress.js';
-import { creditsText } from '../views/graduationView.js';
+/** @typedef {import("../views/student-progress.js").ProvisionalScenario} ProvisionalScenario */
+import {
+    compareProvisionalScenario, creditsText, explainProvisionalExclusions, MAX_COURSES,
+    normalizePlanCourse, normalizeStudentCourse, provisionalTermBreakdown, SCENARIO_TERMS, upcomingTerms,
+} from '../views/student-progress.js';
 /** @type {StudentCourse[]} */
 const records = [];
 /** @type {Record<ScenarioId,StudentPlanCourse[]>} */
@@ -42,9 +45,7 @@ const text = (tag, value) => {
 function selected() {
     const input = document.querySelector('input[name="scenario"]:checked');
     const active = input instanceof HTMLInputElement ? input.value : undefined;
-    if (active === 'A' || active === 'B' || active === 'C')
-        return active;
-    return 'A';
+    return SCENARIOS.find(scenario => scenario === active) ?? 'A';
 }
 /** @param {ScenarioId} scenario */
 const planLabel = scenario => SCENARIO_TERMS[scenario] + '학기';
@@ -52,6 +53,12 @@ const planLabel = scenario => SCENARIO_TERMS[scenario] + '학기';
  * @returns {string}
  */
 function today() { return new Date().toISOString(); }
+/** @param {string} asOf @param {readonly StudentCourse[]} courseRecords */
+function comparePlans(asOf, courseRecords) {
+    return SCENARIOS.map(scenario => compareProvisionalScenario({
+        asOf, scenario, records: courseRecords, plans: plans[scenario],
+    }));
+}
 /** @returns {void} */
 function renderRecords() {
     const tbody = get('record-rows');
@@ -150,19 +157,16 @@ function appendHeader(row, label, scope) {
     header.textContent = label;
     row.append(header);
 }
-/** @returns {void} */
-function renderAll() {
+/** @param {string} [asOf] @param {ProvisionalScenario[]} [comparisons] */
+function renderAll(asOf = today(), comparisons) {
     renderRecords();
     renderPlanRows();
-    const at = today();
-    renderTermChoices(at);
+    renderTermChoices(asOf);
     const root = get('scenario-comparison'), creditRoot = get('credit-overview');
     root.replaceChildren();
     creditRoot.replaceChildren();
     try {
-        const results = SCENARIOS.map(scenario => compareProvisionalScenario({
-            asOf: at, scenario, records, plans: plans[scenario],
-        }));
+        const results = comparisons ?? comparePlans(asOf, records);
         const first = results[0].audit;
         addMetric(creditRoot, '취득', first.earnedCreditUnits);
         addMetric(creditRoot, '수강 중', first.inProgressCreditUnits);
@@ -234,16 +238,13 @@ get('record-form').addEventListener('submit', event => {
             courseId: control('record-course', HTMLInputElement).value,
             credits: Number(control('record-credits', HTMLInputElement).value),
             term: control('record-term', HTMLInputElement).value.trim(),
-            slot: /** @type {StudentCourse['slot']} */ (control('record-slot', HTMLSelectElement).value),
+            slot: control('record-slot', HTMLSelectElement).value,
         });
-        const candidate = [...records, row], at = today();
-        for (const scenario of SCENARIOS)
-            compareProvisionalScenario({
-                asOf: at, scenario, records: candidate, plans: plans[scenario],
-            });
+        const asOf = today();
+        const comparisons = comparePlans(asOf, [...records, row]);
         records.push(row);
         control('record-course', HTMLInputElement).value = '';
-        renderAll();
+        renderAll(asOf, comparisons);
         write('record-message', '기록을 추가했습니다.');
     }
     catch (error) {
