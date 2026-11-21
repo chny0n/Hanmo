@@ -4,21 +4,21 @@
 /** @typedef {import("./ledger.js").LedgerRequirement} LedgerRequirement */
 /** @typedef {import("./ledger.js").RulePackGate} RulePackGate */
 /** @typedef {Omit<LedgerAttempt, 'areaIds'>} DoubleMajorAttempt */
-/** @typedef {{ rulePackVersion:string;; rulePackState:RulePackGate;; requirements:readonly LedgerRequirement[];; courseAreas:Readonly<Record<string, readonly string[]>>; }} MajorRulePack */
-/** @typedef {{ maxSharedCreditUnits:number;; evidenceRefs:readonly string[]; }} OverlapRule */
+/** @typedef {{ rulePackVersion:string; rulePackState:RulePackGate; requirements:readonly LedgerRequirement[]; courseAreas:Readonly<Record<string, readonly string[]>>; }} MajorRulePack */
+/** @typedef {{ maxSharedCreditUnits:number; evidenceRefs:readonly string[]; }} OverlapRule */
 /** @typedef {| {status:'NONE'} | {status:'UNSET'} | {status:'SELECTED'; pack?:MajorRulePack & {overlapRule?:OverlapRule}}} DoubleMajorSelection */
-/** @typedef {{ asOf:string;; attempts:readonly DoubleMajorAttempt[];; primary:MajorRulePack;; doubleMajor:DoubleMajorSelection; }} DoubleMajorRequest */
-/** @typedef {{ courseId:string;; ledger:LedgerAttempt['ledger'];; creditUnits:number;; primaryAreaIds:string[];; doubleMajorAreaIds:string[]; }} SharedCourse */
+/** @typedef {{ asOf:string; attempts:readonly DoubleMajorAttempt[]; primary:MajorRulePack; doubleMajor:DoubleMajorSelection; }} DoubleMajorRequest */
+/** @typedef {{ courseId:string; ledger:LedgerAttempt['ledger']; creditUnits:number; primaryAreaIds:string[]; doubleMajorAreaIds:string[]; }} SharedCourse */
 /** @typedef {'NONE'|'NO_APPROVED_RULE'|'COVERED_BY_APPROVED_RULE'|'OVER_APPROVED_LIMIT'} OverlapStatus */
-/** @typedef {{ requirementId:string;; decided:boolean;; metWithShared:boolean;; metWithoutShared:boolean;; earnedCreditUnitsWithoutShared?:number;; remainingCreditUnitsWithoutShared?:number;; projectedCreditUnitsWithoutShared?:number;; matchedCoursesCountWithoutShared?:number; }} OverlapRowImpact */
-/** @typedef {{ state:'READY'|'NEEDS_REVIEW'|'INSUFFICIENT_DATA';; asOf:string;; uniqueCredits:{earnedCreditUnits:number; inProgressCreditUnits:number; plannedCreditUnits:number; projectedCreditUnits:number};; primary:AcademicAuditVNext;; doubleMajor: | {status:'NOT_APPLICABLE'} | {status:'INPUT_REQUIRED'} | {status:'RULES_MISSING'} | {status:'CHECKED'; audit:AcademicAuditVNext};; overlap:{ status:OverlapStatus; sharedCourses:SharedCourse[]; sharedCreditUnits:number; evidenceRefs:string[]; heldRequirementIds:{primary:string[]; doubleMajor:string[]}; rowImpacts:{primary:OverlapRowImpact[]; doubleMajor:OverlapRowImpact[]}; };; caveats:string[]; }} DoubleMajorAudit */
+/** @typedef {{ requirementId:string; decided:boolean; metWithShared:boolean; metWithoutShared:boolean; earnedCreditUnitsWithoutShared?:number; remainingCreditUnitsWithoutShared?:number; projectedCreditUnitsWithoutShared?:number; matchedCoursesCountWithoutShared?:number; }} OverlapRowImpact */
+/** @typedef {{ state:'READY'|'NEEDS_REVIEW'|'INSUFFICIENT_DATA'; asOf:string; uniqueCredits:{earnedCreditUnits:number; inProgressCreditUnits:number; plannedCreditUnits:number; projectedCreditUnits:number}; primary:AcademicAuditVNext; doubleMajor: | {status:'NOT_APPLICABLE'} | {status:'INPUT_REQUIRED'} | {status:'RULES_MISSING'} | {status:'CHECKED'; audit:AcademicAuditVNext}; overlap:{ status:OverlapStatus; sharedCourses:SharedCourse[]; sharedCreditUnits:number; evidenceRefs:string[]; heldRequirementIds:{primary:string[]; doubleMajor:string[]}; rowImpacts:{primary:OverlapRowImpact[]; doubleMajor:OverlapRowImpact[]}; }; caveats:string[]; }} DoubleMajorAudit */
 import { AcademicAuditVNextSchema } from '../../contracts/index.js';
 import { assertId, assertUnits, buildAcademicLedger } from './ledger.js';
 const MAX_AREAS_PER_COURSE = 30;
 /**
  * @param {MajorRulePack} pack
  * @param {string} label
- * @returns {Map<string, string[]>} 기능 결과
+ * @returns {Map<string, string[]>}
  */
 function readAreas(pack, label) {
     if (!pack.courseAreas || typeof pack.courseAreas !== 'object')
@@ -42,7 +42,7 @@ function readAreas(pack, label) {
 /** 영역 배정 이외에 RulePack 요건에서 직접 지정한 과목 목록이다. */
 /**
  * @param {readonly LedgerRequirement[]} requirements
- * @returns {Set<string>} 기능 결과
+ * @returns {Set<string>}
  */
 function namedCourses(requirements) {
     const named = new Set();
@@ -63,7 +63,7 @@ function namedCourses(requirements) {
  * @param {readonly DoubleMajorAttempt[]} attempts
  * @param {MajorRulePack} pack
  * @param {ReadonlyMap<string, string[]>} areas
- * @returns {AcademicAuditVNext} 기능 결과
+ * @returns {AcademicAuditVNext}
  */
 function runPack(asOf, attempts, pack, areas) {
     return buildAcademicLedger({
@@ -84,7 +84,7 @@ function runPack(asOf, attempts, pack, areas) {
  * @param {ReadonlyMap<string, SharedCourse>} shared
  * @param {(course:SharedCourse) => readonly string[]} sharedAreas
  * @param {AcademicAuditVNext} withoutShared
- * @returns {OverlapRowImpact[]} 기능 결과
+ * @returns {OverlapRowImpact[]}
  */
 function rowImpacts(requirements, audit, shared, sharedAreas, withoutShared) {
     const rows = new Map(audit.requirements.map(row => [row.requirementId, row]));
@@ -145,7 +145,7 @@ function rowImpacts(requirements, audit, shared, sharedAreas, withoutShared) {
  * @param {AcademicAuditVNext} audit
  * @param {readonly string[]} ids
  * @param {string} caveat
- * @returns {AcademicAuditVNext} 기능 결과
+ * @returns {AcademicAuditVNext}
  */
 function hold(audit, ids, caveat) {
     if (ids.length === 0)
@@ -161,7 +161,7 @@ function hold(audit, ids, caveat) {
 }
 /**
  * @param {DoubleMajorRequest} input
- * @returns {DoubleMajorAudit} 기능 결과
+ * @returns {DoubleMajorAudit}
  */
 export function buildDoubleMajorAudit(input) {
     if (!Array.isArray(input.attempts))

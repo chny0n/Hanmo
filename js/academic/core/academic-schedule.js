@@ -9,8 +9,8 @@
 /** @typedef {'YES'|'NO'|'UNKNOWN'} Applies */
 /** @typedef {'SYNTHETIC'|'SOURCE_REVIEWED'|'NEEDS_SOURCE_CHECK'} Evidence */
 /** @typedef {'DUE_SOON'|'UPCOMING'|'OVERDUE'|'DATE_UNKNOWN'|'INFORMATION'} Priority */
-/** @typedef {{ event:AcademicEvent;; group:AcademicGroup;; appliesTo:Applies;; scopeUnknown:readonly string[];; candidateRequirementMatch:boolean;; evidence:Evidence;; priority:Priority;; studentDeadline:string|null;; daysLeft:number|null;; sortTimestamp:number; }} AcademicAgendaItem */
-/** @typedef {{ asOf:string;; items:AcademicAgendaItem[];; excluded:{id:string;reason:'DUPLICATE_ID'|'CANCELLED'|'FUTURE_PUBLICATION'|'INVALID_TIME'}[];; dueSoonCount:number;; reviewNeededCount:number;; relevantCount:number; }} AcademicAgenda */
+/** @typedef {{ event:AcademicEvent; group:AcademicGroup; appliesTo:Applies; scopeUnknown:readonly string[]; candidateRequirementMatch:boolean; evidence:Evidence; priority:Priority; studentDeadline:string|null; daysLeft:number|null; sortTimestamp:number; }} AcademicAgendaItem */
+/** @typedef {{ asOf:string; items:AcademicAgendaItem[]; excluded:{id:string;reason:'DUPLICATE_ID'|'CANCELLED'|'FUTURE_PUBLICATION'|'INVALID_TIME'}[]; dueSoonCount:number; reviewNeededCount:number; relevantCount:number; }} AcademicAgenda */
 /** @typedef {typeof GRADUATION_STEPS[number]['id']} GraduationStepId */
 import { z } from 'zod';
 import { openRequirementIdsFromAudit } from './academics/notice-links.js';
@@ -61,7 +61,7 @@ const GROUP = {
 };
 /**
  * @param {AcademicEventType} type
- * @returns {AcademicGroup} 기능 결과
+ * @returns {AcademicGroup}
  */
 export function academicGroupFor(type) { return GROUP[type]; }
 const Term = z.string().regex(/^20\d{2}-(?:1|2|SUMMER|WINTER)$/);
@@ -114,7 +114,7 @@ export const AcademicScheduleSchema = z.strictObject({
 // 일정 파일 전체 형식은 먼저 확인하되, 개별 공지 오류는 격리하여 정상 공지까지 폐기하지 않는다.
 /**
  * @param {unknown} source
- * @returns {AcademicScheduleImport} 기능 결과
+ * @returns {AcademicScheduleImport}
  */
 export function parseAcademicSchedule(source) {
     const parsed = AcademicScheduleSchema.parse(source);
@@ -169,7 +169,7 @@ const one = (required, actual, field, unknown) => {
  * @param {AcademicProfile} profile
  * @param {AcademicEvent} event
  * @param {unknown} [independentlyReviewed]
- * @returns {{state:Applies;unknown:string[]}} 기능 결과
+ * @returns {{state:Applies;unknown:string[]}}
  */
 export function noticeApplicability(profile, event, independentlyReviewed = false) {
     const scope = event.scope;
@@ -213,7 +213,7 @@ export function noticeApplicability(profile, event, independentlyReviewed = fals
 }
 /**
  * @param {AcademicAuditVNext|null|undefined} audit
- * @returns {string[]|null} 기능 결과
+ * @returns {string[]|null}
  */
 export function openRequirementsFromAudit(audit) {
     return openRequirementIdsFromAudit(audit);
@@ -228,7 +228,7 @@ const anyTimestamp = (e) => {
 /**
  * @param {AcademicEvent} event
  * @param {boolean} independentlyReviewed
- * @returns {Evidence} 기능 결과
+ * @returns {Evidence}
  */
 function sourceEvidence(event, independentlyReviewed) {
     if (event.source.review === 'SYNTHETIC')
@@ -238,7 +238,7 @@ function sourceEvidence(event, independentlyReviewed) {
 /** 로컬 조회 화면이며 학교 서버 실시간 조회나 마감일 생성·추정 기능은 없다. */
 /**
  * @param {{ asOf:string;profile:AcademicProfile;events:readonly AcademicEvent[]; trustedReviewedEvents?:readonly AcademicEvent[]; }} request
- * @returns {AcademicAgenda} 기능 결과
+ * @returns {AcademicAgenda}
  */
 export function buildAcademicAgenda(request) {
     if (!Iso.safeParse(request.asOf).success)

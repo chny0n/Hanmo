@@ -52,6 +52,11 @@ export function archiveDay(row){
 function canonical(row){
   return JSON.stringify(Object.keys(row).sort().map(k=>[k,row[/** @type {keyof ActivityRecord} */ (k)]]));
 }
+/** @param {ActivityRecord} a @param {ActivityRecord} b */
+function revisionOrder(a,b){
+  return epoch(a.publishedAt)-epoch(b.publishedAt)
+    ||(a.revisionId<b.revisionId?-1:a.revisionId>b.revisionId?1:0);
+}
 /**
  * asOf까지 게시·검증된 sourceId별 최신 판본을 선택한다(게시 시각 우선, 그 다음 revisionId).
  * 같은 최신 판본의 복사본이 권리·상태·날짜·문구에서 다르면 입력 순서로 선택하지 않고 출처 전체를 격리한다.
@@ -63,11 +68,14 @@ function sourceHeadsAt(parsed,time){
   const newest=new Map();
   for(const item of parsed){
     if(epoch(item.publishedAt)>time||epoch(item.verifiedAt)>time)continue;
-    const prev=newest.get(item.sourceId)?.[0];
-    const order=!prev?1:epoch(item.publishedAt)-epoch(prev.publishedAt)
-      ||(item.revisionId<prev.revisionId?-1:item.revisionId>prev.revisionId?1:0);
+    const copies=newest.get(item.sourceId);
+    if(!copies){
+      newest.set(item.sourceId,[item]);
+      continue;
+    }
+    const order=revisionOrder(item,copies[0]);
     if(order>0)newest.set(item.sourceId,[item]);
-    else if(order===0)(/** @type {ActivityRecord[]} */ (newest.get(item.sourceId))).push(item);
+    else if(order===0)copies.push(item);
   }
   /** @type {Map<string,ActivityRecord>} */
   const heads=new Map();
@@ -79,25 +87,26 @@ function sourceHeadsAt(parsed,time){
 /** @param {readonly ActivityRecord[]} raw @param {string} asOf @returns {ActivityRecord[]} 철회·충돌 판본을 제외한 공개 기록 */
 export function currentActivityRecords(raw,asOf){
   const time=epoch(asOf);
-  const parsed=ActivityRecordSchema.array().max(10000).parse(raw);
-  const heads=sourceHeadsAt(parsed,time);
+  return recordsFromHeads(sourceHeadsAt(ActivityRecordSchema.array().max(10000).parse(raw),time));
+}
+
+/** @param {Map<string,ActivityRecord>} heads */
+function recordsFromHeads(heads){
   const latest=[...heads.values()].filter(item=>item.rights==='APPROVED'&&item.status!=='DELETED');
   /** @type {Map<string,ActivityRecord>} */
   const events=new Map();
   /** @type {Set<string>} */
   const tied=new Set();
   for(const item of latest){
-    const y=item.eventDate?year(item.eventDate):year(publishedDayKst(item.publishedAt));
-    const key=item.organizationId+':'+item.seriesId+':'+y;
+    const key=JSON.stringify([item.organizationId,item.seriesId,year(archiveDay(item))]);
     const prev=events.get(key);
-    const order=!prev?1:epoch(item.publishedAt)-epoch(prev.publishedAt)
-      ||(item.revisionId<prev.revisionId?-1:item.revisionId>prev.revisionId?1:0);
+    const order=prev?revisionOrder(item,prev):1;
     if(order>0){events.set(key,item);tied.delete(key);}
     // 같은 시각·판본이라도 출처 내용이 다르면 어느 쪽도 승자로 선정하지 않는다.
-    else if(order===0&&canonical(item)!==canonical(/** @type {ActivityRecord} */ (prev)))tied.add(key);
+    else if(order===0&&prev&&canonical(item)!==canonical(prev))tied.add(key);
   }
   for(const key of tied)events.delete(key);
-  return [...events.values()].sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt)||a.entryId.localeCompare(b.entryId));
+  return [...events.values()].sort((a,b)=>epoch(b.publishedAt)-epoch(a.publishedAt)||a.entryId.localeCompare(b.entryId));
 }
 /** @param {readonly ActivityRecord[]} raw @param {string} asOf @param {ActivityFilter} [filter] @returns {ActivityRecord[]} 필터링한 행사 보관함 */
 export function archiveActivities(raw,asOf,filter={}){
@@ -119,20 +128,20 @@ export function archiveActivities(raw,asOf,filter={}){
  * @returns {ActivityForecast} 공개 근거의 검증 상태를 유지한 행사 전망
  */
 export function forecastActivity(raw,asOf,targetYear,organizationId,seriesId){
-  epoch(asOf);
+  const time=epoch(asOf);
   if(!Number.isInteger(targetYear)||targetYear<2000||targetYear>2200)throw new RangeError('targetYear');
-  const records=currentActivityRecords(raw,asOf).filter(row=>
+  const heads=sourceHeadsAt(ActivityRecordSchema.array().max(10000).parse(raw),time);
+  const records=recordsFromHeads(heads).filter(row=>
     row.organizationId===organizationId&&row.seriesId===seriesId);
   const selected=records.find(row=>row.eventDate&&year(row.eventDate)===targetYear
     &&(row.status==='CONFIRMED'||row.status==='CANCELLED'));
-  const prior=records.filter(row=>row.status==='CONFIRMED'&&row.eventDate&&year(row.eventDate)<targetYear
-    &&Date.parse(row.eventDate+'T00:00:00Z')<=epoch(asOf)).sort((a,b)=>(/** @type {string} */ (a.eventDate)).localeCompare((/** @type {string} */ (b.eventDate))));
-  /** @type {Map<number,ActivityRecord>} */
-  const byYear=new Map();
-  for(const row of prior)byYear.set(year((/** @type {string} */ (row.eventDate))),row);
-  const history=[...byYear.values()].sort((a,b)=>(/** @type {string} */ (a.eventDate)).localeCompare((/** @type {string} */ (b.eventDate))));
+  const today=publishedDayKst(asOf);
+  const held=records.flatMap(row=>row.status==='CONFIRMED'&&row.eventDate&&row.eventDate<=today
+    ?[{date:row.eventDate,revisionId:row.revisionId}]:[])
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  const history=held.filter(row=>year(row.date)<targetYear);
   const evidence=history.map(x=>x.revisionId);
-  const observedYears=history.map(x=>year((/** @type {string} */ (x.eventDate))));
+  const observedYears=history.map(x=>year(x.date));
   /**
    * @param {ActivityForecast['state']} state
    * @param {ActivityForecast['confidence']} confidence
@@ -151,14 +160,11 @@ export function forecastActivity(raw,asOf,targetYear,organizationId,seriesId){
   // 행사와 취소 공지가 서로 다른 연도의 보관함에 있을 수 있기 때문이다(예: 2027 행사 공지 2026-10, 취소 2026-12).
   // supersedes 연결은 asOf 기준 유효하고 검증·승인된 최신 판본을 가리킬 때만 신뢰한다.
   // 연결이 미확정이면 보류하고 더 나중에 나온 날짜가 명시된 기록만 우선 적용한다.
-  const time=epoch(asOf);
-  const heads=sourceHeadsAt(ActivityRecordSchema.array().max(10000).parse(raw),time);
   /** @param {string} ref @returns {ActivityRecord|undefined} 신뢰 가능한 이전 기록 */
   const trustedTarget=(ref)=>[...heads.values()].find(row=>
     (row.revisionId===ref||row.entryId===ref)&&row.organizationId===organizationId
     &&row.seriesId===seriesId&&row.rights==='APPROVED'&&row.status!=='DELETED'&&row.eventDate);
-  const lastHeld=records.filter(row=>row.status==='CONFIRMED'&&row.eventDate
-    &&Date.parse(row.eventDate+'T00:00:00Z')<=time).map(row=>(/** @type {string} */ (row.eventDate))).sort().at(-1);
+  const lastHeld=held.at(-1)?.date;
   /** @param {ActivityRecord} cancel @returns {boolean} 확정 기록이 취소보다 최신인지 여부 */
   const supersededBySelected=(cancel)=>!!selected&&epoch(selected.publishedAt)>epoch(cancel.publishedAt);
   for(const cancel of records.filter(row=>row.status==='CANCELLED'&&!row.eventDate)){
@@ -179,7 +185,7 @@ export function forecastActivity(raw,asOf,targetYear,organizationId,seriesId){
   if(selected)return result(selected.status==='CANCELLED'?'CANCELLED':'CONFIRMED','NONE',
     '해당 연도의 확인된 출처가 과거 패턴보다 우선합니다.',selected.eventDate,selected.eventDate,selected);
   if(history.length<2)return result('INSUFFICIENT_DATA','NONE','서로 다른 연도의 개최 근거가 2개 미만입니다.');
-  const dates=history.map(r=>dayOfYear((/** @type {string} */ (r.eventDate))));
+  const dates=history.map(r=>dayOfYear(r.date));
   const spread=Math.max(...dates)-Math.min(...dates);
   if(spread>45)return result('UNKNOWN','NONE','과거 개최 시기 분산이 커서 예측을 보류합니다.');
   const confidence=history.length>=3&&spread<=21?'MEDIUM':'LOW';

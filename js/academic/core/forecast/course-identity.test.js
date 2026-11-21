@@ -17,7 +17,7 @@ const resolvedAt = (checkedAt) => ({ state: 'RESOLVED', revisionRef: 'SYN-MAP-R1
  * @param {string} term
  * @param {OfferingObservation['state']} state
  * @param {Partial<OfferingObservation>} [over]
- * @returns {OfferingObservation} 기능 결과
+ * @returns {OfferingObservation}
  */
 function row(term, state, over = {}) {
     const year = term.slice(0, 4);

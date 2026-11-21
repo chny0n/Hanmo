@@ -5,7 +5,7 @@
 /** @typedef {z.infer<typeof AcademicRequirementVNextSchema>} AcademicRequirementVNext */
 /** @typedef {z.infer<typeof AcademicClauseVNextSchema>} AcademicClauseVNext */
 /** @typedef {z.infer<typeof AcademicRulePackVNextSchema>} AcademicRulePackVNext */
-/** @typedef {{ sourceDocumentSha256:string;; sourceDocuments?:readonly {documentId:string;sourceDocumentSha256:string}[]|undefined;; clauses:readonly Pick<AcademicClauseVNext,'clauseId'|'kind'|'sourceSpanRef'|'sourceDocumentId'>[]; }} AcademicTrustedSourceInventoryVNext */
+/** @typedef {{ sourceDocumentSha256:string; sourceDocuments?:readonly {documentId:string;sourceDocumentSha256:string}[]|undefined; clauses:readonly Pick<AcademicClauseVNext,'clauseId'|'kind'|'sourceSpanRef'|'sourceDocumentId'>[]; }} AcademicTrustedSourceInventoryVNext */
 /** @typedef {z.infer<typeof AcademicAuditVNextSchema>} AcademicAuditVNext */
 /** @typedef {z.infer<typeof OfferingOutlookVNextSchema>} OfferingOutlookVNext */
 import { z } from 'zod';
@@ -283,7 +283,7 @@ export const AcademicRulePackVNextSchema = z.strictObject({
 /**
  * @param {AcademicRulePackVNext} pack
  * @param {AcademicTrustedSourceInventoryVNext} original
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 export function verifyAcademicSourceCoverageVNext(pack, original) {
     if (pack.sourceDocumentSha256 !== original.sourceDocumentSha256
@@ -322,7 +322,7 @@ export function verifyAcademicSourceCoverageVNext(pack, original) {
 /**
  * @param {unknown} candidate
  * @param {AcademicTrustedSourceInventoryVNext} trustedOriginal
- * @returns {AcademicRulePackVNext|null} 기능 결과
+ * @returns {AcademicRulePackVNext|null}
  */
 export function parseApprovedAcademicRulePackVNext(candidate, trustedOriginal) {
     const checked = AcademicRulePackVNextSchema.safeParse(candidate);
@@ -334,7 +334,7 @@ export function parseApprovedAcademicRulePackVNext(candidate, trustedOriginal) {
 /**
  * @param {AcademicRulePackVNext} previous
  * @param {AcademicRulePackVNext} next
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 export function stableAcademicRequirementIdsVNext(previous, next) {
     if (next.supersedesVersion !== previous.version)
@@ -352,7 +352,7 @@ export function stableAcademicRequirementIdsVNext(previous, next) {
 /**
  * @param {readonly AcademicRulePackVNext[]} candidates
  * @param {{ asOf:string;campus:string;primaryMajor:string;secondaryMajor?:string; majorRole:z.infer<typeof MajorRoleVNextSchema>;admissionType:string; curriculumVersion:string;admissionYear:number;degreePath?:string;track?:string; }} request
- * @returns {AcademicRulePackVNext|null} 기능 결과
+ * @returns {AcademicRulePackVNext|null}
  */
 export function selectAcademicRulePackAsOfVNext(candidates, request) {
     const at = Date.parse(request.asOf);
@@ -524,7 +524,7 @@ export const AcademicAuditVNextSchema = z.strictObject({
 /**
  * @param {AcademicRulePackVNext} pack
  * @param {AcademicAuditVNext} audit
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 export function validateAcademicAuditAgainstPackVNext(pack, audit) {
     if (audit.rulePackVersion !== pack.version || pack.state !== 'APPROVED')
@@ -552,7 +552,7 @@ export function validateAcademicAuditAgainstPackVNext(pack, audit) {
 /**
  * @param {AcademicRulePackVNext} pack
  * @param {readonly string[]} refs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 export function validateAcademicNoticeRequirementRefsVNext(pack, refs) {
     const ids = new Set(pack.requirements.map(x => x.id));
@@ -569,7 +569,7 @@ export const AcademicCourseCodeResolutionVNextSchema = z.discriminatedUnion('sta
  */
 /**
  * @param {{ rawCode:string; sourceFormatReviewed:boolean; approvedFormat:'COURSE_7_ONLY'|'COURSE_7_SECTION_2'; }} input
- * @returns {z.infer<typeof AcademicCourseCodeResolutionVNextSchema>} 기능 결과
+ * @returns {z.infer<typeof AcademicCourseCodeResolutionVNextSchema>}
  */
 export function resolveAcademicCourseCodeVNext(input) {
     if (!input.sourceFormatReviewed)
@@ -680,7 +680,7 @@ export const OfferingOutlookVNextSchema = z.strictObject({
 });
 /**
  * @param {string} term
- * @returns {{year:number;season:string}} 기능 결과
+ * @returns {{year:number;season:string}}
  */
 function parseTerm(term) {
     return { year: Number(term.slice(0, 4)), season: term.slice(-1) };

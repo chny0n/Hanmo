@@ -36,7 +36,7 @@ const baseRequirements = () => [total(12), area('REQ-MAJOR', 'MAJOR', 12), area(
 /**
  * @param {readonly Req[]} requirements
  * @param {Record<string, string>} spans
- * @returns {Clause[]} 기능 결과
+ * @returns {Clause[]}
  */
 function inventory(requirements, spans) {
     const byClause = new Map();

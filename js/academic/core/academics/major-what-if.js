@@ -12,13 +12,13 @@
 /** @typedef {AcademicDegreePathVNext} DegreePath */
 /** @typedef {'MAJOR_DEEPENING'|'MAJOR_DEEPENING_MINOR'} LegacyDegreePath */
 /** @typedef {'DOUBLE_MAJOR'|'MINOR'} SecondaryRole */
-/** @typedef {{ primaryProgramId:string;; secondary?:{role:SecondaryRole; programId:string}; }} ProgramEnrollment */
+/** @typedef {{ primaryProgramId:string; secondary?:{role:SecondaryRole; programId:string}; }} ProgramEnrollment */
 /** @typedef {| {role:'PRIMARY_MAJOR'; programId:string; degreePath:DegreePath|LegacyDegreePath; pack:MajorRulePack} | { role:SecondaryRole; programId:string; primaryProgramId?:string; pack:MajorRulePack & {overlapRule?:OverlapRule}; }} ProgramOffer */
-/** @typedef {{ asOf:string;; attempts:readonly DoubleMajorAttempt[];; current:ProgramEnrollment;; scenario:WhatIfScenario;; programs:readonly ProgramOffer[]; }} MajorWhatIfRequest */
+/** @typedef {{ asOf:string; attempts:readonly DoubleMajorAttempt[]; current:ProgramEnrollment; scenario:WhatIfScenario; programs:readonly ProgramOffer[]; }} MajorWhatIfRequest */
 /** @typedef {'CURRENT_RULEPACK_NOT_APPROVED'|'RULEPACK_NOT_APPROVED'|'TARGET_PROGRAM_UNAVAILABLE'} MajorWhatIfBlocker */
-/** @typedef {{ role:'CURRENT'|'HYPOTHETICAL';; asOf:string;; enrollment:ProgramEnrollment;; degreePath:DegreePath;; rulePackVersions:string[];; earnedCreditUnits:number;; remainingCreditUnits:number;; requirements:MajorWhatIfRequirementProgress[];; reviewRequirementIds:string[]; }} WhatIfProjection */
+/** @typedef {{ role:'CURRENT'|'HYPOTHETICAL'; asOf:string; enrollment:ProgramEnrollment; degreePath:DegreePath; rulePackVersions:string[]; earnedCreditUnits:number; remainingCreditUnits:number; requirements:MajorWhatIfRequirementProgress[]; reviewRequirementIds:string[]; }} WhatIfProjection */
 /** @typedef {| {state:'BLOCKED_DEPENDENCY'; asOf:string; scenario:WhatIfScenario; blockers:MajorWhatIfBlocker[]; coreVersion:string} | { state:'READY'; asOf:string; scenario:WhatIfScenario; coreVersion:string; current:WhatIfProjection; hypothetical:WhatIfProjection; delta:(MajorWhatIfDeltaRow & {evidenceRefs:string[]})[]; }} MajorWhatIfResult */
-/** @typedef {{ primary?:Extract<ProgramOffer, {role:'PRIMARY_MAJOR'}>;; secondary?:Extract<ProgramOffer, {role:SecondaryRole}>;; unavailable:boolean; }} Resolved */
+/** @typedef {{ primary?:Extract<ProgramOffer, {role:'PRIMARY_MAJOR'}>; secondary?:Extract<ProgramOffer, {role:SecondaryRole}>; unavailable:boolean; }} Resolved */
 import { AcademicDegreePathVNextSchema, isConsistentMajorWhatIfDelta, OwnerMajorWhatIfScenarioSchema, } from '../../contracts/index.js';
 import { buildDoubleMajorAudit } from './double-major.js';
 import { assertId } from './ledger.js';
@@ -32,7 +32,7 @@ export const MAJOR_WHAT_IF_CORE_VERSION = 'hufs-major-what-if-2';
 /**
  * @param {unknown} value
  * @param {string} programId
- * @returns {DegreePath} 기능 결과
+ * @returns {DegreePath}
  */
 function canonicalDegreePath(value, programId) {
     // 허용된 별칭만 정확히 정규화한다. 알 수 없는 값이 다른 학위 경로로 조용히 바뀌어서는 안 된다.
@@ -51,7 +51,6 @@ const pathOf = (enrollment) => !enrollment.secondary ? 'ADVANCED_SINGLE' : enrol
 /**
  * @param {ProgramEnrollment} enrollment
  * @param {string} label
- * @returns {void} 기능 결과
  */
 function checkEnrollment(enrollment, label) {
     assertId(enrollment.primaryProgramId, `${label} primaryProgramId`);
@@ -69,7 +68,7 @@ function checkEnrollment(enrollment, label) {
 /**
  * @param {ProgramEnrollment} current
  * @param {WhatIfScenario} scenario
- * @returns {ProgramEnrollment|undefined} 기능 결과
+ * @returns {ProgramEnrollment|undefined}
  */
 function applyScenario(current, scenario) {
     const second = current.secondary;
@@ -98,7 +97,7 @@ function applyScenario(current, scenario) {
 /**
  * @param {ProgramEnrollment} enrollment
  * @param {readonly ProgramOffer[]} programs
- * @returns {Resolved} 기능 결과
+ * @returns {Resolved}
  */
 function resolve(enrollment, programs) {
     const path = pathOf(enrollment);
@@ -118,7 +117,6 @@ const approved = (resolved, enrollment) => resolved.primary?.pack.rulePackState 
     && (!enrollment.secondary || resolved.secondary?.pack.rulePackState === 'APPROVED');
 /**
  * @param {readonly ProgramOffer[]} programs
- * @returns {void} 기능 결과
  */
 function checkCatalog(programs) {
     if (!Array.isArray(programs))
@@ -168,7 +166,7 @@ function checkCatalog(programs) {
  * @param {MajorWhatIfRequest} input
  * @param {ProgramEnrollment} enrollment
  * @param {Resolved} resolved
- * @returns {WhatIfProjection} 기능 결과
+ * @returns {WhatIfProjection}
  */
 function project(role, input, enrollment, resolved) {
     const primary = resolved.primary.pack;
@@ -256,14 +254,14 @@ function project(role, input, enrollment, resolved) {
 /**
  * @param {ReadonlyMap<string, LedgerRequirement>} definitions
  * @param {string} id
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function evidenceOf(definitions, id) {
     return [...(definitions.get(id)?.evidenceRefs ?? [])];
 }
 /**
  * @param {MajorWhatIfRequest} input
- * @returns {MajorWhatIfResult} 기능 결과
+ * @returns {MajorWhatIfResult}
  */
 export function buildMajorWhatIf(input) {
     const parsed = OwnerMajorWhatIfScenarioSchema.safeParse(input.scenario);

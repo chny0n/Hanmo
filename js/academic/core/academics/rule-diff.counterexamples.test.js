@@ -5,7 +5,7 @@
 /** @typedef {import("./rule-diff.js").RevisionBlockerCode} RevisionBlockerCode */
 /** @typedef {AcademicRulePackVNext} Pack */
 /** @typedef {Pack['requirements'][number]} Req */
-/** @typedef {{ name:string;; requirements?:(reqs:Req[]) => Req[];; pack?:Partial<Pack>;; expect:{changed:Array<[string, ChangedField]>; added?:string[]; removed?:string[]} | {blocked:RevisionBlockerCode}; }} Mutation */
+/** @typedef {{ name:string; requirements?:(reqs:Req[]) => Req[]; pack?:Partial<Pack>; expect:{changed:Array<[string, ChangedField]>; added?:string[]; removed?:string[]} | {blocked:RevisionBlockerCode}; }} Mutation */
 import { describe, expect, it } from 'vitest';
 import { AcademicRulePackVNextSchema } from '../../contracts/index.js';
 import { compareRulePackRevisions } from './rule-diff.js';
@@ -23,7 +23,7 @@ const BASE = [
 ];
 /**
  * @param {readonly Req[]} requirements
- * @returns {Pack['clauseInventory']} 기능 결과
+ * @returns {Pack['clauseInventory']}
  */
 function inventory(requirements) {
     const linked = new Map();
@@ -52,7 +52,7 @@ const SCOPE = {
  * @param {string} version
  * @param {Req[]} requirements
  * @param {Partial<Pack>} [over]
- * @returns {Pack} 기능 결과
+ * @returns {Pack}
  */
 function approved(version, requirements, over = {}) {
     const sha = (version === 'SYN-V1' ? 'a' : 'b').repeat(64);
@@ -79,7 +79,7 @@ function approved(version, requirements, over = {}) {
 }
 /**
  * @param {Pack} pack
- * @returns {Pack} 기능 결과
+ * @returns {Pack}
  */
 function draft(pack) {
     const { approvedBy: _a, independentlyCheckedBy: _b, approvedAt: _c, ...rest } = pack;

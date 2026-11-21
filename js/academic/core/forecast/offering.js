@@ -1,15 +1,15 @@
 // @ts-check
 /** @typedef {import("../../contracts/index.js").OfferingOutlookVNext} OfferingOutlookVNext */
-/** @typedef {{ term:string;; state:'OFFERED'|'CONFIRMED_NOT_OFFERED'|'UNKNOWN';; coverage:'COMPLETE_TERM_CATALOG'|'PARTIAL'|'NOTICE_ONLY';; sourceRef:string;; publishedAt:string;; verifiedAt:string;; courseIdentity?:ObservationCourseIdentity; }} OfferingObservation */
+/** @typedef {{ term:string; state:'OFFERED'|'CONFIRMED_NOT_OFFERED'|'UNKNOWN'; coverage:'COMPLETE_TERM_CATALOG'|'PARTIAL'|'NOTICE_ONLY'; sourceRef:string; publishedAt:string; verifiedAt:string; courseIdentity?:ObservationCourseIdentity; }} OfferingObservation */
 /** @typedef {| {state:'RESOLVED'; revisionRef:string; checkedAt:string} | {state:'EQUIVALENCE_UNVERIFIED'}} ObservationCourseIdentity */
 /** @typedef {'RESOLVED'|'EQUIVALENCE_UNVERIFIED'} TargetCourseIdentity */
-/** @typedef {{ eventId:string;; kind:'RESEARCH_LEAVE'|'RETIREMENT'|'STAFF_CHANGE'|'CURRICULUM_CHANGE'|'COURSE_CANCELLED'|'REPLACEMENT_CONFIRMED';; sourceRef:string;; publishedAt:string;; verifiedAt:string;; effectiveFrom:string;; impact:'POTENTIAL_ASSIGNMENT_CHANGE'|'EXPLICIT_COURSE_STATUS';; affectedCourseIds:readonly string[];; effectiveUntil?:string;; replacementCourseIds?:readonly string[]; }} OfficialAcademicEvent */
-/** @typedef {{ courseId:string;; status:'OFFICIALLY_APPROVED'|'NEEDS_REVIEW';; evidenceRef?:string; }} OfferingAlternative */
-/** @typedef {{ courseId:string;; targetTerm:string;; asOf:string;; courseIdentity?:TargetCourseIdentity;; observations?:readonly OfferingObservation[];; officialEvents?:readonly OfficialAcademicEvent[];; alternatives?:readonly OfferingAlternative[]; }} ForecastOfferingInput */
-/** @typedef {{ courseId:string;; targetTerm:string;; courseIdentity?:TargetCourseIdentity;; observations?:readonly OfferingObservation[];; officialEvents?:readonly OfficialAcademicEvent[];; alternatives?:readonly OfferingAlternative[]; }} ForecastCourseInput */
-/** @typedef {{ asOf:string;; items:OfferingOutlookVNext[];; status:'READY'|'INSUFFICIENT_DATA'; }} ForecastOfferingsResult */
-/** @typedef {{ publishedAt:string;; verifiedAt:string;; sourceRef:string; }} Timed */
-/** @typedef {{ signal:OfferingOutlookVNext['signal'];; caveat:string;; evidenceRefs:string[];; sourcePublishedAt?:string; }} Decision */
+/** @typedef {{ eventId:string; kind:'RESEARCH_LEAVE'|'RETIREMENT'|'STAFF_CHANGE'|'CURRICULUM_CHANGE'|'COURSE_CANCELLED'|'REPLACEMENT_CONFIRMED'; sourceRef:string; publishedAt:string; verifiedAt:string; effectiveFrom:string; impact:'POTENTIAL_ASSIGNMENT_CHANGE'|'EXPLICIT_COURSE_STATUS'; affectedCourseIds:readonly string[]; effectiveUntil?:string; replacementCourseIds?:readonly string[]; }} OfficialAcademicEvent */
+/** @typedef {{ courseId:string; status:'OFFICIALLY_APPROVED'|'NEEDS_REVIEW'; evidenceRef?:string; }} OfferingAlternative */
+/** @typedef {{ courseId:string; targetTerm:string; asOf:string; courseIdentity?:TargetCourseIdentity; observations?:readonly OfferingObservation[]; officialEvents?:readonly OfficialAcademicEvent[]; alternatives?:readonly OfferingAlternative[]; }} ForecastOfferingInput */
+/** @typedef {{ courseId:string; targetTerm:string; courseIdentity?:TargetCourseIdentity; observations?:readonly OfferingObservation[]; officialEvents?:readonly OfficialAcademicEvent[]; alternatives?:readonly OfferingAlternative[]; }} ForecastCourseInput */
+/** @typedef {{ asOf:string; items:OfferingOutlookVNext[]; status:'READY'|'INSUFFICIENT_DATA'; }} ForecastOfferingsResult */
+/** @typedef {{ publishedAt:string; verifiedAt:string; sourceRef:string; }} Timed */
+/** @typedef {{ signal:OfferingOutlookVNext['signal']; caveat:string; evidenceRefs:string[]; sourcePublishedAt?:string; }} Decision */
 import { OfferingOutlookVNextSchema } from '../../contracts/index.js';
 /**
  * 한 과목·대상 학기의 개설 전망 계산이다.
@@ -35,7 +35,7 @@ const READY_SIGNALS = new Set([
 ]);
 /**
  * @param {ForecastOfferingInput} input
- * @returns {OfferingOutlookVNext} 기능 결과
+ * @returns {OfferingOutlookVNext}
  */
 export function forecastOffering(input) {
     if (!TERM.test(input.targetTerm))
@@ -106,7 +106,7 @@ export function forecastOffering(input) {
 /**
  * @param {OfferingObservation} row
  * @param {number} asOfMs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 export function sameCourseAt(row, asOfMs) {
     const identity = row.courseIdentity;
@@ -127,7 +127,7 @@ export function sameCourseAt(row, asOfMs) {
  */
 /**
  * @param {{asOf:string; courses:readonly ForecastCourseInput[]}} input
- * @returns {ForecastOfferingsResult} 기능 결과
+ * @returns {ForecastOfferingsResult}
  */
 export function forecastOfferings(input) {
     if (input.courses.length > MAX_COURSES)
@@ -146,7 +146,7 @@ export function forecastOfferings(input) {
 }
 /**
  * @param {{ n:number; k:number; season:string; targetRows:readonly OfferingObservation[]; history:readonly OfferingObservation[]; events:OfferingOutlookVNext['officialEvents']; unverifiedTarget:readonly OfferingObservation[]; }} args
- * @returns {Decision} 기능 결과
+ * @returns {Decision}
  */
 function decide(args) {
     const confirming = args.targetRows.filter(supportsConfirmation);
@@ -253,7 +253,7 @@ function decide(args) {
  * @param {string} courseId
  * @param {readonly OfferingAlternative[] | undefined} input
  * @param {readonly OfficialAcademicEvent[]} events
- * @returns {OfferingOutlookVNext['alternatives']} 기능 결과
+ * @returns {OfferingOutlookVNext['alternatives']}
  */
 function officialAlternatives(courseId, input, events) {
     if (input === undefined || input.length === 0)
@@ -278,7 +278,7 @@ function officialAlternatives(courseId, input, events) {
 /**
  * @param {OfferingObservation} row
  * @param {string} season
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function countsToward(row, season) {
     return row.coverage === 'COMPLETE_TERM_CATALOG' && row.state !== 'UNKNOWN' && row.term.endsWith(`-${season}`);
@@ -286,7 +286,7 @@ function countsToward(row, season) {
 /**
  * @param {readonly OfferingObservation[]} rows
  * @param {string} season
- * @returns {{n:number; k:number}} 기능 결과
+ * @returns {{n:number; k:number}}
  */
 function counts(rows, season) {
     const complete = rows.filter(row => countsToward(row, season));
@@ -294,7 +294,7 @@ function counts(rows, season) {
 }
 /**
  * @param {OfferingObservation} row
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function supportsConfirmation(row) {
     if (row.state === 'UNKNOWN' || row.coverage === 'PARTIAL')
@@ -304,7 +304,7 @@ function supportsConfirmation(row) {
 /**
  * @param {OfferingObservation} row
  * @param {number} asOfMs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function observationVisible(row, asOfMs) {
     if (!TERM.test(row.term))
@@ -319,7 +319,7 @@ function observationVisible(row, asOfMs) {
  * @param {OfficialAcademicEvent} event
  * @param {string} targetTerm
  * @param {number} asOfMs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function eventApplies(event, targetTerm, asOfMs) {
     const published = readInstant('event.publishedAt', event.publishedAt);
@@ -344,7 +344,7 @@ function eventApplies(event, targetTerm, asOfMs) {
  */
 /**
  * @param {string} term
- * @returns {{start:number; end:number}} 기능 결과
+ * @returns {{start:number; end:number}}
  */
 export function termWindow(term) {
     const year = Number(term.slice(0, 4));
@@ -363,7 +363,7 @@ export function termWindow(term) {
 /**
  * @param {string} term
  * @param {string} target
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function termsBefore(term, target) {
     const index = (value) => Number(value.slice(0, 4)) * 2 + Number(value.slice(-1)) - 1;
@@ -371,7 +371,7 @@ function termsBefore(term, target) {
 }
 /**
  * @param {readonly OfferingObservation[]} rows
- * @returns {OfferingObservation[]} 기능 결과
+ * @returns {OfferingObservation[]}
  */
 function dedupe(rows) {
     const groups = new Map();
@@ -393,7 +393,7 @@ function dedupe(rows) {
 }
 /**
  * @param {readonly OfferingObservation[]} group
- * @returns {OfferingObservation | undefined} 기능 결과
+ * @returns {OfferingObservation | undefined}
  */
 function chooseObservation(group) {
     const best = Math.max(...group.map(row => coverageRank(row.coverage)));
@@ -405,7 +405,7 @@ function chooseObservation(group) {
 }
 /**
  * @param {OfferingObservation['coverage']} coverage
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function coverageRank(coverage) {
     if (coverage === 'COMPLETE_TERM_CATALOG')
@@ -417,7 +417,7 @@ function coverageRank(coverage) {
 /**
  * @param {readonly OfferingObservation[]} rows
  * @param {string} season
- * @returns {OfferingObservation[]} 기능 결과
+ * @returns {OfferingObservation[]}
  */
 function capHistory(rows, season) {
     const counting = rows.filter(row => countsToward(row, season));
@@ -434,7 +434,7 @@ function capHistory(rows, season) {
 }
 /**
  * @param {OfferingObservation} row
- * @returns {OfferingObservation} 기능 결과
+ * @returns {OfferingObservation}
  */
 function cloneObservation(row) {
     return {
@@ -448,7 +448,7 @@ function cloneObservation(row) {
 }
 /**
  * @param {OfficialAcademicEvent} event
- * @returns {OfferingOutlookVNext['officialEvents'][number]} 기능 결과
+ * @returns {OfferingOutlookVNext['officialEvents'][number]}
  */
 function cloneEvent(event) {
     const copy = {
@@ -468,7 +468,7 @@ function cloneEvent(event) {
 /**
  * @template T
  * @param {readonly T[]} rows
- * @returns {T} 기능 결과
+ * @returns {T}
  */
 function latest(rows) {
     const picked = rows.reduce((best, row) => (best === undefined || after(row, best) ? row : best), undefined);
@@ -479,7 +479,7 @@ function latest(rows) {
 /**
  * @param {Timed | undefined} a
  * @param {Timed | undefined} b
- * @returns {Timed} 기능 결과
+ * @returns {Timed}
  */
 function laterOf(a, b) {
     if (a === undefined) {
@@ -494,7 +494,7 @@ function laterOf(a, b) {
 /**
  * @param {Timed} a
  * @param {Timed} b
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function after(a, b) {
     const verified = Date.parse(a.verifiedAt) - Date.parse(b.verifiedAt);
@@ -507,7 +507,7 @@ function after(a, b) {
 }
 /**
  * @param {readonly string[]} ids
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function evidence(ids) {
     const unique = [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
@@ -518,7 +518,7 @@ function evidence(ids) {
 /**
  * @param {string} label
  * @param {string} iso
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function readInstant(label, iso) {
     const parsed = Date.parse(iso);

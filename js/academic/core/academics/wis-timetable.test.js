@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import("./wis-timetable.js").TimetableImportRequest} TimetableImportRequest */
-/** @typedef {{ no?:number;; area?:string;; grade?:string;; code:string;; title:string;; attrs?:string[];; credits?:string;; hours?:string;; time?:string;; note?:string;; year?:string;; sessn?:string;; syllabus?:'LINK'|'NONE'|'TEXT';; linkCode?:string;; titleLinkCode?:string;; dropLastCell?:boolean;; dropNumberCell?:boolean }} Row */
+/** @typedef {{ no?:number; area?:string; grade?:string; code:string; title:string; attrs?:string[]; credits?:string; hours?:string; time?:string; note?:string; year?:string; sessn?:string; syllabus?:'LINK'|'NONE'|'TEXT'; linkCode?:string; titleLinkCode?:string; dropLastCell?:boolean; dropNumberCell?:boolean }} Row */
 import { describe, expect, it } from 'vitest';
 import { importWisTimetable, withoutBlocks } from './wis-timetable.js';
 /**

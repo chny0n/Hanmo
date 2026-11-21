@@ -3,16 +3,16 @@
 /** @typedef {'EARNED'|'IN_PROGRESS'|'PLANNED'} LedgerSlot */
 /** @typedef {'RECOGNIZED'|'PENDING'|'EXCLUDED'} LedgerRecognition */
 /** @typedef {'MISSING'|'DRAFT'|'NEEDS_REVIEW'|'APPROVED'} RulePackGate */
-/** @typedef {{ attemptToken:string;; canonicalCourseId:string;; creditUnits:number;; ledger:LedgerSlot;; areaIds:readonly string[];; recognition:LedgerRecognition;; term?:string;; supersedesAttemptToken?:string;; retakeApprovalRef?:string; }} LedgerAttempt */
-/** @typedef {{ id:string;; evidenceRefs?:readonly string[]; }} RequirementBase */
+/** @typedef {{ attemptToken:string; canonicalCourseId:string; creditUnits:number; ledger:LedgerSlot; areaIds:readonly string[]; recognition:LedgerRecognition; term?:string; supersedesAttemptToken?:string; retakeApprovalRef?:string; }} LedgerAttempt */
+/** @typedef {{ id:string; evidenceRefs?:readonly string[]; }} RequirementBase */
 /** @typedef {| (RequirementBase & {kind:'CREDIT_TOTAL'; requiredCreditUnits:number}) | (RequirementBase & {kind:'CATEGORY_MINIMUM'; areaId:string; requiredCreditUnits:number}) | (RequirementBase & {kind:'REQUIRED_COURSE'; canonicalCourseId:string}) | (RequirementBase & {kind:'K_OF_N'; courseIds:readonly string[]; k:number}) | (RequirementBase & {kind:'AREA_SPREAD'; areaIds:readonly string[]; minAreas:number; requiredCreditUnits:number}) | (RequirementBase & {kind:'GROUP_CHOICE'; groups:readonly (readonly string[])[]; k:number}) | (RequirementBase & { kind:'NON_CREDIT'; criterionId:string; verificationMode:'OFFICIAL'|'MANUAL'|'GPA_NOT_COLLECTED'; })} LedgerRequirement */
-/** @typedef {{ asOf:string;; rulePackVersion:string;; rulePackState:RulePackGate;; attempts:readonly LedgerAttempt[];; requirements:readonly LedgerRequirement[]; }} AcademicLedgerRequest */
+/** @typedef {{ asOf:string; rulePackVersion:string; rulePackState:RulePackGate; attempts:readonly LedgerAttempt[]; requirements:readonly LedgerRequirement[]; }} AcademicLedgerRequest */
 /** @typedef {'SATISFIED'|'UNSATISFIED'|'NEEDS_REVIEW'|'NOT_APPLICABLE'|'NOT_CHECKED'} ProgressState */
 /** @typedef {'RETAKE_SUPERSEDED'|'DUPLICATE'|'PENDING_RECOGNITION'|'OFFICIAL_EXCLUSION'|'NEEDS_REVIEW'} ExclusionReason */
-/** @typedef {{ requirementId:string;; state:ProgressState;; evidenceRefs:string[];; requiredCreditUnits?:number;; earnedCreditUnits?:number;; remainingCreditUnits?:number;; projectedCreditUnits?:number;; matchedCoursesCount?:number;; requiredCoursesCount?:number;; matchedAreasCount?:number;; requiredAreasCount?:number;; matchedGroupsCount?:number;; requiredGroupsCount?:number;; notCheckedReason?:'GPA_NOT_COLLECTED'; }} ProgressRow */
-/** @typedef {{ earned:number;; projected:number; }} AreaTotals */
-/** @typedef {{ winners:Map<string, LedgerAttempt>;; reasons:Map<string, ExclusionReason>;; pendingUnits:number;; ambiguous:boolean; }} Classified */
-/** @typedef {{ winners:ReadonlyMap<string, LedgerAttempt>;; reasons:ReadonlyMap<string, ExclusionReason>; }} LedgerAttemptClassification */
+/** @typedef {{ requirementId:string; state:ProgressState; evidenceRefs:string[]; requiredCreditUnits?:number; earnedCreditUnits?:number; remainingCreditUnits?:number; projectedCreditUnits?:number; matchedCoursesCount?:number; requiredCoursesCount?:number; matchedAreasCount?:number; requiredAreasCount?:number; matchedGroupsCount?:number; requiredGroupsCount?:number; notCheckedReason?:'GPA_NOT_COLLECTED'; }} ProgressRow */
+/** @typedef {{ earned:number; projected:number; }} AreaTotals */
+/** @typedef {{ winners:Map<string, LedgerAttempt>; reasons:Map<string, ExclusionReason>; pendingUnits:number; ambiguous:boolean; }} Classified */
+/** @typedef {{ winners:ReadonlyMap<string, LedgerAttempt>; reasons:ReadonlyMap<string, ExclusionReason>; }} LedgerAttemptClassification */
 import { AcademicAuditVNextSchema } from '../../contracts/index.js';
 /**
  * 학점 세 원장 계약(A08.2, A08.5 CREDIT-01~06).
@@ -27,7 +27,7 @@ const TERM = /^(\d{4})-(1|S|2|W)$/;
 const SEASON_RANK = { '1': 0, S: 1, '2': 2, W: 3 };
 /**
  * @param {string} term
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 export function termKey(term) {
     const match = TERM.exec(term);
@@ -38,7 +38,7 @@ export function termKey(term) {
 /** 한국시간 기준 학점 취득 처리가 가능해지는 학기 종료 시각이다. */
 /**
  * @param {string} term
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 export function termEndMs(term) {
     const match = TERM.exec(term);
@@ -57,7 +57,7 @@ export function termEndMs(term) {
 /**
  * @param {LedgerAttempt} attempt
  * @param {number} asOfMs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function earnedByAsOf(attempt, asOfMs) {
     return attempt.term !== undefined && termEndMs(attempt.term) <= asOfMs;
@@ -65,7 +65,7 @@ function earnedByAsOf(attempt, asOfMs) {
 /**
  * @param {LedgerAttempt} target
  * @param {LedgerAttempt} successor
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function isApprovedRetake(target, successor) {
     return target.canonicalCourseId === successor.canonicalCourseId
@@ -80,7 +80,7 @@ function isApprovedRetake(target, successor) {
 /**
  * @param {string} label
  * @param {unknown} value
- * @returns {never} 기능 결과
+ * @returns {never}
  */
 function refuse(label, value) {
     throw new TypeError(`${label} must be a non-negative safe integer credit unit (1 unit = 0.5 credit); refused ${String(value)}`);
@@ -88,7 +88,6 @@ function refuse(label, value) {
 /**
  * @param {unknown} value
  * @param {string} label
- * @returns {void} 기능 결과
  */
 export function assertUnits(value, label) {
     if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0)
@@ -97,7 +96,6 @@ export function assertUnits(value, label) {
 /**
  * @param {unknown} value
  * @param {string} label
- * @returns {void} 기능 결과
  */
 export function assertPositiveUnits(value, label) {
     assertUnits(value, label);
@@ -107,7 +105,6 @@ export function assertPositiveUnits(value, label) {
 /**
  * @param {unknown} value
  * @param {string} label
- * @returns {void} 기능 결과
  */
 export function assertId(value, label) {
     if (typeof value !== 'string' || !ID.test(value)) {
@@ -117,7 +114,7 @@ export function assertId(value, label) {
 /**
  * @param {number} sum
  * @param {number} units
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 export function addUnits(sum, units) {
     const next = sum + units;
@@ -128,14 +125,14 @@ export function addUnits(sum, units) {
 /**
  * @param {string} a
  * @param {string} b
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 export function byCodeUnit(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 /**
  * @param {LedgerRequirement} requirement
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function evidenceOf(requirement) {
     const refs = requirement.evidenceRefs ?? [];
@@ -151,7 +148,7 @@ function evidenceOf(requirement) {
 /**
  * @param {ProgressRow} row
  * @param {boolean} packApproved
- * @returns {ProgressRow} 기능 결과
+ * @returns {ProgressRow}
  */
 function applyPackGate(row, packApproved) {
     if (row.state === 'NOT_CHECKED')
@@ -164,7 +161,7 @@ function applyPackGate(row, packApproved) {
 /**
  * @param {readonly LedgerAttempt[]} attempts
  * @param {number} asOfMs
- * @returns {Classified} 기능 결과
+ * @returns {Classified}
  */
 function classify(attempts, asOfMs) {
     const byToken = new Map();
@@ -322,7 +319,7 @@ function classify(attempts, asOfMs) {
 /**
  * @param {readonly LedgerAttempt[]} attempts
  * @param {string} asOf
- * @returns {LedgerAttemptClassification} 기능 결과
+ * @returns {LedgerAttemptClassification}
  */
 export function classifyLedgerAttempts(attempts, asOf) {
     if (!AS_OF.test(asOf) || !Number.isFinite(Date.parse(asOf))) {
@@ -339,7 +336,7 @@ export function classifyLedgerAttempts(attempts, asOf) {
  * @param {number} projected
  * @param {ReadonlyMap<string, AreaTotals>} areas
  * @param {ReadonlyMap<string, LedgerAttempt>} winners
- * @returns {ProgressRow} 기능 결과
+ * @returns {ProgressRow}
  */
 function evaluateRequirement(requirement, earned, projected, areas, winners) {
     assertId(requirement.id, 'requirement id');
@@ -538,7 +535,7 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
  */
 /**
  * @param {AcademicLedgerRequest} input
- * @returns {AcademicAuditVNext} 기능 결과
+ * @returns {AcademicAuditVNext}
  */
 export function buildAcademicLedger(input) {
     if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {

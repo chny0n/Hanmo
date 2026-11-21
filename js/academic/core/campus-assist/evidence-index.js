@@ -5,19 +5,22 @@
 /** @typedef {import("../../contracts/campus-assist/index.js").EvidenceRef} EvidenceRef */
 /** @typedef {import("../../contracts/campus-assist/index.js").EvidenceRevision} EvidenceRevision */
 /** @typedef {import("../../contracts/campus-assist/index.js").FaqDocument} FaqDocument */
-/** @typedef {|'INDEXED' |'AFTER_AS_OF' // 기준 시각 이후에 게시·검수된 판본만 있음 |'REVISION_CONFLICT' // 최신 판본 위치의 복사본 내용이 서로 다름 |'RIGHTS_REVOKED' // 최신 판본의 권리가 철회·차단됨 |'CANCELLED' // 최신 판본이 취소 공지임 |'NOT_IN_EFFECT' // 효력 기간 밖 |'NOT_IN_MANIFEST' // 스냅샷에 등재되지 않은 미검수 후보 |'MANIFEST_MISMATCH'} EvidenceDisposition */
+/**
+ * AFTER_AS_OF는 기준 시각 이후의 판본만 있는 경우다. NOT_IN_MANIFEST는 스냅샷에 등재되지 않은 후보를 뜻한다.
+ * @typedef {'INDEXED'|'AFTER_AS_OF'|'REVISION_CONFLICT'|'RIGHTS_REVOKED'|'CANCELLED'|'NOT_IN_EFFECT'|'NOT_IN_MANIFEST'|'MANIFEST_MISMATCH'} EvidenceDisposition
+ */
 /** @typedef {'REF_NOT_INDEXED'|'REF_REVISION_MISMATCH'} EvidenceHoldReason */
-/** @typedef {{ citationId:string;; snapshotId:string;; indexRevision:string;; kind:EvidenceKind;; documentId:string;; revisionId:string;; paragraphId:string;; title:string;; text:string;; sourceUrl:string;; publishedAt:string;; verifiedAt:string;; revisionState:'PUBLISHED'|'CORRECTED';; conditions:EvidenceConditions|null;; provenance:EvidenceRevision['provenance'];; publicContacts?:string[];; refs:EvidenceRef[];; status:'READY'|'HOLD';; holdReasons:EvidenceHoldReason[]; }} EvidenceIndexEntry */
-/** @typedef {{ kind:EvidenceKind;; documentId:string;; revisionId:string|null;; disposition:EvidenceDisposition;; supersededRevisionIds:string[];; futureRevisionIds:string[]; }} EvidenceDocumentResult */
-/** @typedef {{ snapshotId:string;; indexRevision:string;; asOf:string;; provenance:EvidenceManifest['provenance'];; status:'READY'|'PARTIAL';; entries:EvidenceIndexEntry[];; documents:EvidenceDocumentResult[]; }} EvidenceIndex */
-/** @typedef {{ manifest:unknown;; revisions:readonly unknown[];; asOf:string; }} EvidenceIndexInput */
+/** @typedef {{ citationId:string; snapshotId:string; indexRevision:string; kind:EvidenceKind; documentId:string; revisionId:string; paragraphId:string; title:string; text:string; sourceUrl:string; publishedAt:string; verifiedAt:string; revisionState:'PUBLISHED'|'CORRECTED'; conditions:EvidenceConditions|null; provenance:EvidenceRevision['provenance']; publicContacts?:string[]; refs:EvidenceRef[]; status:'READY'|'HOLD'; holdReasons:EvidenceHoldReason[]; }} EvidenceIndexEntry */
+/** @typedef {{ kind:EvidenceKind; documentId:string; revisionId:string|null; disposition:EvidenceDisposition; supersededRevisionIds:string[]; futureRevisionIds:string[]; }} EvidenceDocumentResult */
+/** @typedef {{ snapshotId:string; indexRevision:string; asOf:string; provenance:EvidenceManifest['provenance']; status:'READY'|'PARTIAL'; entries:EvidenceIndexEntry[]; documents:EvidenceDocumentResult[]; }} EvidenceIndex */
+/** @typedef {{ manifest:unknown; revisions:readonly unknown[]; asOf:string; }} EvidenceIndexInput */
 import { EvidenceManifestSchema, EvidenceRevisionSchema, } from '../../contracts/campus-assist/index.js';
 import { exchangePolicyInEffect } from './exchange.js';
 import { canonicalJson, sha256Hex } from './content-hash.js';
 /** 매니페스트 빌더(#42)가 같은 값을 계산할 수 있도록 공개하는 판본 내용 해시. */
 /**
  * @param {EvidenceRevision} revision
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 export function evidenceContentSha256(revision) {
     return sha256Hex(canonicalJson(revision));
@@ -25,7 +28,7 @@ export function evidenceContentSha256(revision) {
 /** 기존 FAQ 문서를 근거 판본으로 옮긴다. FAQ 문서에는 정정·취소 상태가 없으므로 PUBLISHED로 둔다. */
 /**
  * @param {FaqDocument} doc
- * @returns {EvidenceRevision} 기능 결과
+ * @returns {EvidenceRevision}
  */
 export function evidenceRevisionFromFaq(doc) {
     return EvidenceRevisionSchema.parse({
@@ -40,7 +43,7 @@ export function evidenceRevisionFromFaq(doc) {
 /**
  * @param {EvidenceRevision} a
  * @param {EvidenceRevision} b
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function revisionOrder(a, b) {
     const ta = Date.parse(a.publishedAt), tb = Date.parse(b.publishedAt);
@@ -50,7 +53,7 @@ const docKey = (kind, documentId) => kind + '\u0000' + documentId;
 const byText = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 /**
  * @param {EvidenceIndexInput} input
- * @returns {EvidenceIndex} 기능 결과
+ * @returns {EvidenceIndex}
  */
 export function buildEvidenceIndex(input) {
     const time = Date.parse(input.asOf);

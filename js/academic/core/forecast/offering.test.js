@@ -13,7 +13,7 @@ const ASOF = '2026-02-15T00:00:00.000Z';
  * @param {OfferingObservation['coverage']} [coverage]
  * @param {string} [publishedAt]
  * @param {string} [verifiedAt]
- * @returns {OfferingObservation} 기능 결과
+ * @returns {OfferingObservation}
  */
 function catalog(term, state, coverage = 'COMPLETE_TERM_CATALOG', publishedAt, verifiedAt) {
     const year = term.slice(0, 4);
@@ -24,7 +24,7 @@ function catalog(term, state, coverage = 'COMPLETE_TERM_CATALOG', publishedAt, v
 /**
  * @param {'RESEARCH_LEAVE'|'RETIREMENT'|'STAFF_CHANGE'} kind
  * @param {string} courseId
- * @returns {OfficialAcademicEvent} 기능 결과
+ * @returns {OfficialAcademicEvent}
  */
 function personnel(kind, courseId) {
     return {

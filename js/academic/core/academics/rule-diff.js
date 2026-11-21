@@ -8,21 +8,21 @@
 /** @typedef {AcademicAuditVNext['requirements'][number]} ProgressRow */
 /** @typedef {ProgressRow['state']} ProgressState */
 /** @typedef {| 'NOT_APPROVED' | 'NOT_APPROVED_BY_AS_OF' | 'SAME_VERSION' | 'NOT_SUPERSEDING' | 'REQUIREMENT_ID_UNSTABLE' | 'SCOPE_MISMATCH' | 'HISTORY_INVERTED' | 'EFFECTIVE_GAP' | 'EFFECTIVE_OVERLAP'} RevisionBlockerCode */
-/** @typedef {{ code:RevisionBlockerCode;; side?:'previous'|'next'; }} RevisionBlocker */
+/** @typedef {{ code:RevisionBlockerCode; side?:'previous'|'next'; }} RevisionBlocker */
 /** @typedef {'UNCHANGED'|'CHANGED'|'ADDED'|'REMOVED'} DefinitionChange */
 /** @typedef {'SAME'|'GAINED'|'LOST'|'UNKNOWN'} StateChange */
 /** @typedef {| 'kind'|'requiredCreditUnits'|'areaId'|'areaIds'|'minAreas'|'groups'|'canonicalCourseId'|'courseIds'|'k' | 'criterionId'|'verificationMode'|'sourceClauseIds'|'exceptionClauseIds'|'clauses' | 'areaMembership'} ChangedField */
-/** @typedef {{ state:ProgressState;; requiredCreditUnits?:number;; earnedCreditUnits?:number;; remainingCreditUnits?:number;; projectedCreditUnits?:number;; clauseIds:string[]; }} SideResult */
-/** @typedef {{ requirementId:string;; semanticKey:string;; definition:DefinitionChange;; changedFields:ChangedField[];; stateChange?:StateChange;; previous?:SideResult;; next?:SideResult; }} RequirementRevision */
-/** @typedef {{ state:'READY'|'NEEDS_REVIEW';; asOf:string;; previousVersion?:string;; nextVersion?:string;; revisionKind?:'AMENDMENT'|'CORRECTION';; inEffectAtAsOf:'PREVIOUS'|'NEXT'|'NONE'|'BOTH';; blockers:RevisionBlocker[];; requirements:RequirementRevision[];; caveats:string[]; }} RulePackRevisionDiff */
-/** @typedef {{ asOf:string;; previous:unknown;; next:unknown;; attempts:readonly LedgerAttempt[];; nextAttempts?:readonly LedgerAttempt[]; }} RulePackRevisionRequest */
+/** @typedef {{ state:ProgressState; requiredCreditUnits?:number; earnedCreditUnits?:number; remainingCreditUnits?:number; projectedCreditUnits?:number; clauseIds:string[]; }} SideResult */
+/** @typedef {{ requirementId:string; semanticKey:string; definition:DefinitionChange; changedFields:ChangedField[]; stateChange?:StateChange; previous?:SideResult; next?:SideResult; }} RequirementRevision */
+/** @typedef {{ state:'READY'|'NEEDS_REVIEW'; asOf:string; previousVersion?:string; nextVersion?:string; revisionKind?:'AMENDMENT'|'CORRECTION'; inEffectAtAsOf:'PREVIOUS'|'NEXT'|'NONE'|'BOTH'; blockers:RevisionBlocker[]; requirements:RequirementRevision[]; caveats:string[]; }} RulePackRevisionDiff */
+/** @typedef {{ asOf:string; previous:unknown; next:unknown; attempts:readonly LedgerAttempt[]; nextAttempts?:readonly LedgerAttempt[]; }} RulePackRevisionRequest */
 import { AcademicRulePackVNextSchema, stableAcademicRequirementIdsVNext, } from '../../contracts/index.js';
 import { AS_OF, buildAcademicLedger, byCodeUnit } from './ledger.js';
 /** areaIds 이외 필드는 행별로 완전히 동일해야 한다. 영역 배정만 바뀔 수 있다. */
 /**
  * @param {readonly LedgerAttempt[]} previous
  * @param {readonly LedgerAttempt[]} next
- * @returns {Set<string>} 기능 결과
+ * @returns {Set<string>}
  */
 function movedAreas(previous, next) {
     if (!Array.isArray(next))
@@ -57,7 +57,7 @@ function movedAreas(previous, next) {
 /** 요건 판정에 필요한 원장 행의 영역 목록이다. */
 /**
  * @param {Requirement} requirement
- * @returns {readonly string[]} 기능 결과
+ * @returns {readonly string[]}
  */
 function areasRead(requirement) {
     if (requirement.kind === 'CATEGORY_MINIMUM')
@@ -69,7 +69,7 @@ function areasRead(requirement) {
 const UNVERIFIED = new Set(['NEEDS_REVIEW', 'NOT_CHECKED', 'NOT_APPLICABLE']);
 /**
  * @param {Requirement} requirement
- * @returns {LedgerRequirement} 기능 결과
+ * @returns {LedgerRequirement}
  */
 function toLedger(requirement) {
     const base = { id: requirement.id, evidenceRefs: requirement.evidenceRefs };
@@ -88,7 +88,7 @@ function toLedger(requirement) {
 }
 /**
  * @param {readonly string[]} values
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function sorted(values) {
     return [...values].sort(byCodeUnit);
@@ -96,7 +96,7 @@ function sorted(values) {
 /**
  * @param {readonly string[]} a
  * @param {readonly string[]} b
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function sameList(a, b) {
     return a.length === b.length && a.every((value, index) => value === b[index]);
@@ -104,7 +104,7 @@ function sameList(a, b) {
 /** 요건 결과를 바꾸는 규칙 필드다. 출처인 evidenceRefs는 차이 비교 대상이 아니다. */
 /**
  * @param {Requirement} requirement
- * @returns {Partial<Record<ChangedField, string>>} 기능 결과
+ * @returns {Partial<Record<ChangedField, string>>}
  */
 function ruleFields(requirement) {
     const fields = {
@@ -145,7 +145,7 @@ const FIELD_ORDER = [
 ];
 /**
  * @param {Requirement} requirement
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function clauseIdsOf(requirement) {
     return sorted([...new Set([...requirement.sourceClauseIds, ...requirement.exceptionClauseIds])]);
@@ -155,7 +155,7 @@ function clauseIdsOf(requirement) {
  * @param {Pack} previous
  * @param {Pack} next
  * @param {readonly string[]} ids
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function clausesReworded(previous, next, ids) {
     const before = new Map(previous.clauseInventory.map(clause => [clause.clauseId, clause]));
@@ -175,7 +175,7 @@ function clausesReworded(previous, next, ids) {
  * @param {Pack} next
  * @param {Requirement} a
  * @param {Requirement} b
- * @returns {ChangedField[]} 기능 결과
+ * @returns {ChangedField[]}
  */
 function changedFields(previous, next, a, b) {
     const before = ruleFields(a), after = ruleFields(b);
@@ -188,7 +188,7 @@ function changedFields(previous, next, a, b) {
 /**
  * @param {Requirement} requirement
  * @param {ProgressRow} row
- * @returns {SideResult} 기능 결과
+ * @returns {SideResult}
  */
 function side(requirement, row) {
     const result = { state: row.state, clauseIds: clauseIdsOf(requirement) };
@@ -205,7 +205,7 @@ function side(requirement, row) {
 /**
  * @param {ProgressState} before
  * @param {ProgressState} after
- * @returns {StateChange} 기능 결과
+ * @returns {StateChange}
  */
 function stateChange(before, after) {
     if (UNVERIFIED.has(before) || UNVERIFIED.has(after))
@@ -217,7 +217,7 @@ function stateChange(before, after) {
 /**
  * @param {Pack} pack
  * @param {number} asOfMs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function inEffect(pack, asOfMs) {
     return Date.parse(pack.effectiveFrom) <= asOfMs
@@ -226,7 +226,7 @@ function inEffect(pack, asOfMs) {
 /**
  * @param {Pack['scope']} a
  * @param {Pack['scope']} b
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function sameScope(a, b) {
     return a.campus === b.campus && a.primaryMajor === b.primaryMajor
@@ -240,7 +240,7 @@ function sameScope(a, b) {
  * @param {'previous'|'next'} sideName
  * @param {number} asOfMs
  * @param {RevisionBlocker[]} blockers
- * @returns {Pack|undefined} 기능 결과
+ * @returns {Pack|undefined}
  */
 function approvedPack(raw, sideName, asOfMs, blockers) {
     const parsed = AcademicRulePackVNextSchema.safeParse(raw);
@@ -260,7 +260,7 @@ function approvedPack(raw, sideName, asOfMs, blockers) {
  * @param {Pack} previous
  * @param {Pack} next
  * @param {RevisionBlocker[]} blockers
- * @returns {'AMENDMENT'|'CORRECTION'|undefined} 기능 결과
+ * @returns {'AMENDMENT'|'CORRECTION'|undefined}
  */
 function checkRevision(previous, next, blockers) {
     if (previous.version === next.version) {
@@ -298,7 +298,7 @@ function checkRevision(previous, next, blockers) {
  * @param {RulePackRevisionDiff['inEffectAtAsOf']} inEffectAtAsOf
  * @param {Pack} [previous]
  * @param {Pack} [next]
- * @returns {RulePackRevisionDiff} 기능 결과
+ * @returns {RulePackRevisionDiff}
  */
 function blocked(asOf, blockers, inEffectAtAsOf, previous, next) {
     const result = {
@@ -317,7 +317,7 @@ function blocked(asOf, blockers, inEffectAtAsOf, previous, next) {
  */
 /**
  * @param {RulePackRevisionRequest} input
- * @returns {RulePackRevisionDiff} 기능 결과
+ * @returns {RulePackRevisionDiff}
  */
 export function compareRulePackRevisions(input) {
     if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {

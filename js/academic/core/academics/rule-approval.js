@@ -5,12 +5,12 @@
 /** @typedef {z.infer<typeof MajorRoleVNextSchema>} MajorRole */
 /** @typedef {NonNullable<AcademicRulePackVNext['validationReport']>['blockingIssues'][number]['code']} ContractBlockingCode */
 /** @typedef {| ContractBlockingCode | 'INVALID_PACK' | 'NOT_APPROVED' | 'NOT_APPROVED_BY_AS_OF' | 'NOT_YET_EFFECTIVE' | 'EXPIRED' | 'VERSION_ALREADY_ACTIVE' | 'SUPERSEDE_CHAIN_BROKEN'} RulePackGateCode */
-/** @typedef {{ code:RulePackGateCode;; sourceClauseId?:string; }} RulePackGateIssue */
-/** @typedef {{ clauseId:string;; kind:AcademicClauseVNext['kind'];; sourceSpanRef:string;; sourceDocumentId?:string;; appliesToSemanticKeys?:readonly string[];; includedMajorRoles?:readonly MajorRole[];; excludedMajorRoles?:readonly MajorRole[]; }} TrustedSourceClause */
-/** @typedef {{ sourceDocumentSha256:string;; sourceDocuments?:readonly {documentId:string;sourceDocumentSha256:string}[];; clauses:readonly TrustedSourceClause[]; }} TrustedSourceInventory */
-/** @typedef {{ asOf:string;; active:AcademicRulePackVNext|null;; candidate:unknown;; trustedOriginal:TrustedSourceInventory;; numericCheck?:{matched:number; total:number}; }} RulePackActivationRequest */
-/** @typedef {{ decision:'ACTIVATED'|'HELD';; active:AcademicRulePackVNext|null;; candidateVersion?:string;; issues:RulePackGateIssue[]; }} RulePackActivationResult */
-/** @typedef {{ clause:TrustedSourceClause;; included:Set<MajorRole>;; excluded:Set<MajorRole>;; keys:string[]; }} Trusted */
+/** @typedef {{ code:RulePackGateCode; sourceClauseId?:string; }} RulePackGateIssue */
+/** @typedef {{ clauseId:string; kind:AcademicClauseVNext['kind']; sourceSpanRef:string; sourceDocumentId?:string; appliesToSemanticKeys?:readonly string[]; includedMajorRoles?:readonly MajorRole[]; excludedMajorRoles?:readonly MajorRole[]; }} TrustedSourceClause */
+/** @typedef {{ sourceDocumentSha256:string; sourceDocuments?:readonly {documentId:string;sourceDocumentSha256:string}[]; clauses:readonly TrustedSourceClause[]; }} TrustedSourceInventory */
+/** @typedef {{ asOf:string; active:AcademicRulePackVNext|null; candidate:unknown; trustedOriginal:TrustedSourceInventory; numericCheck?:{matched:number; total:number}; }} RulePackActivationRequest */
+/** @typedef {{ decision:'ACTIVATED'|'HELD'; active:AcademicRulePackVNext|null; candidateVersion?:string; issues:RulePackGateIssue[]; }} RulePackActivationResult */
+/** @typedef {{ clause:TrustedSourceClause; included:Set<MajorRole>; excluded:Set<MajorRole>; keys:string[]; }} Trusted */
 import { AcademicRulePackVNextSchema, MajorRoleVNextSchema, stableAcademicRequirementIdsVNext, verifyAcademicSourceCoverageVNext, } from '../../contracts/index.js';
 import { AS_OF, ID, assertId, byCodeUnit } from './ledger.js';
 const MAX_CLAUSES = 500;
@@ -22,7 +22,7 @@ const BLOCKING_CODES = new Set([
 ]);
 /**
  * @param {unknown} value
- * @returns {Record<string, unknown>|undefined} 기능 결과
+ * @returns {Record<string, unknown>|undefined}
  */
 function record(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -32,7 +32,7 @@ function record(value) {
 /** 후보 자체의 경고를 스키마 검증 전에 확인해 후보가 잘못돼도 보류 이유를 기록한다. 해석 불가 경고는 OTHER로 유지한다. */
 /**
  * @param {unknown} candidate
- * @returns {{version?:string; issues:RulePackGateIssue[]}} 기능 결과
+ * @returns {{version?:string; issues:RulePackGateIssue[]}}
  */
 function reportedIssues(candidate) {
     const body = record(candidate);
@@ -52,7 +52,7 @@ function reportedIssues(candidate) {
 /**
  * @param {readonly MajorRole[]|undefined} list
  * @param {string} label
- * @returns {Set<MajorRole>} 기능 결과
+ * @returns {Set<MajorRole>}
  */
 function roles(list, label) {
     const set = new Set();
@@ -67,7 +67,7 @@ function roles(list, label) {
 }
 /**
  * @param {TrustedSourceInventory} original
- * @returns {Map<string, Trusted>} 기능 결과
+ * @returns {Map<string, Trusted>}
  */
 function readTrusted(original) {
     if (!SHA256.test(original.sourceDocumentSha256))
@@ -112,7 +112,6 @@ function readTrusted(original) {
  * @param {AcademicRulePackVNext} pack
  * @param {ReadonlyMap<string, Trusted>} trusted
  * @param {RulePackGateIssue[]} issues
- * @returns {void} 기능 결과
  */
 function checkInventory(pack, trusted, issues) {
     const supplied = new Map(pack.clauseInventory.map(clause => [clause.clauseId, clause]));
@@ -131,7 +130,7 @@ function checkInventory(pack, trusted, issues) {
 /**
  * @param {AcademicRulePackVNext} pack
  * @param {string} clauseId
- * @returns {AcademicClauseVNext|undefined} 기능 결과
+ * @returns {AcademicClauseVNext|undefined}
  */
 function suppliedClause(pack, clauseId) {
     return pack.clauseInventory.find(clause => clause.clauseId === clauseId);
@@ -141,7 +140,6 @@ function suppliedClause(pack, clauseId) {
  * @param {AcademicRulePackVNext} pack
  * @param {ReadonlyMap<string, Trusted>} trusted
  * @param {RulePackGateIssue[]} issues
- * @returns {void} 기능 결과
  */
 function checkApplicability(pack, trusted, issues) {
     const role = pack.scope.majorRole;
@@ -180,7 +178,7 @@ function checkApplicability(pack, trusted, issues) {
 /**
  * @param {AcademicRulePackVNext['scope']} a
  * @param {AcademicRulePackVNext['scope']} b
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function sameScope(a, b) {
     return a.campus === b.campus && a.primaryMajor === b.primaryMajor
@@ -194,7 +192,7 @@ function sameScope(a, b) {
  * @param {RulePackGateIssue[]} issues
  * @param {AcademicRulePackVNext} [candidate]
  * @param {string} [candidateVersion]
- * @returns {RulePackActivationResult} 기능 결과
+ * @returns {RulePackActivationResult}
  */
 function finish(active, issues, candidate, candidateVersion) {
     const seen = new Set();
@@ -215,7 +213,7 @@ function finish(active, issues, candidate, candidateVersion) {
 /** 후보가 활성 규칙집을 대체할 수 있는지 결정한다. HELD이면 원래 active 객체를 덮어쓰지 않고 그대로 돌려준다. */
 /**
  * @param {RulePackActivationRequest} input
- * @returns {RulePackActivationResult} 기능 결과
+ * @returns {RulePackActivationResult}
  */
 export function decideRulePackActivation(input) {
     if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {

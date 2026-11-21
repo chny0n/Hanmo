@@ -1,16 +1,16 @@
 // @ts-check
 /** @typedef {z.input<typeof NoticeExtractInputSchema>} NoticeExtractInput */
-/** @typedef {{ paragraphId:string;; start:number;; end:number;; text:string; }} SourceSpan */
+/** @typedef {{ paragraphId:string; start:number; end:number; text:string; }} SourceSpan */
 /** @typedef {'SEOUL'|'GLOBAL'} Campus */
 /** @typedef {'GRADUATING'|'ENROLLED'|'ON_LEAVE'|'RETURNING'|'FRESHMAN'|'TRANSFER' |'INTERNATIONAL'|'DOUBLE_MAJOR'|'MINOR'|'EXCHANGE'|'GRADUATE_SCHOOL'} StudentGroup */
 /** @typedef {|{kind:'CAMPUS';campus:Campus} |{kind:'ADMISSION_YEARS';from?:number;until?:number} |{kind:'STUDENT_GROUP';group:StudentGroup}} TargetValue */
-/** @typedef {{ value:TargetValue;; evidence:SourceSpan; }} TargetCandidate */
+/** @typedef {{ value:TargetValue; evidence:SourceSpan; }} TargetCandidate */
 /** @typedef {'STUDENT_DEADLINE'|'PERIOD_START'|'ADMIN_DEADLINE'|'EVENT'|'POSTED'|'UNCLASSIFIED'} DateRole */
-/** @typedef {{ role:DateRole;; date:string;; time:string|null;; atKst:string|null;; yearInferred:boolean;; evidence:SourceSpan; }} DateCandidate */
+/** @typedef {{ role:DateRole; date:string; time:string|null; atKst:string|null; yearInferred:boolean; evidence:SourceSpan; }} DateCandidate */
 /** @typedef {|'RIGHTS_NOT_APPROVED'|'TIME_UNSTATED'|'YEAR_INFERRED'|'MULTIPLE_STUDENT_DEADLINES'|'MULTIPLE_ADMIN_DEADLINES' |'UNCLASSIFIED_DATE'|'NEGATION_OR_EXCEPTION'|'CONFLICTING_TARGET'|'INVALID_DATE'|'RANGE_REVERSED' |'CORRECTION_TARGET_UNKNOWN'|'CORRECTION_STATE_MISMATCH'|'CANCELLATION_STATE_MISMATCH'} NoticeReviewReason */
-/** @typedef {{ noticeId:string;; revisionId:string;; provenance:NoticeExtractInput['provenance'];; status:'CANDIDATE'|'NEEDS_REVIEW'|'EXCLUDED';; targets:{included:TargetCandidate[];excluded:TargetCandidate[]};; dates:DateCandidate[];; studentDeadline:DateCandidate|null;; adminDeadline:DateCandidate|null;; events:DateCandidate[];; revisionLink:{kind:'CORRECTION'|'CANCELLATION';correctsRevisionId:string|null}|null;; reviewReasons:NoticeReviewReason[]; }} NoticeExtraction */
-/** @typedef {{ paragraphId:string;; start:number;; text:string; }} Segment */
-/** @typedef {{ y:number|null;; m:number;; d:number;; time:string|null;; bad:boolean;; from:number;; to:number; }} RawDate */
+/** @typedef {{ noticeId:string; revisionId:string; provenance:NoticeExtractInput['provenance']; status:'CANDIDATE'|'NEEDS_REVIEW'|'EXCLUDED'; targets:{included:TargetCandidate[];excluded:TargetCandidate[]}; dates:DateCandidate[]; studentDeadline:DateCandidate|null; adminDeadline:DateCandidate|null; events:DateCandidate[]; revisionLink:{kind:'CORRECTION'|'CANCELLATION';correctsRevisionId:string|null}|null; reviewReasons:NoticeReviewReason[]; }} NoticeExtraction */
+/** @typedef {{ paragraphId:string; start:number; text:string; }} Segment */
+/** @typedef {{ y:number|null; m:number; d:number; time:string|null; bad:boolean; from:number; to:number; }} RawDate */
 import { z } from 'zod';
 /**
  * #46 학사공지에서 대상·기한·정정 후보 추출 (순수 코어, 규칙 기반).
@@ -45,7 +45,7 @@ export const NoticeExtractInputSchema = z.strictObject({
 /**
  * @param {string} paragraphId
  * @param {string} text
- * @returns {Segment[]} 기능 결과
+ * @returns {Segment[]}
  */
 function sentences(paragraphId, text) {
     const out = [];
@@ -63,7 +63,7 @@ function sentences(paragraphId, text) {
 /** 대상 판정용 하위 절(쉼표·'며' 연결). '포함 대상, 제외 대상'이 한 문장에 있어도 구분한다. */
 /**
  * @param {Segment} seg
- * @returns {Segment[]} 기능 결과
+ * @returns {Segment[]}
  */
 function clauses(seg) {
     const out = [];
@@ -89,7 +89,7 @@ const GROUPS = [
 const year = (s) => s.length === 2 ? 2000 + Number(s) : Number(s);
 /**
  * @param {Segment} seg
- * @returns {TargetCandidate[]} 기능 결과
+ * @returns {TargetCandidate[]}
  */
 function targetsIn(seg) {
     const found = [];
@@ -134,7 +134,7 @@ const END_RE = new RegExp(`^\\s*(?:[~∼〜–-]|부터)\\s*(?:${FULL}|(\\d{1,2}
  * @param {string|undefined} h
  * @param {string|undefined} mm
  * @param {string|undefined} mm2
- * @returns {{time:string|null;bad:boolean}} 기능 결과
+ * @returns {{time:string|null;bad:boolean}}
  */
 function time(ampm, h, mm, mm2) {
     if (h === undefined)
@@ -151,7 +151,7 @@ function time(ampm, h, mm, mm2) {
 }
 /**
  * @param {string} t
- * @returns {{start:RawDate;end:RawDate|null}[]} 기능 결과
+ * @returns {{start:RawDate;end:RawDate|null}[]}
  */
 function parseDates(t) {
     const out = [];
@@ -197,7 +197,7 @@ function validDay(y, m, d) {
 /**
  * @param {string} date
  * @param {string} time
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 function atKst(date, time) {
     if (time === '24:00') {
@@ -216,7 +216,7 @@ const DEADLINE = /까지|마감|기한/;
  * @param {string} clause
  * @param {boolean} isRange
  * @param {boolean} end
- * @returns {DateRole} 기능 결과
+ * @returns {DateRole}
  */
 function roleOf(clause, isRange, end) {
     if (POSTED.test(clause))
@@ -237,7 +237,7 @@ const CANCEL_TITLE = /[[(【]\s*(?:취소|철회)\s*[\])】]|(?:공지|행사|�
 const CANCEL_TEXT = /(?:공지|행사|일정|설명회|시험|모집|본\s*안내)\s*(?:이|가|은|는|를|을)?\s*(?:취소|철회)(?:되었|됨|합니다|하오니|하며|되오니)/;
 /**
  * @param {NoticeExtractInput} raw
- * @returns {NoticeExtraction} 기능 결과
+ * @returns {NoticeExtraction}
  */
 export function extractNoticeCandidates(raw) {
     const input = NoticeExtractInputSchema.parse(raw);

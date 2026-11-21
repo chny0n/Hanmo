@@ -1,7 +1,6 @@
 import {copyFile,cp,mkdir,rm,stat,readdir} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 
-// Core and tests are authored in js/academic but are NOT published as raw TypeScript.
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const compiled=join(root,'.build','student-forecast.js');
@@ -32,4 +31,4 @@ const rootEntries=await readdir(dist);
 if(rootEntries.includes('degree-rescue'))throw Error('Legacy academic directory leaked into Pages artifact');
 if(await exists(join(dist,'html/scenario-workshop.html'))||await exists(join(dist,'html/scenario-lab.html')))throw Error('Standalone incident HTML leaked into QA artifact');
 if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');
-console.log('Hanmo site staged at dist/ with root html, js, css and data. TypeScript source excluded; no CNAME.');
+console.log('Hanmo site staged at dist/ with academic bundles, HTML, CSS and public data.');

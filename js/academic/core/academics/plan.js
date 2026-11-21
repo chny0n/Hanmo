@@ -4,14 +4,14 @@
 /** @typedef {import("./ledger.js").LedgerAttempt} LedgerAttempt */
 /** @typedef {AcademicAuditVNext['planIssues'][number]} PlanIssue */
 /** @typedef {'MON'|'TUE'|'WED'|'THU'|'FRI'|'SAT'|'SUN'} Weekday */
-/** @typedef {{ day:Weekday;; startMinute:number;; endMinute:number; }} SectionMeeting */
-/** @typedef {{ canonicalCourseId:string;; sectionId:string;; term:string;; meetings:readonly SectionMeeting[];; evidenceRefs:readonly string[];; verifiedAt:string; }} VerifiedSection */
-/** @typedef {{ canonicalCourseId:string;; requiresCourseIds:readonly string[];; evidenceRefs:readonly string[]; }} PrerequisiteRule */
-/** @typedef {{ term:string;; creditCapUnits:number;; capEvidenceRefs:readonly string[];; prerequisites?:readonly PrerequisiteRule[];; sections?:readonly VerifiedSection[]; }} TermPlan */
+/** @typedef {{ day:Weekday; startMinute:number; endMinute:number; }} SectionMeeting */
+/** @typedef {{ canonicalCourseId:string; sectionId:string; term:string; meetings:readonly SectionMeeting[]; evidenceRefs:readonly string[]; verifiedAt:string; }} VerifiedSection */
+/** @typedef {{ canonicalCourseId:string; requiresCourseIds:readonly string[]; evidenceRefs:readonly string[]; }} PrerequisiteRule */
+/** @typedef {{ term:string; creditCapUnits:number; capEvidenceRefs:readonly string[]; prerequisites?:readonly PrerequisiteRule[]; sections?:readonly VerifiedSection[]; }} TermPlan */
 /** @typedef {AcademicLedgerRequest & { termPlan:TermPlan; }} AcademicPlanRequest */
-/** @typedef {{ courseId:string;; units:number;; planned:boolean; }} TermCourse */
+/** @typedef {{ courseId:string; units:number; planned:boolean; }} TermCourse */
 /** @typedef {'EARNED'|'REVIEW'|'MISSING'} PrerequisiteState */
-/** @typedef {{ sectionId:string;; meetings:readonly SectionMeeting[];; evidenceRefs:string[]; }} Section */
+/** @typedef {{ sectionId:string; meetings:readonly SectionMeeting[]; evidenceRefs:string[]; }} Section */
 /** @typedef {'FITS'|'NO_FIT'|'LIMIT'} Fit */
 import { AcademicAuditVNextSchema, } from '../../contracts/index.js';
 import { AS_OF, addUnits, assertId, assertPositiveUnits, buildAcademicLedger, byCodeUnit, termEndMs, termKey, } from './ledger.js';
@@ -31,7 +31,7 @@ export const MAX_ALLOCATION_STATES = 50_000;
 /**
  * @param {readonly string[]} refs
  * @param {string} label
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function assertRefs(refs, label) {
     if (!Array.isArray(refs) || refs.length === 0)
@@ -48,7 +48,7 @@ function assertRefs(refs, label) {
 /**
  * @param {string} value
  * @param {string} label
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function instantMs(value, label) {
     const ms = Date.parse(value);
@@ -59,7 +59,7 @@ function instantMs(value, label) {
 }
 /**
  * @param {readonly (readonly string[])[]} lists
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function union(lists) {
     const refs = [...new Set(lists.flat())].sort(byCodeUnit);
@@ -70,7 +70,7 @@ function union(lists) {
 /** 정렬된 과목 참조를 통신 계약 허용 크기로 묶는다. 목록이 길면 같은 유형의 문제를 여러 건으로 나눈다. */
 /**
  * @param {readonly string[]} courseRefs
- * @returns {string[][]} 기능 결과
+ * @returns {string[][]}
  */
 function chunks(courseRefs) {
     const groups = [];
@@ -83,7 +83,7 @@ function chunks(courseRefs) {
  * @param {readonly LedgerAttempt[]} attempts
  * @param {string} term
  * @param {PlanIssue[]} issues
- * @returns {TermCourse[]} 기능 결과
+ * @returns {TermCourse[]}
  */
 function termLoad(attempts, term, issues) {
     const byCourse = new Map();
@@ -119,7 +119,7 @@ function termLoad(attempts, term, issues) {
  * @param {readonly TermCourse[]} load
  * @param {boolean} packApproved
  * @param {PlanIssue[]} issues
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function checkCap(plan, load, packApproved, issues) {
     assertPositiveUnits(plan.creditCapUnits, 'creditCapUnits');
@@ -145,7 +145,7 @@ function checkCap(plan, load, packApproved, issues) {
  * @param {readonly LedgerAttempt[]} attempts
  * @param {ReadonlyMap<string, string>} excluded
  * @param {number} planTermKey
- * @returns {PrerequisiteState} 기능 결과
+ * @returns {PrerequisiteState}
  */
 function prerequisiteState(courseId, attempts, excluded, planTermKey) {
     let review = false;
@@ -170,7 +170,6 @@ function prerequisiteState(courseId, attempts, excluded, planTermKey) {
  * @param {ReadonlyMap<string, string>} excluded
  * @param {boolean} packApproved
  * @param {PlanIssue[]} issues
- * @returns {void} 기능 결과
  */
 function checkPrerequisites(plan, load, attempts, excluded, packApproved, issues) {
     const rules = plan.prerequisites ?? [];
@@ -238,7 +237,7 @@ function checkPrerequisites(plan, load, attempts, excluded, packApproved, issues
 /**
  * @param {TermPlan} plan
  * @param {number} asOfMs
- * @returns {Map<string, Section[]>} 기능 결과
+ * @returns {Map<string, Section[]>}
  */
 function validSections(plan, asOfMs) {
     const sections = plan.sections ?? [];
@@ -283,7 +282,7 @@ function validSections(plan, asOfMs) {
 /**
  * @param {Section} a
  * @param {Section} b
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function overlaps(a, b) {
     return a.meetings.some(x => b.meetings.some(y => x.day === y.day
@@ -292,7 +291,7 @@ function overlaps(a, b) {
 /** 공식 검증 분반 중 시간이 겹치지 않는 조합 하나를 깊이 우선 탐색한다. */
 /**
  * @param {readonly Section[][]} courses
- * @returns {Fit} 기능 결과
+ * @returns {Fit}
  */
 function anyFit(courses) {
     let states = 0;
@@ -323,7 +322,7 @@ function anyFit(courses) {
 /**
  * @param {readonly string[]} courseIds
  * @param {ReadonlyMap<string, Section[]>} sections
- * @returns {{courseRefs:string[]; evidenceRefs:string[]}[]} 기능 결과
+ * @returns {{courseRefs:string[]; evidenceRefs:string[]}[]}
  */
 function evidenceGroups(courseIds, sections) {
     const groups = [];
@@ -351,7 +350,6 @@ function evidenceGroups(courseIds, sections) {
  * @param {readonly TermCourse[]} load
  * @param {number} asOfMs
  * @param {PlanIssue[]} issues
- * @returns {void} 기능 결과
  */
 function checkTimetable(plan, load, asOfMs, issues) {
     const sections = validSections(plan, asOfMs);
@@ -401,7 +399,7 @@ function checkTimetable(plan, load, asOfMs, issues) {
  */
 /**
  * @param {AcademicPlanRequest} input
- * @returns {AcademicAuditVNext} 기능 결과
+ * @returns {AcademicAuditVNext}
  */
 export function buildAcademicPlan(input) {
     return checkAcademicPlan(input).audit;
@@ -409,7 +407,7 @@ export function buildAcademicPlan(input) {
 /** buildAcademicPlan과 같은 검사를 수행하면서 학기별 PLANNED·IN_PROGRESS 고유 학점 단위를 함께 반환한다. */
 /**
  * @param {AcademicPlanRequest} input
- * @returns {{audit:AcademicAuditVNext; termLoadCreditUnits:number}} 기능 결과
+ * @returns {{audit:AcademicAuditVNext; termLoadCreditUnits:number}}
  */
 export function checkAcademicPlan(input) {
     const { termPlan: plan, ...ledgerRequest } = input;

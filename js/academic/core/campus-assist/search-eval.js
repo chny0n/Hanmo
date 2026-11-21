@@ -3,11 +3,11 @@
 /** @typedef {z.infer<typeof SearchEvalSubsetSchema>} SearchEvalSubset */
 /** @typedef {z.infer<typeof SearchEvalCaseSchema>} SearchEvalCase */
 /** @typedef {z.input<typeof SearchEvalRunSchema>} SearchEvalRun */
-/** @typedef {{ kind:'FAMILY_LEAK'|'EMPTY_HOLDOUT'|'DUPLICATE_CASE'|'MIXED_PROVENANCE'|'RELEVANT_SHARED_ACROSS_SPLITS';; detail:string; }} SplitIssue */
-/** @typedef {{ cases:number;; recallAt5:number|null;; mrr:number|null; }} RetrievalMetrics */
-/** @typedef {{ split:'TUNE'|'HOLDOUT';; provenance:SearchEvalCase['provenance'];; caseCount:number;; overall:RetrievalMetrics;; bySubset:Partial<Record<SearchEvalSubset,RetrievalMetrics>>;; byDomain:Partial<Record<SearchDomain,RetrievalMetrics>>;; intent:{macroF1:number|null;perLabel:Partial<Record<SearchDomain,{precision:number;recall:number;f1:number;support:number}>>; confusion:Record<SearchDomain,Record<SearchDomain,number>>;};; noAnswerFalsePositiveRate:number|null;; abstention:{precision:number|null;recall:number|null};; latency:{samples:number;p95Ms:number|null};; safetyViolationCount:number;; missedCaseIds:string[]; }} SearchEvalReport */
+/** @typedef {{ kind:'FAMILY_LEAK'|'EMPTY_HOLDOUT'|'DUPLICATE_CASE'|'MIXED_PROVENANCE'|'RELEVANT_SHARED_ACROSS_SPLITS'; detail:string; }} SplitIssue */
+/** @typedef {{ cases:number; recallAt5:number|null; mrr:number|null; }} RetrievalMetrics */
+/** @typedef {{ split:'TUNE'|'HOLDOUT'; provenance:SearchEvalCase['provenance']; caseCount:number; overall:RetrievalMetrics; bySubset:Partial<Record<SearchEvalSubset,RetrievalMetrics>>; byDomain:Partial<Record<SearchDomain,RetrievalMetrics>>; intent:{macroF1:number|null;perLabel:Partial<Record<SearchDomain,{precision:number;recall:number;f1:number;support:number}>>; confusion:Record<SearchDomain,Record<SearchDomain,number>>;}; noAnswerFalsePositiveRate:number|null; abstention:{precision:number|null;recall:number|null}; latency:{samples:number;p95Ms:number|null}; safetyViolationCount:number; missedCaseIds:string[]; }} SearchEvalReport */
 /** @typedef {'PASS'|'FAIL'|'NOT_EVALUABLE'} GateCheckStatus */
-/** @typedef {{ status:'RELEASE_PASS'|'RELEASE_BLOCKED'|'SYNTHETIC_ONLY';; checks:Record<'recallAt5'|'mrr'|'intentMacroF1'|'typoDrop'|'spacingDrop'|'p95Latency'|'safety'|'split'|'heldOut', {status:GateCheckStatus;value:number|null;target:number|null}>; }} SearchGateResult */
+/** @typedef {{ status:'RELEASE_PASS'|'RELEASE_BLOCKED'|'SYNTHETIC_ONLY'; checks:Record<'recallAt5'|'mrr'|'intentMacroF1'|'typoDrop'|'spacingDrop'|'p95Latency'|'safety'|'split'|'heldOut', {status:GateCheckStatus;value:number|null;target:number|null}>; }} SearchGateResult */
 import { z } from 'zod';
 /**
  * #40 통합 학업 검색 품질 게이트 — 평가셋 분할 규칙과 지표 계산 (순수 코어).
@@ -64,7 +64,7 @@ export const SEARCH_GATE_TARGETS = {
  * @param {string} documentFamily
  * @param {string} seed
  * @param {unknown} [holdoutRatio]
- * @returns {'TUNE'|'HOLDOUT'} 기능 결과
+ * @returns {'TUNE'|'HOLDOUT'}
  */
 export function assignFamilySplit(documentFamily, seed, holdoutRatio = 0.3) {
     if (!(holdoutRatio > 0 && holdoutRatio < 1))
@@ -86,7 +86,7 @@ export function assignFamilySplit(documentFamily, seed, holdoutRatio = 0.3) {
 /** 평가셋의 분할 규칙 위반을 모두 찾는다. 빈 배열이면 분할 규칙을 지킨 것이다. */
 /**
  * @param {readonly unknown[]} raw
- * @returns {SplitIssue[]} 기능 결과
+ * @returns {SplitIssue[]}
  */
 export function validateSearchEvalSplit(raw) {
     const cases = SearchEvalCaseSchema.array().max(20000).parse(raw);
@@ -125,7 +125,7 @@ const mean = (xs) => xs.length ? round(xs.reduce((a, b) => a + b, 0) / xs.length
 /**
  * @param {readonly number[]} values
  * @param {number} p
- * @returns {number|null} 기능 결과
+ * @returns {number|null}
  */
 export function percentileNearestRank(values, p) {
     if (!values.length)
@@ -135,7 +135,7 @@ export function percentileNearestRank(values, p) {
 }
 /**
  * @param {{c:SearchEvalCase;r:z.output<typeof SearchEvalRunSchema>}[]} rows
- * @returns {RetrievalMetrics} 기능 결과
+ * @returns {RetrievalMetrics}
  */
 function retrieval(rows) {
     const answerable = rows.filter(x => x.c.relevant.length > 0);
@@ -160,7 +160,7 @@ function retrieval(rows) {
  * @param {readonly unknown[]} rawCases
  * @param {readonly unknown[]} rawRuns
  * @param {'TUNE'|'HOLDOUT'} [split]
- * @returns {SearchEvalReport} 기능 결과
+ * @returns {SearchEvalReport}
  */
 export function evaluateSearchRun(rawCases, rawRuns, split = 'HOLDOUT') {
     const all = SearchEvalCaseSchema.array().max(20000).parse(rawCases);
@@ -238,7 +238,7 @@ export function evaluateSearchRun(rawCases, rawRuns, split = 'HOLDOUT') {
 /**
  * @param {SearchEvalReport} report
  * @param {readonly SplitIssue[]} splitIssues
- * @returns {SearchGateResult} 기능 결과
+ * @returns {SearchGateResult}
  */
 export function checkSearchGate(report, splitIssues) {
     const T = SEARCH_GATE_TARGETS;

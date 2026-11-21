@@ -4,11 +4,11 @@
 /** @typedef {'SEOUL'|'GLOBAL'|'UNKNOWN'} TimetableCampus */
 /** @typedef {'MAJOR'|'DOUBLE_OR_MINOR'|'BASIC'|'OTHER'} TimetableArea */
 /** @typedef {'REQUIRED'|'FOREIGN_LANGUAGE'|'TEAM_TEACHING'|'ONLINE'|'PASS_FAIL'} TimetableAttribute */
-/** @typedef {{ day:Weekday;; periods:number[];; room:string; }} TimetableMeeting */
-/** @typedef {{ no:number;; area:TimetableArea;; areaLabel:string;; gradeYear:number|null;; rawCode:string;; code:ReturnType<typeof resolveAcademicCourseCodeVNext>;; title:string;; attributes:TimetableAttribute[];; instructionLanguage:string|null;; otherAttributes:string[];; creditUnits:number|null;; hours:number|null;; meetings:TimetableMeeting[];; note:string;; noteHints:{prerequisite:boolean; cohort:boolean; restriction:boolean; equivalent:boolean};; termEvidence:'ROW_LINK'|'PAGE_ONLY';; needsReview:boolean; }} TimetableRow */
-/** @typedef {{ row?:number;; code:'NO_ROWS'|'ROW_NUMBER_GAP'|'BAD_CODE'|'BAD_GRADE'|'BAD_CREDITS'|'BAD_HOURS'|'BAD_MEETINGS'|'UNKNOWN_AREA'|'UNKNOWN_ATTRIBUTE'|'NOTE_NEEDS_REVIEW'|'TERM_FROM_PAGE';; detail:string; }} TimetableIssue */
-/** @typedef {{ source:{system:'HUFS_WIS_LECTURE_TIMETABLE'; savedFromUrl:string; fileName:string; savedAt:string};; term:{year:number; session:TimetableSession; academicTerm?:string};; departmentLabel:string;; campus:TimetableCampus;; coverage:'ONE_DEPARTMENT_PAGE';; codeFormat:{reviewed:boolean; consistentWithCourse7Section2:boolean};; rows:TimetableRow[];; issues:TimetableIssue[]; }} TimetableImport */
-/** @typedef {{ html:string;; fileName:string;; savedAt:string;; departmentLabel?:string;; codeFormatReviewed?:boolean; }} TimetableImportRequest */
+/** @typedef {{ day:Weekday; periods:number[]; room:string; }} TimetableMeeting */
+/** @typedef {{ no:number; area:TimetableArea; areaLabel:string; gradeYear:number|null; rawCode:string; code:ReturnType<typeof resolveAcademicCourseCodeVNext>; title:string; attributes:TimetableAttribute[]; instructionLanguage:string|null; otherAttributes:string[]; creditUnits:number|null; hours:number|null; meetings:TimetableMeeting[]; note:string; noteHints:{prerequisite:boolean; cohort:boolean; restriction:boolean; equivalent:boolean}; termEvidence:'ROW_LINK'|'PAGE_ONLY'; needsReview:boolean; }} TimetableRow */
+/** @typedef {{ row?:number; code:'NO_ROWS'|'ROW_NUMBER_GAP'|'BAD_CODE'|'BAD_GRADE'|'BAD_CREDITS'|'BAD_HOURS'|'BAD_MEETINGS'|'UNKNOWN_AREA'|'UNKNOWN_ATTRIBUTE'|'NOTE_NEEDS_REVIEW'|'TERM_FROM_PAGE'; detail:string; }} TimetableIssue */
+/** @typedef {{ source:{system:'HUFS_WIS_LECTURE_TIMETABLE'; savedFromUrl:string; fileName:string; savedAt:string}; term:{year:number; session:TimetableSession; academicTerm?:string}; departmentLabel:string; campus:TimetableCampus; coverage:'ONE_DEPARTMENT_PAGE'; codeFormat:{reviewed:boolean; consistentWithCourse7Section2:boolean}; rows:TimetableRow[]; issues:TimetableIssue[]; }} TimetableImport */
+/** @typedef {{ html:string; fileName:string; savedAt:string; departmentLabel?:string; codeFormatReviewed?:boolean; }} TimetableImportRequest */
 import { resolveAcademicCourseCodeVNext } from '../../contracts/index.js';
 /**
  * 사용자가 학교 공개 강의시간표 페이지(wis.hufs.ac.kr)를 브라우저에서 직접 저장한 파일만 파싱한다(#133).
@@ -42,7 +42,7 @@ const UNSTATED_LANGUAGE = 'F';
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'', nbsp: ' ', '#39': '\'' };
 /**
  * @param {string} text
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 function decode(text) {
     return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+|#39);/gi, (whole, name) => {
@@ -71,7 +71,7 @@ const cells = (row, tag) => [...row.matchAll(new RegExp(`<${tag}\\b[^>]*>([\\s\\
 /**
  * @param {string} value
  * @param {number} offset
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function inQuotedTagAttribute(value, offset) {
     let inside = false, comment = false, quote = null;
@@ -107,7 +107,7 @@ function inQuotedTagAttribute(value, offset) {
 /**
  * @param {string} html
  * @param {'script'|'comment'} kind
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 export function withoutBlocks(html, kind) {
     // 인덱스가 달라지지 않도록 ASCII A~Z만 소문자로 변환한다.
@@ -166,14 +166,14 @@ export function withoutBlocks(html, kind) {
  */
 /**
  * @param {string} html
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 function withoutNonDataBlocks(html) {
     return withoutBlocks(withoutBlocks(html, 'script'), 'comment');
 }
 /**
  * @param {string} html
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 function savedFromUrl(html) {
     const match = /<!--\s*saved from url=\(\d+\)(\S+)\s*-->/i.exec(html);
@@ -193,7 +193,7 @@ const LINK = /lecture_open\('(\d{4})','(\d)','[A-Z]','([^']*)'\)/g;
 /**
  * @param {readonly string[][]} rows
  * @param {string} html
- * @returns {{year:number; session:TimetableSession; linkless:Set<number>}} 기능 결과
+ * @returns {{year:number; session:TimetableSession; linkless:Set<number>}}
  */
 function pageTerm(rows, html) {
     const linkless = new Set();
@@ -227,7 +227,7 @@ function pageTerm(rows, html) {
 /** 페이지가 표의 각 행에 대응해 생성한 카드 목록의 학수번호다. */
 /**
  * @param {string} html
- * @returns {string[]} 기능 결과
+ * @returns {string[]}
  */
 function cardCodes(html) {
     return [...html.matchAll(/<div\b[^>]*class="sch-card-code"[^>]*>([\s\S]*?)<\/div>/gi)]
@@ -237,7 +237,6 @@ function cardCodes(html) {
 /**
  * @param {readonly string[][]} rows
  * @param {string} html
- * @returns {void} 기능 결과
  */
 function assertComplete(rows, html) {
     const count = (codes) => {
@@ -257,7 +256,7 @@ function assertComplete(rows, html) {
 }
 /**
  * @param {string} fileName
- * @returns {string|undefined} 기능 결과
+ * @returns {string|undefined}
  */
 function fileTerm(fileName) {
     return /(?:^|[_\s-])((?:19|20|21)\d{2}-(?:1|2|S|W))(?=[_.\s]|$)/.exec(fileName)?.[1];
@@ -268,7 +267,7 @@ function fileTerm(fileName) {
  */
 /**
  * @param {string} text
- * @returns {TimetableMeeting[]|null} 기능 결과
+ * @returns {TimetableMeeting[]|null}
  */
 function meetings(text) {
     if (text === '')
@@ -294,7 +293,7 @@ function meetings(text) {
 }
 /**
  * @param {string} text
- * @returns {number|null} 기능 결과
+ * @returns {number|null}
  */
 function units(text) {
     if (!/^\d{1,2}(\.5)?$/.test(text))
@@ -303,7 +302,7 @@ function units(text) {
 }
 /**
  * @param {TimetableImportRequest} input
- * @returns {TimetableImport} 기능 결과
+ * @returns {TimetableImport}
  */
 export function importWisTimetable(input) {
     if (!Number.isFinite(Date.parse(input.savedAt)))
@@ -426,7 +425,7 @@ export function importWisTimetable(input) {
  */
 /**
  * @param {string} html
- * @returns {Set<string>} 기능 결과
+ * @returns {Set<string>}
  */
 function basicFields(html) {
     const page = withoutBlocks(html, 'comment');
@@ -442,7 +441,7 @@ const CAMPUS_RADIO = { H1: 'SEOUL', H2: 'GLOBAL' };
 const CAMPUS_PREFIX = { '(서울)': 'SEOUL', '(글로벌)': 'GLOBAL' };
 /**
  * @param {string} html
- * @returns {TimetableCampus} 기능 결과
+ * @returns {TimetableCampus}
  */
 function pageCampus(html) {
     const checked = [...html.matchAll(/<input\b[^>]*\bname="campus_sect"[^>]*>/gi)]
@@ -462,7 +461,7 @@ function pageCampus(html) {
  * @param {string} departmentLabel
  * @param {TimetableRow[]} rows
  * @param {TimetableIssue[]} issues
- * @returns {TimetableImport} 기능 결과
+ * @returns {TimetableImport}
  */
 function result(savedFrom, input, term, departmentLabel, rows, issues) {
     // 코드 형식을 검토하는 사람을 위한 힌트일 뿐 자동 적용하지 않는다.

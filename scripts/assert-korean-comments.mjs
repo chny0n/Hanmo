@@ -32,7 +32,7 @@ let checked=0,exempt=0;
 /** @type {string[]} */
 const findings=[];
 for(const path of list(root)){
-  if(legacy.get(path)===gitBlob(path)){exempt++;continue;}
+  if(legacy.has(path)&&legacy.get(path)===gitBlob(path)){exempt++;continue;}
   checked++;
   const source=readFileSync(resolve(root,path),'utf8');
   let hits;

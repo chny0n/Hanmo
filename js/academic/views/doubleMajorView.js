@@ -2,9 +2,9 @@
 /** @typedef {import("../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
 /** @typedef {AcademicAuditVNext['requirements'][number]['state']} RowState */
 /** @typedef {'NONE' | 'NO_APPROVED_RULE' | 'COVERED_BY_APPROVED_RULE' | 'OVER_APPROVED_LIMIT'} OverlapStatus */
-/** @typedef {{ readonly id: string;; readonly badge: {readonly text: string; readonly icon: string};; readonly creditsText: string | null;; readonly heldText: string | null;; readonly ariaLabel: string; }} MajorRowView */
-/** @typedef {{ readonly role: '주전공' | '이중전공';; readonly stateText: string;; readonly rulePackText: string;; readonly rows: readonly MajorRowView[]; }} MajorColumnView */
-/** @typedef {{ readonly selectionText: string;; readonly notOfficialText: string;; readonly uniqueCredits: readonly {readonly label: string; readonly credits: string}[];; readonly primary: MajorColumnView;; readonly doubleMajor: MajorColumnView | null;; readonly doubleMajorNote: string | null;; readonly overlapText: string | null; }} DoubleMajorView */
+/** @typedef {{ readonly id: string; readonly badge: {readonly text: string; readonly icon: string}; readonly creditsText: string | null; readonly heldText: string | null; readonly ariaLabel: string; }} MajorRowView */
+/** @typedef {{ readonly role: '주전공' | '이중전공'; readonly stateText: string; readonly rulePackText: string; readonly rows: readonly MajorRowView[]; }} MajorColumnView */
+/** @typedef {{ readonly selectionText: string; readonly notOfficialText: string; readonly uniqueCredits: readonly {readonly label: string; readonly credits: string}[]; readonly primary: MajorColumnView; readonly doubleMajor: MajorColumnView | null; readonly doubleMajorNote: string | null; readonly overlapText: string | null; }} DoubleMajorView */
 /** @typedef {{readonly ok: true; readonly view: DoubleMajorView} | {readonly ok: false}} DoubleMajorViewResult */
 /** @typedef {z.infer<typeof ImpactSchema>} Impact */
 import { z } from 'zod';
@@ -43,7 +43,7 @@ const OverlapSchema = z.strictObject({
  * @param {AcademicAuditVNext | null} audit
  * @param {readonly Impact[]} impacts
  * @param {readonly string[]} held
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function impactsFit(audit, impacts, held) {
     const rows = new Map((audit?.requirements ?? []).map(r => [r.requirementId, r.state]));
@@ -57,7 +57,7 @@ function impactsFit(audit, impacts, held) {
  * @param {AcademicAuditVNext} audit
  * @param {ReadonlySet<string>} held
  * @param {readonly Impact[]} impacts
- * @returns {MajorColumnView} 기능 결과
+ * @returns {MajorColumnView}
  */
 function column(role, audit, held, impacts) {
     const rows = [...audit.requirements].sort((a, b) => ROW_RANK[a.state] - ROW_RANK[b.state]).map(r => {
@@ -80,7 +80,7 @@ function column(role, audit, held, impacts) {
  * @param {OverlapStatus} status
  * @param {number} count
  * @param {number} units
- * @returns {string | null} 기능 결과
+ * @returns {string | null}
  */
 function overlapText(status, count, units) {
     switch (status) {
@@ -94,7 +94,7 @@ function overlapText(status, count, units) {
 /**
  * @param {unknown} raw
  * @param {{asOf: string}} expected
- * @returns {DoubleMajorViewResult} 기능 결과
+ * @returns {DoubleMajorViewResult}
  */
 export function buildDoubleMajorView(raw, expected) {
     if (!isObj(raw) || typeof raw.asOf !== 'string' || Date.parse(raw.asOf) !== Date.parse(expected.asOf))

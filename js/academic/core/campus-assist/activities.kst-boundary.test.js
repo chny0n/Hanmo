@@ -63,4 +63,24 @@ describe('#339 undated archive notices use Asia/Seoul year without inventing an 
     expect(archiveActivities([dateZ],AS_OF,{year:2026})).toHaveLength(0);
     expect(archiveActivities([dateK],AS_OF,{year:2026})).toHaveLength(0);
   });
+  it('sorts archive records by publication instant across offsets',()=>{
+    const earlier=record('EARLIER','2027-01-01T00:00:00+09:00');
+    const later=record('LATER','2026-12-31T16:00:00Z',{seriesId:'SYN-OTHER'});
+    expect(archiveActivities([earlier,later],AS_OF).map(r=>r.entryId)).toEqual(['LATER','EARLIER']);
+  });
+  it('counts an event as history as soon as its date begins in Korea',()=>{
+    const held=[
+      record('H25','2025-03-01T00:00:00Z',{eventDate:'2025-03-08',status:'CONFIRMED'}),
+      record('H26','2026-03-01T00:00:00Z',{eventDate:'2026-03-08',status:'CONFIRMED'}),
+    ];
+    expect(forecastActivity(held,'2026-03-07T14:59:59Z',2027,'SYN-DEPT','SYN-ANNUAL').observedYears)
+      .toEqual([2025]);
+    expect(forecastActivity(held,'2026-03-07T15:00:00Z',2027,'SYN-DEPT','SYN-ANNUAL').observedYears)
+      .toEqual([2025,2026]);
+  });
+  it('preserves separate series when their IDs contain the same delimiter',()=>{
+    const first=record('FIRST','2027-01-01T00:00:00Z',{organizationId:'A:B',seriesId:'C'});
+    const second=record('SECOND','2027-01-01T01:00:00Z',{organizationId:'A',seriesId:'B:C'});
+    expect(archiveActivities([first,second],AS_OF).map(r=>r.entryId)).toEqual(['SECOND','FIRST']);
+  });
 });

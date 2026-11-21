@@ -3,6 +3,7 @@ import {FaqCandidateSchema,FaqDocumentSchema} from '../../contracts/campus-assis
 import {exchangePolicyInEffect} from './exchange.js';
 import {checkFaqCandidate} from './faq-guard.js';
 import {searchFaqParagraphs} from './faq-search.js';
+import {canonicalJson} from './content-hash.js';
 
 /** @typedef {import('../../contracts/campus-assist/index.js').FaqCandidate} FaqCandidate */
 /** @typedef {import('../../contracts/campus-assist/index.js').FaqDocument} FaqDocument */
@@ -15,14 +16,6 @@ import {searchFaqParagraphs} from './faq-search.js';
 function revisionOrder(a,b){
   const ta=Date.parse(a.publishedAt),tb=Date.parse(b.publishedAt);
   return ta!==tb?Math.sign(ta-tb):Math.sign(a.revisionId.localeCompare(b.revisionId,'en',{numeric:true}));
-}
-/** 객체 키 순서와 관계없이 복사본의 실제 내용만 비교하는 JSON 표현이다. */
-/** @param {unknown} value @returns {string} 키 정렬된 JSON 표현 */
-function canonical(value){
-  if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
-  if(value&&typeof value==='object')
-    return '{'+Object.keys(value).filter(k=>(/** @type {Record<string,unknown>} */ (value))[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+canonical((/** @type {Record<string,unknown>} */ (value))[k])).join(',')+'}';
-  return JSON.stringify(value)??'null';
 }
 /**
  * asOf까지 공개·검증된 문서 ID별 최신 판본을 선택한다.
@@ -48,7 +41,7 @@ function documentHeadsAt(docs,time){
     // r1/r01처럼 숫자 순서 비교에서 충돌하는 경우도 격리한다.
     const copies=rows.filter(doc=>doc.revisionId===head.revisionId
       ||revisionOrder(doc,head)===0);
-    if(new Set(copies.map(canonical)).size===1)heads.set(documentId,head);
+    if(new Set(copies.map(canonicalJson)).size===1)heads.set(documentId,head);
   }
   return heads;
 }

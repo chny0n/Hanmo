@@ -225,7 +225,7 @@ describe('course identity: what an unresolved row holds (#11)', () => {
 });
 /**
  * @param {number} seed
- * @returns {Rng} 기능 결과
+ * @returns {Rng}
  */
 function mulberry32(seed) {
     let a = seed >>> 0;
@@ -245,7 +245,7 @@ const AREA_SETS = [[], ['SYN-A1'], ['SYN-A2'], ['SYN-A1', 'SYN-A2']];
 const TERMS = ['2024-2', '2025-1', '2025-2', '2026-2'];
 /**
  * @param {Rng} rng
- * @returns {IdentifiedLedgerAttempt[]} 기능 결과
+ * @returns {IdentifiedLedgerAttempt[]}
  */
 function genRows(rng) {
     const rows = [];
@@ -277,7 +277,7 @@ function genRows(rng) {
 /** 미확정 행을 기존 또는 신규 과목과 임의의 학점 영역 집합으로 해소하는 모든 경우다. */
 /**
  * @param {readonly IdentifiedLedgerAttempt[]} rows
- * @returns {LedgerAttempt[][]} 기능 결과
+ * @returns {LedgerAttempt[][]}
  */
 function resolutions(rows) {
     let out = [[]];

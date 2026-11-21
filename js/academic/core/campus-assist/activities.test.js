@@ -8,7 +8,7 @@ const ASOF = '2026-02-01T00:00:00Z';
  * @param {unknown} [month]
  * @param {unknown} [day]
  * @param {Partial<ActivityRecord>} [extra]
- * @returns {ActivityRecord} 기능 결과
+ * @returns {ActivityRecord}
  */
 function row(y, month = '03', day = '07', extra = {}) {
     return {

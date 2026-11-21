@@ -6,14 +6,14 @@
 /** @typedef {OfferingOutlookVNext['signal']} Signal */
 /** @typedef {'OFFERED'|'NOT_OFFERED'|'ABSTAIN'} Answer */
 /** @typedef {'OFFERED'|'NOT_OFFERED'} Truth */
-/** @typedef {{ courseId:string;; observations:readonly OfferingObservation[];; officialEvents?:readonly OfficialAcademicEvent[]; }} EvaluationCourse */
-/** @typedef {{ asOf:string;; targetTerm:string; }} EvaluationOrigin */
-/** @typedef {{ truthAsOf:string;; origins:readonly EvaluationOrigin[];; courses:readonly EvaluationCourse[]; }} RollingOriginRequest */
-/** @typedef {{ truePositive:number;; falsePositive:number;; falseNegative:number;; trueNegative:number;; answered:number;; correct:number;; abstained:number; }} MethodScore */
-/** @typedef {{ offeredTerms:number;; observedTerms:number;; shown:number;; thenOffered:number; }} HistoryCount */
-/** @typedef {{ courses:number;; alreadyPublished:number;; truthUnavailable:number;; truthConflicting:number;; scored:number;; truth:{offered:number; notOffered:number};; methods:Record<EvaluationMethod, MethodScore>;; outlookSignals:Record<Signal, number>;; historyCounts:HistoryCount[]; }} EvaluationTally */
-/** @typedef {EvaluationTally & { asOf:string;; targetTerm:string; }} OriginReport */
-/** @typedef {{ evaluatorVersion:typeof ROLLING_ORIGIN_EVALUATOR_VERSION;; modelVersion:typeof FORECAST_OFFERING_MODEL_VERSION;; truthAsOf:string;; status:'READY'|'INSUFFICIENT_DATA';; origins:OriginReport[];; total:EvaluationTally; }} RollingOriginReport */
+/** @typedef {{ courseId:string; observations:readonly OfferingObservation[]; officialEvents?:readonly OfficialAcademicEvent[]; }} EvaluationCourse */
+/** @typedef {{ asOf:string; targetTerm:string; }} EvaluationOrigin */
+/** @typedef {{ truthAsOf:string; origins:readonly EvaluationOrigin[]; courses:readonly EvaluationCourse[]; }} RollingOriginRequest */
+/** @typedef {{ truePositive:number; falsePositive:number; falseNegative:number; trueNegative:number; answered:number; correct:number; abstained:number; }} MethodScore */
+/** @typedef {{ offeredTerms:number; observedTerms:number; shown:number; thenOffered:number; }} HistoryCount */
+/** @typedef {{ courses:number; alreadyPublished:number; truthUnavailable:number; truthConflicting:number; scored:number; truth:{offered:number; notOffered:number}; methods:Record<EvaluationMethod, MethodScore>; outlookSignals:Record<Signal, number>; historyCounts:HistoryCount[]; }} EvaluationTally */
+/** @typedef {EvaluationTally & { asOf:string; targetTerm:string; }} OriginReport */
+/** @typedef {{ evaluatorVersion:typeof ROLLING_ORIGIN_EVALUATOR_VERSION; modelVersion:typeof FORECAST_OFFERING_MODEL_VERSION; truthAsOf:string; status:'READY'|'INSUFFICIENT_DATA'; origins:OriginReport[]; total:EvaluationTally; }} RollingOriginReport */
 import { FORECAST_OFFERING_MODEL_VERSION, forecastOffering, sameCourseAt, termWindow, } from './offering.js';
 /**
  * 개설 전망의 이동 기준 평가다(설계 A09, TASK-17).
@@ -35,7 +35,7 @@ const SIGNALS = [
 /**
  * @param {string} label
  * @param {unknown} value
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function instant(label, value) {
     const parsed = typeof value === 'string' ? Date.parse(value) : Number.NaN;
@@ -47,7 +47,6 @@ function instant(label, value) {
 /**
  * @param {string} label
  * @param {unknown} value
- * @returns {void} 기능 결과
  */
 function assertTerm(label, value) {
     if (typeof value !== 'string' || !TERM.test(value))
@@ -55,7 +54,6 @@ function assertTerm(label, value) {
 }
 /**
  * @param {EvaluationCourse} course
- * @returns {void} 기능 결과
  */
 function checkCourse(course) {
     if (typeof course.courseId !== 'string' || course.courseId.trim() === '')
@@ -71,13 +69,13 @@ function checkCourse(course) {
     }
 }
 /**
- * @returns {MethodScore} 기능 결과
+ * @returns {MethodScore}
  */
 function emptyScore() {
     return { truePositive: 0, falsePositive: 0, falseNegative: 0, trueNegative: 0, answered: 0, correct: 0, abstained: 0 };
 }
 /**
- * @returns {EvaluationTally} 기능 결과
+ * @returns {EvaluationTally}
  */
 function emptyTally() {
     const methods = {};
@@ -96,7 +94,7 @@ function emptyTally() {
  * @param {readonly OfferingObservation[]} rows
  * @param {string} term
  * @param {number} originMs
- * @returns {boolean} 기능 결과
+ * @returns {boolean}
  */
 function publishedBy(rows, term, originMs) {
     return rows.some(row => row.term === term && row.state !== 'UNKNOWN' && Date.parse(row.publishedAt) <= originMs);
@@ -105,7 +103,7 @@ function publishedBy(rows, term, originMs) {
  * @param {readonly OfferingObservation[]} rows
  * @param {string} term
  * @param {number} truthMs
- * @returns {Truth|'UNAVAILABLE'|'CONFLICTING'} 기능 결과
+ * @returns {Truth|'UNAVAILABLE'|'CONFLICTING'}
  */
 function answerAt(rows, term, truthMs) {
     const states = new Set(rows
@@ -122,7 +120,7 @@ function answerAt(rows, term, truthMs) {
 /**
  * @param {number} offered
  * @param {number} observed
- * @returns {Answer} 기능 결과
+ * @returns {Answer}
  */
 function majority(offered, observed) {
     if (2 * offered > observed)
@@ -135,7 +133,7 @@ function majority(offered, observed) {
 /**
  * @param {EvaluationMethod} method
  * @param {OfferingOutlookVNext} outlook
- * @returns {Answer} 기능 결과
+ * @returns {Answer}
  */
 function predict(method, outlook) {
     switch (method) {
@@ -165,7 +163,6 @@ function predict(method, outlook) {
  * @param {MethodScore} target
  * @param {Answer} answer
  * @param {Truth} truth
- * @returns {void} 기능 결과
  */
 function score(target, answer, truth) {
     if (answer === 'ABSTAIN') {
@@ -190,7 +187,6 @@ function score(target, answer, truth) {
  * @param {number} offeredTerms
  * @param {number} observedTerms
  * @param {boolean} offered
- * @returns {void} 기능 결과
  */
 function addHistory(list, offeredTerms, observedTerms, offered) {
     let row = list.find(item => item.offeredTerms === offeredTerms && item.observedTerms === observedTerms);
@@ -204,7 +200,7 @@ function addHistory(list, offeredTerms, observedTerms, offered) {
 }
 /**
  * @param {HistoryCount[]} list
- * @returns {HistoryCount[]} 기능 결과
+ * @returns {HistoryCount[]}
  */
 function sortHistory(list) {
     return list.sort((a, b) => a.observedTerms - b.observedTerms || a.offeredTerms - b.offeredTerms);
@@ -214,7 +210,7 @@ function sortHistory(list) {
  * @param {number} originMs
  * @param {readonly EvaluationCourse[]} courses
  * @param {number} truthMs
- * @returns {OriginReport} 기능 결과
+ * @returns {OriginReport}
  */
 function evaluateOrigin(origin, originMs, courses, truthMs) {
     const tally = emptyTally();
@@ -256,7 +252,6 @@ function evaluateOrigin(origin, originMs, courses, truthMs) {
 /**
  * @param {EvaluationTally} total
  * @param {EvaluationTally} part
- * @returns {void} 기능 결과
  */
 function addTally(total, part) {
     total.courses += part.courses;
@@ -294,7 +289,7 @@ function addTally(total, part) {
  */
 /**
  * @param {RollingOriginRequest} input
- * @returns {RollingOriginReport} 기능 결과
+ * @returns {RollingOriginReport}
  */
 export function evaluateOfferingOutlook(input) {
     const truthMs = instant('truthAsOf', input.truthAsOf);

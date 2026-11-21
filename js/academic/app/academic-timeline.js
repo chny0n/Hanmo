@@ -44,11 +44,10 @@ const create = (tag, cls = '', message = '') => {
 /**
  * @param {string} id
  * @param {string} message
- * @returns {void} 기능 결과
  */
 function setMessage(id, message) { element(id).textContent = message; }
 /**
- * @returns {AcademicProfile} 기능 결과
+ * @returns {AcademicProfile}
  */
 function readProfile() {
     const campus = value('profile-campus'), year = value('profile-cohort');
@@ -67,7 +66,6 @@ function readProfile() {
 }
 /**
  * @param {AcademicProfile} p
- * @returns {void} 기능 결과
  */
 function fillProfile(p) {
     const data = {
@@ -81,9 +79,6 @@ function fillProfile(p) {
     for (const id of profileIds)
         inputs[id].value = data[id];
 }
-/**
- * @returns {void} 기능 결과
- */
 function loadSaved() {
     try {
         const stored = readRoadmap(localStorage, parseProfile, ALLOWED_STEPS);
@@ -101,9 +96,6 @@ function loadSaved() {
         setMessage('profile-message', '저장된 설정을 읽을 수 없습니다. 기존 값을 덮어쓰지 않았습니다.');
     }
 }
-/**
- * @returns {void} 기능 결과
- */
 function save() {
     try {
         saveRoadmap(localStorage, { profile: readProfile(), progress }, parseProfile, ALLOWED_STEPS);
@@ -113,9 +105,6 @@ function save() {
         setMessage('profile-message', '저장 실패: ' + (e instanceof Error ? e.message : String(e)));
     }
 }
-/**
- * @returns {void} 기능 결과
- */
 function clearSaved() {
     if (!confirm('이 기기의 현재 버전 학업 설정과 체크 상태를 삭제하시겠습니까? 예전 테스트 저장이나 기존 모의수강신청 자료는 삭제하지 않습니다.'))
         return;
@@ -136,9 +125,6 @@ function clearSaved() {
     render();
     setMessage('profile-message', '현재 버전의 학업 설정을 삭제했습니다. 기존 모의수강신청 데이터는 변경하지 않았습니다.');
 }
-/**
- * @returns {void} 기능 결과
- */
 function exportProfile() {
     try {
         const raw = exportRoadmap({ profile: readProfile(), progress }, parseProfile, ALLOWED_STEPS);
@@ -156,7 +142,7 @@ function exportProfile() {
     }
 }
 /**
- * @returns {Promise<void>} 기능 결과
+ * @returns {Promise<void>}
  */
 async function importProfile() {
     const input = element('profile-import');
@@ -187,9 +173,6 @@ async function importProfile() {
         input.value = '';
     }
 }
-/**
- * @returns {void} 기능 결과
- */
 function importLegacy() {
     try {
         const raw = localStorage.getItem(LEGACY_KEY);
@@ -230,18 +213,18 @@ const kst = new Intl.DateTimeFormat('ko-KR', {
 });
 /**
  * @param {string} iso
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 function when(iso) { return kst.format(new Date(iso)) + ' KST'; }
 /**
  * @param {string} label
  * @param {unknown} [cls]
- * @returns {HTMLElement} 기능 결과
+ * @returns {HTMLElement}
  */
 function tag(label, cls = '') { return create('span', 'tag ' + cls, label); }
 /**
  * @param {AcademicAgendaItem} item
- * @returns {HTMLElement} 기능 결과
+ * @returns {HTMLElement}
  */
 function renderOne(item) {
     const e = item.event, card = create('article', 'agenda-card');
@@ -317,9 +300,6 @@ function renderOne(item) {
     card.append(citation);
     return card;
 }
-/**
- * @returns {void} 기능 결과
- */
 function render() {
     let profile;
     try {
@@ -386,9 +366,6 @@ function render() {
             + summary.excluded.length + '개. 같은 공지 ID 중복은 임의로 최신본을 선택하지 않습니다.'));
     }
 }
-/**
- * @returns {void} 기능 결과
- */
 function renderSteps() {
     const root = element('graduation-steps');
     root.replaceChildren();
@@ -416,18 +393,12 @@ function renderSteps() {
         root.append(row);
     }
 }
-/**
- * @returns {void} 기능 결과
- */
 function officialTitles() {
     records = [];
     render();
     setMessage('data-message', '승인된 학사자료가 아직 연결되지 않았습니다. 출처 검수 전에는 공지·마감일을 표시하지 않습니다.');
 }
 /** 사용자가 명시적으로 실행할 때만 반영한다. 계산기 결과는 링크를 제안해도 공식 요건의 완료를 확정하지 않는다. */
-/**
- * @returns {void} 기능 결과
- */
 function applyLocalAuditHints() {
     try {
         const raw = sessionStorage.getItem(ACADEMIC_AUDIT_BRIDGE_KEY);
@@ -446,9 +417,6 @@ function applyLocalAuditHints() {
         setMessage('profile-message', '계산 결과 연결 실패: ' + (e instanceof Error ? e.message : String(e)));
     }
 }
-/**
- * @returns {void} 기능 결과
- */
 function exportJson() {
     const json = JSON.stringify({ schemaVersion: 1, events: records }, null, 2);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
@@ -459,7 +427,7 @@ function exportJson() {
     URL.revokeObjectURL(url);
 }
 /**
- * @returns {Promise<void>} 기능 결과
+ * @returns {Promise<void>}
  */
 async function importJson() {
     const file = element('timeline-file').files?.[0];

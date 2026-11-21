@@ -10,8 +10,8 @@
 /** @typedef {OwnerStudyPlanCheckResponse['caveats'][number]} StudyPlanCaveat */
 /** @typedef {Extract<OwnerWorkspaceValue, {kind:'STUDY_PLAN'}>} StudyPlanItem */
 /** @typedef {'TERM_UNDECIDED'|'TERM_ENDED'|'CREDITS_UNKNOWN'} UncheckedReason */
-/** @typedef {{ asOf:string;; term:string;; rulePack:{version:string; state:RulePackGate};; attempts:readonly LedgerAttempt[];; studyPlan:readonly unknown[];; courseCreditUnits:Readonly<Record<string, number>>;; termRules:{creditCapUnits:number; capEvidenceRefs:readonly string[]; prerequisites?:readonly PrerequisiteRule[]};; sections?:readonly VerifiedSection[];; versions?:Partial<Record<'rulePack'|'plan'|'catalog'|'transcript', string>>; }} StudyPlanCheckRequest */
-/** @typedef {{ state:'READY'|'NEEDS_REVIEW'|'INSUFFICIENT_DATA';; asOf:string;; term:string;; versions:Partial<Record<'rulePack'|'plan'|'catalog'|'transcript', string>>;; termLoadCreditUnits:number;; creditCapUnits?:number;; planIssues:PlanIssue[];; unchecked:{courseId:string; reason:UncheckedReason}[];; caveats:StudyPlanCaveat[]; }} StudyPlanCheck */
+/** @typedef {{ asOf:string; term:string; rulePack:{version:string; state:RulePackGate}; attempts:readonly LedgerAttempt[]; studyPlan:readonly unknown[]; courseCreditUnits:Readonly<Record<string, number>>; termRules:{creditCapUnits:number; capEvidenceRefs:readonly string[]; prerequisites?:readonly PrerequisiteRule[]}; sections?:readonly VerifiedSection[]; versions?:Partial<Record<'rulePack'|'plan'|'catalog'|'transcript', string>>; }} StudyPlanCheckRequest */
+/** @typedef {{ state:'READY'|'NEEDS_REVIEW'|'INSUFFICIENT_DATA'; asOf:string; term:string; versions:Partial<Record<'rulePack'|'plan'|'catalog'|'transcript', string>>; termLoadCreditUnits:number; creditCapUnits?:number; planIssues:PlanIssue[]; unchecked:{courseId:string; reason:UncheckedReason}[]; caveats:StudyPlanCaveat[]; }} StudyPlanCheck */
 import { OwnerWorkspaceValueSchema, } from '../../contracts/index.js';
 import { AS_OF, assertId, assertPositiveUnits, byCodeUnit, termEndMs } from './ledger.js';
 import { checkAcademicPlan } from './plan.js';
@@ -25,14 +25,14 @@ const REVIEW_CODES = new Set(['NEEDS_REVIEW', 'SEARCH_LIMIT_REVIEW']);
  */
 /**
  * @param {PlanIssue} issue
- * @returns {PlanIssue} 기능 결과
+ * @returns {PlanIssue}
  */
 function holdUnapproved(issue) {
     return issue.code === 'TIMETABLE_CONFLICT' ? { ...issue, code: 'NEEDS_REVIEW' } : issue;
 }
 /**
  * @param {readonly unknown[]} raw
- * @returns {StudyPlanItem[]} 기능 결과
+ * @returns {StudyPlanItem[]}
  */
 function readPlan(raw) {
     if (!Array.isArray(raw))
@@ -49,7 +49,7 @@ function readPlan(raw) {
 /**
  * @param {Readonly<Record<string, number>>} table
  * @param {string} courseId
- * @returns {number|undefined} 기능 결과
+ * @returns {number|undefined}
  */
 function credits(table, courseId) {
     if (!Object.prototype.hasOwnProperty.call(table, courseId))
@@ -60,7 +60,7 @@ function credits(table, courseId) {
 }
 /**
  * @param {StudyPlanCheckRequest} input
- * @returns {StudyPlanCheck} 기능 결과
+ * @returns {StudyPlanCheck}
  */
 export function simulateStudyPlan(input) {
     if (!AS_OF.test(input.asOf) || !Number.isFinite(Date.parse(input.asOf))) {

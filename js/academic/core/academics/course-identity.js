@@ -5,11 +5,11 @@
 /** @typedef {import("./ledger.js").LedgerRecognition} LedgerRecognition */
 /** @typedef {import("./ledger.js").LedgerSlot} LedgerSlot */
 /** @typedef {LedgerAttempt & {identity:'RESOLVED'}} ResolvedLedgerAttempt */
-/** @typedef {{ identity:'NEEDS_REVIEW';; attemptToken:string;; creditUnits:number;; ledger:LedgerSlot;; recognition:LedgerRecognition;; term?:string;; supersedesAttemptToken?:string;; retakeApprovalRef?:string; }} UnresolvedLedgerAttempt */
+/** @typedef {{ identity:'NEEDS_REVIEW'; attemptToken:string; creditUnits:number; ledger:LedgerSlot; recognition:LedgerRecognition; term?:string; supersedesAttemptToken?:string; retakeApprovalRef?:string; }} UnresolvedLedgerAttempt */
 /** @typedef {ResolvedLedgerAttempt | UnresolvedLedgerAttempt} IdentifiedLedgerAttempt */
 /** @typedef {Omit<AcademicLedgerRequest, 'attempts'> & { attempts:readonly IdentifiedLedgerAttempt[]; }} IdentifiedLedgerRequest */
-/** @typedef {{ attemptTokens:string[];; linkedAttemptTokens:string[];; affectedRequirementIds:string[]; }} UnresolvedCourseSummary */
-/** @typedef {{ audit:AcademicAuditVNext;; unresolved:UnresolvedCourseSummary; }} IdentifiedLedgerResult */
+/** @typedef {{ attemptTokens:string[]; linkedAttemptTokens:string[]; affectedRequirementIds:string[]; }} UnresolvedCourseSummary */
+/** @typedef {{ audit:AcademicAuditVNext; unresolved:UnresolvedCourseSummary; }} IdentifiedLedgerResult */
 import { AcademicAuditVNextSchema } from '../../contracts/index.js';
 import { assertId, assertUnits, buildAcademicLedger, termKey, } from './ledger.js';
 /**
@@ -27,7 +27,6 @@ const UNRESOLVED_KEYS = new Set([
 const MAX_EXCLUDED = 150;
 /**
  * @param {UnresolvedLedgerAttempt} row
- * @returns {void} 기능 결과
  */
 function checkUnresolved(row) {
     assertId(row.attemptToken, 'attemptToken');
@@ -63,7 +62,7 @@ function checkUnresolved(row) {
  */
 /**
  * @param {IdentifiedLedgerRequest} input
- * @returns {IdentifiedLedgerResult} 기능 결과
+ * @returns {IdentifiedLedgerResult}
  */
 export function buildLedgerWithCourseIdentity(input) {
     if (!Array.isArray(input.attempts))

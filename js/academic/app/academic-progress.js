@@ -20,7 +20,7 @@ const text = (tag, value) => {
     return node;
 };
 /**
- * @returns {ScenarioId} 기능 결과
+ * @returns {ScenarioId}
  */
 function selected() {
     const active = document.querySelector('input[name="scenario"]:checked')?.value;
@@ -29,12 +29,9 @@ function selected() {
     return 'A';
 }
 /**
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 function today() { return new Date().toISOString(); }
-/**
- * @returns {void} 기능 결과
- */
 function renderRecords() {
     const tbody = get('record-rows');
     tbody.replaceChildren();
@@ -68,7 +65,6 @@ function renderRecords() {
 }
 /**
  * @param {string} asOf
- * @returns {void} 기능 결과
  */
 function renderTermChoices(asOf) {
     const select = get('plan-term');
@@ -84,9 +80,6 @@ function renderTermChoices(asOf) {
     if (terms.includes(previous))
         select.value = previous;
 }
-/**
- * @returns {void} 기능 결과
- */
 function renderPlanRows() {
     const root = get('plan-rows');
     root.replaceChildren();
@@ -116,7 +109,6 @@ function renderPlanRows() {
  * @param {HTMLElement} root
  * @param {string} label
  * @param {number} units
- * @returns {void} 기능 결과
  */
 function addMetric(root, label, units) {
     const card = document.createElement('div');
@@ -126,9 +118,6 @@ function addMetric(root, label, units) {
     card.append(text('span', '검수된 졸업요건과 무관한 자가 입력 학점'));
     root.append(card);
 }
-/**
- * @returns {void} 기능 결과
- */
 function renderAll() {
     renderRecords();
     renderPlanRows();

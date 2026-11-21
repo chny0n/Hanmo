@@ -4,15 +4,15 @@
 /** @typedef {import("./ledger.js").LedgerRequirement} LedgerRequirement */
 /** @typedef {import("./ledger.js").RulePackGate} RulePackGate */
 /** @typedef {() => number} Rng */
-/** @typedef {AcademicLedgerRequest & { attempts:LedgerAttempt[];; requirements:LedgerRequirement[]; }} Case */
-/** @typedef {{ state:string;; earned:number;; inProgress:number;; planned:number;; pending:number;; areas:Record<string, [number, number]>;; excluded:Record<string, string>;; rows:Record<string, {state:string; earned?:number; remaining?:number; matched?:number; projected?:number; areasMatched?:number; groupsMatched?:number}>; }} ModelResult */
+/** @typedef {AcademicLedgerRequest & { attempts:LedgerAttempt[]; requirements:LedgerRequirement[]; }} Case */
+/** @typedef {{ state:string; earned:number; inProgress:number; planned:number; pending:number; areas:Record<string, [number, number]>; excluded:Record<string, string>; rows:Record<string, {state:string; earned?:number; remaining?:number; matched?:number; projected?:number; areasMatched?:number; groupsMatched?:number}>; }} ModelResult */
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildAcademicLedger } from './ledger.js';
 /**
  * @param {number} seed
- * @returns {Rng} 기능 결과
+ * @returns {Rng}
  */
 function mulberry32(seed) {
     let a = seed >>> 0;
@@ -34,7 +34,7 @@ const STATES = ['APPROVED', 'APPROVED', 'APPROVED', 'DRAFT', 'NEEDS_REVIEW', 'MI
 /**
  * @param {Rng} rng
  * @param {number} size
- * @returns {Case} 기능 결과
+ * @returns {Case}
  */
 function genCase(rng, size) {
     const attempts = [];
@@ -99,7 +99,7 @@ const order = (term) => Number(term.slice(0, 4)) * 4 + SEASON[term.slice(5)];
 /** 한국시간 학기 성적 인정 시작 시각: 1학기→7/1, 여름→9/1, 2학기→다음 해 1/1, 겨울→다음 해 3/1. */
 /**
  * @param {string} term
- * @returns {number} 기능 결과
+ * @returns {number}
  */
 function endsAt(term) {
     const year = Number(term.slice(0, 4));
@@ -108,7 +108,7 @@ function endsAt(term) {
 }
 /**
  * @param {Case} c
- * @returns {ModelResult} 기능 결과
+ * @returns {ModelResult}
  */
 export function referenceLedger(c) {
     const asOf = Date.parse(c.asOf);
@@ -264,7 +264,7 @@ export function referenceLedger(c) {
 /**
  * @param {Extract<LedgerRequirement, {kind:'AREA_SPREAD'}>} r
  * @param {ReadonlyMap<string, LedgerAttempt>} winners
- * @returns {ModelResult['rows'][string]} 기능 결과
+ * @returns {ModelResult['rows'][string]}
  */
 function spreadModel(r, winners) {
     const allowed = new Set(r.areaIds);
@@ -302,7 +302,7 @@ function spreadModel(r, winners) {
 }
 /**
  * @param {Case} c
- * @returns {ModelResult} 기능 결과
+ * @returns {ModelResult}
  */
 function project(c) {
     const out = buildAcademicLedger(c);
@@ -332,7 +332,7 @@ const SEEDS = process.env.LEDGER_PROP_SEED !== undefined
 /**
  * @param {Case} c
  * @param {(x:Case) => boolean} fails
- * @returns {Case} 기능 결과
+ * @returns {Case}
  */
 function shrink(c, fails) {
     let cur = c;
@@ -369,7 +369,7 @@ const inputHash = (c) => createHash('sha256').update(JSON.stringify(canonical(c)
  * @param {number} seed
  * @param {Case} original
  * @param {Case} small
- * @returns {string} 기능 결과
+ * @returns {string}
  */
 export function failureReport(name, problem, seed, original, small) {
     return [`property "${name}" failed: ${problem}`,
@@ -384,7 +384,6 @@ export function failureReport(name, problem, seed, original, small) {
  * @param {number} size
  * @param {(c:Case, rng:Rng) => string|null} prop
  * @param {readonly number[]} [seeds]
- * @returns {void} 기능 결과
  */
 function forAll(name, size, prop, seeds = SEEDS) {
     for (const seed of seeds) {
@@ -418,7 +417,7 @@ const sortKeys = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => 
 /**
  * @param {ModelResult} want
  * @param {ModelResult} got
- * @returns {string|null} 기능 결과
+ * @returns {string|null}
  */
 function explain(want, got) {
     const lines = [];
@@ -621,7 +620,7 @@ function linkShapes(c) {
 /**
  * @param {Case} c
  * @param {Rng} rng
- * @returns {Case} 기능 결과
+ * @returns {Case}
  */
 function withComposite(c, rng) {
     const requirements = [...c.requirements];
@@ -812,7 +811,7 @@ const SPREAD_AREAS = ['SYN-S1', 'SYN-S2', 'SYN-S3', 'SYN-S4', 'SYN-S5', 'SYN-S6'
 /** 서로 다른 인정 과목이며 재수강 링크가 없고 여러 영역에 걸쳐 있어 영역 분배 계산이 복잡한 사례다. */
 /**
  * @param {Rng} rng
- * @returns {Case} 기능 결과
+ * @returns {Case}
  */
 function genSpreadCase(rng) {
     const attempts = [];
@@ -833,7 +832,7 @@ function genSpreadCase(rng) {
 /**
  * @param {number} count
  * @param {number} minAreas
- * @returns {Case} 기능 결과
+ * @returns {Case}
  */
 function triangles(count, minAreas) {
     const attempts = [];
