@@ -1,4 +1,5 @@
-import {OfferingOutlookVNextSchema, type OfferingOutlookVNext} from '../../contracts/index.js';
+// @ts-check
+import {OfferingOutlookVNextSchema} from '../../contracts/index.js';
 
 /**
  * 학생이 가정한 과목 개설·미개설 시나리오를 공식/과거 전망과 별도 계층으로 계산한다(설계 A09).
@@ -11,55 +12,46 @@ export const OFFERING_SCENARIO_CORE_VERSION = 'forecast-offering-scenario-v1';
 const ID = /^[A-Za-z0-9_.:-]{1,128}$/;
 const MAX_BASE = 20;
 const MAX_ASSUMPTIONS = 20;
-const NOT_OFFERED_REASONS = ['RESEARCH_LEAVE', 'NO_REPLACEMENT_SECTION', 'CANCELLATION', 'OTHER'] as const;
-const OFFERED_REASONS = ['NEW_SECTION', 'OTHER'] as const;
+const NOT_OFFERED_REASONS = /** @type {const} */ (['RESEARCH_LEAVE', 'NO_REPLACEMENT_SECTION', 'CANCELLATION', 'OTHER']);
+const OFFERED_REASONS = /** @type {const} */ (['NEW_SECTION','OTHER']);
 
-export type OfferingAssumption =
-  | {assumptionId:string; courseId:string; targetTerm:string; assume:'NOT_OFFERED'; reason:typeof NOT_OFFERED_REASONS[number]}
-  | {assumptionId:string; courseId:string; targetTerm:string; assume:'OFFERED'; reason:typeof OFFERED_REASONS[number]};
-
-export interface OfferingScenarioRequest {
-  /** forecastOffering이 산출한 원본 전망이며 과목·대상 학기당 한 건이다. */
-  base:readonly OfferingOutlookVNext[];
-  assumptions:readonly OfferingAssumption[];
-}
-
-export interface OfferingScenarioRow {
-  layer:'HYPOTHETICAL';
-  assumptionId:string;
-  courseId:string;
-  targetTerm:string;
-  assume:'OFFERED'|'NOT_OFFERED';
-  reason:OfferingAssumption['reason'];
-  /** 학생 가정 옆에 보여줄 원본 전망의 상태다. */
-  baseSignal:OfferingOutlookVNext['signal'];
-  /** 가정이 대상 학기의 공식 확정 상태와 반대인지 나타낸다. */
-  contradictsOfficial:boolean;
-  /** 원본 전망에서 공식 승인된 대체과목만 담는다. 미개설 가정일 때에만 표시한다. */
-  officialAlternatives:{courseId:string; evidenceRef:string}[];
-  caveat:string;
-}
-
-export interface OfferingScenarioResult {
-  coreVersion:typeof OFFERING_SCENARIO_CORE_VERSION;
-  /** 입력 전망을 변경하지 않은 복사본으로 입력 순서를 유지한다. */
-  base:OfferingOutlookVNext[];
-  /** 가정마다 결과 한 행을 만들고 과목·학기·가정 ID 순으로 정렬한다. */
-  scenario:OfferingScenarioRow[];
-}
+/** @typedef {import('../../contracts/index.js').OfferingOutlookVNext} OfferingOutlookVNext */
+/**
+ * @typedef {{assumptionId:string,courseId:string,targetTerm:string,assume:'NOT_OFFERED',reason:typeof NOT_OFFERED_REASONS[number]}|{assumptionId:string,courseId:string,targetTerm:string,assume:'OFFERED',reason:typeof OFFERED_REASONS[number]}} OfferingAssumption
+ */
+/**
+ * @typedef {{base:readonly OfferingOutlookVNext[],assumptions:readonly OfferingAssumption[]}} OfferingScenarioRequest
+ * 개설 전망 원본과 학생이 직접 설정한 가정의 입력 계약이다.
+ */
+/**
+ * @typedef {{
+ * layer:'HYPOTHETICAL',assumptionId:string,courseId:string,targetTerm:string,assume:'OFFERED'|'NOT_OFFERED',
+ * reason:OfferingAssumption['reason'],baseSignal:OfferingOutlookVNext['signal'],contradictsOfficial:boolean,
+ * officialAlternatives:{courseId:string,evidenceRef:string}[],caveat:string
+ * }} OfferingScenarioRow
+ * 확정 자료와 가정이 충돌하더라도 원본 전망은 변경하지 않는다.
+ */
+/**
+ * @typedef {{coreVersion:typeof OFFERING_SCENARIO_CORE_VERSION,base:OfferingOutlookVNext[],scenario:OfferingScenarioRow[]}} OfferingScenarioResult
+ * 원본 순서와 가정 정렬 결과를 별도로 반환한다.
+ */
 
 const CAVEAT_NOT_OFFERED = '학생이 정한 가정입니다. 이 과목이 이 학기에 열리지 않는다고 놓고 본 결과이며, 공식 개설 정보나 예측이 아닙니다.';
 const CAVEAT_OFFERED = '학생이 정한 가정입니다. 이 과목이 이 학기에 열린다고 놓고 본 결과이며, 공식 개설 정보나 예측이 아닙니다.';
 const CAVEAT_CONTRADICTS = ' 공식 자료로 확인된 상태와 반대되는 가정입니다.';
 
-const key = (courseId:string, targetTerm:string) => JSON.stringify([courseId, targetTerm]);
-const byCodeUnit = (a:string, b:string) => (a < b ? -1 : a > b ? 1 : 0);
+/** @param {string} courseId @param {string} targetTerm @returns {string} 과목·학기 고유 키 */
+const key=(courseId,targetTerm)=> JSON.stringify([courseId, targetTerm]);
+/** @param {string} a @param {string} b @returns {number} 식별자 정렬 순서 */
+const byCodeUnit=(a,b)=> (a < b ? -1 : a > b ? 1 : 0);
 
-function assertId(value:unknown, label:string):asserts value is string {
+/** @param {unknown} value @param {string} label @returns {void} 식별자 검증 */
+function assertId(value,label) {
   if (typeof value !== 'string' || !ID.test(value)) throw new TypeError(`${label} must match ${ID}; refused ${String(value)}`);
 }
 
-export function applyOfferingAssumptions(input:OfferingScenarioRequest):OfferingScenarioResult {
+/** @param {OfferingScenarioRequest} input @returns {OfferingScenarioResult} 가정을 공식 전망과 분리한 계산 결과 */
+export function applyOfferingAssumptions(input) {
   if (!Array.isArray(input.base) || !Array.isArray(input.assumptions)) {
     throw new TypeError('base and assumptions must be arrays');
   }
@@ -68,25 +60,29 @@ export function applyOfferingAssumptions(input:OfferingScenarioRequest):Offering
 
   // 스키마 검증으로 원본과 출력 데이터를 독립적으로 복사한다. 어느 한쪽을 수정해도 다른 쪽에 영향을 주지 않는다.
   const base = input.base.map(outlook => OfferingOutlookVNextSchema.parse(outlook));
-  const outlooks = new Map<string, OfferingOutlookVNext>();
+  /** @type {Map<string,OfferingOutlookVNext>} */
+  const outlooks=new Map();
   for (const outlook of base) {
     const at = key(outlook.courseId, outlook.targetTerm);
     if (outlooks.has(at)) throw new TypeError(`two base outlooks for ${outlook.courseId} ${outlook.targetTerm}`);
     outlooks.set(at, outlook);
   }
 
-  const ids = new Set<string>();
-  const assumed = new Set<string>();
-  const scenario = input.assumptions.map((assumption):OfferingScenarioRow => {
+  /** @type {Set<string>} */
+  const ids=new Set();
+  /** @type {Set<string>} */
+  const assumed=new Set();
+  /** @type {OfferingScenarioRow[]} */
+  const scenario = input.assumptions.map((assumption) => {
     assertId(assumption.assumptionId, 'assumptionId');
     if (ids.has(assumption.assumptionId)) throw new TypeError(`duplicate assumption ${assumption.assumptionId}`);
     ids.add(assumption.assumptionId);
     if (assumption.assume === 'NOT_OFFERED') {
-      if (!(NOT_OFFERED_REASONS as readonly string[]).includes(assumption.reason)) {
+      if (!(/** @type {readonly string[]} */ (NOT_OFFERED_REASONS)).includes(assumption.reason)) {
         throw new TypeError(`reason ${String(assumption.reason)} does not fit NOT_OFFERED`);
       }
     } else if (assumption.assume === 'OFFERED') {
-      if (!(OFFERED_REASONS as readonly string[]).includes(assumption.reason)) {
+      if (!(/** @type {readonly string[]} */ (OFFERED_REASONS)).includes(assumption.reason)) {
         throw new TypeError(`reason ${String(assumption.reason)} does not fit OFFERED`);
       }
     } else {
