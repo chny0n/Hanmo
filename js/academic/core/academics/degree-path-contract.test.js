@@ -39,7 +39,7 @@ const run=(current,scenario,catalog=programs())=>
   buildMajorWhatIf({asOf:AS_OF,attempts:[],current,scenario,programs:catalog});
 
 describe('What-if consumes the canonical degree-path contract (#231)',()=>{
-  it.each([
+  it.each(/** @type {const} */ ([
     {current:{primaryProgramId:'SYN-A'},scenario:{action:'ADD_DOUBLE_MAJOR',targetMajorId:'SYN-B'},before:'ADVANCED_SINGLE',after:'DOUBLE_MAJOR'},
     {current:{primaryProgramId:'SYN-A'},scenario:{action:'ADD_MINOR',targetMajorId:'SYN-B'},before:'ADVANCED_SINGLE',after:'ADVANCED_PLUS_MINOR'},
     {current:{primaryProgramId:'SYN-A'},scenario:{action:'CHANGE_PRIMARY_MAJOR',targetMajorId:'SYN-C'},before:'ADVANCED_SINGLE',after:'ADVANCED_SINGLE'},
@@ -47,7 +47,7 @@ describe('What-if consumes the canonical degree-path contract (#231)',()=>{
     {current:{primaryProgramId:'SYN-A',secondary:{role:'MINOR',programId:'SYN-B'}},scenario:{action:'REMOVE_MINOR'},before:'ADVANCED_PLUS_MINOR',after:'ADVANCED_SINGLE'},
     {current:{primaryProgramId:'SYN-A',secondary:{role:'DOUBLE_MAJOR',programId:'SYN-B'}},scenario:{action:'CHANGE_DOUBLE_MAJOR',targetMajorId:'SYN-C'},before:'DOUBLE_MAJOR',after:'DOUBLE_MAJOR'},
     {current:{primaryProgramId:'SYN-A',secondary:{role:'MINOR',programId:'SYN-B'}},scenario:{action:'CHANGE_MINOR',targetMajorId:'SYN-C'},before:'ADVANCED_PLUS_MINOR',after:'ADVANCED_PLUS_MINOR'},
-  ] /* 정해진 시나리오를 변경하지 않는다 */)('$scenario.action returns only canonical degree paths',({current,scenario,before,after})=>{
+  ]))('$scenario.action returns only canonical degree paths',({current,scenario,before,after})=>{
     const value=run(current,scenario);
     expect(value.state).toBe('READY');
     if(value.state!=='READY')throw new Error('Synthetic approved programs should be usable');
