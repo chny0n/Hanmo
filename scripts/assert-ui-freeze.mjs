@@ -8,7 +8,10 @@ const baseline=JSON.parse(readFileSync(resolve(root,'scripts/baselines/ui-freeze
 function list(dir,prefix=''){
   return readdirSync(dir,{withFileTypes:true}).flatMap(x=>{
     const path=prefix?prefix+'/'+x.name:x.name;
-    if(x.isDirectory())return list(join(dir,x.name),path);
+    if(x.isDirectory()){
+      if(['.git','node_modules','dist','.build','coverage','.cache'].includes(x.name))return [];
+      return list(join(dir,x.name),path);
+    }
     return x.isFile()?[path]:[];
   });
 }

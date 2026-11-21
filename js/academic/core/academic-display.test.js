@@ -1,8 +1,13 @@
+// @ts-check
 import {describe,expect,it} from 'vitest';
-import type {AcademicAgendaItem} from './academic-schedule.js';
 import {academicSourceLink,selectedMajors,studentDeadlineDisplay} from './academic-display.js';
+/** @typedef {import('./academic-schedule.js').AcademicAgendaItem} AcademicAgendaItem */
 
-const sample=(overrides:Partial<AcademicAgendaItem>={}):AcademicAgendaItem=>({
+/**
+ * @param {Partial<AcademicAgendaItem>} [overrides]
+ * @returns {AcademicAgendaItem}
+ */
+const sample=(overrides={})=>({
   event:{
     id:'TEST',revision:'r1',title:'학사 공지',type:'GRADUATION_EXAM',
     state:'ACTIVE',studentActionRequired:true,

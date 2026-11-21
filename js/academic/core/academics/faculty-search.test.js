@@ -1,8 +1,15 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {searchFacultyTimetable} from './faculty-search.js';
-import type {FacultyTimetableRow} from './faculty-directory.js';
+/** @typedef {import('./faculty-directory.js').FacultyTimetableRow} FacultyTimetableRow */
 
-function row(rawCode:string,title:string,instructor:string|null):FacultyTimetableRow{
+/**
+ * @param {string} rawCode
+ * @param {string} title
+ * @param {string|null} instructor
+ * @returns {FacultyTimetableRow}
+ */
+function row(rawCode,title,instructor){
   return {
     no:1,area:'MAJOR',areaLabel:'전공',gradeYear:2,rawCode,
     code:{status:'NEEDS_REVIEW'},title,attributes:[],instructionLanguage:null,
