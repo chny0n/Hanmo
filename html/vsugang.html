@@ -109,7 +109,10 @@
 								수강신청의 전 과정을 연습할 수 있어요.
 							</p>
 						</div>
-						<button id="incident-options" type="button" aria-haspopup="dialog" aria-controls="scenario-settings"><span class="mode-tile-title">돌발상황</span></button>
+						<button id="incident-options" type="button" aria-haspopup="dialog" aria-controls="scenario-settings" aria-labelledby="incident-options-title" aria-describedby="incident-options-description">
+							<span class="mode-tile-title" id="incident-options-title">돌발상황</span>
+							<span class="mode-tile-description" id="incident-options-description">BASIC MODE에서 연습할 돌발상황을 선택해요.</span>
+						</button>
 						<div style='grid-area: t' onclick='goPractice(2)'>
 							<h2>
 								TIME MODE

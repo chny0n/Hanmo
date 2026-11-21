@@ -8,17 +8,20 @@ body.hanmo-vsugang .f-dirt-down{position:absolute;top:calc((100% - var(--vsugang
 body.hanmo-vsugang .titleContainer{top:0;margin:0}
 body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
 body.hanmo-vsugang .grid{margin-top:0}
+body.hanmo-vsugang .grid > :is(.setting,#incident-options){border:1px solid #000912;background:#06111c;transition:0.3s}
+body.hanmo-vsugang .grid:has(:hover) > :is(.setting,#incident-options):not(:hover){background:#000a13}
 /* BASIC의 오른쪽 아래 칸을 독립 버튼으로 덮는다. */
 body.hanmo-vsugang #incident-options{
-  grid-area:2 / 2 / 3 / 3;z-index:1;display:flex;align-items:flex-start;
-  padding:0;border:1px solid #274457;background:#112637;color:inherit;text-align:left;cursor:pointer;
+  grid-area:2 / 2 / 3 / 3;z-index:1;display:flex;flex-direction:column;align-items:flex-start;
+  padding:0;color:inherit;text-align:left;cursor:pointer;
 }
 body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){margin:5px 20px;font-size:40px;font-weight:100;line-height:normal}
-body.hanmo-vsugang #incident-options:hover{background:#18394d}
+body.hanmo-vsugang .grid .mode-tile-description{margin:0 20px;font-size:12px}
 body.hanmo-vsugang #incident-options:focus-visible{outline:3px solid #ffcf76;outline-offset:-4px}
 @media(max-width:1000px){
   body.hanmo-vsugang .grid{grid-template-rows:repeat(4,200px);grid-template-areas:"b b" "b b" "s t" "set t"}
   body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:36px}
+  body.hanmo-vsugang .grid .mode-tile-description{display:none}
 }
 body.hanmo-vsugang .f-dirt-up{position:absolute;bottom:0;left:0;right:0;box-sizing:border-box;width:100%;height:auto;min-height:0;max-height:35%}
 /* SETTING은 상단 메뉴 아래에 표시하고 내부에서 스크롤한다. */
@@ -34,6 +37,6 @@ body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-down{position:relative;top:aut
 body.hanmo-vsugang.vsugang-compact-scroll .container{width:100%;margin-top:15px}
 body.hanmo-vsugang.vsugang-compact-scroll .grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(110px,auto));grid-template-areas:"b b" "b b" "s t" "set t"}
 body.hanmo-vsugang.vsugang-compact-scroll .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:clamp(20px,4vw,32px)}
-body.hanmo-vsugang.vsugang-compact-scroll .grid p{display:none}
+body.hanmo-vsugang.vsugang-compact-scroll .grid :is(p,.mode-tile-description){display:none}
 body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-up{display:none}
 body.hanmo-vsugang.vsugang-compact-scroll main:has(#incident-practice:not([hidden])){overflow:hidden}

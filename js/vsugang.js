@@ -2,6 +2,7 @@
 // 이벤트 연결 방식을 바꿀 때는 별도 PR에서 회귀 테스트를 수행한다.
 const printValue=document.getElementsByClassName('printValue')[0];
 const setting=document.getElementsByClassName('setting')[0];
+const incidentOptions=document.querySelector('#incident-options');
 const settingSection=document.getElementsByClassName('settingSection')[0];
 const psugangInput=document.getElementsByClassName('psugangVal')[0];
 const vsugangInput=document.getElementsByClassName('vsugangVal')[0];
@@ -20,7 +21,9 @@ function setValue(){
   const requested=Number(localStorage.getItem('subjectValue'));
   const waiting=localStorage.getItem('waitingValue');
   isSettedValue=validSetting(preselected,requested,waiting);
-  setting.style.background=isSettedValue?'#001203':'#120000';
+  const background=isSettedValue?'#001203':'#120000';
+  setting.style.background=background;
+  if(incidentOptions)incidentOptions.style.background=background;
   if(isSettedValue){
     printValue.innerText='올바른 설정값이 들어갔어요.';
     printValue.style.color='white';

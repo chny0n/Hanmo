@@ -65,7 +65,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "7be88b045dc7c7e93dde2d48f58d16d9606898f2"
+      "sha": "1d1b6108724b4e4dc199fe924edc00b59156a56d"
     },
     {
       "path": "css/vsugang.css",
@@ -113,7 +113,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "67f0bfd890c59a6900fdaf13d0535e793ab933a6"
+      "sha": "1665157a367d529bec3cdd54720a5150da539b3f"
     },
     {
       "path": "img/background.svg",
@@ -233,7 +233,7 @@
     },
     {
       "path": "js/vsugang.js",
-      "sha": "e5c8a9466fb1cf78b10af0bdcfcf2c3c8c426e6a"
+      "sha": "f4315d7c416635423f65fc1b8f12346c340783d7"
     }
   ]
 }
