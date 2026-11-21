@@ -1,51 +1,62 @@
-import {buildAcademicLedger,type LedgerAttempt,type ExclusionReason} from '../core/academics/ledger.js';
-import type {AcademicAuditVNext} from '../contracts/index.js';
+// @ts-check
+import {buildAcademicLedger} from '../core/academics/ledger.js';
+/** @typedef {import('../core/academics/ledger.js').LedgerAttempt} LedgerAttempt */
+/** @typedef {import('../core/academics/ledger.js').ExclusionReason} ExclusionReason */
+/** @typedef {import('../contracts/index.js').AcademicAuditVNext} AcademicAuditVNext */
 
 /**
  * #63 학생용 로컬 입력. 학칙·분반·성적표의 공적 검수는 없고,
- * 입력된 학점의 고유 합산에만 기존 TypeScript 원장 코어를 재사용한다.
+ * 입력된 학점의 고유 합산에만 기존 학업 원장 계산 코어를 재사용한다.
  */
-export type StudentSlot='EARNED'|'IN_PROGRESS';
-export type ScenarioId='A'|'B'|'C';
-export interface StudentCourse {courseId:string;credits:number;term:string;slot:StudentSlot}
-export interface StudentPlanCourse {courseId:string;credits:number;term:string}
-export const SCENARIO_TERMS:Readonly<Record<ScenarioId,number>>={A:2,B:3,C:4};
+/** @typedef {'EARNED'|'IN_PROGRESS'} StudentSlot */
+/** @typedef {'A'|'B'|'C'} ScenarioId */
+/** @typedef {{courseId:string,credits:number,term:string,slot:StudentSlot}} StudentCourse */
+/** @typedef {{courseId:string,credits:number,term:string}} StudentPlanCourse */
+/** @type {Readonly<Record<ScenarioId,number>>} */
+export const SCENARIO_TERMS={A:2,B:3,C:4};
 export const MAX_COURSES=60;
 const CODE=/^[A-Za-z0-9_.:-]{1,128}$/;
 const TERM=/^20\d{2}-[12]$/;
 const OFFSET=/(?:Z|[+-]\d{2}:\d{2})$/;
 
-function asOfTime(value:string):number {
+/** @param {string} value @returns {number} 검증한 조회 시각 */
+function asOfTime(value) {
   const time=Date.parse(value);
   if(!OFFSET.test(value)||!Number.isFinite(time))throw new RangeError('조회 기준 시각을 확인해 주세요.');
   return time;
 }
-function courseCode(raw:unknown):string {
+/** @param {unknown} raw @returns {string} 검증된 학수번호 */
+function courseCode(raw) {
   if(typeof raw!=='string'||!CODE.test(raw.trim()))throw new RangeError('학수번호는 영문·숫자·.-_: 문자로 입력해 주세요.');
   return raw.trim();
 }
-function academicTerm(raw:unknown):string {
+/** @param {unknown} raw @returns {string} 검증된 정규학기 */
+function academicTerm(raw) {
   if(typeof raw!=='string'||!TERM.test(raw))throw new RangeError('학기는 2027-1 또는 2027-2 형식으로 입력해 주세요.');
   return raw;
 }
-export function creditUnits(raw:unknown):number {
+/** @param {unknown} raw @returns {number} 반 학점 단위로 표시한 값 */
+export function creditUnits(raw) {
   if(typeof raw!=='number'||!Number.isFinite(raw)||raw<0.5||raw>30
     ||!Number.isSafeInteger(raw*2))throw new RangeError('학점은 0.5~30 사이에서 0.5학점 단위로 입력해 주세요.');
   return raw*2;
 }
-export function normalizeStudentCourse(raw:StudentCourse):StudentCourse {
+/** @param {StudentCourse} raw @returns {StudentCourse} 검증한 로컬 이수 기록 */
+export function normalizeStudentCourse(raw) {
   const slot=raw.slot;
   if(slot!=='EARNED'&&slot!=='IN_PROGRESS')throw new RangeError('취득 또는 수강 중을 선택해 주세요.');
   return {courseId:courseCode(raw.courseId),credits:creditUnits(raw.credits)/2,
     term:academicTerm(raw.term),slot};
 }
-export function normalizePlanCourse(raw:StudentPlanCourse):StudentPlanCourse {
+/** @param {StudentPlanCourse} raw @returns {StudentPlanCourse} 검증한 계획 기록 */
+export function normalizePlanCourse(raw) {
   return {courseId:courseCode(raw.courseId),credits:creditUnits(raw.credits)/2,
     term:academicTerm(raw.term)};
 }
 
 /** KST 기준으로 다음 정규학기부터 연속한 2~4개 학기만 후보로 제공한다. */
-export function upcomingTerms(asOf:string,length=4):string[] {
+/** @param {string} asOf @param {number} [length] @returns {string[]} 한국시간의 다음 정규학기 */
+export function upcomingTerms(asOf,length=4) {
   asOfTime(asOf);
   if(!Number.isInteger(length)||length<2||length>4)throw new RangeError('계획 기간은 2~4학기입니다.');
   const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'numeric'})
@@ -53,34 +64,30 @@ export function upcomingTerms(asOf:string,length=4):string[] {
   let year=Number(parts.find(x=>x.type==='year')?.value);
   const month=Number(parts.find(x=>x.type==='month')?.value);
   if(!Number.isInteger(year)||!Number.isInteger(month))throw new Error('한국시간을 확인할 수 없습니다.');
-  let semester:1|2=month>=9?1:month>=3?2:1;
+  /** @type {1|2} */
+  let semester=month>=9?1:month>=3?2:1;
   if(month>=9)year++;
-  const terms:string[]=[];
+  /** @type {string[]} */
+  const terms=[];
   for(let i=0;i<length;i++){
     terms.push(`${year}-${semester}`);
     if(semester===1)semester=2;else{semester=1;year++;}
   }
   return terms;
 }
-export interface ProvisionalScenario {
-  audit:AcademicAuditVNext;
-  terms:readonly string[];
-  scenario:ScenarioId;
-  rows:readonly StudentPlanCourse[];
-  /** 졸업요건·분반 승인 정보 부재로 확정 판정을 제공하지 않는다. */
-  officialDecisionAvailable:false;
-}
-
-/** 학생 입력에서 빠진 과목을 공식 이수 판정과 혼동하지 않도록 사유와 다음 행동을 설명한다. */
-export interface ProvisionalExcludedRow {
-  origin:'record'|'plan';
-  courseId:string;
-  term:string;
-  reason:ExclusionReason;
-  explanation:string;
-  nextAction:string;
-}
-const EXCLUSION_HELP:Record<ExclusionReason,{explanation:string;nextAction:string}>={
+/**
+ * @typedef {{
+ *    audit:AcademicAuditVNext,terms:readonly string[],scenario:ScenarioId,rows:readonly StudentPlanCourse[],
+ *    officialDecisionAvailable:false
+ * }} ProvisionalScenario
+ * 학교의 승인된 요건·분반 검수 자료가 없어 공식 졸업 판정을 제공하지 않는다.
+ */
+/**
+ * @typedef {{origin:'record'|'plan',courseId:string,term:string,reason:ExclusionReason,explanation:string,nextAction:string}} ProvisionalExcludedRow
+ * 미반영 과목의 사유와 학생이 확인할 조치를 함께 안내한다.
+ */
+/** @type {Record<ExclusionReason,{explanation:string,nextAction:string}>} */
+const EXCLUSION_HELP={
   DUPLICATE:{
     explanation:'같은 학수번호의 다른 기록이 이미 고유 학점에 반영되어 중복 합산하지 않았습니다.',
     nextAction:'취득·수강 중·계획 입력을 비교하고, 공식 재수강/대체 인정은 학교 원문에서 확인하세요.',
@@ -102,9 +109,8 @@ const EXCLUSION_HELP:Record<ExclusionReason,{explanation:string;nextAction:strin
     nextAction:'재수강 인정 학기와 승인 근거를 공식 자료에서 확인하세요.',
   },
 };
-export function explainProvisionalExclusions(
-  result:ProvisionalScenario,records:readonly StudentCourse[],
-):ProvisionalExcludedRow[] {
+/** @param {ProvisionalScenario} result @param {readonly StudentCourse[]} records @returns {ProvisionalExcludedRow[]} 보류된 이수 기록의 설명 */
+export function explainProvisionalExclusions(result,records) {
   return result.audit.excludedAttempts.map(({attemptToken,reason})=>{
     const origin=attemptToken.startsWith('LOCAL:')?'record':'plan';
     const prefix=origin==='record'?'LOCAL:':`SCENARIO:${result.scenario}:`;
@@ -118,14 +124,10 @@ export function explainProvisionalExclusions(
   });
 }
 
-/** 제외된 계획 과목은 해당 학기 학점에 포함하지 않는다. 공식 분반/학칙 검사는 수행하지 않는다. */
-export interface ProvisionalTermCredits {
-  term:string;
-  countedCreditUnits:number;
-  countedCourses:number;
-  excludedCourses:number;
-}
-export function provisionalTermBreakdown(result:ProvisionalScenario):ProvisionalTermCredits[] {
+/** @typedef {{term:string,countedCreditUnits:number,countedCourses:number,excludedCourses:number}} ProvisionalTermCredits */
+/** 제외된 계획 과목은 해당 학기 학점에 합산하지 않고 공식 분반/학칙 검사는 하지 않는다. */
+/** @param {ProvisionalScenario} result @returns {ProvisionalTermCredits[]} 학기별 계획 학점 */
+export function provisionalTermBreakdown(result) {
   const excluded=new Set(result.audit.excludedAttempts.map(row=>row.attemptToken));
   const totals=result.terms.map(term=>{
     let countedCreditUnits=0,countedCourses=0,excludedCourses=0;
@@ -145,10 +147,11 @@ export function provisionalTermBreakdown(result:ProvisionalScenario):Provisional
   return totals;
 }
 
-export function compareProvisionalScenario(input:{
-  asOf:string;scenario:ScenarioId;records:readonly StudentCourse[];
-  plans:readonly StudentPlanCourse[];
-}):ProvisionalScenario {
+/**
+ * @param {{asOf:string,scenario:ScenarioId,records:readonly StudentCourse[],plans:readonly StudentPlanCourse[]}} input
+ * @returns {ProvisionalScenario} 승인되지 않은 자료를 보류하는 학업 계획 비교 결과
+ */
+export function compareProvisionalScenario(input) {
   asOfTime(input.asOf);
   const count=SCENARIO_TERMS[input.scenario];
   if(!count)throw new RangeError('A, B, C 중 계획을 선택해 주세요.');
@@ -157,23 +160,24 @@ export function compareProvisionalScenario(input:{
   const planned=input.plans.map(normalizePlanCourse);
   if(planned.some(row=>!terms.includes(row.term)))throw new RangeError('선택한 계획 기간 밖의 학기가 있습니다.');
   const recorded=input.records.map(normalizeStudentCourse);
-  const attempts:LedgerAttempt[]=[
+  /** @type {LedgerAttempt[]} */
+  const attempts=[
     ...recorded.map((row,i)=>({
       attemptToken:`LOCAL:${i+1}`,canonicalCourseId:row.courseId,
       creditUnits:creditUnits(row.credits),ledger:row.slot,
-      areaIds:[],recognition:'RECOGNIZED' as const,term:row.term,
+      areaIds:[],recognition:/** @type {const} */ ('RECOGNIZED'),term:row.term,
     })),
     ...planned.map((row,i)=>({
       attemptToken:`SCENARIO:${input.scenario}:${i+1}`,canonicalCourseId:row.courseId,
-      creditUnits:creditUnits(row.credits),ledger:'PLANNED' as const,
-      areaIds:[],recognition:'RECOGNIZED' as const,term:row.term,
+      creditUnits:creditUnits(row.credits),ledger:/** @type {const} */ ('PLANNED'),
+      areaIds:[],recognition:/** @type {const} */ ('RECOGNIZED'),term:row.term,
     })),
   ];
   const audit=buildAcademicLedger({
     asOf:input.asOf,rulePackVersion:'UNVERIFIED-STUDENT-INPUT',
     rulePackState:'MISSING',attempts,requirements:[],
   });
-  // Student supplied grades and plans must never turn into approved RulePack results.
+  // 학생이 직접 입력한 이수·계획 기록을 승인된 학칙 판정으로 승격하지 않는다.
   if(audit.state!=='INSUFFICIENT_DATA'||audit.requirements.length!==0){
     throw new Error('검수되지 않은 학업 자료를 공식 졸업 판정에 사용할 수 없습니다.');
   }

@@ -1,15 +1,16 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {creditUnits,normalizeStudentCourse,upcomingTerms,compareProvisionalScenario,
   explainProvisionalExclusions,provisionalTermBreakdown} from './student-progress.js';
 
 const AS_OF='2026-11-20T08:00:00+09:00';
-const record={courseId:'ECON101',credits:3,term:'2025-1',slot:'EARNED' as const};
+const record={courseId:'ECON101',credits:3,term:'2025-1',slot:/** @type {const} */ ('EARNED')};
 describe('#63 local-only student graduation/ABC scenario preview',()=>{
   it('supports 0.5-credit units and refuses rounding or unknown slots',()=>{
     expect(creditUnits(3)).toBe(6);
     expect(creditUnits(2.5)).toBe(5);
     expect(()=>creditUnits(3.3)).toThrow(/0.5/);
-    expect(()=>normalizeStudentCourse({...record,slot:'APPROVED' as never})).toThrow(/취득/);
+    expect(()=>normalizeStudentCourse({...record,slot:/** @type {never} */ ('APPROVED')})).toThrow(/취득/);
     expect(()=>normalizeStudentCourse({...record,courseId:'<script>'})).toThrow(/학수번호/);
   });
   it('uses Korea time for upcoming two to four regular semesters',()=>{
