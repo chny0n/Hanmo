@@ -66,7 +66,7 @@
 **핵심 원칙:** 확인된 사실과 가상 시연을 분리하고, 공지·학칙의 근거와 적용 대상을 확인할 수 없는 경우 **‘확인 필요’**로 남깁니다. 한국어 학사 FAQ, 개설·행사 시기 전망과 졸업 요건 계산 코어는 검증 상태에 따라 별도 확장합니다.
 **NLP 코어 진행:** [근거 인덱스 #97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97) · [검색 평가 #98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98) · [공지 후보 추출 #99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99) 병합. **학생 화면·실제 승인 자료와는 미연결**입니다.
 
-**UI 동결 · 신규 언어 정책:** 2026-11-21부터 [UI 기준 SHA `da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일을 유지합니다. **모든 학업 기능·테스트의 유지보수 원본은 JavaScript/JSDoc**으로 통일합니다. 기존 TS 전체를 제거하는 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)는 별도 리뷰·병합 대상으로 남겨 둡니다. [아키텍처 §3.3·§8](docs/architecture.md)
+**UI 동결 · 신규 언어 정책:** 2026-11-21부터 [UI 기준 SHA `da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일을 유지합니다. **모든 학업 기능·테스트의 유지보수 원본은 JavaScript/JSDoc**으로 통일합니다. 기존 TS 전체를 제거한 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)가 병합돼 `main`의 **TypeScript 소스는 0개, 학업 JS는 98개**입니다. 다만 Windows 실기기 QA와 실운영 인수는 별도입니다. [아키텍처 §3.3·§8](docs/architecture.md)
 
 **2차 회귀:** [#84](https://github.com/ot4562-glitch/Hanmo_develop/pull/84) 원본 모드 OFF 동등성 · [#85](https://github.com/ot4562-glitch/Hanmo_develop/pull/85) 가상/실강좌 ID 격리 테스트 통과(모두 Node 기반). 실제 SELECT 키보드 QA는 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71)에서 별도 진행.
 
