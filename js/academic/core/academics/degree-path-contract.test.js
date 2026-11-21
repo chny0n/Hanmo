@@ -1,30 +1,41 @@
+// @ts-check
 import {describe,expect,it} from 'vitest';
 import {AcademicDegreePathVNextSchema} from '../../contracts/index.js';
-import {buildMajorWhatIf,type MajorWhatIfRequest,type ProgramOffer} from './major-what-if.js';
-import type {MajorRulePack} from './double-major.js';
+import {buildMajorWhatIf} from './major-what-if.js';
+/** @typedef {import('./major-what-if.js').MajorWhatIfRequest} MajorWhatIfRequest */
+/** @typedef {import('./major-what-if.js').ProgramOffer} ProgramOffer */
+/** @typedef {import('./double-major.js').MajorRulePack} MajorRulePack */
 
 const AS_OF='2026-11-01T00:00:00.000Z';
-function pack(version:string,id:string,total=false):MajorRulePack {
+/** @param {string} version @param {string} id @param {boolean} [total] @returns {MajorRulePack} 검증용 승인 규칙집 */
+function pack(version,id,total=false) {
   return {rulePackVersion:version,rulePackState:'APPROVED',courseAreas:{},requirements:[
     total?{id,kind:'CREDIT_TOTAL',requiredCreditUnits:6,evidenceRefs:['EV-SYN-RULE']}
       :{id,kind:'REQUIRED_COURSE',canonicalCourseId:'SYN-COURSE',evidenceRefs:['EV-SYN-RULE']},
   ]};
 }
-function programs():ProgramOffer[]{
+/** @returns {ProgramOffer[]} 검증용 전공 과정 목록 */
+function programs(){
   // 내부 코어의 오래된 별칭이 아니라 실제 승인된 통신 계약 값으로 런타임 어댑터 경계를 시험한다.
   const paths=AcademicDegreePathVNextSchema.options;
   const primary=['SYN-A','SYN-C'].flatMap(id=>paths.map(degreePath=>({
     role:'PRIMARY_MAJOR',programId:id,degreePath,
     pack:pack(`${id}-${degreePath}-1`,`${id}-TOTAL`,true),
   })));
-  return [...primary,
+  return /** @type {ProgramOffer[]} */ (/** @type {unknown} */ ([...primary,
     {role:'DOUBLE_MAJOR',programId:'SYN-B',pack:pack('SYN-B-D-1','SYN-B-D-REQ')},
     {role:'MINOR',programId:'SYN-B',pack:pack('SYN-B-M-1','SYN-B-M-REQ')},
     {role:'DOUBLE_MAJOR',programId:'SYN-C',pack:pack('SYN-C-D-1','SYN-C-D-REQ')},
     {role:'MINOR',programId:'SYN-C',pack:pack('SYN-C-M-1','SYN-C-M-REQ')},
-  ] as unknown as ProgramOffer[];
+  ]));
 }
-const run=(current:MajorWhatIfRequest['current'],scenario:MajorWhatIfRequest['scenario'],catalog=programs())=>
+/**
+ * @param {MajorWhatIfRequest['current']} current
+ * @param {MajorWhatIfRequest['scenario']} scenario
+ * @param {ProgramOffer[]} [catalog]
+ * @returns {ReturnType<typeof buildMajorWhatIf>} 가상 전공 변경의 검증 결과
+ */
+const run=(current,scenario,catalog=programs())=>
   buildMajorWhatIf({asOf:AS_OF,attempts:[],current,scenario,programs:catalog});
 
 describe('What-if consumes the canonical degree-path contract (#231)',()=>{
@@ -36,7 +47,7 @@ describe('What-if consumes the canonical degree-path contract (#231)',()=>{
     {current:{primaryProgramId:'SYN-A',secondary:{role:'MINOR',programId:'SYN-B'}},scenario:{action:'REMOVE_MINOR'},before:'ADVANCED_PLUS_MINOR',after:'ADVANCED_SINGLE'},
     {current:{primaryProgramId:'SYN-A',secondary:{role:'DOUBLE_MAJOR',programId:'SYN-B'}},scenario:{action:'CHANGE_DOUBLE_MAJOR',targetMajorId:'SYN-C'},before:'DOUBLE_MAJOR',after:'DOUBLE_MAJOR'},
     {current:{primaryProgramId:'SYN-A',secondary:{role:'MINOR',programId:'SYN-B'}},scenario:{action:'CHANGE_MINOR',targetMajorId:'SYN-C'},before:'ADVANCED_PLUS_MINOR',after:'ADVANCED_PLUS_MINOR'},
-  ] as const)('$scenario.action returns only canonical degree paths',({current,scenario,before,after})=>{
+  ] /* 정해진 시나리오를 변경하지 않는다 */)('$scenario.action returns only canonical degree paths',({current,scenario,before,after})=>{
     const value=run(current,scenario);
     expect(value.state).toBe('READY');
     if(value.state!=='READY')throw new Error('Synthetic approved programs should be usable');
@@ -49,25 +60,25 @@ describe('What-if consumes the canonical degree-path contract (#231)',()=>{
   });
   it('rejects two primary offers that normalize to the same canonical path',()=>{
     const catalog=programs();
-    const original=catalog.find(p=>p.role==='PRIMARY_MAJOR'&&p.programId==='SYN-A'&&p.degreePath==='ADVANCED_SINGLE')!;
+    const original=/** @type {ProgramOffer} */ (catalog.find(p=>p.role==='PRIMARY_MAJOR'&&p.programId==='SYN-A'&&p.degreePath==='ADVANCED_SINGLE'));
     catalog.push({...original,role:'PRIMARY_MAJOR',degreePath:'MAJOR_DEEPENING',
       pack:{...original.pack,rulePackVersion:'SYN-ALIAS-DUPLICATE'}});
     expect(()=>run({primaryProgramId:'SYN-A'},{action:'ADD_MINOR',targetMajorId:'SYN-B'},catalog)).toThrow('more than once');
   });
   it('preserves legacy inputs while emitting canonical output without changing their packs',()=>{
     const catalog=programs().map(p=>p.role==='PRIMARY_MAJOR'&&p.degreePath==='ADVANCED_SINGLE'
-      ?{...p,degreePath:'MAJOR_DEEPENING' as const}:p);
+      ?{...p,degreePath:/** @type {const} */ ('MAJOR_DEEPENING')}:p);
     expect(run({primaryProgramId:'SYN-A'},{action:'ADD_MINOR',targetMajorId:'SYN-B'},catalog))
       .toEqual(run({primaryProgramId:'SYN-A'},{action:'ADD_MINOR',targetMajorId:'SYN-B'}));
   });
   it('keeps unapproved packs blocked instead of treating spelling normalization as approval',()=>{
-    const catalog=programs().map(p=>({...p,pack:{...p.pack,rulePackState:'DRAFT' as const}}));
+    const catalog=programs().map(p=>({...p,pack:{...p.pack,rulePackState:/** @type {const} */ ('DRAFT')}}));
     expect(run({primaryProgramId:'SYN-A'},{action:'ADD_MINOR',targetMajorId:'SYN-B'},catalog).state)
       .toBe('BLOCKED_DEPENDENCY');
   });
   it.each(['UNSELECTED','ADVANCED','__proto__','',null])('rejects an unknown degree path: %s',value=>{
     const catalog=programs();
-    Object.assign(catalog[0]!,{degreePath:value});
+    Object.assign(catalog[0],{degreePath:value});
     expect(()=>run({primaryProgramId:'SYN-A'},{action:'ADD_MINOR',targetMajorId:'SYN-B'},catalog)).toThrow();
   });
 });
