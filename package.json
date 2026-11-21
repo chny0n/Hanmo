@@ -10,7 +10,7 @@
     "check": "npm run check:boundaries && npm run typecheck && npm run test && npm run build && npm run smoke",
     "check:legacy": "node --test tests/device-gate.test.cjs tests/legacy-baseline.test.cjs",
     "check:protected": "node scripts/assert-protected.mjs",
-    "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs"
+    "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs && node scripts/assert-korean-comments.mjs && node --test tests/korean-comment-policy.test.cjs"
   },
   "dependencies": {
     "zod": "4.6.7",
