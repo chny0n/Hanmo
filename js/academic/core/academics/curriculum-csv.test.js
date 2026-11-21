@@ -1,3 +1,4 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {parseLocalCurriculumCsv} from './curriculum-csv.js';
 const HEAD='courseCode,courseName,credits,category,major,semester,campus,cohort';

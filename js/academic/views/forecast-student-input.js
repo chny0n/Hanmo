@@ -1,12 +1,13 @@
-import type {ForecastOfferingInput} from '../core/forecast/offering.js';
+// @ts-check
+/** @typedef {import('../core/forecast/offering.js').ForecastOfferingInput} ForecastOfferingInput */
 
 /**
- * 학생 기본 화면에서는 입력만으로 공식 관측·과목 동일성 검증을 추정하지 않는다.
- * 공식 개설 원장이 연결되기 전에는 반드시 UNKNOWN으로 평가될 요청을 생성한다.
+ * 학생 입력만으로 학교의 실제 개설 이력이나 과목 동일성을 검증했다고 판단하지 않는다.
+ * 승인된 개설 원장이 연결되지 않았을 때는 UNKNOWN으로 평가될 요청을 구성한다.
+ * @param {{courseId:string,year:number,semester:string,asOf:string}} args 학생이 입력한 조회 조건
+ * @returns {ForecastOfferingInput} 미검수 개설 전망 요청
  */
-export function studentForecastInput(args:{
-  courseId:string; year:number; semester:string; asOf:string;
-}):ForecastOfferingInput {
+export function studentForecastInput(args){
   const courseId=args.courseId.trim();
   if(!courseId)throw new RangeError('과목 학수번호를 입력해 주세요.');
   if(courseId.length>80)throw new RangeError('학수번호는 80자 이하로 입력해 주세요.');

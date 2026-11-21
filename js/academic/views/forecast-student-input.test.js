@@ -1,3 +1,4 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {forecastOffering} from '../core/forecast/offering.js';
 import {studentForecastInput} from './forecast-student-input.js';
