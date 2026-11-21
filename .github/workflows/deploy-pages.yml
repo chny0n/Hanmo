@@ -69,8 +69,7 @@ jobs:
         with:
           path: dist
           name: ${{ env.PAGES_ARTIFACT_NAME }}
-      # GitHub's artifact list can lag immediately after upload. Wait only for
-      # this run attempt's artifact, without re-uploading or deleting artifacts.
+      # REST에 먼저 나타난 산출물이 deploy-pages의 별도 조회에도 반영될 시간을 둔다.
       - name: Wait for the exact Pages artifact to become visible
         env:
           GH_TOKEN: ${{ github.token }}
@@ -80,6 +79,7 @@ jobs:
               count="$(printf '%s\n' "$names" | grep -Fxc -- "$PAGES_ARTIFACT_NAME" || true)"
               if [ "$count" -eq 1 ]; then
                 echo "Exactly one current-attempt Pages artifact is visible."
+                sleep 20
                 exit 0
               fi
               if [ "$count" -gt 1 ]; then
