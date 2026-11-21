@@ -49,7 +49,7 @@ export function extractFacultyFromSavedTimetable(input){
 
   /** @type {FacultyTimetableRow[]} */
   const rows=verified.rows.map((course,index)=>{
-    const cells=cellRows[index]!;
+    const cells=cellRows[index];
     if(cells.length!==13
       || Number(plainText(cells[0]))!==course.no
       || plainText(cells[3]).toUpperCase()!==course.rawCode
