@@ -109,7 +109,7 @@
 								수강신청의 전 과정을 연습할 수 있어요.
 							</p>
 						</div>
-						<button id="incident-options" type="button" aria-haspopup="dialog" aria-controls="scenario-settings">돌발상황</button>
+						<button id="incident-options" type="button" aria-haspopup="dialog" aria-controls="scenario-settings"><span class="mode-tile-title">돌발상황</span></button>
 						<div style='grid-area: t' onclick='goPractice(2)'>
 							<h2>
 								TIME MODE
@@ -136,22 +136,26 @@
 				</section>
 			</section>
 <dialog id="scenario-settings" aria-labelledby="scenario-settings-title">
-  <form method="dialog">
+  <form class="settingPanel" method="dialog">
     <h2 id="scenario-settings-title">BASIC 모드 돌발상황</h2>
-    <fieldset class="hanmo-incident-choice">
-      <legend>마지막 과목 신청 실패</legend>
-      <label><input type="radio" name="incident-LAST_VALID" value="yes" data-scenario-toggle="LAST_VALID"><span>예</span></label>
-      <label><input type="radio" name="incident-LAST_VALID" value="no" data-scenario-off="LAST_VALID" checked><span>아니오</span></label>
-    </fieldset>
-    <fieldset class="hanmo-incident-choice">
-      <legend>가상 404·접속 끊김</legend>
-      <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
-      <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
+    <div class="incident-option-group">
+      <div id="incident-failure-label">마지막 과목 신청 실패</div>
+      <fieldset aria-labelledby="incident-failure-label">
+        <label><input type="radio" name="incident-LAST_VALID" value="yes" data-scenario-toggle="LAST_VALID"> <span>예</span></label>
+        <label><input type="radio" name="incident-LAST_VALID" value="no" data-scenario-off="LAST_VALID" checked> <span>아니오</span></label>
+      </fieldset>
+    </div>
+    <div class="incident-option-group">
+      <div id="incident-reconnect-label">가상 404·접속 끊김</div>
+      <fieldset aria-labelledby="incident-reconnect-label">
+        <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"> <span>예</span></label>
+        <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked> <span>아니오</span></label>
+      </fieldset>
       <small>시작 후 0~6초 사이 404 예시 화면 표시</small>
-    </fieldset>
+    </div>
     <div class="incident-option-actions">
-      <button type="submit" value="cancel">취소</button>
-      <button type="submit" value="save">확인</button>
+      <button class="settingButton" type="submit" value="cancel">취소</button>
+      <button class="settingButton" type="submit" value="save">확인</button>
     </div>
   </form>
 </dialog>

@@ -57,7 +57,7 @@
     },
     {
       "path": "css/scenario-settings.css",
-      "sha": "0b9c9e344406a313bc7657238b00bb394147a22b"
+      "sha": "15316cfe795822bc45fa780c4200dc997e6155ed"
     },
     {
       "path": "css/student-ui.css",
@@ -65,7 +65,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "afe686698398498b12bcbfc23798662f6fcfdc67"
+      "sha": "7be88b045dc7c7e93dde2d48f58d16d9606898f2"
     },
     {
       "path": "css/vsugang.css",
@@ -113,7 +113,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "57dfcf60023ea2e889024534a31b13ac88863bbd"
+      "sha": "67f0bfd890c59a6900fdaf13d0535e793ab933a6"
     },
     {
       "path": "img/background.svg",
