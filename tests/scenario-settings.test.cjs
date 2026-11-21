@@ -148,3 +148,43 @@ test('removed alternative files and controls do not leak into runtime assets',()
   'scenario-workshop.js','scenario-lab.js','scenario-review.js'])
   assert.equal(fs.existsSync(path.join(root,'js',name)),false,name);
 });
+
+
+test('all incident combinations keep real-course mapping and academic records absent',()=>{
+ const forbidden=/\b(?:courseId|sectionId|catalogSnapshotId|sourceRef|syntheticCourseId|alternatives)\b/;
+ for(const mode of [1,2,3]){
+  for(const options of [['LAST_VALID'],['RECONNECT'],['LAST_VALID','RECONNECT']]){
+   const h=harness();
+   select(h,...options);
+   const originalKeys=[...h.store.keys()].sort();
+   h.host.goPractice(mode);
+   assert.equal(h.store.get('practiceSetter'),String(mode));
+   assert.deepEqual([...h.store.keys()].sort(),[...originalKeys,'practiceSetter'].sort());
+   assert.doesNotMatch(JSON.stringify([...h.store]),forbidden);
+   assert.equal(h.ids['incident-practice'].hidden,false);
+   if(options.includes('RECONNECT')){
+    assert.equal(h.timers.length,1);
+    h.timers[0].fn();
+    assert.equal(h.app.is404(),true);
+    assert.deepEqual([...h.cache.keys()],['hanmo.synthetic404.resume.v1']);
+    const resume=JSON.parse(h.cache.get('hanmo.synthetic404.resume.v1'));
+    assert.deepEqual(Object.keys(resume).sort(),['at','enabled','mode','phase','version']);
+    assert.equal(resume.mode,mode);
+    assert.deepEqual(resume.enabled,options);
+    assert.doesNotMatch(JSON.stringify(resume),forbidden);
+    assert.equal(resume.phase,'404');
+   }else{
+    assert.equal(h.timers.length,0);
+    assert.equal(h.cache.size,0);
+   }
+   h.ids['incident-exit'].fire('click');
+   assert.equal(h.ids['incident-practice'].hidden,true);
+   assert.equal(h.cache.size,0);
+  }
+ }
+ const root=path.join(__dirname,'..');
+ for(const name of ['scenario-course-map.js','scenario-engine.js','scenario-composite.js']){
+  assert.equal(fs.existsSync(path.join(root,'js',name)),false,
+    name+' must not be shipped without approval of #62 scope change');
+ }
+});
