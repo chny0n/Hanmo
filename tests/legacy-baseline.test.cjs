@@ -321,3 +321,71 @@ test('each actual HTML page loads classic scripts in order without global collis
     assert.equal(h.location.href,'/',page+' must not navigate to external site');
   }
 });
+
+
+/**
+ * #71: Test the CURRENT registration-menu incident overlay, not the retired
+ * scenario-engine. The two options are OFF unless the student opts in.
+ * This is Node VM parity only, not a physical SELECT/Enter keyboard test.
+ */
+test('current incident options OFF preserve all BASIC/TIME/SELECT menu routes and storage',()=>{
+  const kinds=['LAST_VALID','RECONNECT'];
+  const page=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+  for(const kind of kinds){
+    assert.match(page,new RegExp('data-scenario-toggle="'+kind+'"'));
+    assert.match(page,new RegExp('data-scenario-off="'+kind+'"'));
+  }
+  for(const file of ['practice.html','selectZone.html','result.html']){
+    const html=fs.readFileSync(path.join(ROOT,'html',file),'utf8');
+    assert.doesNotMatch(html,/src=["'][^"']*(?:incident-options|scenario-settings)\.js/);
+  }
+
+  function observed(mode,withMenuOverlay){
+    const h=createHarness({psubjectValue:3,subjectValue:2,waitingValue:'no'});
+    h.get('psugangVal').value='3';
+    h.get('vsugangVal').value='2';
+    h.load('vsugang.js');
+
+    if(withMenuOverlay){
+      const ids=new Map();
+      for(const id of ['scenario-settings','incident-practice','incident-feedback',
+        'incident-mode','incident-404','incident-exit','incident-404-refresh',
+        'incident-404-back'])ids.set(id,element());
+      ids.get('incident-practice').hidden=true;
+      ids.get('incident-404').hidden=true;
+      const radio=(attribute,value,checked)=>{
+        const input=element('input');
+        input.checked=checked;
+        input.getAttribute=name=>name===attribute?value:null;
+        return input;
+      };
+      const yes=kinds.map(kind=>radio('data-scenario-toggle',kind,false));
+      const no=kinds.map(kind=>radio('data-scenario-off',kind,true));
+      h.doc.getElementById=id=>ids.get(id)??null;
+      h.doc.querySelectorAll=selector=>selector==='[data-scenario-toggle]'?yes:
+        selector==='[data-scenario-off]'?no:[];
+      h.load('incident-options.js');
+      h.load('scenario-settings.js');
+      assert.deepEqual(JSON.parse(h.expr('JSON.stringify(HanmoIncidentOptions.OPTIONS)')),kinds);
+      assert.deepEqual(JSON.parse(h.expr('JSON.stringify(HanmoScenarioSettings.selected([]))')),[]);
+      assert.ok(no.every(input=>input.checked));
+      assert.ok(yes.every(input=>!input.checked));
+      assert.equal(ids.get('incident-practice').hidden,true);
+    }
+
+    h.expr('goPractice('+mode+')');
+    return {
+      route:h.location.href,
+      settings:[...h.map].sort(([a],[b])=>a.localeCompare(b)),
+      alerts:[...h.events.alert],
+    };
+  }
+  for(const mode of [1,2,3]){
+    const original=observed(mode,false);
+    const disabled=observed(mode,true);
+    assert.deepEqual(disabled,original,'OFF parity in mode '+mode);
+    assert.equal(original.route,'practice.html');
+    assert.ok(original.settings.some(([name,value])=>name==='practiceSetter'&&value===String(mode)));
+    assert.equal(original.alerts.length,0);
+  }
+});
