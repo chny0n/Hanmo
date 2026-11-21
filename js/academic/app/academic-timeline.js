@@ -11,28 +11,50 @@ import { academicSourceLink, selectedMajors, studentDeadlineDisplay } from '../c
 import { readRoadmap, saveRoadmap, clearRoadmap, exportRoadmap, parseRoadmapBackup, ROADMAP_MAX_BYTES } from '../core/local-roadmap.js';
 // 이전 개발판 설정은 사용자가 별도로 실행하지 않는 한 자동 이관하지 않는다.
 const LEGACY_KEY = 'hanmo:degree-rescue:academic-roadmap:v1';
+/** @type {Set<string>} */
 const ALLOWED_STEPS = new Set(GRADUATION_STEPS.map(step => step.id));
+/** @param {unknown} source @returns {AcademicProfile} */
 const parseProfile = (source) => AcademicProfileSchema.parse(source);
+/** @type {readonly StepStatus[]} */
 const STATUSES = ['UNREVIEWED', 'IN_PROGRESS', 'DONE', 'NOT_APPLICABLE'];
+/** @type {Record<StepStatus,string>} */
 const STATUS_TEXT = {
     UNREVIEWED: '학교 확인 전', IN_PROGRESS: '준비 중', DONE: '본인 확인 완료', NOT_APPLICABLE: '내게 해당 없음',
 };
+/** @type {Record<AcademicGroup,string>} */
 const GROUP_LABELS = {
     SEMESTER: '학기·학사일정', COURSE: '수강·개설', MAJOR: '전공·이중전공',
     GRADUATION: '졸업·인증', GRADE: '학점·성적', STATUS: '학적·등록',
     EXCHANGE: '교환·학점교류', ACADEMIC_SUPPORT: '기타 학사',
 };
-const profileIds = ['profile-campus', 'profile-cohort', 'profile-major', 'profile-double', 'profile-term', 'profile-requirements'];
-const inputs = Object.fromEntries(profileIds.map(id => [id, document.getElementById(id)]));
+const profileIds = /** @type {const} */ (['profile-campus', 'profile-cohort', 'profile-major', 'profile-double', 'profile-term', 'profile-requirements']);
+const inputs = /** @type {Record<typeof profileIds[number],HTMLInputElement|HTMLSelectElement|null>} */ (Object.fromEntries(profileIds.map(id => [id, document.getElementById(id)])));
+/** @type {AcademicEvent[]} */
 let records = [];
+/** @type {Partial<Record<GraduationStepId,StepStatus>>} */
 let progress = {};
+/** @param {string} id @returns {HTMLElement} */
 const element = (id) => {
     const e = document.getElementById(id);
     if (!e)
         throw new Error('필수 UI 누락: ' + id);
     return e;
 };
-const value = (id) => inputs[id].value.trim();
+/**
+ * @template {HTMLElement} T
+ * @param {string} id
+ * @param {{new(): T}} kind
+ * @returns {T}
+ */
+function control(id, kind) {
+    const node = element(id);
+    if (!(node instanceof kind))
+        throw new Error('입력 요소 유형이 올바르지 않습니다: ' + id);
+    return node;
+}
+/** @param {typeof profileIds[number]} id @returns {string} */
+const value = (id) => /** @type {HTMLInputElement|HTMLSelectElement} */ (inputs[id]).value.trim();
+/** @param {keyof HTMLElementTagNameMap} tag @returns {HTMLElement} */
 const create = (tag, cls = '', message = '') => {
     const e = document.createElement(tag);
     if (cls)
@@ -68,6 +90,7 @@ function readProfile() {
  * @param {AcademicProfile} p
  */
 function fillProfile(p) {
+    /** @type {Record<typeof profileIds[number],string>} */
     const data = {
         'profile-campus': p.campus ?? '',
         'profile-cohort': p.cohort === undefined ? '' : String(p.cohort),
@@ -77,8 +100,9 @@ function fillProfile(p) {
         'profile-requirements': (p.candidateOpenRequirementIds ?? p.openRequirementIds)?.join(', ') ?? '',
     };
     for (const id of profileIds)
-        inputs[id].value = data[id];
+        /** @type {HTMLInputElement|HTMLSelectElement} */ (inputs[id]).value = data[id];
 }
+/** @returns {void} */
 function loadSaved() {
     try {
         const stored = readRoadmap(localStorage, parseProfile, ALLOWED_STEPS);
@@ -96,6 +120,7 @@ function loadSaved() {
         setMessage('profile-message', '저장된 설정을 읽을 수 없습니다. 기존 값을 덮어쓰지 않았습니다.');
     }
 }
+/** @returns {void} */
 function save() {
     try {
         saveRoadmap(localStorage, { profile: readProfile(), progress }, parseProfile, ALLOWED_STEPS);
@@ -105,6 +130,7 @@ function save() {
         setMessage('profile-message', '저장 실패: ' + (e instanceof Error ? e.message : String(e)));
     }
 }
+/** @returns {void} */
 function clearSaved() {
     if (!confirm('이 기기의 현재 버전 학업 설정과 체크 상태를 삭제하시겠습니까? 예전 테스트 저장이나 기존 모의수강신청 자료는 삭제하지 않습니다.'))
         return;
@@ -125,6 +151,7 @@ function clearSaved() {
     render();
     setMessage('profile-message', '현재 버전의 학업 설정을 삭제했습니다. 기존 모의수강신청 데이터는 변경하지 않았습니다.');
 }
+/** @returns {void} */
 function exportProfile() {
     try {
         const raw = exportRoadmap({ profile: readProfile(), progress }, parseProfile, ALLOWED_STEPS);
@@ -145,7 +172,7 @@ function exportProfile() {
  * @returns {Promise<void>}
  */
 async function importProfile() {
-    const input = element('profile-import');
+    const input = control('profile-import', HTMLInputElement);
     const file = input.files?.[0];
     if (!file)
         return;
@@ -173,6 +200,7 @@ async function importProfile() {
         input.value = '';
     }
 }
+/** @returns {void} */
 function importLegacy() {
     try {
         const raw = localStorage.getItem(LEGACY_KEY);
@@ -181,17 +209,18 @@ function importLegacy() {
         const old = JSON.parse(raw);
         if (!old || typeof old !== 'object' || Array.isArray(old))
             throw new Error('예전 저장 형식이 올바르지 않습니다.');
-        const fields = old;
+        const fields = /** @type {Record<string,unknown>} */ (old);
         const profile = parseProfile(fields.profile);
         if (!fields.progress || typeof fields.progress !== 'object' || Array.isArray(fields.progress)) {
             throw new Error('예전 체크 상태가 올바르지 않습니다.');
         }
+        /** @type {Partial<Record<GraduationStepId,StepStatus>>} */
         const migrated = {};
         for (const [key, value] of Object.entries(fields.progress)) {
-            if (!ALLOWED_STEPS.has(key) || !STATUSES.includes(value)) {
+            if (!ALLOWED_STEPS.has(key) || !STATUSES.includes(/** @type {StepStatus} */ (value))) {
                 throw new Error('알 수 없는 예전 체크 상태: ' + key);
             }
-            migrated[key] = value;
+            migrated[/** @type {GraduationStepId} */ (key)] = /** @type {StepStatus} */ (value);
         }
         if (!confirm('이전 테스트 버전의 설정을 새 형식으로 복사하시겠습니까? 원본 예전 설정은 남겨둡니다.'))
             return;
@@ -300,7 +329,9 @@ function renderOne(item) {
     card.append(citation);
     return card;
 }
+/** @returns {void} */
 function render() {
+    /** @type {AcademicProfile} */
     let profile;
     try {
         profile = readProfile();
@@ -340,9 +371,9 @@ function render() {
             focusList.append(create('p', 'empty-state', '해당 조건으로 우선 표시할 공지 후보가 없습니다. 아래 전체 목록과 공식 학교 공지를 확인하세요.'));
         }
     }
-    const onlyUnknown = element('include-unknown').checked;
-    const group = element('group-filter').value;
-    const search = element('agenda-search').value.trim().toLocaleLowerCase('ko');
+    const onlyUnknown = control('include-unknown', HTMLInputElement).checked;
+    const group = control('group-filter', HTMLSelectElement).value;
+    const search = control('agenda-search', HTMLInputElement).value.trim().toLocaleLowerCase('ko');
     element('count-relevant').textContent = String(summary.relevantCount);
     element('count-urgent').textContent = String(summary.dueSoonCount);
     element('count-review').textContent = String(summary.reviewNeededCount);
@@ -366,6 +397,7 @@ function render() {
             + summary.excluded.length + '개. 같은 공지 ID 중복은 임의로 최신본을 선택하지 않습니다.'));
     }
 }
+/** @returns {void} */
 function renderSteps() {
     const root = element('graduation-steps');
     root.replaceChildren();
@@ -386,19 +418,21 @@ function renderSteps() {
             sel.append(option);
         }
         sel.addEventListener('change', () => {
-            progress[step.id] = sel.value;
+            progress[step.id] = /** @type {StepStatus} */ (sel.value);
             setMessage('profile-message', '체크 상태를 변경했습니다. 보존하려면 위의 "이 브라우저에 설정 저장"을 누르세요.');
         });
         row.append(sel);
         root.append(row);
     }
 }
+/** @returns {void} */
 function officialTitles() {
     records = [];
     render();
     setMessage('data-message', '승인된 학사자료가 아직 연결되지 않았습니다. 출처 검수 전에는 공지·마감일을 표시하지 않습니다.');
 }
 /** 사용자가 명시적으로 실행할 때만 반영한다. 계산기 결과는 링크를 제안해도 공식 요건의 완료를 확정하지 않는다. */
+/** @returns {void} */
 function applyLocalAuditHints() {
     try {
         const raw = sessionStorage.getItem(ACADEMIC_AUDIT_BRIDGE_KEY);
@@ -407,7 +441,7 @@ function applyLocalAuditHints() {
         const hint = AcademicAuditHintSchema.parse(JSON.parse(raw));
         if (hint.candidateOpenRequirementIds === null)
             throw new Error('원장의 기준이 부족해 연결할 요건을 판단하지 못했습니다. 학점·학칙 데이터를 확인하세요.');
-        element('profile-requirements').value = hint.candidateOpenRequirementIds.join(', ');
+        control('profile-requirements', HTMLInputElement).value = hint.candidateOpenRequirementIds.join(', ');
         render();
         setMessage('profile-message', '로컬 계산 요건 후보 ' + hint.candidateOpenRequirementIds.length + '건 반영 · 규정 판본 '
             + hint.rulePackVersion + ' · 계산 기준 ' + when(hint.asOf)
@@ -417,6 +451,7 @@ function applyLocalAuditHints() {
         setMessage('profile-message', '계산 결과 연결 실패: ' + (e instanceof Error ? e.message : String(e)));
     }
 }
+/** @returns {void} */
 function exportJson() {
     const json = JSON.stringify({ schemaVersion: 1, events: records }, null, 2);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
@@ -430,7 +465,7 @@ function exportJson() {
  * @returns {Promise<void>}
  */
 async function importJson() {
-    const file = element('timeline-file').files?.[0];
+    const file = control('timeline-file', HTMLInputElement).files?.[0];
     if (!file)
         return;
     if (file.size > 1024 * 1024) {
@@ -455,16 +490,16 @@ for (const id of profileIds)
     inputs[id]?.addEventListener('input', render);
 element('profile-save').addEventListener('click', save);
 element('profile-export').addEventListener('click', exportProfile);
-element('profile-import').addEventListener('change', () => { void importProfile(); });
+control('profile-import', HTMLInputElement).addEventListener('change', () => { void importProfile(); });
 element('profile-legacy').addEventListener('click', importLegacy);
 element('audit-transfer').addEventListener('click', applyLocalAuditHints);
 element('profile-clear').addEventListener('click', clearSaved);
 element('data-official').addEventListener('click', () => { officialTitles(); });
-element('timeline-file').addEventListener('change', () => { void importJson(); });
+control('timeline-file', HTMLInputElement).addEventListener('change', () => { void importJson(); });
 element('template-export').addEventListener('click', exportJson);
-element('group-filter').addEventListener('change', render);
-element('agenda-search').addEventListener('input', render);
-element('include-unknown').addEventListener('change', render);
+control('group-filter', HTMLSelectElement).addEventListener('change', render);
+control('agenda-search', HTMLInputElement).addEventListener('input', render);
+control('include-unknown', HTMLInputElement).addEventListener('change', render);
 loadSaved();
 renderSteps();
 officialTitles();

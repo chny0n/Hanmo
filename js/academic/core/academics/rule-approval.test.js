@@ -15,13 +15,16 @@ import { decideRulePackActivation, } from './rule-approval.js';
 const AS_OF = '2026-11-01T00:00:00.000Z';
 const SHA = 'b'.repeat(64);
 const RETAKE = 'CL-EX-RETAKE';
+/** @param {string} clauseId @param {Clause['kind']} kind @param {string[]} requirementIds @returns {Clause} */
 const linked = (clauseId, kind, requirementIds) => ({
     clauseId, kind, sourceSpanRef: `span-${clauseId}`, coverage: { state: 'LINKED', requirementIds },
 });
+/** @param {string} clauseId @param {Clause['kind']} kind @returns {Clause} */
 const notApplicable = (clauseId, kind) => ({
     clauseId, kind, sourceSpanRef: `span-${clauseId}`,
     coverage: { state: 'NOT_APPLICABLE', reason: 'Procedure text only; no credit rule.', independentlyReviewedBy: 'reviewer-C' },
 });
+/** @returns {Requirement[]} */
 const requirements = () => [
     { id: 'REQ-CREDITS', semanticKey: 'second-major-credits', kind: 'CATEGORY_MINIMUM', areaId: 'SECONDARY',
         requiredCreditUnits: 84, sourceClauseIds: ['CL-RULE-CREDITS'], exceptionClauseIds: [], evidenceRefs: ['SYN-EV-CREDITS'] },
@@ -30,6 +33,7 @@ const requirements = () => [
     { id: 'REQ-EXAM', semanticKey: 'exit-exam', kind: 'NON_CREDIT', criterionId: 'SYN-EXAM', verificationMode: 'MANUAL',
         sourceClauseIds: ['CL-RULE-EXAM'], exceptionClauseIds: [], evidenceRefs: ['SYN-EV-EXAM'] },
 ];
+/** @returns {Clause[]} */
 const clauses = () => [
     linked('CL-RULE-CREDITS', 'RULE', ['REQ-CREDITS']),
     linked('CL-RULE-CORE', 'RULE', ['REQ-CORE']),
@@ -37,6 +41,7 @@ const clauses = () => [
     linked('CL-RULE-EXAM', 'RULE', ['REQ-EXAM']),
     notApplicable('CL-PROC-FORM', 'PROCEDURE'),
 ];
+/** @param {Partial<Pack>} [over] @returns {Pack} */
 const pack = (over = {}) => ({
     version: 'SYN-RULE-V2',
     supersedesVersion: 'SYN-RULE-V1',
@@ -62,6 +67,7 @@ const pack = (over = {}) => ({
 const ACTIVE = AcademicRulePackVNextSchema.parse(pack({
     version: 'SYN-RULE-V1', supersedesVersion: undefined, sourceDocumentVersion: 'SYN-DOC-1',
 }));
+/** @param {Partial<TrustedSourceInventory>} [over] @returns {TrustedSourceInventory} */
 const trusted = (over = {}) => ({
     sourceDocumentSha256: SHA,
     clauses: [
@@ -74,6 +80,7 @@ const trusted = (over = {}) => ({
     ],
     ...over,
 });
+/** @param {unknown} candidate @param {Partial<RulePackActivationRequest>} [over] @returns {RulePackActivationRequest} */
 const request = (candidate, over = {}) => ({
     asOf: AS_OF,
     active: ACTIVE,
@@ -82,11 +89,12 @@ const request = (candidate, over = {}) => ({
     ...over,
 });
 /** JSON 내부는 일관되지만 독립적인 원문 조항 목록과 대조해야만 문제를 찾는 규칙집이다. */
+/** @returns {Pack} */
 const withoutRetake = () => pack({
     requirements: requirements().map(req => req.id === 'REQ-CORE' ? { ...req, exceptionClauseIds: [] } : req),
     clauseInventory: clauses().filter(clause => clause.clauseId !== RETAKE),
 });
-const minorScope = { ...pack().scope, majorRole: 'MINOR' };
+const minorScope = { ...pack().scope, majorRole: /** @type {const} */ ('MINOR') };
 describe('decideRulePackActivation', () => {
     it('activates a candidate that matches the independent inventory and supersedes the active pack', () => {
         const result = decideRulePackActivation(request(pack()));

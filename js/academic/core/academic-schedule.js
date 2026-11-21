@@ -39,6 +39,7 @@ export const AcademicEventTypeSchema = z.enum([
     'ACADEMIC_ADVICE', 'OTHER_ACADEMIC',
 ]);
 export const AcademicGroupSchema = z.enum(['SEMESTER', 'COURSE', 'MAJOR', 'GRADUATION', 'GRADE', 'STATUS', 'EXCHANGE', 'ACADEMIC_SUPPORT']);
+/** @type {Record<AcademicEventType,AcademicGroup>} */
 const GROUP = {
     SEMESTER_START: 'SEMESTER', SEMESTER_END: 'SEMESTER', VACATION_START: 'SEMESTER', ACADEMIC_CALENDAR: 'SEMESTER',
     COURSE_PRE_REGISTRATION: 'COURSE', COURSE_REGISTRATION: 'COURSE', COURSE_CHANGE: 'COURSE',
@@ -118,7 +119,9 @@ export const AcademicScheduleSchema = z.strictObject({
  */
 export function parseAcademicSchedule(source) {
     const parsed = AcademicScheduleSchema.parse(source);
+    /** @type {AcademicEvent[]} */
     const events = [];
+    /** @type {{index:number;reason:string}[]} */
     const invalid = [];
     for (let i = 0; i < parsed.events.length; i++) {
         const item = AcademicEventSchema.safeParse(parsed.events[i]);
@@ -155,6 +158,7 @@ export const AcademicProfileSchema = z.strictObject({
     /** 학생 입력·로컬 계산 힌트는 우선순위에 참고할 수 있지만 공지 적용 대상이나 요건 완료의 근거로 사용하지 않는다. */
     candidateOpenRequirementIds: z.array(Id).max(200).optional(),
 });
+/** @param {readonly string[]|undefined} required @param {string|undefined} actual @param {string} field @param {string[]} unknown @returns {boolean} */
 const one = (required, actual, field, unknown) => {
     if (!required?.length)
         return false;
@@ -173,6 +177,7 @@ const one = (required, actual, field, unknown) => {
  */
 export function noticeApplicability(profile, event, independentlyReviewed = false) {
     const scope = event.scope;
+    /** @type {string[]} */
     const unknown = [];
     let mismatch = false;
     if (scope) {
@@ -220,7 +225,9 @@ export function openRequirementsFromAudit(audit) {
 }
 // 남은 일수는 브라우저 지역 설정이 아니라 한국 표준시의 달력 날짜 경계로 계산한다.
 const KST = 9 * 3600000, DAY = 86400000;
+/** @param {string} iso @returns {number} */
 const kstDateNumber = (iso) => Math.floor((Date.parse(iso) + KST) / DAY);
+/** @param {AcademicEvent} e @returns {number} */
 const anyTimestamp = (e) => {
     const v = e.deadlineAt ?? e.eventAt ?? e.opensAt;
     return v ? Date.parse(v) : Number.POSITIVE_INFINITY;
@@ -247,9 +254,12 @@ export function buildAcademicAgenda(request) {
     const now = Date.parse(request.asOf);
     const reviewedObjects = new Set(request.trustedReviewedEvents ?? []);
     // 동일 ID 공지의 임의 선택을 피하기 위해 중복 ID는 모두 제외 사유로 남긴다.
+    /** @type {Map<string, number>} */
     const counts = new Map();
     request.events.forEach(e => counts.set(e.id, (counts.get(e.id) || 0) + 1));
+    /** @type {AcademicAgendaItem[]} */
     const items = [];
+    /** @type {AcademicAgenda['excluded']} */
     const excluded = [];
     for (const event of request.events) {
         if ((counts.get(event.id) || 0) > 1) {
@@ -278,6 +288,7 @@ export function buildAcademicAgenda(request) {
         // 학생용 마감(deadlineAt)만 남은 일수에 쓰며 행정용 마감은 학생 마감으로 대체하지 않는다.
         const due = event.deadlineAt ? Date.parse(event.deadlineAt) : null;
         const daysLeft = due === null ? null : kstDateNumber(event.deadlineAt) - kstDateNumber(request.asOf);
+        /** @type {Priority} */
         const priority = due !== null
             ? due <= now ? 'OVERDUE' : daysLeft !== null && daysLeft <= 7 ? 'DUE_SOON' : 'UPCOMING'
             : (event.eventAt || event.opensAt) ? 'INFORMATION' : 'DATE_UNKNOWN';
@@ -287,6 +298,7 @@ export function buildAcademicAgenda(request) {
             daysLeft, sortTimestamp: anyTimestamp(event),
         });
     }
+    /** @type {Record<Applies,number>} */
     const rank = { YES: 0, UNKNOWN: 1, NO: 2 };
     items.sort((a, b) => rank[a.appliesTo] - rank[b.appliesTo]
         || Number(b.candidateRequirementMatch) - Number(a.candidateRequirementMatch)
@@ -299,7 +311,7 @@ export function buildAcademicAgenda(request) {
         relevantCount: items.filter(x => x.appliesTo === 'YES').length,
     };
 }
-export const GRADUATION_STEPS = [
+export const GRADUATION_STEPS = /** @type {const} */ ([
     { id: 'TOTAL_CREDITS', title: '총 졸업 이수학점', description: '학번·캠퍼스·전공구성에 맞는 기준과 취득/수강중 학점을 구분', group: 'GRADUATION' },
     { id: 'GENERAL_ED', title: '교양필수·교양영역', description: '교양필수와 영역별 이수 요건, 인정·면제 여부 확인', group: 'GRADUATION' },
     { id: 'PRIMARY_MAJOR', title: '주전공 필수·선택', description: '전공필수 및 전공선택 학점·필수과목 확인', group: 'MAJOR' },
@@ -314,4 +326,4 @@ export const GRADUATION_STEPS = [
     { id: 'CREDIT_TRANSFER', title: '교류·교환·대체 인정학점', description: '계절학기·학점교류·교환/해외학점 인정 결과 확인', group: 'GRADE' },
     { id: 'GRADUATION_AUDIT', title: '최종 졸업사정 및 학적 결과', description: '졸업/수료(졸업대기)/추가 등록 여부를 학교에서 최종 확인', group: 'GRADUATION' },
     { id: 'FINAL_DOCUMENTS', title: '학위 수여 및 제출 서류', description: '졸업 신청·서류·학위수여식·증명서 관련 공지 확인', group: 'GRADUATION' },
-];
+]);

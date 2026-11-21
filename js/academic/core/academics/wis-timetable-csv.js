@@ -1,7 +1,5 @@
 // @ts-check
-/** @typedef {import('./wis-timetable.js').TimetableAttribute} WisTimetableAttribute */
-/** @typedef {import('./wis-timetable.js').TimetableImport} WisTimetableImport */
-/** @typedef {import('./wis-timetable.js').TimetableRow} WisTimetableRow */
+/** @import { TimetableAttribute as WisTimetableAttribute, TimetableImport as WisTimetableImport, TimetableRow as WisTimetableRow } from './wis-timetable.js' */
 
 /**
  * 사용자가 저장한 학교 시간표를 운영자가 가져올 수 있는 8열 CSV로 변환한다(#133).

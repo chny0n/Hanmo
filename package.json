@@ -6,19 +6,23 @@
     "test": "vitest run js/academic/core js/academic/views",
     "build": "esbuild js/academic/app/student-forecast.js --bundle --platform=browser --format=iife --target=es2022 --outfile=.build/student-forecast.js && esbuild js/academic/app/student-entry.js --bundle --platform=browser --format=iife --target=es2022 --outfile=.build/student-entry.js && esbuild js/academic/app/academic-progress.js --bundle --platform=browser --format=iife --target=es2022 --outfile=.build/academic-progress.js && node scripts/stage-static.mjs",
     "smoke": "node scripts/check-static-pages.mjs && node --test tests/academic-data-source.test.cjs tests/student-navigation.test.cjs tests/student-profile.test.cjs tests/home-fit.test.cjs tests/vsugang-fit.test.cjs",
-    "check": "npm run check:boundaries && npm run check:syntax && npm run test && npm run build && npm run smoke",
+    "check": "npm run check:boundaries && npm run check:syntax && npm run check:types && npm run test && npm run build && npm run smoke",
     "check:legacy": "node --test tests/device-gate.test.cjs tests/legacy-baseline.test.cjs",
     "check:protected": "node scripts/assert-protected.mjs",
     "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs && node scripts/assert-korean-comments.mjs && node --test tests/korean-comment-policy.test.cjs",
-    "check:syntax": "node scripts/check-js-syntax.mjs"
+    "check:syntax": "node scripts/check-js-syntax.mjs",
+    "check:types": "tsc -p jsconfig.json"
   },
   "dependencies": {
-    "zod": "4.6.7",
-    "papaparse": "5.7.0"
+    "papaparse": "5.7.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/papaparse": "5.5.2",
+    "acorn": "8.15.0",
     "esbuild": "0.28.2",
-    "vitest": "5.1.1",
-    "acorn": "8.15.0"
+    "typescript": "5.9.3",
+    "vitest": "5.1.1"
   }
 }

@@ -11,13 +11,16 @@ import { buildLedgerWithCourseIdentity, COURSE_IDENTITY_API_CONNECTION, } from '
 import { buildAcademicLedger } from './ledger.js';
 /** 본선 전 #11: 학수번호나 동일과목 여부가 미확정인 합성(SYN-*) 기록이다. 1단위=0.5학점, 3학점=6단위다. */
 const AS_OF = '2026-11-01T00:00:00.000+09:00';
+/** @param {string} token @param {string} course @param {Partial<LedgerAttempt>} [over] @returns {ResolvedLedgerAttempt} */
 const resolved = (token, course, over = {}) => ({
     identity: 'RESOLVED', attemptToken: token, canonicalCourseId: course, creditUnits: 6, ledger: 'EARNED',
     areaIds: ['SYN-A1'], recognition: 'RECOGNIZED', term: '2025-1', ...over,
 });
+/** @param {string} token @param {Partial<UnresolvedLedgerAttempt>} [over] @returns {UnresolvedLedgerAttempt} */
 const unresolved = (token, over = {}) => ({
     identity: 'NEEDS_REVIEW', attemptToken: token, creditUnits: 6, ledger: 'EARNED', recognition: 'RECOGNIZED', term: '2025-1', ...over,
 });
+/** @type {LedgerRequirement[]} */
 const REQUIREMENTS = [
     { id: 'SYN-R-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: 12, evidenceRefs: ['SYN-EV-1'] },
     { id: 'SYN-R-AREA', kind: 'CATEGORY_MINIMUM', areaId: 'SYN-A1', requiredCreditUnits: 12, evidenceRefs: ['SYN-EV-2'] },
@@ -28,14 +31,20 @@ const REQUIREMENTS = [
 ];
 const READS_ATTEMPTS = REQUIREMENTS.map(r => r.id);
 /** 수강 시도를 참조하지 않는 요건이다. GPA가 측정되지 않으면 원장은 READY가 될 수 없다. */
+/** @type {LedgerRequirement} */
 const GPA = { id: 'SYN-R-GPA', kind: 'NON_CREDIT', criterionId: 'SYN-GPA', verificationMode: 'GPA_NOT_COLLECTED' };
+/** @param {IdentifiedLedgerAttempt[]} attempts @param {Partial<IdentifiedLedgerRequest>} [over] @returns {IdentifiedLedgerRequest} */
 const request = (attempts, over = {}) => ({
     asOf: AS_OF, rulePackVersion: 'SYN-PACK-ID', rulePackState: 'APPROVED', attempts, requirements: REQUIREMENTS, ...over,
 });
+/** @param {readonly IdentifiedLedgerAttempt[]} rows @returns {LedgerAttempt[]} */
 const strip = (rows) => rows.filter((r) => r.identity === 'RESOLVED').map(({ identity: _identity, ...rest }) => rest);
+/** @param {ReturnType<typeof buildLedgerWithCourseIdentity>} result */
 const states = (result) => Object.fromEntries(result.audit.requirements.map(row => [row.requirementId, row.state]));
+/** @param {ReturnType<typeof buildLedgerWithCourseIdentity>} result @param {string} token */
 const reasonOf = (result, token) => result.audit.excludedAttempts.find(row => row.attemptToken === token)?.reason;
 /** 검증된 수강 기록만으로 모든 요건이 SATISFIED인 상황이다. */
+/** @type {IdentifiedLedgerAttempt[]} */
 const SATISFIED_BASE = [
     resolved('SYN-T1', 'SYN-C1'),
     resolved('SYN-T2', 'SYN-C2', { areaIds: ['SYN-A1', 'SYN-A2'] }),
@@ -54,33 +63,34 @@ describe('course identity: input boundary (#11)', () => {
     });
     it('refuses a row that does not say which kind it is', () => {
         const { identity: _identity, ...bare } = resolved('SYN-T1', 'SYN-C1');
-        expect(() => buildLedgerWithCourseIdentity(request([bare]))).toThrow(/identity RESOLVED or NEEDS_REVIEW/);
-        const odd = { ...resolved('SYN-T1', 'SYN-C1'), identity: 'UNKNOWN' };
+        expect(() => buildLedgerWithCourseIdentity(request([/** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ (bare))]))).toThrow(/identity RESOLVED or NEEDS_REVIEW/);
+        const odd = /** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ ({ ...resolved('SYN-T1', 'SYN-C1'), identity: 'UNKNOWN' }));
         expect(() => buildLedgerWithCourseIdentity(request([odd]))).toThrow(/identity RESOLVED or NEEDS_REVIEW/);
     });
     it('refuses a placeholder course id on an unresolved row', () => {
         for (const placeholder of ['SYN-TMP-1', '', 'UNKNOWN']) {
-            const row = { ...unresolved('SYN-U1'), canonicalCourseId: placeholder };
+            const row = /** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ ({ ...unresolved('SYN-U1'), canonicalCourseId: placeholder }));
             expect(() => buildLedgerWithCourseIdentity(request([row])), placeholder).toThrow(/placeholder course id is refused/);
         }
-        const undefinedId = { ...unresolved('SYN-U1'), canonicalCourseId: undefined };
+        const undefinedId = /** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ ({ ...unresolved('SYN-U1'), canonicalCourseId: undefined }));
         expect(() => buildLedgerWithCourseIdentity(request([undefinedId]))).toThrow(/placeholder course id is refused/);
     });
     it('refuses areas or unknown fields on an unresolved row', () => {
-        const withAreas = { ...unresolved('SYN-U1'), areaIds: ['SYN-A1'] };
+        const withAreas = /** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ ({ ...unresolved('SYN-U1'), areaIds: ['SYN-A1'] }));
         expect(() => buildLedgerWithCourseIdentity(request([withAreas]))).toThrow(/areas come from a confirmed course/);
-        const extra = { ...unresolved('SYN-U1'), guessedCourseId: 'SYN-C1' };
+        const extra = /** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ ({ ...unresolved('SYN-U1'), guessedCourseId: 'SYN-C1' }));
         expect(() => buildLedgerWithCourseIdentity(request([extra]))).toThrow(/unknown field guessedCourseId/);
     });
     it('a resolved row still needs a valid course id', () => {
         for (const course of ['', 'bad id', undefined]) {
-            const row = { ...resolved('SYN-T1', 'SYN-C1'), canonicalCourseId: course };
+            const row = /** @type {IdentifiedLedgerAttempt} */ (/** @type {unknown} */ ({ ...resolved('SYN-T1', 'SYN-C1'), canonicalCourseId: course }));
             expect(() => buildLedgerWithCourseIdentity(request([row])), String(course)).toThrow(/canonicalCourseId/);
         }
     });
     it('checks unresolved rows like ordinary rows', () => {
+        /** @type {Partial<UnresolvedLedgerAttempt>[]} */
         const bad = [
-            { creditUnits: 1.5 }, { creditUnits: -1 }, { term: '2025-3' }, { ledger: 'DONE' }, { recognition: 'MAYBE' },
+            { creditUnits: 1.5 }, { creditUnits: -1 }, { term: '2025-3' }, { ledger: /** @type {never} */ ('DONE') }, { recognition: /** @type {never} */ ('MAYBE') },
             { supersedesAttemptToken: 'bad token' }, { attemptToken: 'bad token' },
         ];
         for (const over of bad) {
@@ -188,7 +198,7 @@ describe('course identity: what an unresolved row holds (#11)', () => {
             expect(states(result)[id], id).toBe('NEEDS_REVIEW');
     });
     it('an unlinked PENDING or EXCLUDED unresolved row keeps row states but blocks READY', () => {
-        for (const recognition of ['PENDING', 'EXCLUDED']) {
+        for (const recognition of /** @type {const} */ (['PENDING', 'EXCLUDED'])) {
             const rows = [...SATISFIED_BASE, unresolved('SYN-U1', { recognition })];
             const result = buildLedgerWithCourseIdentity(request(rows));
             const base = buildAcademicLedger({ ...request(rows), attempts: strip(rows) });
@@ -237,31 +247,40 @@ function mulberry32(seed) {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 }
+/**
+ * @template T
+ * @param {Rng} rng
+ * @param {readonly T[]} list
+ * @returns {T}
+ */
 const pick = (rng, list) => list[Math.floor(rng() * list.length)];
+/** @param {Rng} rng @param {number} p */
 const chance = (rng, p) => rng() < p;
 const SEEDS = Array.from({ length: Number(process.env.COURSE_ID_PROP_RUNS ?? 300) }, (_, i) => 20261106 + i);
-const COURSES = ['SYN-C1', 'SYN-C2', 'SYN-C3'];
+const COURSES = /** @type {const} */ (['SYN-C1', 'SYN-C2', 'SYN-C3']);
+/** @type {readonly (readonly string[])[]} */
 const AREA_SETS = [[], ['SYN-A1'], ['SYN-A2'], ['SYN-A1', 'SYN-A2']];
-const TERMS = ['2024-2', '2025-1', '2025-2', '2026-2'];
+const TERMS = /** @type {const} */ (['2024-2', '2025-1', '2025-2', '2026-2']);
 /**
  * @param {Rng} rng
  * @returns {IdentifiedLedgerAttempt[]}
  */
 function genRows(rng) {
+    /** @type {IdentifiedLedgerAttempt[]} */
     const rows = [];
     const count = 1 + Math.floor(rng() * 4);
     for (let i = 0; i < count; i++) {
         rows.push(resolved(`SYN-T${i}`, pick(rng, COURSES), {
-            creditUnits: pick(rng, [1, 6, 6]), ledger: pick(rng, ['EARNED', 'EARNED', 'IN_PROGRESS', 'PLANNED']),
-            areaIds: pick(rng, AREA_SETS), recognition: pick(rng, ['RECOGNIZED', 'RECOGNIZED', 'PENDING', 'EXCLUDED']),
+            creditUnits: pick(rng, [1, 6, 6]), ledger: pick(rng, /** @type {const} */ (['EARNED', 'EARNED', 'IN_PROGRESS', 'PLANNED'])),
+            areaIds: pick(rng, AREA_SETS), recognition: pick(rng, /** @type {const} */ (['RECOGNIZED', 'RECOGNIZED', 'PENDING', 'EXCLUDED'])),
             term: pick(rng, TERMS),
         }));
     }
     const unresolvedCount = chance(rng, 0.7) ? 1 : 2;
     for (let i = 0; i < unresolvedCount; i++) {
         rows.push(unresolved(`SYN-U${i}`, {
-            creditUnits: pick(rng, [1, 6]), ledger: pick(rng, ['EARNED', 'IN_PROGRESS', 'PLANNED']),
-            recognition: pick(rng, ['RECOGNIZED', 'PENDING', 'EXCLUDED', 'PENDING', 'EXCLUDED']), term: pick(rng, TERMS),
+            creditUnits: pick(rng, [1, 6]), ledger: pick(rng, /** @type {const} */ (['EARNED', 'IN_PROGRESS', 'PLANNED'])),
+            recognition: pick(rng, /** @type {const} */ (['RECOGNIZED', 'PENDING', 'EXCLUDED', 'PENDING', 'EXCLUDED'])), term: pick(rng, TERMS),
         }));
     }
     const tokens = rows.map(r => r.attemptToken);
@@ -280,8 +299,10 @@ function genRows(rng) {
  * @returns {LedgerAttempt[][]}
  */
 function resolutions(rows) {
+    /** @type {LedgerAttempt[][]} */
     let out = [[]];
     for (const row of rows) {
+        /** @type {LedgerAttempt[]} */
         const options = [];
         if (row.identity === 'RESOLVED') {
             const { identity: _identity, ...rest } = row;
@@ -298,6 +319,12 @@ function resolutions(rows) {
     }
     return out;
 }
+/**
+ * @template T
+ * @param {Rng} rng
+ * @param {readonly T[]} list
+ * @returns {T[]}
+ */
 const shuffled = (rng, list) => {
     const copy = [...list];
     for (let i = copy.length - 1; i > 0; i--) {
@@ -342,8 +369,8 @@ describe('course identity: brute force over every possible resolution (#11)', ()
             const result = buildLedgerWithCourseIdentity(request(rows));
             // 확정 행이 미확정 행을 재수강 선행 대상으로 지정하면 선행 기록이 없는 경우와 같이 보류한다.
             const base = buildAcademicLedger({ ...request(rows), attempts: strip(rows) });
-            for (const key of ['earnedCreditUnits', 'inProgressCreditUnits', 'plannedCreditUnits', 'projectedUniqueCreditUnits',
-                'pendingRecognitionCreditUnits', 'areaProgress']) {
+            for (const key of /** @type {const} */ (['earnedCreditUnits', 'inProgressCreditUnits', 'plannedCreditUnits', 'projectedUniqueCreditUnits',
+                'pendingRecognitionCreditUnits', 'areaProgress'])) {
                 expect(result.audit[key], `seed ${seed} ${key}`).toEqual(base[key]);
             }
             for (const token of result.unresolved.attemptTokens)
@@ -351,6 +378,7 @@ describe('course identity: brute force over every possible resolution (#11)', ()
         }
     });
     it('input order does not change the result', () => {
+        /** @param {ReturnType<typeof buildLedgerWithCourseIdentity>} r */
         const norm = (r) => ({
             audit: { ...r.audit, excludedAttempts: [...r.audit.excludedAttempts].sort((a, b) => (a.attemptToken < b.attemptToken ? -1 : 1)) },
             tokens: [...r.unresolved.attemptTokens].sort(), linked: [...r.unresolved.linkedAttemptTokens].sort(),

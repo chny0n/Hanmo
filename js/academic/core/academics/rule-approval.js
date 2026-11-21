@@ -1,7 +1,6 @@
 // @ts-check
-/** @typedef {import("zod").z} z */
-/** @typedef {import("../../contracts/index.js").AcademicClauseVNext} AcademicClauseVNext */
-/** @typedef {import("../../contracts/index.js").AcademicRulePackVNext} AcademicRulePackVNext */
+/** @import { z } from "zod" */
+/** @import { AcademicClauseVNext, AcademicRulePackVNext } from "../../contracts/index.js" */
 /** @typedef {z.infer<typeof MajorRoleVNextSchema>} MajorRole */
 /** @typedef {NonNullable<AcademicRulePackVNext['validationReport']>['blockingIssues'][number]['code']} ContractBlockingCode */
 /** @typedef {| ContractBlockingCode | 'INVALID_PACK' | 'NOT_APPROVED' | 'NOT_APPROVED_BY_AS_OF' | 'NOT_YET_EFFECTIVE' | 'EXPIRED' | 'VERSION_ALREADY_ACTIVE' | 'SUPERSEDE_CHAIN_BROKEN'} RulePackGateCode */
@@ -15,6 +14,7 @@ import { AcademicRulePackVNextSchema, MajorRoleVNextSchema, stableAcademicRequir
 import { AS_OF, ID, assertId, byCodeUnit } from './ledger.js';
 const MAX_CLAUSES = 500;
 const SHA256 = /^[a-f0-9]{64}$/;
+/** @type {ReadonlySet<string>} */
 const BLOCKING_CODES = new Set([
     'NUMERIC_SOURCE_MISMATCH', 'CLAUSE_MISSING', 'EXCEPTION_SCOPE_CONFLICT',
     'SOURCE_CONTRADICTION', 'PROMPT_INJECTION', 'UNVERIFIED_ORIGINAL',
@@ -26,7 +26,7 @@ const BLOCKING_CODES = new Set([
  */
 function record(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
-        ? value
+        ? /** @type {Record<string, unknown>} */ (value)
         : undefined;
 }
 /** 후보 자체의 경고를 스키마 검증 전에 확인해 후보가 잘못돼도 보류 이유를 기록한다. 해석 불가 경고는 OTHER로 유지한다. */
@@ -38,11 +38,12 @@ function reportedIssues(candidate) {
     const body = record(candidate);
     const version = typeof body?.version === 'string' && ID.test(body.version) ? body.version : undefined;
     const list = record(body?.validationReport)?.blockingIssues;
+    /** @type {RulePackGateIssue[]} */
     const issues = [];
     if (Array.isArray(list)) {
         for (const item of list.slice(0, 200)) {
             const row = record(item);
-            const code = typeof row?.code === 'string' && BLOCKING_CODES.has(row.code) ? row.code : 'OTHER';
+            const code = typeof row?.code === 'string' && BLOCKING_CODES.has(row.code) ? /** @type {ContractBlockingCode} */ (row.code) : 'OTHER';
             const clauseId = row?.sourceClauseId;
             issues.push(typeof clauseId === 'string' && ID.test(clauseId) ? { code, sourceClauseId: clauseId } : { code });
         }
@@ -55,6 +56,7 @@ function reportedIssues(candidate) {
  * @returns {Set<MajorRole>}
  */
 function roles(list, label) {
+    /** @type {Set<MajorRole>} */
     const set = new Set();
     for (const role of list ?? []) {
         if (!MajorRoleVNextSchema.safeParse(role).success)
@@ -85,6 +87,7 @@ function readTrusted(original) {
                 throw new TypeError('trusted document hash must be sha-256 hex');
         }
     }
+    /** @type {Map<string, Trusted>} */
     const byId = new Map();
     for (const clause of original.clauses) {
         assertId(clause.clauseId, 'trusted clauseId');
@@ -97,7 +100,7 @@ function readTrusted(original) {
             if (excluded.has(role))
                 throw new TypeError(`${clause.clauseId} both includes and excludes ${role}`);
         }
-        const keys = [...new Set(clause.appliesToSemanticKeys ?? [])];
+        const keys = [.../** @type {Set<string>} */ (new Set(clause.appliesToSemanticKeys ?? []))];
         if (keys.length !== (clause.appliesToSemanticKeys ?? []).length) {
             throw new TypeError(`${clause.clauseId} repeats a semantic key`);
         }
@@ -195,6 +198,7 @@ function sameScope(a, b) {
  * @returns {RulePackActivationResult}
  */
 function finish(active, issues, candidate, candidateVersion) {
+    /** @type {Set<string>} */
     const seen = new Set();
     const unique = issues.filter(issue => {
         const key = `${issue.code}\u0000${issue.sourceClauseId ?? ''}`;
@@ -203,6 +207,7 @@ function finish(active, issues, candidate, candidateVersion) {
         seen.add(key);
         return true;
     }).sort((a, b) => byCodeUnit(a.code, b.code) || byCodeUnit(a.sourceClauseId ?? '', b.sourceClauseId ?? ''));
+    /** @type {RulePackActivationResult} */
     const result = unique.length === 0 && candidate
         ? { decision: 'ACTIVATED', active: candidate, issues: [] }
         : { decision: 'HELD', active, issues: unique };
@@ -227,6 +232,7 @@ export function decideRulePackActivation(input) {
     }
     if (active !== null && active.state !== 'APPROVED')
         throw new TypeError('active pack must be APPROVED');
+    /** @type {RulePackGateIssue[]} */
     const issues = [];
     if (input.numericCheck !== undefined) {
         const { matched, total } = input.numericCheck;

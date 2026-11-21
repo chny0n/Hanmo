@@ -17,21 +17,26 @@ import { buildMajorWhatIf, MAJOR_WHAT_IF_CORE_VERSION } from './major-what-if.js
  * 취득 과목에는 A1·A2·S1·B1·C1·G1이 있으며 영역 배정은 전공 규칙집에 따라 달라진다.
  */
 const AS_OF = '2026-11-01T00:00:00.000Z';
+/** @param {string} canonicalCourseId @param {Partial<DoubleMajorAttempt>} [over] @returns {DoubleMajorAttempt} */
 const course = (canonicalCourseId, over = {}) => ({
     attemptToken: `${canonicalCourseId}-T`, canonicalCourseId, creditUnits: 6, ledger: 'EARNED', recognition: 'RECOGNIZED', term: '2025-2', ...over,
 });
+/** @type {DoubleMajorAttempt[]} */
 const ATTEMPTS = [
     course('SYN-A1'), course('SYN-A2'), course('SYN-S1'), course('SYN-B1'), course('SYN-C1'), course('SYN-G1'),
     course('SYN-B2', { ledger: 'IN_PROGRESS', term: '2026-2' }),
 ];
-const total = (id) => ({ id, kind: 'CREDIT_TOTAL', requiredCreditUnits: 260, evidenceRefs: ['EV-SYN-TOTAL'] });
+/** @param {string} id */
+const total = (id) => ({ id, kind: /** @type {const} */ ('CREDIT_TOTAL'), requiredCreditUnits: 260, evidenceRefs: ['EV-SYN-TOTAL'] });
 const A_AREAS = { 'SYN-A1': ['SYN-AREA-A'], 'SYN-A2': ['SYN-AREA-A'], 'SYN-S1': ['SYN-AREA-A'] };
+/** @param {string} version @param {string} majorId @param {number} required @param {MajorRulePack['rulePackState']} [state] @returns {MajorRulePack} */
 const primaryA = (version, majorId, required, state = 'APPROVED') => ({
     rulePackVersion: version, rulePackState: state, courseAreas: A_AREAS,
     requirements: [total('SYN-A-TOTAL'),
         { id: majorId, kind: 'CATEGORY_MINIMUM', areaId: 'SYN-AREA-A', requiredCreditUnits: required, evidenceRefs: ['EV-SYN-A'] },
         { id: 'SYN-A-REQ', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-A1', evidenceRefs: ['EV-SYN-A'] }],
 });
+/** @param {MajorRulePack['rulePackState']} [state] @param {OverlapRule} [overlapRule] @returns {MajorRulePack & {overlapRule?:OverlapRule}} */
 const doubleB = (state = 'APPROVED', overlapRule) => ({
     rulePackVersion: 'SYN-B-DM-1', rulePackState: state,
     courseAreas: { 'SYN-B1': ['SYN-AREA-B'], 'SYN-B2': ['SYN-AREA-B'], 'SYN-S1': ['SYN-AREA-B'] },
@@ -41,6 +46,7 @@ const doubleB = (state = 'APPROVED', overlapRule) => ({
     ],
     ...(overlapRule ? { overlapRule } : {}),
 });
+/** @param {string} version @param {string} prefix @param {MajorRulePack['rulePackState']} [state] @returns {MajorRulePack} */
 const packC = (version, prefix, state = 'APPROVED') => ({
     rulePackVersion: version, rulePackState: state, courseAreas: { 'SYN-C1': ['SYN-AREA-C'] },
     requirements: [
@@ -48,11 +54,13 @@ const packC = (version, prefix, state = 'APPROVED') => ({
         { id: `${prefix}-REQ`, kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-C2', evidenceRefs: ['EV-SYN-C'] }
     ],
 });
+/** @type {MajorRulePack} */
 const primaryD = {
     rulePackVersion: 'SYN-D-DM-1', rulePackState: 'APPROVED', courseAreas: {},
     requirements: [total('SYN-D-TOTAL'),
         { id: 'SYN-D-MAJOR', kind: 'CATEGORY_MINIMUM', areaId: 'SYN-AREA-D', requiredCreditUnits: 6, evidenceRefs: ['EV-SYN-D'] }],
 };
+/** @type {ProgramOffer[]} */
 const CATALOG = [
     { role: 'PRIMARY_MAJOR', programId: 'SYN-MAJ-A', degreePath: 'DOUBLE_MAJOR', pack: primaryA('SYN-A-DM-1', 'SYN-A-MAJOR-DM', 18) },
     { role: 'PRIMARY_MAJOR', programId: 'SYN-MAJ-A', degreePath: 'MAJOR_DEEPENING', pack: primaryA('SYN-A-MD-1', 'SYN-A-MAJOR-MD', 36) },
@@ -62,15 +70,20 @@ const CATALOG = [
     { role: 'MINOR', programId: 'SYN-MAJ-C', pack: packC('SYN-C-MI-1', 'SYN-CM') },
     { role: 'PRIMARY_MAJOR', programId: 'SYN-MAJ-D', degreePath: 'DOUBLE_MAJOR', pack: primaryD },
 ];
+/** @type {ProgramEnrollment} */
 const A_WITH_B = { primaryProgramId: 'SYN-MAJ-A', secondary: { role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-B' } };
+/** @type {ProgramEnrollment} */
 const A_ONLY = { primaryProgramId: 'SYN-MAJ-A' };
+/** @param {WhatIfScenario} scenario @param {Partial<MajorWhatIfRequest>} [over] @returns {MajorWhatIfResult} */
 const run = (scenario, over = {}) => buildMajorWhatIf({ asOf: AS_OF, attempts: ATTEMPTS, current: A_WITH_B, scenario, programs: CATALOG, ...over });
+/** @param {MajorWhatIfResult} result */
 const ready = (result) => {
     if (result.state !== 'READY')
         throw new Error(`expected READY, got ${JSON.stringify(result)}`);
     return result;
 };
-const replace = (programs, version, pack) => programs.map(offer => (offer.pack.rulePackVersion === version ? { ...offer, pack } : offer));
+/** @param {ProgramOffer[]} programs @param {string} version @param {MajorRulePack} pack @returns {ProgramOffer[]} */
+const replace = (programs, version, pack) => programs.map(offer => (offer.pack.rulePackVersion === version ? /** @type {ProgramOffer} */ ({ ...offer, pack }) : offer));
 describe('buildMajorWhatIf (#11, #82)', () => {
     it('changes the double major: hand-checked projections and diff', () => {
         const result = ready(run({ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' }));
@@ -120,7 +133,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         // C1이 인정 대기면 취득 총합은 30단위가 되고 230단위가 남는다.
         // C는 해당 영역 과목이 C1뿐이라 6단위 부족 상태를 검토 보류한다. A 영역은 A1·A2·S1로 18단위 충족한다.
         // 미이수 필수 과목 C2는 C1로 충족시킬 수 없다.
-        const pendingC1 = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? { ...a, recognition: 'PENDING' } : a));
+        const pendingC1 = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? { ...a, recognition: /** @type {const} */ ('PENDING') } : a));
         const result = ready(run({ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' }, { attempts: pendingC1 }));
         expect(result.hypothetical.requirements).toEqual([
             { requirementId: 'SYN-A-TOTAL', state: 'MISSING', missingCreditUnits: 230 },
@@ -140,22 +153,24 @@ describe('buildMajorWhatIf (#11, #82)', () => {
     it('an undecided course flags the required-course and one-of rows that name it, and no others', () => {
         // F는 C1을 필수와 택일 과목으로 직접 참조하므로 인정 대기 시 둘 다 미충족이지만 보류 표시한다.
         // C1과 무관한 택일 G1/G2는 둘 다 미이수이므로 확정 부족이다.
+        /** @type {MajorRulePack} */
         const packF = { rulePackVersion: 'SYN-F-DM-1', rulePackState: 'APPROVED', courseAreas: {},
             requirements: [
                 { id: 'SYN-F-REQ-C1', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-C1', evidenceRefs: ['EV-SYN-F'] },
                 { id: 'SYN-F-ONE-OF-C1', kind: 'K_OF_N', courseIds: ['SYN-C1', 'SYN-F2'], k: 1, evidenceRefs: ['EV-SYN-F'] },
                 { id: 'SYN-F-ONE-OF-OTHER', kind: 'K_OF_N', courseIds: ['SYN-G1', 'SYN-G2'], k: 2, evidenceRefs: ['EV-SYN-F'] }
             ] };
-        const pendingC1 = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? { ...a, recognition: 'PENDING' } : a));
+        const pendingC1 = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? { ...a, recognition: /** @type {const} */ ('PENDING') } : a));
         const h = ready(run({ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-F' }, { attempts: pendingC1, programs: [...CATALOG, { role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-F', pack: packF }] })).hypothetical;
         expect(h.requirements.filter(r => r.requirementId.startsWith('SYN-F')).map(r => r.state)).toEqual(['MISSING', 'MISSING', 'MISSING']);
         expect(h.reviewRequirementIds).toEqual(['SYN-A-TOTAL', 'SYN-F-REQ-C1', 'SYN-F-ONE-OF-C1']);
     });
-    it.each([
-        ['pending recognition', { recognition: 'PENDING' }, true],
+    it.each(/** @type {const} */ ([
+        ['pending recognition', { recognition: /** @type {const} */ ('PENDING') }, true],
         ['a term not ended by asOf', { term: '2026-2' }, true],
-        ['an official exclusion', { recognition: 'EXCLUDED' }, false],
-    ])('composite rows preserve review holds for %s only where the course can contribute', (_label, change, held) => {
+        ['an official exclusion', { recognition: /** @type {const} */ ('EXCLUDED') }, false],
+    ]))('composite rows preserve review holds for %s only where the course can contribute', (_label, change, held) => {
+        /** @type {MajorRulePack} */
         const packF = { rulePackVersion: 'SYN-F-DM-1', rulePackState: 'APPROVED',
             courseAreas: { 'SYN-C1': ['SYN-AREA-C'], 'SYN-G1': ['SYN-AREA-G'] },
             requirements: [
@@ -179,6 +194,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         expect(h.remainingCreditUnits).toBe(230);
     });
     it('a term not ended by asOf and an unapproved retake are undecided too; settled exclusions flag nothing', () => {
+        /** @type {WhatIfScenario} */
         const scenario = { action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' };
         // A2가 EARNED로 표시돼도 2026-11-01에는 2026-2가 끝나지 않았으므로 A영역은 A1+S1의 12/18만 취득했다.
         const unended = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-A2' ? { ...a, term: '2026-2' } : a));
@@ -191,7 +207,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         expect(r.requirements.filter(x => x.state === 'SATISFIED').map(x => x.requirementId)).toEqual(['SYN-A-MAJOR-DM', 'SYN-A-REQ', 'SYN-C-MAJOR']);
         expect(r.reviewRequirementIds).toEqual(['SYN-A-TOTAL']);
         // 공식 제외는 확정된 상태이므로 C 영역은 단순 미충족으로 표시하고 추가 보류 표시가 없다.
-        const excluded = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? { ...a, recognition: 'EXCLUDED' } : a));
+        const excluded = ATTEMPTS.map(a => (a.canonicalCourseId === 'SYN-C1' ? { ...a, recognition: /** @type {const} */ ('EXCLUDED') } : a));
         const e = ready(run(scenario, { attempts: excluded })).hypothetical;
         expect(e.requirements.find(x => x.requirementId === 'SYN-C-MAJOR')).toEqual({ requirementId: 'SYN-C-MAJOR', state: 'MISSING', missingCreditUnits: 6 });
         expect(e.reviewRequirementIds).toEqual([]);
@@ -229,6 +245,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
             { requirementId: 'SYN-CM-MAJOR', state: 'SATISFIED' },
             { requirementId: 'SYN-CM-REQ', state: 'MISSING' },
         ]);
+        /** @type {ProgramEnrollment} */
         const minorNow = { primaryProgramId: 'SYN-MAJ-A', secondary: { role: 'MINOR', programId: 'SYN-MAJ-C' } };
         expect(ready(run({ action: 'REMOVE_MINOR' }, { current: minorNow })).hypothetical.rulePackVersions).toEqual(['SYN-A-MD-1']);
     });
@@ -278,6 +295,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
             .toMatchObject({ blockers: ['CURRENT_RULEPACK_NOT_APPROVED'] });
     });
     it('refuses changes that do not fit the current programs or that the catalog lacks', () => {
+        /** @param {WhatIfScenario} scenario @param {ProgramEnrollment} [current] */
         const unavailable = (scenario, current = A_WITH_B, programs = CATALOG) => expect(run(scenario, { current, programs })).toMatchObject({ state: 'BLOCKED_DEPENDENCY', blockers: ['TARGET_PROGRAM_UNAVAILABLE'] });
         unavailable({ action: 'ADD_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' });
         unavailable({ action: 'ADD_MINOR', targetMajorId: 'SYN-MAJ-C' });
@@ -291,6 +309,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         unavailable({ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-NOWHERE' });
         unavailable({ action: 'REMOVE_DOUBLE_MAJOR' }, A_WITH_B, CATALOG.filter(offer => offer.pack.rulePackVersion !== 'SYN-A-MD-1'));
         unavailable({ action: 'ADD_MINOR', targetMajorId: 'SYN-MAJ-B' }, A_ONLY);
+        /** @type {ProgramEnrollment} */
         const minorNow = { primaryProgramId: 'SYN-MAJ-A', secondary: { role: 'MINOR', programId: 'SYN-MAJ-C' } };
         unavailable({ action: 'REMOVE_DOUBLE_MAJOR' }, minorNow);
         unavailable({ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-B' }, minorNow);
@@ -299,6 +318,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         // E는 A1·A2를 E영역으로 사용하므로 A+E에서 두 과목은 미승인 공유 상태다.
         // A는 이들을 제외하면 S1만 남아 6/18(12 부족)이고 필수 A1도 보류한다.
         // E는 포함 시 12/6, 제외 시 0/6이다.
+        /** @type {MajorRulePack} */
         const packE = { rulePackVersion: 'SYN-E-DM-1', rulePackState: 'APPROVED',
             courseAreas: { 'SYN-A1': ['SYN-AREA-E'], 'SYN-A2': ['SYN-AREA-E'] },
             requirements: [{ id: 'SYN-E-MAJOR', kind: 'CATEGORY_MINIMUM', areaId: 'SYN-AREA-E', requiredCreditUnits: 6, evidenceRefs: ['EV-SYN-E'] }] };
@@ -316,7 +336,7 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         ]);
     });
     it('refuses malformed input instead of guessing', () => {
-        expect(() => run({ action: 'ADD_DOUBLE_MAJOR' })).toThrow(/scenario/);
+        expect(() => run(/** @type {WhatIfScenario} */ (/** @type {unknown} */ ({ action: 'ADD_DOUBLE_MAJOR' })))).toThrow(/scenario/);
         expect(() => run({ action: 'REMOVE_DOUBLE_MAJOR' }, { programs: [...CATALOG, CATALOG[3]] })).toThrow(/more than once/);
         const clash = replace(CATALOG, 'SYN-C-DM-1', { ...packC('SYN-C-DM-1', 'SYN-C'),
             requirements: [{ id: 'SYN-A-REQ', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-C2', evidenceRefs: ['EV-SYN-C'] }] });
@@ -330,16 +350,17 @@ describe('buildMajorWhatIf (#11, #82)', () => {
             .toThrow(/cannot be the primary/);
     });
     it('names a bad program ID instead of silently mapping unknown degree paths (#231 follow-up)', () => {
+        /** @type {ProgramOffer[]} */
         const malformed = CATALOG.map(offer => offer.role === 'PRIMARY_MAJOR'
             && offer.programId === 'SYN-MAJ-D'
-            ? { ...offer, degreePath: 'UNKNOWN' } : offer);
+            ? { ...offer, degreePath: /** @type {never} */ ('UNKNOWN') } : offer);
         expect(() => run({ action: 'CHANGE_PRIMARY_MAJOR', targetMajorId: 'SYN-MAJ-D' }, { programs: malformed }))
             .toThrow('Primary pack SYN-MAJ-D needs a supported degree path');
         // 정상적인 정식 계약 경로를 UNKNOWN으로 강등해서는 안 된다.
         const canonical = CATALOG.map(offer => offer.role === 'PRIMARY_MAJOR'
             && offer.programId === 'SYN-MAJ-A'
             && offer.degreePath === 'MAJOR_DEEPENING'
-            ? { ...offer, degreePath: 'ADVANCED_SINGLE' } : offer);
+            ? { ...offer, degreePath: /** @type {const} */ ('ADVANCED_SINGLE') } : offer);
         const expected = run({ action: 'REMOVE_DOUBLE_MAJOR' });
         expect(run({ action: 'REMOVE_DOUBLE_MAJOR' }, { programs: canonical })).toEqual(expected);
     });
@@ -354,7 +375,9 @@ describe('buildMajorWhatIf (#11, #82)', () => {
             return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
         };
         const pool = ['SYN-A1', 'SYN-A2', 'SYN-S1', 'SYN-B1', 'SYN-B2', 'SYN-C1', 'SYN-C2', 'SYN-G1'];
+        /** @param {WhatIfProjection} options */
         const strip = ({ role: _role, ...side }) => side;
+        /** @param {MajorWhatIfResult} forward @param {MajorWhatIfResult} back */
         const swapped = (forward, back) => {
             const f = ready(forward), b = ready(back);
             expect(strip(f.hypothetical)).toEqual(strip(b.current));
@@ -362,8 +385,11 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         };
         for (let i = 0; i < 300; i++) {
             const attempts = pool.filter(() => rng() < 0.6).map(id => course(id, rng() < 0.25 ? { ledger: 'IN_PROGRESS', term: '2026-2' } : {}));
+            /** @param {ProgramEnrollment} current @param {WhatIfScenario} scenario */
             const at = (current, scenario) => run(scenario, { current, attempts });
+            /** @type {ProgramEnrollment} */
             const withC = { primaryProgramId: 'SYN-MAJ-A', secondary: { role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-C' } };
+            /** @type {ProgramEnrollment} */
             const minorC = { primaryProgramId: 'SYN-MAJ-A', secondary: { role: 'MINOR', programId: 'SYN-MAJ-C' } };
             swapped(at(A_WITH_B, { action: 'REMOVE_DOUBLE_MAJOR' }), at(A_ONLY, { action: 'ADD_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-B' }));
             swapped(at(A_WITH_B, { action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' }), at(withC, { action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-B' }));
@@ -376,13 +402,15 @@ describe('buildMajorWhatIf (#11, #82)', () => {
         }
     });
     it('gives the same answer whatever order the catalog and attempts come in', () => {
+        /** @type {WhatIfScenario} */
         const scenario = { action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' };
         expect(run(scenario, { programs: [...CATALOG].reverse(), attempts: [...ATTEMPTS].reverse() })).toEqual(run(scenario));
     });
     it('fits the #107 owner contract once the server adds versions, evidence links and approval', () => {
-        for (const scenario of [{ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' }, { action: 'REMOVE_DOUBLE_MAJOR' },
-            { action: 'CHANGE_PRIMARY_MAJOR', targetMajorId: 'SYN-MAJ-D' }]) {
+        for (const scenario of /** @type {WhatIfScenario[]} */ ([{ action: 'CHANGE_DOUBLE_MAJOR', targetMajorId: 'SYN-MAJ-C' }, { action: 'REMOVE_DOUBLE_MAJOR' },
+            { action: 'CHANGE_PRIMARY_MAJOR', targetMajorId: 'SYN-MAJ-D' }])) {
             const result = ready(run(scenario));
+            /** @param {typeof result.current} options @param {string} rulePackVersion */
             const view = ({ role, asOf, earnedCreditUnits, remainingCreditUnits, requirements }, rulePackVersion) => ({ role, asOf, rulePackVersion, earnedCreditUnits, remainingCreditUnits, requirements });
             const refs = [...new Set(result.delta.flatMap(row => row.evidenceRefs))];
             const versions = { currentRulePack: 'SYN-CUR', hypotheticalRulePack: 'SYN-HYP', cohort: 'SYN-COHORT', overlapPolicy: 'SYN-OVERLAP',
@@ -408,17 +436,22 @@ describe('buildMajorWhatIf (#11, #82)', () => {
 describe('second-program packs approved for one primary major (#249 review W1)', () => {
     // 이중전공 C는 주전공별 규칙집을 가진다. 취득된 C 과목은 C1(6단위)뿐이다.
     // 주전공 A에선 C 영역 6단위 필요로 충족, 주전공 D에선 12단위 필요로 6단위 부족하다.
+    /** @param {MajorRulePack['rulePackState']} [state] */
     const cForA = (state = 'APPROVED') => packC('SYN-C-DM-FOR-A', 'SYN-CA', state);
+    /** @param {MajorRulePack['rulePackState']} [state] @returns {MajorRulePack} */
     const cForD = (state = 'APPROVED') => ({
         rulePackVersion: 'SYN-C-DM-FOR-D', rulePackState: state, courseAreas: { 'SYN-C1': ['SYN-AREA-C'] },
         requirements: [{ id: 'SYN-CD-MAJOR', kind: 'CATEGORY_MINIMUM', areaId: 'SYN-AREA-C', requiredCreditUnits: 12, evidenceRefs: ['EV-SYN-C'] }],
     });
+    /** @returns {ProgramOffer[]} */
     const scoped = (forA = cForA(), forD = cForD()) => [
         ...CATALOG.filter(offer => !(offer.role === 'DOUBLE_MAJOR' && offer.programId === 'SYN-MAJ-C')),
         { role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-C', primaryProgramId: 'SYN-MAJ-A', pack: forA },
         { role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-C', primaryProgramId: 'SYN-MAJ-D', pack: forD },
     ];
+    /** @type {ProgramEnrollment} */
     const A_WITH_C = { primaryProgramId: 'SYN-MAJ-A', secondary: { role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-C' } };
+    /** @type {WhatIfScenario} */
     const toD = { action: 'CHANGE_PRIMARY_MAJOR', targetMajorId: 'SYN-MAJ-D' };
     it('a primary change switches the double-major pack to the one approved for the new primary', () => {
         const result = ready(run(toD, { current: A_WITH_C, programs: scoped() }));
@@ -451,6 +484,7 @@ describe('second-program packs approved for one primary major (#249 review W1)',
         ]);
     });
     it('a minor approved per primary major switches the same way', () => {
+        /** @type {ProgramOffer[]} */
         const programs = [
             ...CATALOG.filter(offer => !(offer.role === 'MINOR' && offer.programId === 'SYN-MAJ-C')),
             { role: 'PRIMARY_MAJOR', programId: 'SYN-MAJ-D', degreePath: 'ADVANCED_PLUS_MINOR', pack: { ...primaryD, rulePackVersion: 'SYN-D-MM-1' } },
@@ -477,6 +511,7 @@ describe('second-program packs approved for one primary major (#249 review W1)',
             .toMatchObject({ state: 'BLOCKED_DEPENDENCY', blockers: ['CURRENT_RULEPACK_NOT_APPROVED'] });
     });
     it('the catalog refuses ambiguous or malformed scoping', () => {
+        /** @param {ProgramOffer} offer */
         const add = (offer) => () => run(toD, { current: A_WITH_C, programs: [...scoped(), offer] });
         // 전공 공통 규칙집과 주전공별 규칙집을 함께 허용하면 목록 순서가 선택을 좌우하므로 혼합을 거부한다.
         expect(add({ role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-C', pack: packC('SYN-C-DM-ANY', 'SYN-CX') })).toThrow(/mixes/);
@@ -486,8 +521,8 @@ describe('second-program packs approved for one primary major (#249 review W1)',
             .toThrow(/itself/);
         expect(add({ role: 'DOUBLE_MAJOR', programId: 'SYN-MAJ-E', primaryProgramId: 'bad id', pack: packC('SYN-E-DM-1', 'SYN-E') }))
             .toThrow(TypeError);
-        expect(add({ role: 'PRIMARY_MAJOR', programId: 'SYN-MAJ-E', degreePath: 'DOUBLE_MAJOR', primaryProgramId: 'SYN-MAJ-A',
-            pack: { ...primaryD, rulePackVersion: 'SYN-E-PM-1' } })).toThrow(/cannot name a primaryProgramId/);
+        expect(add(/** @type {ProgramOffer} */ (/** @type {unknown} */ ({ role: 'PRIMARY_MAJOR', programId: 'SYN-MAJ-E', degreePath: 'DOUBLE_MAJOR', primaryProgramId: 'SYN-MAJ-A',
+            pack: { ...primaryD, rulePackVersion: 'SYN-E-PM-1' } })))).toThrow(/cannot name a primaryProgramId/);
         // 같은 프로그램이라도 부전공 선택은 별도 제안이므로 전공 공통 규칙집 하나를 유지할 수 있다.
         expect(add({ role: 'MINOR', programId: 'SYN-MAJ-E', pack: packC('SYN-E-MI-1', 'SYN-EM') })).not.toThrow();
     });

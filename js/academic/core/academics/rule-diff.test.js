@@ -11,26 +11,32 @@ import { buildAcademicLedger } from './ledger.js';
 import { compareRulePackRevisions } from './rule-diff.js';
 /** 합성 규칙집·원장만 사용한다. 1단위는 0.5학점이므로 3학점은 6단위다. */
 const AS_OF = '2026-11-01T00:00:00.000Z';
-const total = (units, over = {}) => ({
+/** @param {number} units @param {Partial<Req>} [over] @returns {Req} */
+const total = (units, over = {}) => (/** @type {Req} */ ({
     id: 'REQ-TOTAL', semanticKey: 'total', kind: 'CREDIT_TOTAL', requiredCreditUnits: units,
     sourceClauseIds: ['CL-TOTAL'], exceptionClauseIds: [], evidenceRefs: ['SYN-EV-TOTAL'], ...over,
-});
+}));
+/** @param {string} id @param {string} areaId @param {number} units @returns {Req} */
 const area = (id, areaId, units) => ({
     id, semanticKey: `area-${areaId}`, kind: 'CATEGORY_MINIMUM', areaId, requiredCreditUnits: units,
     sourceClauseIds: [`CL-${areaId}`], exceptionClauseIds: [], evidenceRefs: [`SYN-EV-${areaId}`],
 });
+/** @param {number} k @returns {Req} */
 const choice = (k, courseIds = ['SYN-A', 'SYN-B', 'SYN-C']) => ({
     id: 'REQ-CHOICE', semanticKey: 'choice', kind: 'K_OF_N', courseIds, k,
     sourceClauseIds: ['CL-CHOICE'], exceptionClauseIds: [], evidenceRefs: ['SYN-EV-CHOICE'],
 });
+/** @returns {Req} */
 const core = () => ({
     id: 'REQ-CORE', semanticKey: 'core', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-CORE',
     sourceClauseIds: ['CL-CORE'], exceptionClauseIds: [], evidenceRefs: ['SYN-EV-CORE'],
 });
+/** @returns {Req} */
 const gpa = () => ({
     id: 'REQ-GPA', semanticKey: 'gpa', kind: 'NON_CREDIT', criterionId: 'GPA', verificationMode: 'GPA_NOT_COLLECTED',
     sourceClauseIds: ['CL-GPA'], exceptionClauseIds: [], evidenceRefs: ['SYN-EV-GPA'],
 });
+/** @returns {Req[]} */
 const baseRequirements = () => [total(12), area('REQ-MAJOR', 'MAJOR', 12), area('REQ-GENERAL', 'GENERAL', 6), choice(2)];
 /** 요건에서 조항 목록을 역으로 만들어 일관성을 시험한다. 원문 구간은 문구 수정 시나리오를 위해 덮어쓸 수 있다. */
 /**
@@ -39,6 +45,7 @@ const baseRequirements = () => [total(12), area('REQ-MAJOR', 'MAJOR', 12), area(
  * @returns {Clause[]}
  */
 function inventory(requirements, spans) {
+    /** @type {Map<string, {kind:Clause['kind']; ids:string[]}>} */
     const byClause = new Map();
     for (const req of requirements) {
         for (const id of req.sourceClauseIds) {
@@ -58,10 +65,12 @@ function inventory(requirements, spans) {
         coverage: { state: 'LINKED', requirementIds: ids },
     }));
 }
+/** @type {Pack['scope']} */
 const SCOPE = {
     campus: 'DEMO', primaryMajor: 'SYN-PRIMARY', secondaryMajor: 'SYN-ECON', majorRole: 'DOUBLE_MAJOR',
     admissionType: 'REGULAR', curriculumVersion: 'CUR-2025', cohortFrom: 2023, cohortTo: 2026,
 };
+/** @param {string} version @param {Req[]} requirements @param {Partial<Pack>} [over] @param {Record<string, string>} [spans] @returns {Pack} */
 const pack = (version, requirements, over = {}, spans = {}) => {
     const sha = (over.sourceDocumentSha256 ?? (version === 'SYN-V1' ? 'a' : 'b').repeat(64));
     return {
@@ -83,7 +92,9 @@ const pack = (version, requirements, over = {}, spans = {}) => {
         ...over,
     };
 };
+/** @type {Partial<Pack>} */
 const V1_OVER = { effectiveUntil: '2026-09-01T00:00:00.000Z' };
+/** @type {Partial<Pack>} */
 const V2_OVER = {
     supersedesVersion: 'SYN-V1',
     sourcePublishedAt: '2026-07-01T00:00:00.000Z',
@@ -91,21 +102,27 @@ const V2_OVER = {
     validationReport: { checkedAt: '2026-07-20T00:00:00.000Z', sourceDocumentSha256: 'b'.repeat(64), blockingIssues: [] },
     approvedAt: '2026-08-01T00:00:00.000Z',
 };
+/** @param {Partial<Pack>} [over] */
 const v1 = (requirements = baseRequirements(), over = {}) => pack('SYN-V1', requirements, { ...V1_OVER, ...over });
+/** @param {Partial<Pack>} [over] @param {Record<string, string>} [spans] */
 const v2 = (requirements = baseRequirements(), over = {}, spans = {}) => pack('SYN-V2', requirements, { ...V2_OVER, ...over }, spans);
+/** @param {string} token @param {string} courseId @param {Partial<LedgerAttempt>} [over] @returns {LedgerAttempt} */
 const attempt = (token, courseId, over = {}) => ({
     attemptToken: token, canonicalCourseId: courseId, creditUnits: 6, ledger: 'EARNED',
     areaIds: ['MAJOR'], recognition: 'RECOGNIZED', term: '2025-2', ...over,
 });
 /** SYN-A는 두 영역에서 인정되지만 총학점에는 한 번만 세고 SYN-C는 계획 상태다. */
+/** @type {LedgerAttempt[]} */
 const ATTEMPTS = [
     attempt('SYN-T-A', 'SYN-A', { areaIds: ['MAJOR', 'GENERAL'] }),
     attempt('SYN-T-B', 'SYN-B'),
     attempt('SYN-T-C', 'SYN-C', { ledger: 'PLANNED', term: '2027-1' }),
 ];
+/** @param {unknown} previous @param {unknown} next @param {Partial<RulePackRevisionRequest>} [over] @returns {RulePackRevisionRequest} */
 const request = (previous, next, over = {}) => 
 // 두 판본에 같은 원장 행을 사용해 영역 배정이 변경되지 않았음을 명시한다(nextAttempts).
 ({ asOf: AS_OF, previous, next, attempts: ATTEMPTS, nextAttempts: ATTEMPTS, ...over });
+/** @param {ReturnType<typeof compareRulePackRevisions>} diff @param {string} id */
 const row = (diff, id) => diff.requirements.find(r => r.requirementId === id);
 describe('compareRulePackRevisions: clean amendment', () => {
     it('reports every requirement unchanged when only the version changes', () => {
@@ -123,13 +140,14 @@ describe('compareRulePackRevisions: clean amendment', () => {
     });
     it('matches buildAcademicLedger row for row on each side', () => {
         const diff = compareRulePackRevisions(request(v1(), v2([total(16), area('REQ-MAJOR', 'MAJOR', 18)])));
+        /** @param {Pack} p */
         const ledgerRows = (p) => buildAcademicLedger({
             asOf: AS_OF, rulePackVersion: p.version, rulePackState: 'APPROVED', attempts: ATTEMPTS,
             requirements: p.requirements.map(r => r.kind === 'CREDIT_TOTAL'
                 ? { id: r.id, kind: r.kind, requiredCreditUnits: r.requiredCreditUnits, evidenceRefs: r.evidenceRefs }
                 : r.kind === 'CATEGORY_MINIMUM'
                     ? { id: r.id, kind: r.kind, areaId: r.areaId, requiredCreditUnits: r.requiredCreditUnits, evidenceRefs: r.evidenceRefs }
-                    : { id: r.id, kind: 'K_OF_N', courseIds: r.courseIds, k: r.k, evidenceRefs: r.evidenceRefs }),
+                    : { id: r.id, kind: 'K_OF_N', courseIds: /** @type {Extract<Req, {kind:'K_OF_N'}>} */ (r).courseIds, k: /** @type {Extract<Req, {kind:'K_OF_N'}>} */ (r).k, evidenceRefs: r.evidenceRefs }),
         }).requirements;
         const after = ledgerRows(v2([total(16), area('REQ-MAJOR', 'MAJOR', 18)]));
         for (const ledgerRow of after) {
@@ -202,6 +220,7 @@ describe('compareRulePackRevisions: clean amendment', () => {
     });
 });
 describe('compareRulePackRevisions: effective period agrees with #70 and the as-of selector', () => {
+    /** @param {string} asOf */
     const selected = (asOf) => selectAcademicRulePackAsOfVNext([v1(), v2()], {
         asOf, campus: 'DEMO', primaryMajor: 'SYN-PRIMARY', secondaryMajor: 'SYN-ECON', majorRole: 'DOUBLE_MAJOR',
         admissionType: 'REGULAR', curriculumVersion: 'CUR-2025', admissionYear: 2025,
@@ -218,6 +237,7 @@ describe('compareRulePackRevisions: effective period agrees with #70 and the as-
     });
 });
 describe('compareRulePackRevisions: blocked pairs return no rows', () => {
+    /** @param {unknown} previous @param {unknown} next @param {Partial<RulePackRevisionRequest>} [over] */
     const blockers = (previous, next, over = {}) => {
         const diff = compareRulePackRevisions(request(previous, next, over));
         expect(diff.state).toBe('NEEDS_REVIEW');

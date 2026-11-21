@@ -1,7 +1,6 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
-/** @typedef {import("./ledger.js").AcademicLedgerRequest} AcademicLedgerRequest */
-/** @typedef {import("./ledger.js").LedgerAttempt} LedgerAttempt */
+/** @import { AcademicAuditVNext } from "../../contracts/index.js" */
+/** @import { AcademicLedgerRequest, LedgerAttempt } from "./ledger.js" */
 /** @typedef {AcademicAuditVNext['planIssues'][number]} PlanIssue */
 /** @typedef {'MON'|'TUE'|'WED'|'THU'|'FRI'|'SAT'|'SUN'} Weekday */
 /** @typedef {{ day:Weekday; startMinute:number; endMinute:number; }} SectionMeeting */
@@ -15,6 +14,7 @@
 /** @typedef {'FITS'|'NO_FIT'|'LIMIT'} Fit */
 import { AcademicAuditVNextSchema, } from '../../contracts/index.js';
 import { AS_OF, addUnits, assertId, assertPositiveUnits, buildAcademicLedger, byCodeUnit, termEndMs, termKey, } from './ledger.js';
+/** @type {ReadonlySet<string>} */
 const WEEKDAYS = new Set(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']);
 const MINUTES_PER_DAY = 24 * 60;
 /** 통신 계약 #103에서 한 검사당 최대 60개 과목 참조를 허용한다. */
@@ -36,6 +36,7 @@ export const MAX_ALLOCATION_STATES = 50_000;
 function assertRefs(refs, label) {
     if (!Array.isArray(refs) || refs.length === 0)
         throw new TypeError(`${label} needs official evidence`);
+    /** @type {Set<string>} */
     const seen = new Set();
     for (const ref of refs) {
         assertId(ref, label);
@@ -73,6 +74,7 @@ function union(lists) {
  * @returns {string[][]}
  */
 function chunks(courseRefs) {
+    /** @type {string[][]} */
     const groups = [];
     for (let i = 0; i < courseRefs.length; i += MAX_ISSUE_COURSES)
         groups.push(courseRefs.slice(i, i + MAX_ISSUE_COURSES));
@@ -86,7 +88,9 @@ function chunks(courseRefs) {
  * @returns {TermCourse[]}
  */
 function termLoad(attempts, term, issues) {
+    /** @type {Map<string, TermCourse>} */
     const byCourse = new Map();
+    /** @type {Set<string>} */
     const repeated = new Set();
     for (const attempt of attempts) {
         if (attempt.term !== term || attempt.recognition === 'EXCLUDED')
@@ -177,6 +181,7 @@ function checkPrerequisites(plan, load, attempts, excluded, packApproved, issues
         throw new TypeError('prerequisites must be an array');
     if (rules.length > MAX_PREREQUISITES)
         throw new RangeError('too many prerequisite rules');
+    /** @type {Map<string, {requires:string[]; evidenceRefs:string[]}>} */
     const byCourse = new Map();
     for (const rule of rules) {
         assertId(rule.canonicalCourseId, 'prerequisite course');
@@ -186,6 +191,7 @@ function checkPrerequisites(plan, load, attempts, excluded, packApproved, issues
         if (!Array.isArray(rule.requiresCourseIds) || rule.requiresCourseIds.length === 0) {
             throw new TypeError(`${rule.canonicalCourseId} prerequisite lists no course`);
         }
+        /** @type {Set<string>} */
         const requires = new Set();
         for (const required of rule.requiresCourseIds) {
             assertId(required, `${rule.canonicalCourseId} prerequisite`);
@@ -209,7 +215,9 @@ function checkPrerequisites(plan, load, attempts, excluded, packApproved, issues
         const rule = byCourse.get(course.courseId);
         if (!rule)
             continue;
+        /** @type {string[]} */
         const missing = [];
+        /** @type {string[]} */
         const review = [];
         for (const required of rule.requires) {
             const state = prerequisiteState(required, attempts, excluded, planTermKey);
@@ -245,7 +253,9 @@ function validSections(plan, asOfMs) {
         throw new TypeError('sections must be an array');
     if (sections.length > MAX_SECTIONS)
         throw new RangeError('too many sections');
+    /** @type {Map<string, Section[]>} */
     const byCourse = new Map();
+    /** @type {Set<string>} */
     const seen = new Set();
     for (const section of sections) {
         assertId(section.canonicalCourseId, 'section course');
@@ -295,7 +305,9 @@ function overlaps(a, b) {
  */
 function anyFit(courses) {
     let states = 0;
+    /** @type {Section[]} */
     const chosen = [];
+    /** @param {number} index @returns {Fit} */
     const visit = (index) => {
         if (index === courses.length)
             return 'FITS';
@@ -325,8 +337,11 @@ function anyFit(courses) {
  * @returns {{courseRefs:string[]; evidenceRefs:string[]}[]}
  */
 function evidenceGroups(courseIds, sections) {
+    /** @type {{courseRefs:string[]; evidenceRefs:string[]}[]} */
     const groups = [];
+    /** @type {string[]} */
     let courseRefs = [];
+    /** @type {Set<string>} */
     let refs = new Set();
     for (const courseId of courseIds) {
         const own = sections.get(courseId).flatMap(section => section.evidenceRefs);
@@ -419,6 +434,7 @@ export function checkAcademicPlan(input) {
         throw new TypeError(`termPlan.term ${plan.term} has already ended by asOf`);
     const packApproved = input.rulePackState === 'APPROVED';
     const excluded = new Map(audit.excludedAttempts.map(row => [row.attemptToken, row.reason]));
+    /** @type {PlanIssue[]} */
     const issues = [];
     const load = termLoad(input.attempts, plan.term, issues);
     const termLoadCreditUnits = checkCap(plan, load, packApproved, issues);

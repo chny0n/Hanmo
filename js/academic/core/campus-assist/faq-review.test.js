@@ -8,11 +8,13 @@ import { faqWords } from './faq-text.js';
 import { retrieveFaqEvidence } from './faq.js';
 // PR #361 검토(심민성·박준영)에서 나온 반례로, 모든 값은 합성 자료다.
 const NOW = '2026-11-08T00:00:00Z';
+/** @param {string} documentId @param {string} title @param {string} text @param {Partial<FaqDocument>} [patch] @returns {FaqDocument} */
 const make = (documentId, title, text, patch = {}) => ({
     documentId, revisionId: 'r1', title, sourceUrl: 'https://example.org/synthetic-faq', category: 'ACADEMICS',
     publishedAt: '2026-01-01T00:00:00Z', verifiedAt: '2026-01-02T00:00:00Z', effectiveFrom: '2026-01-01',
     rights: 'APPROVED', provenance: 'SYNTHETIC', accessScope: 'PUBLIC', paragraphs: [{ id: 'p1', text }], ...patch,
 });
+/** @param {string} q @param {readonly FaqDocument[]} docs */
 const ids = (q, docs) => retrieveFaqEvidence(q, docs, NOW).map(e => e.documentId);
 describe('#361 review: citation IDs never collide across documents', () => {
     const a = make('SYN-A', '가상 교환학생 평점', '가상 교환학생 지원자는 총평점평균 3.0 이상이어야 합니다.');
@@ -23,7 +25,7 @@ describe('#361 review: citation IDs never collide across documents', () => {
         expect(new Set(evidence.map(e => e.citationId)).size).toBe(2);
     });
     it('same IDs with mixed provenance still fail closed instead of one silently replacing the other', () => {
-        const real = { ...b, provenance: 'REAL_APPROVED' };
+        const real = { ...b, provenance: /** @type {const} */ ('REAL_APPROVED') };
         expect(() => retrieveFaqEvidence('교환학생 지원자', [a, real], NOW)).toThrow(/Mixed/);
     });
     it('a repeated paragraph ID inside one document fails closed', () => {
@@ -64,6 +66,7 @@ describe('#361 review: negation polarity is compared sentence by sentence', () =
     const doc = make('SYN-CORR', '가상 수강 정정', '가상 수강 정정은 별도 신청서 없이 포털에서 직접 할 수 있습니다. 정정 기간은 개강 후 1주입니다.');
     const ev = retrieveFaqEvidence('수강 정정 포털', [doc], NOW);
     const id = ev[0].citationId;
+    /** @param {string} answer @param {string} quote @returns {FaqCandidate} */
     const cand = (answer, quote) => ({ answer, citations: [{ citationId: id, quote }], needsHumanConfirmation: true, suggestedLinks: [] });
     it('"없이" elsewhere in the source no longer covers a flipped "할 수 없습니다"', () => {
         expect(checkFaqCandidate(cand('가상 수강 정정은 포털에서 직접 할 수 없습니다.', '포털에서 직접 할 수 있습니다.'), ev))
@@ -84,6 +87,7 @@ describe('#361 review: negation polarity is compared sentence by sentence', () =
 describe('#361 review: incidental adjective negation cannot reverse the main assertion', () => {
     const doc = make('SYN-LEAVE-POL', '가상 휴학 상시 접수', '가상 휴학은 기간 제한 없는 상시 접수로 포털에서 신청할 수 있습니다. 단 접수 완료 후 취소할 수 없습니다.');
     const ev = retrieveFaqEvidence('휴학 상시 접수 포털', [doc], NOW);
+    /** @param {string} answer @param {string} quote @returns {FaqCandidate} */
     const cand = (answer, quote) => ({ answer,
         citations: [{ citationId: ev[0].citationId, quote }],
         needsHumanConfirmation: true, suggestedLinks: [] });
@@ -104,6 +108,7 @@ describe('#361 review: incidental adjective negation cannot reverse the main ass
 describe('#341 follow-up: "못하다" and "안 되다" flip polarity too (박준영 review on main 4e1a962)', () => {
     const doc = make('SYN-LEAVE-NEG', '가상 휴학 상시 접수', '가상 휴학은 기간 제한 없는 상시 접수로 포털에서 신청할 수 있습니다. 결과는 문자로 안내됩니다.');
     const ev = retrieveFaqEvidence('휴학 상시 접수 포털', [doc], NOW);
+    /** @param {string} answer @param {string} quote @returns {FaqCandidate} */
     const cand = (answer, quote) => ({ answer,
         citations: [{ citationId: ev[0].citationId, quote }],
         needsHumanConfirmation: true, suggestedLinks: [] });
@@ -146,6 +151,7 @@ describe('#361 review: spelled-out Korean counts must be quoted', () => {
     const doc = make('SYN-TERM', '가상 교환학생 학기', '가상 교환학생 지원자는 총평점평균 3.0 이상이어야 하며 4개 학기 이상을 마쳐야 합니다.');
     const ev = retrieveFaqEvidence('교환학생 학기', [doc], NOW);
     const q = '총평점평균 3.0 이상이어야 하며 4개 학기 이상을 마쳐야 합니다.';
+    /** @param {string} answer @returns {FaqCandidate} */
     const cand = (answer) => ({ answer, citations: [{ citationId: ev[0].citationId, quote: q }], needsHumanConfirmation: true, suggestedLinks: [] });
     it.each(['세 개 학기', '삼 학기', '두 학기'])('%s', (n) => {
         expect(checkFaqCandidate(cand(`가상 교환학생 지원자는 총평점평균 3.0 이상이어야 하며 ${n} 이상을 마쳐야 합니다.`), ev))

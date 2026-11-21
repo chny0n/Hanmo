@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { retrieveFaqEvidence, validateFaqCandidate } from './faq.js';
 const NOW = '2026-06-01T00:00:00Z';
+/** @type {FaqDocument} */
 const doc = {
     documentId: 'faq-a', revisionId: 'faq-a-v1', title: '가상 교환학생 상담',
     sourceUrl: 'https://example.org/synthetic-faq', category: 'EXCHANGE',
@@ -18,7 +19,7 @@ describe('FAQ retrieval and citations (#341)', () => {
         const candidate = {
             answer: '가상 예시에서 평점 기준은 3.0 이상입니다. 실제 학교 규정이 아닙니다.',
             citations: [{ citationId: 'faq-a:faq-a-v1:p1', quote: '평점 기준은 3.0 이상입니다.' }],
-            needsHumanConfirmation: true, suggestedLinks: ['/exchange'],
+            needsHumanConfirmation: true, suggestedLinks: [/** @type {const} */ ('/exchange')],
         };
         expect(validateFaqCandidate(candidate, evidence)).toEqual(candidate);
         expect(() => validateFaqCandidate({ ...candidate, answer: '최소 4.0 이상입니다.' }, evidence)).toThrow();
@@ -26,7 +27,7 @@ describe('FAQ retrieval and citations (#341)', () => {
         expect(() => validateFaqCandidate({ ...candidate, citations: [{ citationId: 'faq-a:faq-a-v1:p1', quote: '없는 문장' }] }, evidence)).toThrow();
     });
     it('revocation quarantines an older matching revision and cannot be bypassed by old asOf', () => {
-        const revoked = { ...doc, revisionId: 'faq-a-v2', rights: 'REVOKED',
+        const revoked = { ...doc, revisionId: 'faq-a-v2', rights: /** @type {const} */ ('REVOKED'),
             publishedAt: '2026-04-01T00:00:00Z', verifiedAt: '2026-04-02T00:00:00Z' };
         expect(retrieveFaqEvidence('교환학생 평점', [doc, revoked], NOW)).toHaveLength(0);
         expect(retrieveFaqEvidence('교환학생 평점', [doc, revoked], '2026-02-01T00:00:00Z')).toHaveLength(1);
@@ -44,16 +45,23 @@ describe('FAQ retrieval and citations (#341)', () => {
 });
 describe('same-revision copies cannot decide evidence by input order (#373)', () => {
     const Q = '교환학생 평점';
+    /**
+     * @template T
+     * @param {readonly T[]} xs
+     * @returns {T[][]}
+     */
     const perms = (xs) => xs.length <= 1 ? [[...xs]] :
         xs.flatMap((x, i) => perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map(rest => [x, ...rest]));
+    /** @param {readonly FaqDocument[]} rows */
     const count = (rows) => perms(rows).map(order => retrieveFaqEvidence(Q, order, NOW).length);
     it('quarantines a document whose newest revision has APPROVED and REVOKED/BLOCKED copies, in every order', () => {
-        for (const rights of ['REVOKED', 'BLOCKED']) {
+        for (const rights of /** @type {const} */ (['REVOKED', 'BLOCKED'])) {
             expect(count([doc, { ...doc, rights }])).toEqual([0, 0]);
             expect(count([doc, { ...doc, rights }, { ...doc }])).toEqual([0, 0, 0, 0, 0, 0]);
         }
     });
     it('quarantines same-revision copies whose paragraph text, URL or dates differ', () => {
+        /** @type {FaqDocument[]} */
         const altered = [
             { ...doc, paragraphs: [{ id: 'p1', text: '가상 교환학생 지원의 평점 기준은 2.5 이상입니다. 실제 학교 규정이 아닙니다.' }] },
             { ...doc, sourceUrl: 'https://example.org/synthetic-faq-other' },
@@ -73,7 +81,7 @@ describe('same-revision copies cannot decide evidence by input order (#373)', ()
         expect(count([doc, v1Copied, v2]).every(n => n === 1)).toBe(true);
     });
     it('collapses identical copies, including a different key order, to one source', () => {
-        const reordered = Object.fromEntries(Object.entries(doc).reverse());
+        const reordered = /** @type {FaqDocument} */ (Object.fromEntries(Object.entries(doc).reverse()));
         expect(count([doc, { ...doc }, reordered])).toEqual([1, 1, 1, 1, 1, 1]);
         // 선택 필드가 명시적으로 undefined인 경우와 아예 없는 경우는 내용상 동일하다.
         expect(count([doc, { ...doc, effectiveUntil: undefined }])).toEqual([1, 1]);
@@ -85,8 +93,9 @@ describe('same-revision copies cannot decide evidence by input order (#373)', ()
         expect(retrieveFaqEvidence(Q, [doc, v2, { ...v2, rights: 'REVOKED' }], '2026-02-01T00:00:00Z')).toHaveLength(1);
     });
     it('keeps unrelated documents when one document is quarantined', () => {
+        /** @type {FaqDocument} */
         const other = { ...doc, documentId: 'faq-b', revisionId: 'faq-b-v1' };
-        for (const order of perms([doc, { ...doc, rights: 'REVOKED' }, other])) {
+        for (const order of perms([doc, { ...doc, rights: /** @type {const} */ ('REVOKED') }, other])) {
             const evidence = retrieveFaqEvidence(Q, order, NOW);
             expect(evidence.map(e => e.documentId)).toEqual(['faq-b']);
         }

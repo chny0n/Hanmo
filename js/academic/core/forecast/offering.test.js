@@ -73,7 +73,7 @@ describe('forecastOffering', () => {
         expect(result).not.toHaveProperty('referenceScore');
     });
     it('keeps research leave, retirement, and staff change as EVENT_REVIEW', () => {
-        for (const kind of ['RESEARCH_LEAVE', 'RETIREMENT', 'STAFF_CHANGE']) {
+        for (const kind of /** @type {const} */ (['RESEARCH_LEAVE', 'RETIREMENT', 'STAFF_CHANGE'])) {
             const courseId = 'SYN-COURSE-LEAVE';
             const result = outlook({
                 courseId, targetTerm: '2026-1', asOf: ASOF,
@@ -327,7 +327,8 @@ describe('forecastOffering', () => {
     });
     describe('an approved alternative needs an applicable official replacement event', () => {
         const courseId = 'SYN-COURSE-ALT-GATE';
-        const approved = [{ courseId: 'SYN-COURSE-ALT', status: 'OFFICIALLY_APPROVED', evidenceRef: 'SYN-SRC-REPLACE' }];
+        const approved = /** @type {const} */ ([{ courseId: 'SYN-COURSE-ALT', status: 'OFFICIALLY_APPROVED', evidenceRef: 'SYN-SRC-REPLACE' }]);
+        /** @param {Partial<OfficialAcademicEvent>} [over] @returns {OfficialAcademicEvent} */
         const replacement = (over = {}) => ({
             eventId: 'SYN-EVENT-REPLACE',
             kind: 'REPLACEMENT_CONFIRMED',
@@ -340,6 +341,7 @@ describe('forecastOffering', () => {
             replacementCourseIds: ['SYN-COURSE-ALT'],
             ...over,
         });
+        /** @param {OfficialAcademicEvent[]} officialEvents */
         const alternativesWith = (officialEvents) => outlook({
             courseId, targetTerm: '2026-1', asOf: ASOF, observations: threeClosed, officialEvents, alternatives: approved,
         }).alternatives;
@@ -387,6 +389,7 @@ describe('forecastOffering', () => {
 });
 describe('forecastOfferings', () => {
     it('accepts 20 course ids and refuses a 21st', () => {
+        /** @param {number} count */
         const courses = (count) => Array.from({ length: count }, (_, index) => ({
             courseId: `SYN-COURSE-${String(index + 1).padStart(2, '0')}`,
             targetTerm: '2026-1',

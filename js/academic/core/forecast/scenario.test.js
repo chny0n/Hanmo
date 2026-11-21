@@ -11,16 +11,19 @@ import * as forecastIndex from './index.js';
 // SYN-* 합성 학수번호만 사용한다. 아래 원본 전망은 모두 forecastOffering이 실제 산출한 값이다.
 const ASOF = '2026-02-15T00:00:00.000Z';
 const TERM = '2026-1';
+/** @param {string} term @param {OfferingObservation['state']} state @returns {OfferingObservation} */
 const catalog = (term, state) => ({
     term, state, coverage: 'COMPLETE_TERM_CATALOG', sourceRef: `SYN-SRC-${term}-${state}`,
     publishedAt: `${term.slice(0, 4)}-02-01T00:00:00.000Z`, verifiedAt: `${term.slice(0, 4)}-02-02T00:00:00.000Z`,
 });
 const offeredThreeSprings = [catalog('2023-1', 'OFFERED'), catalog('2024-1', 'OFFERED'), catalog('2025-1', 'OFFERED')];
+/** @param {OfficialAcademicEvent['kind']} kind @param {OfficialAcademicEvent['impact']} impact @param {string} courseId @param {Partial<OfficialAcademicEvent>} [over] @returns {OfficialAcademicEvent} */
 const event = (kind, impact, courseId, over = {}) => ({
     eventId: `SYN-EVENT-${kind}`, kind, sourceRef: `SYN-SRC-${kind}`, publishedAt: '2026-01-10T00:00:00.000Z',
     verifiedAt: '2026-01-11T00:00:00.000Z', effectiveFrom: '2026-03-01T00:00:00.000+09:00',
     effectiveUntil: '2026-06-30T00:00:00.000+09:00', impact, affectedCourseIds: [courseId], ...over,
 });
+/** @param {string} courseId @param {readonly OfferingObservation[]} observations @param {readonly OfficialAcademicEvent[]} [officialEvents] @param {Parameters<typeof forecastOffering>[0]['alternatives']} [alternatives] */
 const outlook = (courseId, observations, officialEvents = [], alternatives) => forecastOffering({ courseId, targetTerm: TERM, asOf: ASOF, observations, officialEvents,
     ...(alternatives === undefined ? {} : { alternatives }) });
 const HIST = outlook('SYN-HIST', offeredThreeSprings);
@@ -30,8 +33,11 @@ const LEAVE = outlook('SYN-LEAVE', offeredThreeSprings, [event('RESEARCH_LEAVE',
 const REPL = outlook('SYN-REPL', offeredThreeSprings, [event('REPLACEMENT_CONFIRMED', 'EXPLICIT_COURSE_STATUS', 'SYN-REPL', { replacementCourseIds: ['SYN-SUB'] })], [{ courseId: 'SYN-SUB', status: 'OFFICIALLY_APPROVED', evidenceRef: 'SYN-SRC-REPLACEMENT_CONFIRMED' },
     { courseId: 'SYN-GUESS', status: 'NEEDS_REVIEW' }]);
 const BASE = [HIST, OPEN, CLOSED, LEAVE, REPL];
+/** @param {string} assumptionId @param {string} courseId @param {Extract<OfferingAssumption, {assume:'NOT_OFFERED'}>['reason']} [reason] @returns {OfferingAssumption} */
 const notOffered = (assumptionId, courseId, reason = 'RESEARCH_LEAVE') => ({ assumptionId, courseId, targetTerm: TERM, assume: 'NOT_OFFERED', reason });
+/** @param {string} assumptionId @param {string} courseId @returns {OfferingAssumption} */
 const offered = (assumptionId, courseId) => ({ assumptionId, courseId, targetTerm: TERM, assume: 'OFFERED', reason: 'NEW_SECTION' });
+/** @param {readonly OfferingAssumption[]} assumptions @param {readonly OfferingOutlookVNext[]} [base] */
 const run = (assumptions, base = BASE) => applyOfferingAssumptions({ base, assumptions });
 describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
     it('fixture: the base outlooks cover each signal the overlay must respect', () => {
@@ -47,7 +53,7 @@ describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
         expect(result.base).toEqual(BASE);
         expect(input).toEqual(BASE);
         result.base[0].alternatives.push({ courseId: 'SYN-X', status: 'NEEDS_REVIEW' });
-        result.base[1].signal = 'UNKNOWN';
+        /** @type {{signal:string}} */ (result.base[1]).signal = 'UNKNOWN';
         expect(input).toEqual(BASE);
     });
     it('no assumption, no hypothetical row', () => {
@@ -77,7 +83,7 @@ describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
         expect(rows.find(row => row.courseId === 'SYN-HIST').caveat).not.toContain('반대되는');
     });
     it('a substitute still under review is not offered as one, whatever the base carries', () => {
-        const withGuess = { ...HIST, alternatives: [{ courseId: 'SYN-GUESS', status: 'NEEDS_REVIEW' }] };
+        const withGuess = { ...HIST, alternatives: [{ courseId: 'SYN-GUESS', status: /** @type {const} */ ('NEEDS_REVIEW') }] };
         expect(OfferingOutlookVNextSchema.safeParse(withGuess).success).toBe(true);
         expect(run([notOffered('A1', 'SYN-HIST')], [withGuess]).scenario[0].officialAlternatives).toEqual([]);
     });
@@ -103,9 +109,9 @@ describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
         expect(() => run([notOffered('A1', 'SYN-HIST'), offered('A2', 'SYN-HIST')])).toThrow(/two assumptions/);
         expect(() => run([notOffered('A1', 'SYN-HIST'), notOffered('A1', 'SYN-OPEN')])).toThrow(/duplicate assumption/);
         expect(() => run([notOffered('bad id', 'SYN-HIST')])).toThrow(TypeError);
-        expect(() => run([{ ...offered('A1', 'SYN-HIST'), reason: 'RESEARCH_LEAVE' }])).toThrow(/does not fit OFFERED/);
-        expect(() => run([{ ...notOffered('A1', 'SYN-HIST'), reason: 'NEW_SECTION' }])).toThrow(/does not fit NOT_OFFERED/);
-        expect(() => run([{ ...notOffered('A1', 'SYN-HIST'), assume: 'MAYBE' }])).toThrow(/assume must be/);
+        expect(() => run([/** @type {never} */ ({ ...offered('A1', 'SYN-HIST'), reason: 'RESEARCH_LEAVE' })])).toThrow(/does not fit OFFERED/);
+        expect(() => run([/** @type {never} */ ({ ...notOffered('A1', 'SYN-HIST'), reason: 'NEW_SECTION' })])).toThrow(/does not fit NOT_OFFERED/);
+        expect(() => run([/** @type {never} */ ({ ...notOffered('A1', 'SYN-HIST'), assume: 'MAYBE' })])).toThrow(/assume must be/);
         expect(() => run([], [HIST, HIST])).toThrow(/two base outlooks/);
         expect(() => run([], [{ ...HIST, signal: 'CONFIRMED_OFFERED' }])).toThrow();
         expect(() => run([], Array.from({ length: 21 }, (_, index) => ({ ...HIST, courseId: `SYN-C${index}` })))).toThrow(RangeError);
@@ -119,23 +125,30 @@ describe('applyOfferingAssumptions: a separate hypothetical layer', () => {
             t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
             return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
         };
+        /**
+         * @template T
+         * @param {readonly T[]} values
+         * @returns {T}
+         */
         const pick = (values) => values[Math.floor(random() * values.length)];
         // 스키마상 유효하지만 승인된 대체과목과 검토 중 대체과목이 섞인 원본 행이다.
         const mixed = { ...HIST, courseId: 'SYN-MIXED', alternatives: [
-                { courseId: 'SYN-SUB2', status: 'OFFICIALLY_APPROVED', evidenceRef: 'SYN-SRC-SUB2' },
-                { courseId: 'SYN-GUESS2', status: 'NEEDS_REVIEW' },
+                { courseId: 'SYN-SUB2', status: /** @type {const} */ ('OFFICIALLY_APPROVED'), evidenceRef: 'SYN-SRC-SUB2' },
+                { courseId: 'SYN-GUESS2', status: /** @type {const} */ ('NEEDS_REVIEW') },
             ] };
         const pool = [...BASE, mixed];
+        /** @param {OfferingOutlookVNext} item */
         const approvedOf = (item) => item.alternatives.flatMap(alternative => alternative.status === 'OFFICIALLY_APPROVED' && alternative.evidenceRef !== undefined
             ? [{ courseId: alternative.courseId, evidenceRef: alternative.evidenceRef }] : []);
         let rows = 0, contradictions = 0, substitutes = 0;
         for (let round = 0; round < 300; round += 1) {
             const base = pool.filter(() => random() < 0.7);
+            /** @type {OfferingAssumption[]} */
             const assumptions = base.filter(() => random() < 0.6).map((item, index) => random() < 0.5
                 ? { assumptionId: `R${round}-${index}`, courseId: item.courseId, targetTerm: item.targetTerm, assume: 'NOT_OFFERED',
-                    reason: pick(['RESEARCH_LEAVE', 'NO_REPLACEMENT_SECTION', 'CANCELLATION', 'OTHER']) }
+                    reason: pick(/** @type {const} */ (['RESEARCH_LEAVE', 'NO_REPLACEMENT_SECTION', 'CANCELLATION', 'OTHER'])) }
                 : { assumptionId: `R${round}-${index}`, courseId: item.courseId, targetTerm: item.targetTerm, assume: 'OFFERED',
-                    reason: pick(['NEW_SECTION', 'OTHER']) });
+                    reason: pick(/** @type {const} */ (['NEW_SECTION', 'OTHER'])) });
             const result = run(assumptions, base);
             expect(result.base).toEqual(base);
             expect(result.scenario.map(row => row.assumptionId).sort()).toEqual(assumptions.map(item => item.assumptionId).sort());

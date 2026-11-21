@@ -11,7 +11,9 @@ import { evaluateOfferingOutlook } from './rolling-origin.js';
  * SYN-* 합성 자료만 사용하며 과거 횟수는 확률이나 보장이 아니다.
  */
 const ASOF = '2026-02-15T00:00:00.000+09:00';
+/** @type {ObservationCourseIdentity} */
 const UNVERIFIED = { state: 'EQUIVALENCE_UNVERIFIED' };
+/** @param {string} checkedAt @returns {ObservationCourseIdentity} */
 const resolvedAt = (checkedAt) => ({ state: 'RESOLVED', revisionRef: 'SYN-MAP-R1', checkedAt });
 /**
  * @param {string} term
@@ -45,7 +47,7 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
         expect([plain.signal, plain.sameSeasonObservedTerms, plain.sameSeasonOfferedTerms]).toEqual(['HISTORICAL_PATTERN', 4, 3]);
     });
     it('an unverified past row is not counted as offered, as closed, or in n', () => {
-        for (const [index, wantN, wantK] of [[0, 3, 2], [2, 3, 3]]) {
+        for (const [index, wantN, wantK] of /** @type {const} */ ([[0, 3, 2], [2, 3, 3]])) {
             const rows = HISTORY.map((r, i) => (i === index ? { ...r, courseIdentity: UNVERIFIED } : r));
             const result = outlook({ ...base, observations: rows });
             expect([result.sameSeasonObservedTerms, result.sameSeasonOfferedTerms], `row ${index}`).toEqual([wantN, wantK]);
@@ -73,8 +75,8 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
         expect(result.caveat).toMatch(/관측 2건은 세지 않았습니다/);
     });
     it('an unverified target-term row neither confirms nor closes the term', () => {
-        for (const state of ['OFFERED', 'CONFIRMED_NOT_OFFERED']) {
-            for (const coverage of ['COMPLETE_TERM_CATALOG', 'NOTICE_ONLY']) {
+        for (const state of /** @type {const} */ (['OFFERED', 'CONFIRMED_NOT_OFFERED'])) {
+            for (const coverage of /** @type {const} */ (['COMPLETE_TERM_CATALOG', 'NOTICE_ONLY'])) {
                 const target = row('2026-1', state, { coverage, courseIdentity: UNVERIFIED, publishedAt: '2026-01-20T00:00:00.000+09:00',
                     verifiedAt: '2026-01-21T00:00:00.000+09:00' });
                 const result = outlook({ ...base, observations: [...HISTORY, target] });
@@ -87,13 +89,13 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
     });
     it('a confirmed target row is not overturned by an unverified one', () => {
         const verified = row('2026-1', 'OFFERED', { publishedAt: '2026-01-20T00:00:00.000+09:00', verifiedAt: '2026-01-21T00:00:00.000+09:00' });
-        const other = { ...verified, state: 'CONFIRMED_NOT_OFFERED', sourceRef: 'SYN-SRC-OTHER', courseIdentity: UNVERIFIED };
+        const other = { ...verified, state: /** @type {const} */ ('CONFIRMED_NOT_OFFERED'), sourceRef: 'SYN-SRC-OTHER', courseIdentity: UNVERIFIED };
         const result = outlook({ ...base, observations: [verified, other] });
         expect(result.signal).toBe('CONFIRMED_OFFERED');
         expect(result.evidenceRefs).toEqual(['SYN-SRC-2026-1']);
     });
     it('an unverified row for a past term does not knock out the confirmed row of that term', () => {
-        const conflicting = { ...HISTORY[1], state: 'CONFIRMED_NOT_OFFERED', sourceRef: 'SYN-SRC-OLD-CODE', courseIdentity: UNVERIFIED };
+        const conflicting = { ...HISTORY[1], state: /** @type {const} */ ('CONFIRMED_NOT_OFFERED'), sourceRef: 'SYN-SRC-OLD-CODE', courseIdentity: UNVERIFIED };
         const result = outlook({ ...base, observations: [...HISTORY, conflicting] });
         expect([result.sameSeasonObservedTerms, result.sameSeasonOfferedTerms]).toEqual([4, 3]);
     });
@@ -105,6 +107,7 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
         expect([later.sameSeasonObservedTerms, later.sameSeasonOfferedTerms]).toEqual([4, 3]);
     });
     it('an unconfirmed target course is UNKNOWN, even with a confirming catalog and events', () => {
+        /** @type {OfficialAcademicEvent} */
         const cancel = { eventId: 'SYN-EV-CANCEL', kind: 'COURSE_CANCELLED', sourceRef: 'SYN-SRC-CANCEL',
             publishedAt: '2026-01-10T00:00:00.000+09:00', verifiedAt: '2026-01-11T00:00:00.000+09:00',
             effectiveFrom: '2026-03-01T00:00:00.000+09:00', impact: 'EXPLICIT_COURSE_STATUS', affectedCourseIds: ['SYN-COURSE-ID'] };
@@ -131,23 +134,26 @@ describe('offering outlook: rows not confirmed to be this course (#11)', () => {
         expect(outlook({ ...base, observations: [rows[2], rows[4], rows[0], rows[3], rows[1]] })).toEqual(forward);
     });
     it('refuses a malformed identity, on any row', () => {
+        /** @type {unknown[]} */
         const bad = [
             { state: 'MAYBE' }, { state: 'RESOLVED' }, { state: 'RESOLVED', revisionRef: 'bad ref', checkedAt: '2026-01-01T00:00:00.000+09:00' },
             { state: 'RESOLVED', revisionRef: 'SYN-MAP-R1', checkedAt: '2026-01-01' },
         ];
         for (const courseIdentity of bad) {
             // 전망 계산에는 포함되지 않을 미래 관측 행도 입력 검증은 수행한다.
-            const future = row('2027-1', 'OFFERED', { courseIdentity: courseIdentity });
+            const future = row('2027-1', 'OFFERED', { courseIdentity: /** @type {ObservationCourseIdentity} */ (courseIdentity) });
             expect(() => forecastOffering({ ...base, observations: [...HISTORY, future] }), JSON.stringify(courseIdentity)).toThrow(RangeError);
         }
-        expect(() => forecastOffering({ ...base, courseIdentity: 'MAYBE' })).toThrow(/courseIdentity must be/);
+        expect(() => forecastOffering({ ...base, courseIdentity: /** @type {never} */ ('MAYBE') })).toThrow(/courseIdentity must be/);
     });
 });
 describe('rolling-origin answers use the same identity rule (#11)', () => {
     const origin = { asOf: '2025-02-15T00:00:00.000+09:00', targetTerm: '2025-1' };
     const past = [row('2022-1', 'OFFERED'), row('2023-1', 'OFFERED'), row('2024-1', 'OFFERED')];
+    /** @param {Partial<OfferingObservation>} over */
     const answer = (over) => row('2025-1', 'OFFERED', { publishedAt: '2025-02-20T00:00:00.000+09:00',
         verifiedAt: '2025-02-21T00:00:00.000+09:00', ...over });
+    /** @param {OfferingObservation[]} rows */
     const evaluate = (rows) => evaluateOfferingOutlook({ truthAsOf: '2026-01-01T00:00:00.000+09:00', origins: [origin],
         courses: [{ courseId: 'SYN-COURSE-EVAL', observations: rows }] }).total;
     it('an unverified answer row is no answer', () => {

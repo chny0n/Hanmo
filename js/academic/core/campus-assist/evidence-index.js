@@ -49,7 +49,9 @@ function revisionOrder(a, b) {
     const ta = Date.parse(a.publishedAt), tb = Date.parse(b.publishedAt);
     return ta !== tb ? Math.sign(ta - tb) : Math.sign(a.revisionId.localeCompare(b.revisionId, 'en', { numeric: true }));
 }
+/** @param {EvidenceKind} kind @param {string} documentId */
 const docKey = (kind, documentId) => kind + '\u0000' + documentId;
+/** @param {string} a @param {string} b */
 const byText = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 /**
  * @param {EvidenceIndexInput} input
@@ -64,6 +66,7 @@ export function buildEvidenceIndex(input) {
     if (revisions.some(r => r.provenance !== manifest.provenance))
         throw new RangeError('Mixed synthetic and real evidence');
     const manifestByDoc = new Map(manifest.entries.map(e => [docKey(e.kind, e.documentId), e]));
+    /** @type {Map<string, EvidenceRevision[]>} */
     const revisionsByDoc = new Map();
     for (const r of revisions) {
         const key = docKey(r.kind, r.documentId);
@@ -72,13 +75,16 @@ export function buildEvidenceIndex(input) {
         revisionsByDoc.set(key, rows);
     }
     const allKeys = new Set([...revisionsByDoc.keys(), ...manifestByDoc.keys()]);
+    /** @type {EvidenceDocumentResult[]} */
     const documents = [];
+    /** @type {Map<string, EvidenceRevision>} */
     const heads = new Map();
     for (const key of allKeys) {
-        const [kind, documentId] = key.split('\u0000');
+        const [kind, documentId] = /** @type {[EvidenceKind,string]} */ (key.split('\u0000'));
         const rows = revisionsByDoc.get(key) ?? [];
         const visible = rows.filter(r => Date.parse(r.publishedAt) <= time && Date.parse(r.verifiedAt) <= time);
         const futureRevisionIds = [...new Set(rows.filter(r => !visible.includes(r)).map(r => r.revisionId))].sort(byText);
+        /** @param {string|null} revisionId @param {EvidenceDisposition} disposition @param {string[]} [superseded] */
         const result = (revisionId, disposition, superseded = []) => documents.push({ kind, documentId, revisionId, disposition, supersededRevisionIds: superseded, futureRevisionIds });
         if (!visible.length) {
             // 판본이 아예 없는데 매니페스트만 있으면 스냅샷과 입력이 어긋난 것이다.
@@ -125,7 +131,9 @@ export function buildEvidenceIndex(input) {
         heads.set(key, head);
         result(head.revisionId, 'INDEXED', superseded);
     }
+    /** @type {EvidenceIndexEntry[]} */
     const entries = [];
+    /** @type {Set<string>} */
     const seen = new Set();
     for (const head of heads.values()) {
         for (const p of head.paragraphs) {
@@ -134,6 +142,7 @@ export function buildEvidenceIndex(input) {
                 throw new RangeError('Ambiguous evidence citation ID: ' + citationId);
             seen.add(citationId);
             const refs = p.refs ?? [];
+            /** @type {Set<EvidenceHoldReason>} */
             const holdReasons = new Set();
             for (const ref of refs) {
                 const target = heads.get(docKey(ref.kind, ref.documentId));

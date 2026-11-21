@@ -48,6 +48,7 @@ export const NoticeExtractInputSchema = z.strictObject({
  * @returns {Segment[]}
  */
 function sentences(paragraphId, text) {
+    /** @type {Segment[]} */
     const out = [];
     const re = /\n+|(?<=[다요]\.)\s+/g;
     let last = 0;
@@ -66,6 +67,7 @@ function sentences(paragraphId, text) {
  * @returns {Segment[]}
  */
 function clauses(seg) {
+    /** @type {Segment[]} */
     const out = [];
     const re = /[,，]\s*|(?<=며)\s+/g;
     let last = 0;
@@ -76,22 +78,26 @@ function clauses(seg) {
     out.push({ paragraphId: seg.paragraphId, start: seg.start + last, text: seg.text.slice(last) });
     return out.filter(s => s.text.trim());
 }
+/** @param {Segment} seg @param {number} from @param {number} to @returns {SourceSpan} */
 const span = (seg, from, to) => ({ paragraphId: seg.paragraphId, start: seg.start + from, end: seg.start + to, text: seg.text.slice(from, to) });
 // ───────────── 대상 ─────────────
 const NEGATION = /제외|해당\s*(?:하지\s*않|없)|대상이?\s*아니|대상\s*아님|신청할\s*수\s*없|신청\s*불가|불가능/;
 const EXCEPTION = /(?:^|\s)단[,\s]|다만/;
+/** @type {[RegExp,StudentGroup][]} */
 const GROUPS = [
     [/졸업\s*예정자/g, 'GRADUATING'], [/재학생/g, 'ENROLLED'], [/휴학생/g, 'ON_LEAVE'],
     [/복학\s*(?:예정자|예정생|생)/g, 'RETURNING'], [/신입생/g, 'FRESHMAN'], [/편입생/g, 'TRANSFER'],
     [/외국인\s*(?:유학생|학생)/g, 'INTERNATIONAL'], [/이중\s*전공자/g, 'DOUBLE_MAJOR'], [/부\s*전공자/g, 'MINOR'],
     [/교환\s*학생/g, 'EXCHANGE'], [/대학원생/g, 'GRADUATE_SCHOOL'],
 ];
+/** @param {string} s */
 const year = (s) => s.length === 2 ? 2000 + Number(s) : Number(s);
 /**
  * @param {Segment} seg
  * @returns {TargetCandidate[]}
  */
 function targetsIn(seg) {
+    /** @type {TargetCandidate[]} */
     const found = [];
     const t = seg.text;
     for (const m of t.matchAll(/서울\s*캠퍼스|서울캠/g))
@@ -102,6 +108,7 @@ function targetsIn(seg) {
     for (const m of t.matchAll(yearRe)) {
         const a = year(m[1]), b = m[2] ? year(m[2]) : undefined;
         const tail = m[3] ?? (/학년도\s*이전/.test(m[0]) ? '이전' : /학년도\s*이후/.test(m[0]) ? '이후' : undefined);
+        /** @type {TargetValue} */
         let value;
         if (b !== undefined)
             value = { kind: 'ADMISSION_YEARS', from: Math.min(a, b), until: Math.max(a, b) };
@@ -118,6 +125,7 @@ function targetsIn(seg) {
             found.push({ value: { kind: 'STUDENT_GROUP', group }, evidence: span(seg, m.index, m.index + m[0].length) });
     return found;
 }
+/** @param {TargetValue} v */
 const targetKey = (v) => JSON.stringify(v);
 // ───────────── 날짜 ─────────────
 const WD = '(?:\\s*\\(\\s*[월화수목금토일]\\s*\\))?';
@@ -154,6 +162,7 @@ function time(ampm, h, mm, mm2) {
  * @returns {{start:RawDate;end:RawDate|null}[]}
  */
 function parseDates(t) {
+    /** @type {{start:RawDate;end:RawDate|null}[]} */
     const out = [];
     DATE_RE.lastIndex = 0;
     for (let m = DATE_RE.exec(t); m; m = DATE_RE.exec(t)) {
@@ -161,7 +170,9 @@ function parseDates(t) {
         const y = g[1] ? Number(g[1]) : null;
         const mo = Number(g[2] ?? g[4] ?? g[6]), d = Number(g[3] ?? g[5] ?? g[7]);
         const tm = time(g[8], g[9], g[10], g[11]);
+        /** @type {RawDate} */
         const start = { y, m: mo, d, time: tm.time, bad: tm.bad, from: m.index, to: m.index + m[0].length };
+        /** @type {RawDate|null} */
         let end = null;
         const e = END_RE.exec(t.slice(start.to));
         if (e) {
@@ -177,6 +188,7 @@ function parseDates(t) {
     }
     return out;
 }
+/** @param {number} n */
 const pad = (n) => String(n).padStart(2, '0');
 /**
  * @param {string} iso
@@ -247,11 +259,14 @@ export function extractNoticeCandidates(raw) {
             studentDeadline: null, adminDeadline: null, events: [], revisionLink: null, reviewReasons: ['RIGHTS_NOT_APPROVED'] };
     if (new Set(input.paragraphs.map(p => p.id)).size !== input.paragraphs.length)
         throw new RangeError('Duplicate paragraph ID');
+    /** @type {Set<NoticeReviewReason>} */
     const reasons = new Set();
     const included = [], excluded = [];
+    /** @type {DateCandidate[]} */
     const dates = [];
     const pub = kstDay(input.publishedAt);
     const pubTime = Date.UTC(pub.y, pub.m - 1, pub.d);
+    /** @param {RawDate} r @param {Segment} seg @param {DateRole} role @returns {DateCandidate|null} */
     const resolve = (r, seg, role) => {
         let y = r.y, inferred = false;
         if (y === null) {
@@ -288,6 +303,7 @@ export function extractNoticeCandidates(raw) {
             // 날짜 역할은 그 날짜가 있는 절의 표현으로 정한다('신청 …, 학과는 … 제출'을 구분).
             // 절에 단서가 없으면 문장 전체로 판단하되, 문장에 학생·행정 단서가 함께 있으면 미분류로 남긴다.
             const mixed = ADMIN.test(seg.text) && STUDENT.test(seg.text.replace(ADMIN, ''));
+            /** @param {Segment} c @param {boolean} range @param {boolean} end */
             const role = (c, range, end) => {
                 const r = roleOf(c.text, range, end);
                 return r !== 'UNCLASSIFIED' || mixed ? r : roleOf(seg.text, range, end);
@@ -311,6 +327,7 @@ export function extractNoticeCandidates(raw) {
         reasons.add('CONFLICTING_TARGET');
     if (dates.some(d => d.role === 'UNCLASSIFIED'))
         reasons.add('UNCLASSIFIED_DATE');
+    /** @param {DateRole} role @param {NoticeReviewReason} many */
     const single = (role, many) => {
         const rows = dates.filter(d => d.role === role);
         const distinct = new Set(rows.map(d => d.atKst ?? d.date));
@@ -328,6 +345,7 @@ export function extractNoticeCandidates(raw) {
     const body = input.paragraphs.map(p => p.text).join('\n');
     const correctionSignal = CORRECTION_SIGNAL.test(input.title) || CORRECTION_SIGNAL.test(body);
     const cancelSignal = CANCEL_TITLE.test(input.title) || CANCEL_TEXT.test(body);
+    /** @type {NoticeExtraction['revisionLink']} */
     let revisionLink = null;
     if (input.state === 'CANCELLED' || cancelSignal) {
         if (input.state !== 'CANCELLED')
@@ -341,6 +359,7 @@ export function extractNoticeCandidates(raw) {
     }
     if (revisionLink && !revisionLink.correctsRevisionId)
         reasons.add('CORRECTION_TARGET_UNKNOWN');
+    /** @param {{evidence:SourceSpan}} a @param {{evidence:SourceSpan}} b */
     const order = (a, b) => a.evidence.paragraphId === b.evidence.paragraphId ? a.evidence.start - b.evidence.start : 0;
     return { ...base,
         status: reasons.size ? 'NEEDS_REVIEW' : 'CANDIDATE',

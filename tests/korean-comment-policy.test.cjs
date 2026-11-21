@@ -31,3 +31,10 @@ test('여러 줄 객체 타입 선언은 한국어 주석 오류로 오인하지
   const source='/**\n * @typedef {{\n *   courseCode:string, title:string,\n *   status:\'UNVERIFIED\'|\'NEEDS_REVIEW\'\n * }} LocalCourse\n */';
   assert.deepEqual(findEnglishOnlyComments(source),[]);
 });
+
+test('JSDoc 타입 가져오기는 허용하고 뒤에 붙은 영문 설명은 차단한다',async()=>{
+  const {findEnglishOnlyComments}=await import(lib);
+  const tag='@import { Course, Term as AcademicTerm } from "./types.js"';
+  assert.deepEqual(findEnglishOnlyComments('/** '+tag+' */'),[]);
+  assert.equal(findEnglishOnlyComments('/** '+tag+' This is an English explanation. */').length,1);
+});

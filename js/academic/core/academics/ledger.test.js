@@ -12,11 +12,12 @@ const CREDIT_6 = 12;
 const CREDIT_9 = 18;
 const CREDIT_12 = 24;
 const AS_OF = '2026-11-01T00:00:00.000Z';
-const RETAKE = {
+const RETAKE = /** @type {const} */ ({
     supersedesAttemptToken: 'SYN-X-1',
     retakeApprovalRef: 'SYN-RETAKE-APPROVAL-1',
     term: '2025-2',
-};
+});
+/** @param {string} attemptToken @param {string} canonicalCourseId @param {Partial<LedgerAttempt>} [over] @returns {LedgerAttempt} */
 const attempt = (attemptToken, canonicalCourseId, over = {}) => ({
     attemptToken,
     canonicalCourseId,
@@ -27,6 +28,7 @@ const attempt = (attemptToken, canonicalCourseId, over = {}) => ({
     term: '2025-1',
     ...over,
 });
+/** @param {readonly LedgerAttempt[]} attempts @param {readonly LedgerRequirement[]} [requirements] @param {Partial<AcademicLedgerRequest>} [over] @returns {AcademicLedgerRequest} */
 const base = (attempts, requirements = [], over = {}) => ({
     asOf: AS_OF,
     rulePackVersion: 'SYN-PACK-1',
@@ -35,6 +37,7 @@ const base = (attempts, requirements = [], over = {}) => ({
     requirements,
     ...over,
 });
+/** @param {string} id @returns {LedgerRequirement} */
 const requirement = (id) => ({
     id, kind: 'K_OF_N', courseIds: ['SYN-A', 'SYN-B', 'SYN-C'], k: 2, evidenceRefs: [`SYN-EVIDENCE-${id}`],
 });
@@ -74,6 +77,7 @@ describe('buildAcademicLedger A08.5 credit units', () => {
     });
     describe('an unverified supersede link never removes earned credit', () => {
         const earned = attempt('SYN-X-1', 'SYN-X', { areaIds: ['SYN-AREA-A'], term: '2025-1' });
+        /** @param {LedgerAttempt} claimer */
         const expectEarnedKept = (claimer) => {
             const audit = buildAcademicLedger(base([earned, claimer]));
             expect(audit.earnedCreditUnits).toBe(CREDIT_3);
@@ -197,6 +201,7 @@ describe('buildAcademicLedger A08.5 credit units', () => {
         });
     });
     it('CREDIT-06 can meet every area minimum and still miss the unique total', () => {
+        /** @param {string} id @param {string} areaId @returns {LedgerRequirement} */
         const category = (id, areaId) => ({
             id, kind: 'CATEGORY_MINIMUM', areaId, requiredCreditUnits: CREDIT_3, evidenceRefs: [`SYN-EVIDENCE-${id}`],
         });
@@ -259,6 +264,7 @@ describe('buildAcademicLedger A08.5 credit units', () => {
         expect(audit.state).toBe('NEEDS_REVIEW');
     });
     describe('an earned row counts only after its term ended by asOf', () => {
+        /** @type {LedgerRequirement} */
         const total = {
             id: 'SYN-REQ-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: CREDIT_3, evidenceRefs: ['SYN-EVIDENCE-TOTAL'],
         };
@@ -302,6 +308,7 @@ describe('buildAcademicLedger A08.5 credit units', () => {
     });
     it('does not claim satisfaction when the rule pack is missing or not approved', () => {
         const attempts = [attempt('SYN-X-1', 'SYN-X')];
+        /** @type {LedgerRequirement[]} */
         const requirements = [{
                 id: 'SYN-REQ-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: CREDIT_3, evidenceRefs: ['SYN-EVIDENCE-TOTAL'],
             }];

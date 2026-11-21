@@ -4,16 +4,33 @@
 /** @typedef {import("../views/student-progress.js").StudentPlanCourse} StudentPlanCourse */
 import { compareProvisionalScenario, normalizeStudentCourse, normalizePlanCourse, upcomingTerms, explainProvisionalExclusions, provisionalTermBreakdown, SCENARIO_TERMS, MAX_COURSES, } from '../views/student-progress.js';
 import { creditsText } from '../views/graduationView.js';
+/** @type {StudentCourse[]} */
 const records = [];
+/** @type {Record<ScenarioId,StudentPlanCourse[]>} */
 const plans = { A: [], B: [], C: [] };
-const SCENARIOS = ['A', 'B', 'C'];
+const SCENARIOS = /** @type {const} */ (['A', 'B', 'C']);
+/** @param {string} id @returns {HTMLElement} */
 const get = (id) => {
     const element = document.getElementById(id);
     if (!element)
         throw new Error('학생용 입력 화면이 누락되었습니다: ' + id);
     return element;
 };
+/**
+ * @template {HTMLElement} T
+ * @param {string} id
+ * @param {{new(): T}} kind
+ * @returns {T}
+ */
+function control(id, kind) {
+    const node = get(id);
+    if (!(node instanceof kind))
+        throw new Error('학생용 입력 요소 유형이 올바르지 않습니다: ' + id);
+    return node;
+}
+/** @param {string} id @param {string} message @returns {void} */
 const write = (id, message) => { get(id).textContent = message; };
+/** @param {keyof HTMLElementTagNameMap} tag @param {string} value @returns {HTMLElement} */
 const text = (tag, value) => {
     const node = document.createElement(tag);
     node.textContent = value;
@@ -23,7 +40,8 @@ const text = (tag, value) => {
  * @returns {ScenarioId}
  */
 function selected() {
-    const active = document.querySelector('input[name="scenario"]:checked')?.value;
+    const input = document.querySelector('input[name="scenario"]:checked');
+    const active = input instanceof HTMLInputElement ? input.value : undefined;
     if (active === 'A' || active === 'B' || active === 'C')
         return active;
     return 'A';
@@ -32,6 +50,7 @@ function selected() {
  * @returns {string}
  */
 function today() { return new Date().toISOString(); }
+/** @returns {void} */
 function renderRecords() {
     const tbody = get('record-rows');
     tbody.replaceChildren();
@@ -67,7 +86,7 @@ function renderRecords() {
  * @param {string} asOf
  */
 function renderTermChoices(asOf) {
-    const select = get('plan-term');
+    const select = control('plan-term', HTMLSelectElement);
     const previous = select.value;
     const terms = upcomingTerms(asOf, SCENARIO_TERMS[selected()]);
     select.replaceChildren();
@@ -80,6 +99,7 @@ function renderTermChoices(asOf) {
     if (terms.includes(previous))
         select.value = previous;
 }
+/** @returns {void} */
 function renderPlanRows() {
     const root = get('plan-rows');
     root.replaceChildren();
@@ -118,6 +138,7 @@ function addMetric(root, label, units) {
     card.append(text('span', '검수된 졸업요건과 무관한 자가 입력 학점'));
     root.append(card);
 }
+/** @returns {void} */
 function renderAll() {
     renderRecords();
     renderPlanRows();
@@ -192,10 +213,10 @@ get('record-form').addEventListener('submit', event => {
         if (records.length >= MAX_COURSES)
             throw new RangeError('최대 60과목까지만 입력할 수 있습니다.');
         const row = normalizeStudentCourse({
-            courseId: get('record-course').value,
-            credits: Number(get('record-credits').value),
-            term: get('record-term').value.trim(),
-            slot: get('record-slot').value,
+            courseId: control('record-course', HTMLInputElement).value,
+            credits: Number(control('record-credits', HTMLInputElement).value),
+            term: control('record-term', HTMLInputElement).value.trim(),
+            slot: /** @type {StudentCourse['slot']} */ (control('record-slot', HTMLSelectElement).value),
         });
         const candidate = [...records, row], at = today();
         for (const scenario of SCENARIOS)
@@ -203,7 +224,7 @@ get('record-form').addEventListener('submit', event => {
                 asOf: at, scenario, records: candidate, plans: plans[scenario],
             });
         records.push(row);
-        get('record-course').value = '';
+        control('record-course', HTMLInputElement).value = '';
         renderAll();
         write('record-message', '과목 기록을 추가했습니다. 취득 여부와 학점은 학교의 원문으로 별도 확인해야 합니다.');
     }
@@ -218,13 +239,13 @@ get('plan-form').addEventListener('submit', event => {
         if (plans[id].length >= MAX_COURSES)
             throw new RangeError('한 계획에는 최대 60과목까지 입력할 수 있습니다.');
         const row = normalizePlanCourse({
-            courseId: get('plan-course').value,
-            term: get('plan-term').value,
-            credits: Number(get('plan-credits').value),
+            courseId: control('plan-course', HTMLInputElement).value,
+            term: control('plan-term', HTMLSelectElement).value,
+            credits: Number(control('plan-credits', HTMLInputElement).value),
         });
         compareProvisionalScenario({ asOf: today(), scenario: id, records, plans: [...plans[id], row] });
         plans[id].push(row);
-        get('plan-course').value = '';
+        control('plan-course', HTMLInputElement).value = '';
         renderAll();
         write('plan-message', id + '안에 과목을 추가했습니다. 개설 여부·선수요건·충돌은 검수 자료가 없어 확인할 수 없습니다.');
     }

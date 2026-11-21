@@ -9,14 +9,17 @@ import { buildDoubleMajorAudit } from './double-major.js';
 import { buildAcademicLedger } from './ledger.js';
 /** 합성 데이터만 사용한다. 1단위는 0.5학점이므로 3학점은 6단위다. */
 const AS_OF = '2026-11-01T00:00:00.000Z';
+/** @param {string} canonicalCourseId @param {Partial<DoubleMajorAttempt>} [over] @returns {DoubleMajorAttempt} */
 const course = (canonicalCourseId, over = {}) => ({
     attemptToken: `${canonicalCourseId}-T`, canonicalCourseId, creditUnits: 6, ledger: 'EARNED', recognition: 'RECOGNIZED', term: '2025-2', ...over,
 });
 /** P는 주전공 전용, D는 이중전공 전용, S는 양쪽 공유, G는 교양 과목이다. */
+/** @type {DoubleMajorAttempt[]} */
 const ATTEMPTS = [
     course('SYN-P1', { term: '2025-1' }), course('SYN-P2'), course('SYN-D1', { term: '2025-1' }),
     course('SYN-D2', { ledger: 'IN_PROGRESS', term: '2026-2' }), course('SYN-S1'), course('SYN-G1'),
 ];
+/** @type {MajorRulePack} */
 const PRIMARY = {
     rulePackVersion: 'SYN-PRIMARY-1', rulePackState: 'APPROVED',
     requirements: [
@@ -26,6 +29,7 @@ const PRIMARY = {
     ],
     courseAreas: { 'SYN-P1': ['SYN-P-MAJOR'], 'SYN-P2': ['SYN-P-MAJOR'], 'SYN-S1': ['SYN-P-MAJOR'], 'SYN-G1': ['SYN-GEN'] },
 };
+/** @type {MajorRulePack} */
 const DOUBLE = {
     rulePackVersion: 'SYN-DOUBLE-1', rulePackState: 'APPROVED',
     requirements: [
@@ -35,8 +39,11 @@ const DOUBLE = {
     ],
     courseAreas: { 'SYN-D1': ['SYN-D-MAJOR'], 'SYN-D2': ['SYN-D-MAJOR'], 'SYN-S1': ['SYN-D-MAJOR'] },
 };
+/** @param {DoubleMajorRequest['doubleMajor']} doubleMajor @param {Partial<DoubleMajorRequest>} [over] @returns {DoubleMajorRequest} */
 const request = (doubleMajor, over = {}) => ({ asOf: AS_OF, attempts: ATTEMPTS, primary: PRIMARY, doubleMajor, ...over });
-const selected = (pack = DOUBLE) => ({ status: 'SELECTED', ...(pack ? { pack } : {}) });
+/** @param {Partial<DoubleMajorRequest['doubleMajor'] & {status:'SELECTED'}>['pack']} [pack] */
+const selected = (pack = DOUBLE) => ({ status: /** @type {const} */ ('SELECTED'), ...(pack ? { pack } : {}) });
+/** @param {{requirements:{requirementId:string; state:string}[]}} audit */
 const stateOf = (audit) => Object.fromEntries(audit.requirements.map(row => [row.requirementId, row.state]));
 describe('buildDoubleMajorAudit', () => {
     it('checks the primary major alone when there is no double major', () => {
@@ -113,14 +120,14 @@ describe('buildDoubleMajorAudit', () => {
     });
     it('holds a required course of the double major when that course is shared', () => {
         const pack = { ...DOUBLE, requirements: [...DOUBLE.requirements,
-                { id: 'SYN-D-REQ-S', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-S1', evidenceRefs: ['SYN-EV-D'] }] };
+                /** @type {LedgerRequirement} */ ({ id: 'SYN-D-REQ-S', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-S1', evidenceRefs: ['SYN-EV-D'] })] };
         const result = buildDoubleMajorAudit(request(selected(pack)));
         expect(result.overlap.heldRequirementIds.doubleMajor).toContain('SYN-D-REQ-S');
         expect(result.overlap.heldRequirementIds.doubleMajor).not.toContain('SYN-D-REQ');
     });
     it('treats a course one major names as required and the other allocates to an area as shared', () => {
         const pack = { ...DOUBLE, requirements: [...DOUBLE.requirements,
-                { id: 'SYN-D-REQ-P2', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-P2', evidenceRefs: ['SYN-EV-D'] }] };
+                /** @type {LedgerRequirement} */ ({ id: 'SYN-D-REQ-P2', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-P2', evidenceRefs: ['SYN-EV-D'] })] };
         const result = buildDoubleMajorAudit(request(selected(pack)));
         expect(result.overlap.sharedCourses.map(row => [row.courseId, row.primaryAreaIds, row.doubleMajorAreaIds]))
             .toEqual([['SYN-P2', ['SYN-P-MAJOR'], []], ['SYN-S1', ['SYN-P-MAJOR'], ['SYN-D-MAJOR']]]);
@@ -129,13 +136,13 @@ describe('buildDoubleMajorAudit', () => {
         // 공유 과목 둘을 모두 제외하면 주전공 영역은 6단위가 되어 요구 12단위보다 부족하다.
         expect(result.overlap.heldRequirementIds.primary).toEqual(['SYN-P-MAJOR-MIN']);
         const primary = { ...PRIMARY, requirements: [...PRIMARY.requirements,
-                { id: 'SYN-P-REQ-D1', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-D1', evidenceRefs: ['SYN-EV-P'] }] };
+                /** @type {LedgerRequirement} */ ({ id: 'SYN-P-REQ-D1', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-D1', evidenceRefs: ['SYN-EV-P'] })] };
         const named = buildDoubleMajorAudit(request(selected(), { primary }));
         expect(named.overlap.sharedCourses.map(row => row.courseId)).toEqual(['SYN-D1', 'SYN-S1']);
         expect(named.overlap.heldRequirementIds.primary).toEqual(['SYN-P-REQ-D1']);
     });
     it('holds nothing when a shared course is not yet earned, but reports the figures without it', () => {
-        const attempts = ATTEMPTS.map(row => row.canonicalCourseId === 'SYN-S1' ? { ...row, ledger: 'IN_PROGRESS', term: '2026-2' } : row);
+        const attempts = ATTEMPTS.map(row => row.canonicalCourseId === 'SYN-S1' ? { ...row, ledger: /** @type {const} */ ('IN_PROGRESS'), term: '2026-2' } : row);
         const result = buildDoubleMajorAudit(request(selected(), { attempts }));
         expect(result.overlap).toMatchObject({ status: 'NO_APPROVED_RULE', heldRequirementIds: { primary: [], doubleMajor: [] } });
         expect(result.overlap.rowImpacts.doubleMajor[0]).toEqual({ requirementId: 'SYN-D-MAJOR-MIN', decided: true,
@@ -151,7 +158,7 @@ describe('buildDoubleMajorAudit', () => {
             requirements: DOUBLE.requirements.filter(row => row.id !== 'SYN-D-ONE-OF') })));
         expect(separate.overlap).toMatchObject({ status: 'NONE', sharedCourses: [], sharedCreditUnits: 0 });
         const excluded = buildDoubleMajorAudit(request(selected(), {
-            attempts: ATTEMPTS.map(row => row.canonicalCourseId === 'SYN-S1' ? { ...row, recognition: 'EXCLUDED' } : row)
+            attempts: ATTEMPTS.map(row => row.canonicalCourseId === 'SYN-S1' ? { ...row, recognition: /** @type {const} */ ('EXCLUDED') } : row)
         }));
         expect(excluded.overlap.sharedCourses).toEqual([]);
     });
@@ -167,7 +174,7 @@ describe('buildDoubleMajorAudit', () => {
                 { id: 'SYN-D-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: 84, evidenceRefs: ['SYN-EV-D'] }] }))))
             .toThrow(/graduation credit total/);
         expect(() => buildDoubleMajorAudit(request(selected({ ...DOUBLE, rulePackVersion: PRIMARY.rulePackVersion })))).toThrow(/different rule packs/);
-        expect(() => buildDoubleMajorAudit(request(selected(), { attempts: [{ ...ATTEMPTS[0], areaIds: ['SYN-X'] }] })))
+        expect(() => buildDoubleMajorAudit(request(selected(), { attempts: [/** @type {DoubleMajorAttempt} */ ({ ...ATTEMPTS[0], areaIds: ['SYN-X'] })] })))
             .toThrow(/carries areaIds/);
         expect(() => buildDoubleMajorAudit(request(selected({ ...DOUBLE, courseAreas: { 'SYN-D1': ['bad area!'] } })))).toThrow(/area of SYN-D1/);
         expect(() => buildDoubleMajorAudit(request(selected({ ...DOUBLE, overlapRule: { maxSharedCreditUnits: 6, evidenceRefs: [] } }))))

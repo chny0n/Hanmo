@@ -17,6 +17,7 @@ const PLAN_TERM = '2027-1';
 const CAP_REF = 'SYN-SEMESTER-CAP';
 const CATALOG_REF = 'SYN-CATALOG-2027-1';
 const VERIFIED = '2026-10-15T00:00:00.000Z';
+/** @param {string} attemptToken @param {string} canonicalCourseId @param {Partial<LedgerAttempt>} [over] @returns {LedgerAttempt} */
 const attempt = (attemptToken, canonicalCourseId, over = {}) => ({
     attemptToken,
     canonicalCourseId,
@@ -27,10 +28,13 @@ const attempt = (attemptToken, canonicalCourseId, over = {}) => ({
     term: PLAN_TERM,
     ...over,
 });
+/** @param {string} courseId @param {Partial<LedgerAttempt>} [over] */
 const planned = (courseId, over = {}) => attempt(`${courseId}-P`, courseId, over);
+/** @param {SectionMeeting['day']} day @param {number} hour @returns {SectionMeeting} */
 const at = (day, hour, hours = 1) => ({
     day, startMinute: hour * 60, endMinute: (hour + hours) * 60,
 });
+/** @param {string} canonicalCourseId @param {string} sectionId @param {readonly SectionMeeting[]} meetings @param {Partial<VerifiedSection>} [over] @returns {VerifiedSection} */
 const section = (canonicalCourseId, sectionId, meetings, over = {}) => ({
     canonicalCourseId,
     sectionId,
@@ -41,7 +45,9 @@ const section = (canonicalCourseId, sectionId, meetings, over = {}) => ({
     ...over,
 });
 /** 과목별 분반이 하나이고 서로 다른 시간에 배치되어 시간표 충돌이 발생하지 않는다. */
+/** @param {readonly string[]} courseIds @returns {VerifiedSection[]} */
 const separateSections = (courseIds) => courseIds.map((courseId, index) => section(courseId, `${courseId}-01`, [at('TUE', 8 + index)]));
+/** @param {readonly LedgerAttempt[]} attempts @param {Partial<TermPlan>} [termPlan] @param {Partial<AcademicPlanRequest>} [over] @param {readonly LedgerRequirement[]} [requirements] @returns {AcademicPlanRequest} */
 const request = (attempts, termPlan = {}, over = {}, requirements = []) => ({
     asOf: AS_OF,
     rulePackVersion: 'SYN-PACK-1',
@@ -59,6 +65,7 @@ const request = (attempts, termPlan = {}, over = {}, requirements = []) => ({
     },
     ...over,
 });
+/** @param {ReturnType<typeof buildAcademicPlan>} audit */
 const codes = (audit) => audit.planIssues.map(issue => issue.code);
 const seven = ['SYN-P1', 'SYN-P2', 'SYN-P3', 'SYN-P4', 'SYN-P5', 'SYN-P6', 'SYN-P7'];
 describe('buildAcademicPlan CREDIT-07 credit cap', () => {
@@ -109,6 +116,7 @@ describe('buildAcademicPlan CREDIT-07 credit cap', () => {
 });
 describe('buildAcademicPlan CREDIT-08 prerequisites', () => {
     const rule = { canonicalCourseId: 'SYN-B', requiresCourseIds: ['SYN-A'], evidenceRefs: ['SYN-PREREQ'] };
+    /** @type {LedgerRequirement[]} */
     const requirements = [
         { id: 'REQ-B', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-B', evidenceRefs: ['SYN-EVIDENCE-B'] },
     ];
@@ -237,9 +245,11 @@ describe('buildAcademicPlan CREDIT-09 verified sections', () => {
     });
 });
 describe('buildAcademicPlan with more than 20 courses in a term', () => {
+    /** @param {number} count */
     const many = (count) => Array.from({ length: count }, (_, i) => `SYN-M${String(i + 1).padStart(2, '0')}`);
-    const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const DAYS = /** @type {const} */ (['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']);
     /** 과목별 분반이 서로 다른 요일·시간에 배치되어 어떤 두 분반도 겹치지 않는다. */
+    /** @param {readonly string[]} courseIds */
     const spread = (courseIds) => courseIds.map((courseId, i) => section(courseId, `${courseId}-01`, [at(DAYS[i % 7], 8 + Math.floor(i / 7))]));
     const twentyFive = many(25);
     it('splits a long cap and unconfirmed list into issues of at most 20 courses', () => {

@@ -4,7 +4,7 @@
 /** @typedef {import("./ledger.js").LedgerRequirement} LedgerRequirement */
 /** @typedef {import("./ledger.js").RulePackGate} RulePackGate */
 /** @typedef {() => number} Rng */
-/** @typedef {AcademicLedgerRequest & { attempts:LedgerAttempt[]; requirements:LedgerRequirement[]; }} Case */
+/** @typedef {Omit<AcademicLedgerRequest, 'attempts'|'requirements'> & { attempts:LedgerAttempt[]; requirements:LedgerRequirement[]; }} Case */
 /** @typedef {{ state:string; earned:number; inProgress:number; planned:number; pending:number; areas:Record<string, [number, number]>; excluded:Record<string, string>; rows:Record<string, {state:string; earned?:number; remaining?:number; matched?:number; projected?:number; areasMatched?:number; groupsMatched?:number}>; }} ModelResult */
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -24,12 +24,20 @@ function mulberry32(seed) {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 }
+/**
+ * @template T
+ * @param {Rng} rng
+ * @param {readonly T[]} list
+ * @returns {T}
+ */
 const pick = (rng, list) => list[Math.floor(rng() * list.length)];
+/** @param {Rng} rng @param {number} p */
 const chance = (rng, p) => rng() < p;
-const TERMS = ['2023-1', '2023-2', '2024-1', '2024-W', '2024-2', '2025-1', '2025-S', '2025-2', '2026-1'];
-const AS_OF = ['2024-07-02T00:00:00+09:00', '2025-03-01T09:00:00+09:00', '2026-01-01T00:00:00+09:00', '2026-12-20T12:00:00+09:00'];
-const COURSES = ['SYN-C1', 'SYN-C2', 'SYN-C3', 'SYN-C4', 'SYN-C5'];
-const AREAS = ['SYN-A1', 'SYN-A2', 'SYN-A3'];
+const TERMS = /** @type {const} */ (['2023-1', '2023-2', '2024-1', '2024-W', '2024-2', '2025-1', '2025-S', '2025-2', '2026-1']);
+const AS_OF = /** @type {const} */ (['2024-07-02T00:00:00+09:00', '2025-03-01T09:00:00+09:00', '2026-01-01T00:00:00+09:00', '2026-12-20T12:00:00+09:00']);
+const COURSES = /** @type {const} */ (['SYN-C1', 'SYN-C2', 'SYN-C3', 'SYN-C4', 'SYN-C5']);
+const AREAS = /** @type {const} */ (['SYN-A1', 'SYN-A2', 'SYN-A3']);
+/** @type {readonly RulePackGate[]} */
 const STATES = ['APPROVED', 'APPROVED', 'APPROVED', 'DRAFT', 'NEEDS_REVIEW', 'MISSING'];
 /**
  * @param {Rng} rng
@@ -37,14 +45,16 @@ const STATES = ['APPROVED', 'APPROVED', 'APPROVED', 'DRAFT', 'NEEDS_REVIEW', 'MI
  * @returns {Case}
  */
 function genCase(rng, size) {
+    /** @type {LedgerAttempt[]} */
     const attempts = [];
     const count = Math.floor(rng() * (size + 1));
     for (let i = 0; i < count; i++) {
-        const ledger = pick(rng, ['EARNED', 'EARNED', 'EARNED', 'IN_PROGRESS', 'PLANNED']);
+        const ledger = pick(rng, /** @type {const} */ (['EARNED', 'EARNED', 'EARNED', 'IN_PROGRESS', 'PLANNED']));
         const areaIds = AREAS.filter(() => chance(rng, 0.35));
+        /** @type {LedgerAttempt} */
         const attempt = {
             attemptToken: `SYN-T${i}`, canonicalCourseId: pick(rng, COURSES), creditUnits: pick(rng, [0, 1, 2, 4, 6, 6, 6]),
-            ledger, areaIds, recognition: pick(rng, ['RECOGNIZED', 'RECOGNIZED', 'RECOGNIZED', 'PENDING', 'EXCLUDED']),
+            ledger, areaIds, recognition: pick(rng, /** @type {const} */ (['RECOGNIZED', 'RECOGNIZED', 'RECOGNIZED', 'PENDING', 'EXCLUDED'])),
         };
         if (ledger === 'EARNED' ? chance(rng, 0.93) : chance(rng, 0.4))
             attempt.term = pick(rng, TERMS);
@@ -72,7 +82,9 @@ function genCase(rng, size) {
         if (chance(rng, 0.6))
             attempt.canonicalCourseId = target.canonicalCourseId;
     }
+    /** @type {LedgerRequirement[]} */
     const requirements = [];
+    /** @param {string} id */
     const ev = (id) => (chance(rng, 0.9) ? { evidenceRefs: [`SYN-EV-${id}`] } : {});
     if (chance(rng, 0.8))
         requirements.push({ id: 'SYN-R-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: pick(rng, [1, 6, 12, 18]), ...ev('TOTAL') });
@@ -94,8 +106,9 @@ function genCase(rng, size) {
     return { asOf: pick(rng, AS_OF), rulePackVersion: 'SYN-PACK-PROP', rulePackState: pick(rng, STATES), attempts, requirements };
 }
 // 독립 기준 모델(R1~R7)은 성능보다 작은 사례의 검증과 가독성을 우선한다.
-const SEASON = { '1': 0, S: 1, '2': 2, W: 3 };
-const order = (term) => Number(term.slice(0, 4)) * 4 + SEASON[term.slice(5)];
+const SEASON = /** @type {const} */ ({ '1': 0, S: 1, '2': 2, W: 3 });
+/** @param {string} term */
+const order = (term) => Number(term.slice(0, 4)) * 4 + SEASON[/** @type {keyof typeof SEASON} */ (term.slice(5))];
 /** 한국시간 학기 성적 인정 시작 시각: 1학기→7/1, 여름→9/1, 2학기→다음 해 1/1, 겨울→다음 해 3/1. */
 /**
  * @param {string} term
@@ -103,7 +116,7 @@ const order = (term) => Number(term.slice(0, 4)) * 4 + SEASON[term.slice(5)];
  */
 function endsAt(term) {
     const year = Number(term.slice(0, 4));
-    const [y, m] = { '1': [year, 7], S: [year, 9], '2': [year + 1, 1], W: [year + 1, 3] }[term.slice(5)];
+    const [y, m] = /** @type {const} */ ({ '1': [year, 7], S: [year, 9], '2': [year + 1, 1], W: [year + 1, 3] })[/** @type {'1'|'S'|'2'|'W'} */ (term.slice(5))];
     return Date.UTC(y, m - 1, 1) - 9 * 3600_000;
 }
 /**
@@ -113,18 +126,23 @@ function endsAt(term) {
 export function referenceLedger(c) {
     const asOf = Date.parse(c.asOf);
     const byToken = new Map(c.attempts.map(a => [a.attemptToken, a]));
+    /** @param {LedgerAttempt} a */
     const ended = (a) => a.term !== undefined && endsAt(a.term) <= asOf;
+    /** @type {Set<string>} */
     const held = new Set();
     // R1
     for (const a of c.attempts)
         if (a.ledger === 'EARNED' && !ended(a))
             held.add(a.attemptToken);
     // R2 순환은 연결된 모든 기록에서 링크를 추적해 같은 토큰을 다시 만나면 판단한다. 순환 진입까지 거친 기록도 보류한다.
+    /** @type {Set<string>} */
     const cycleTokens = new Set();
     for (const a of c.attempts) {
         if (!a.supersedesAttemptToken)
             continue;
+        /** @type {string[]} */
         const walked = [];
+        /** @type {string|undefined} */
         let t = a.attemptToken;
         while (t !== undefined && !walked.includes(t)) {
             walked.push(t);
@@ -134,7 +152,9 @@ export function referenceLedger(c) {
             walked.forEach(s => cycleTokens.add(s));
     }
     cycleTokens.forEach(t => held.add(t));
+    /** @type {Set<string>} */
     const superseded = new Set();
+    /** @type {Map<string, LedgerAttempt[]>} */
     const claims = new Map();
     for (const a of c.attempts)
         if (a.supersedesAttemptToken)
@@ -153,7 +173,9 @@ export function referenceLedger(c) {
         else
             claimers.forEach(x => held.add(x.attemptToken));
     }
+    /** @type {Record<string, string>} */
     const excluded = {};
+    /** @param {string} t @param {string} r */
     const put = (t, r) => { excluded[t] ??= r; };
     // R3/R4
     const live = c.attempts.filter(a => {
@@ -172,7 +194,9 @@ export function referenceLedger(c) {
         return true;
     });
     let anyHold = held.size > 0;
+    /** @type {Map<string, LedgerAttempt>} */
     const winners = new Map();
+    /** @type {Set<string>} */
     const blocked = new Set();
     for (const course of new Set(live.map(a => a.canonicalCourseId))) {
         const rec = live.filter(a => a.canonicalCourseId === course && a.recognition === 'RECOGNIZED');
@@ -185,7 +209,7 @@ export function referenceLedger(c) {
             rec.forEach(a => put(a.attemptToken, 'NEEDS_REVIEW'));
             continue;
         }
-        const rank = { EARNED: 0, IN_PROGRESS: 1, PLANNED: 2 };
+        const rank = /** @type {const} */ ({ EARNED: 0, IN_PROGRESS: 1, PLANNED: 2 });
         const win = [...rec].sort((x, y) => rank[x.ledger] - rank[y.ledger])[0];
         winners.set(course, win);
         rec.filter(a => a !== win).forEach(a => put(a.attemptToken, 'DUPLICATE'));
@@ -206,6 +230,7 @@ export function referenceLedger(c) {
     }
     // R5
     let earned = 0, inProgress = 0, planned = 0;
+    /** @type {Record<string, [number, number]>} */
     const areas = {};
     for (const w of winners.values()) {
         if (w.ledger === 'EARNED')
@@ -221,9 +246,11 @@ export function referenceLedger(c) {
     }
     // R6
     const approved = c.rulePackState === 'APPROVED';
+    /** @type {ModelResult['rows']} */
     const rows = {};
     for (const r of c.requirements) {
         const evidence = (r.evidenceRefs ?? []).length > 0;
+        /** @type {ModelResult['rows'][string]} */
         let row;
         if (r.kind === 'NON_CREDIT')
             row = { state: r.verificationMode === 'GPA_NOT_COLLECTED' ? 'NOT_CHECKED' : 'NEEDS_REVIEW' };
@@ -269,6 +296,7 @@ export function referenceLedger(c) {
 function spreadModel(r, winners) {
     const allowed = new Set(r.areaIds);
     let earned = 0, projected = 0;
+    /** @type {string[][]} */
     const choices = [];
     for (const w of winners.values()) {
         if (w.creditUnits === 0)
@@ -283,6 +311,7 @@ function spreadModel(r, winners) {
         choices.push(eligible);
     }
     let fewest = Number.POSITIVE_INFINITY, most = 0;
+    /** @param {number} i @param {readonly string[]} picked @returns {void} */
     const walk = (i, picked) => {
         if (i === choices.length) {
             const distinct = new Set(picked).size;
@@ -309,7 +338,7 @@ function project(c) {
     return {
         state: out.state, earned: out.earnedCreditUnits, inProgress: out.inProgressCreditUnits, planned: out.plannedCreditUnits,
         pending: out.pendingRecognitionCreditUnits,
-        areas: Object.fromEntries(out.areaProgress.map(a => [a.areaId, [a.earnedCreditUnits, a.projectedCreditUnits]])),
+        areas: Object.fromEntries(out.areaProgress.map(a => [a.areaId, /** @type {[number, number]} */ ([a.earnedCreditUnits, a.projectedCreditUnits])])),
         excluded: Object.fromEntries(out.excludedAttempts.map(e => [e.attemptToken, e.reason])),
         rows: Object.fromEntries(out.requirements.map(r => [r.requirementId, {
                 state: r.state,
@@ -324,6 +353,7 @@ function project(c) {
 }
 // 실행기: 재현 시드·반례 축소·실패 보고 생성.
 const LEDGER_SHA = createHash('sha256').update(readFileSync(new URL('./ledger.js', import.meta.url))).digest('hex').slice(0, 12);
+/** @param {Case} c */
 const ruleHash = (c) => createHash('sha256').update(JSON.stringify(c.requirements)).digest('hex').slice(0, 12);
 const SEEDS = process.env.LEDGER_PROP_SEED !== undefined
     ? [Number(process.env.LEDGER_PROP_SEED)]
@@ -338,9 +368,9 @@ function shrink(c, fails) {
     let cur = c;
     for (let changed = true; changed;) {
         changed = false;
-        for (const key of ['attempts', 'requirements']) {
+        for (const key of /** @type {const} */ (['attempts', 'requirements'])) {
             for (let i = 0; i < cur[key].length; i++) {
-                const next = { ...cur, [key]: cur[key].filter((_, j) => j !== i) };
+                const next = /** @type {Case} */ ({ ...cur, [key]: cur[key].filter((_, j) => j !== i) });
                 let still = false;
                 try {
                     still = fails(next);
@@ -358,9 +388,11 @@ function shrink(c, fails) {
     }
     return cur;
 }
+/** @param {unknown} v @returns {unknown} */
 const canonical = (v) => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
     ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, x]) => [k, canonical(x)])) : v;
 /** 입력 전체(수강 시도·요건·시각·규칙 상태)를 키 순서와 무관하게 해시한다. */
+/** @param {Case} c */
 const inputHash = (c) => createHash('sha256').update(JSON.stringify(canonical(c))).digest('hex').slice(0, 12);
 /** 실패 사례를 똑같이 복구해 수작업으로 확인할 수 있도록 보고서에 넣을 정보를 정의한다. */
 /**
@@ -389,13 +421,15 @@ function forAll(name, size, prop, seeds = SEEDS) {
     for (const seed of seeds) {
         const rng = mulberry32(seed);
         const c = genCase(rng, size);
+        /** @param {Case} x */
         const check = (x) => prop(x, mulberry32(seed ^ 0x5bd1e995));
+        /** @type {string|null} */
         let problem;
         try {
             problem = check(c);
         }
         catch (error) {
-            problem = `threw: ${error.message}`;
+            problem = `threw: ${/** @type {Error} */ (error).message}`;
         }
         if (problem !== null) {
             const small = shrink(c, x => check(x) !== null);
@@ -405,13 +439,15 @@ function forAll(name, size, prop, seeds = SEEDS) {
                 final = check(small) ?? problem;
             }
             catch (error) {
-                final = `threw: ${error.message}`;
+                final = `threw: ${/** @type {Error} */ (error).message}`;
             }
             throw new Error(failureReport(name, final, seed, c, small));
         }
     }
 }
+/** @param {unknown} a @param {unknown} b */
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+/** @param {Record<string, unknown>} o */
 const sortKeys = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => (a < b ? -1 : 1)));
 /** 기준 모델과 구현 결과의 필드별 차이를 한 줄씩 출력한다. */
 /**
@@ -420,14 +456,15 @@ const sortKeys = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => 
  * @returns {string|null}
  */
 function explain(want, got) {
+    /** @type {string[]} */
     const lines = [];
-    for (const key of ['state', 'earned', 'inProgress', 'planned', 'pending']) {
+    for (const key of /** @type {const} */ (['state', 'earned', 'inProgress', 'planned', 'pending'])) {
         if (want[key] !== got[key])
             lines.push(`${key}: model=${want[key]} implementation=${got[key]}`);
     }
-    for (const [label, a, b] of [['area', want.areas, got.areas], ['excluded', want.excluded, got.excluded], ['row', want.rows, got.rows]]) {
+    for (const [label, a, b] of /** @type {const} */ ([['area', want.areas, got.areas], ['excluded', want.excluded, got.excluded], ['row', want.rows, got.rows]])) {
         for (const id of [...new Set([...Object.keys(a), ...Object.keys(b)])].sort()) {
-            const x = a[id], y = b[id];
+            const x = /** @type {Record<string, unknown>} */ (a)[id], y = /** @type {Record<string, unknown>} */ (b)[id];
             if (!same(x, y))
                 lines.push(`${label} ${id}: model=${JSON.stringify(x ?? null)} implementation=${JSON.stringify(y ?? null)}`);
         }
@@ -444,14 +481,14 @@ describe('buildAcademicLedger properties (#202)', () => {
             forAll('demo: no earned attempts', 6, c => (c.attempts.some(a => a.ledger === 'EARNED') ? 'an earned attempt exists' : null), [seed]);
         }
         catch (error) {
-            message = error.message;
+            message = /** @type {Error} */ (error).message;
         }
         expect(message).toMatch(/^property "demo: no earned attempts" failed: an earned attempt exists$/m);
         const full = genCase(mulberry32(seed), 6);
         expect(message).toContain(`seed=${seed} inputHash=${inputHash(full)} asOf=${full.asOf} pack=${full.rulePackState}`);
         expect(message).toContain(`repro: LEDGER_PROP_SEED=${seed} npx vitest run packages/core/src/academics/ledger.property.test.js`);
         // 보고서의 축소 사례를 다시 파싱할 수 있고 실패 조건을 유지하며 해시가 같아야 한다.
-        const small = JSON.parse(/^shrunk case: (.*)$/m.exec(message)[1]);
+        const small = /** @type {Case} */ (JSON.parse(/^shrunk case: (.*)$/m.exec(message)[1]));
         expect(small.attempts.filter(a => a.ledger === 'EARNED')).toHaveLength(1);
         expect(small.requirements).toEqual([]);
         expect(message).toContain(`shrunk: inputHash=${inputHash(small)} ruleHash=${ruleHash(small)} asOf=${small.asOf} pack=${small.rulePackState} ledgerSha=${LEDGER_SHA}`);
@@ -466,6 +503,7 @@ describe('buildAcademicLedger properties (#202)', () => {
         // 아래 기대값은 R1~R7로 사람이 계산한 상수이지 referenceLedger의 출력이 아니다.
         // 먼저 기준 모델을 상수에 대조한 다음 구현과 비교한다.
         // 예: C1은 2024-1에 6단위 취득 후 2025-1에 승인 재수강했으므로 한 번만 세어 총 6단위다.
+        /** @type {Case} */
         const retake = { asOf: '2025-08-01T00:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: 'APPROVED', requirements: [], attempts: [
                 { attemptToken: 'SYN-A', canonicalCourseId: 'SYN-C1', creditUnits: 6, ledger: 'EARNED', areaIds: [], recognition: 'RECOGNIZED', term: '2024-1' },
                 { attemptToken: 'SYN-B', canonicalCourseId: 'SYN-C1', creditUnits: 6, ledger: 'EARNED', areaIds: [], recognition: 'RECOGNIZED', term: '2025-1',
@@ -476,10 +514,12 @@ describe('buildAcademicLedger properties (#202)', () => {
         const { retakeApprovalRef: _r, ...noApproval } = retake.attempts[1];
         expect(referenceLedger({ ...retake, attempts: [retake.attempts[0], noApproval] })).toMatchObject({ earned: 6, excluded: { 'SYN-B': 'NEEDS_REVIEW' }, state: 'NEEDS_REVIEW' });
         // 2026-01-01 한국시간 전에는 2025-2 학점이 인정되지 않으므로 2025-12-31 취득 학점은 0이다.
+        /** @type {Case} */
         const future = { ...retake, asOf: '2025-12-31T23:59:59+09:00', attempts: [{ ...retake.attempts[0], term: '2025-2' }] };
         expect(referenceLedger(future)).toMatchObject({ earned: 0, excluded: { 'SYN-A': 'NEEDS_REVIEW' } });
         expect(referenceLedger({ ...future, asOf: '2026-01-01T00:00:00+09:00' })).toMatchObject({ earned: 6, excluded: {} });
         // 한 과목이 두 영역에 속하면 총합은 6단위, 각 영역은 6단위다. 같은 과목의 취득·계획 중 계획 기록은 DUPLICATE다.
+        /** @type {Case} */
         const shared = { ...retake, attempts: [
                 { attemptToken: 'SYN-A', canonicalCourseId: 'SYN-C1', creditUnits: 6, ledger: 'EARNED', areaIds: ['SYN-A1', 'SYN-A2'], recognition: 'RECOGNIZED', term: '2024-1' },
                 { attemptToken: 'SYN-P', canonicalCourseId: 'SYN-C1', creditUnits: 6, ledger: 'PLANNED', areaIds: ['SYN-A1'], recognition: 'RECOGNIZED' }
@@ -494,7 +534,9 @@ describe('buildAcademicLedger properties (#202)', () => {
     });
     it('generates every kind of case it claims to test', () => {
         // 재수강·보류·중복·승인 규칙이 생성되지 않는다면 속성이 공허하게 통과하므로 생성기 분포를 확인한다.
+        /** @type {Record<string, number>} */
         const tally = {};
+        /** @param {string} k */
         const bump = (k) => { tally[k] = (tally[k] ?? 0) + 1; };
         for (const seed of SEEDS.slice(0, 400)) {
             const c = genCase(mulberry32(seed), 6);
@@ -521,7 +563,7 @@ describe('buildAcademicLedger properties (#202)', () => {
     // 전제 없음. 원장은 수강 시도를 집합으로 처리하고 excludedAttempts만 입력 순서를 따른다.
     it('gives the same result for any attempt order', () => {
         forAll('order independence', 12, (c, rng) => {
-            const shuffled = [...c.attempts].map(a => [rng(), a]).sort((x, y) => x[0] - y[0]).map(([, a]) => a);
+            const shuffled = [...c.attempts].map(a => /** @type {const} */ ([rng(), a])).sort((x, y) => x[0] - y[0]).map(([, a]) => a);
             const a = project(c), b = project({ ...c, attempts: shuffled });
             return same({ ...a, excluded: sortKeys(a.excluded) }, { ...b, excluded: sortKeys(b.excluded) }) ? null : 'result depends on attempt order';
         });
@@ -537,6 +579,7 @@ describe('buildAcademicLedger properties (#202)', () => {
             if (out.projectedUniqueCreditUnits !== out.earnedCreditUnits + out.inProgressCreditUnits + out.plannedCreditUnits)
                 return 'projected != earned + in progress + planned';
             // 각 과목을 한 번만 세므로 고유 취득 총합은 서로 다른 과목의 취득 학점 합을 넘지 않는다.
+            /** @type {Map<string, number>} */
             const bound = new Map();
             for (const a of c.attempts)
                 if (a.ledger === 'EARNED')
@@ -551,8 +594,9 @@ describe('buildAcademicLedger properties (#202)', () => {
             return null;
         });
         // 같은 수강 시도 토큰의 중복은 두 번 세지 않고 거부하며 소수 학점 단위도 반올림하지 않고 거부한다.
+        /** @type {LedgerAttempt} */
         const one = { attemptToken: 'SYN-T', canonicalCourseId: 'SYN-C1', creditUnits: 6, ledger: 'EARNED', areaIds: [], recognition: 'RECOGNIZED', term: '2024-1' };
-        const base = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: 'APPROVED', requirements: [] };
+        const base = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: /** @type {const} */ ('APPROVED'), requirements: [] };
         expect(() => buildAcademicLedger({ ...base, attempts: [one, { ...one }] })).toThrow(/duplicate attempt/);
         expect(() => buildAcademicLedger({ ...base, attempts: [{ ...one, creditUnits: 5.5 }] })).toThrow(/integer credit unit/);
     });
@@ -560,6 +604,7 @@ describe('buildAcademicLedger properties (#202)', () => {
     it('never counts a term that had not ended by asOf', () => {
         forAll('no future credit', 12, c => {
             const out = buildAcademicLedger(c);
+            /** @param {LedgerAttempt} a */
             const endedBy = (a) => a.term !== undefined && endsAt(a.term) <= Date.parse(c.asOf);
             const ceiling = c.attempts.filter(a => a.ledger === 'EARNED' && endedBy(a)).reduce((s, a) => s + a.creditUnits, 0);
             if (out.earnedCreditUnits > ceiling)
@@ -572,7 +617,7 @@ describe('buildAcademicLedger properties (#202)', () => {
     // 승인 근거 없는 재수강 연결은 이전 학점을 제거하지 않는다(R2).
     it('never passes on an unapproved pack or an unapproved retake', () => {
         forAll('approval gates', 12, c => {
-            for (const state of ['DRAFT', 'NEEDS_REVIEW', 'MISSING']) {
+            for (const state of /** @type {const} */ (['DRAFT', 'NEEDS_REVIEW', 'MISSING'])) {
                 const out = buildAcademicLedger({ ...c, rulePackState: state });
                 if (out.requirements.some(r => r.state === 'SATISFIED'))
                     return `a row is SATISFIED on a ${state} pack`;
@@ -592,6 +637,7 @@ describe('buildAcademicLedger properties (#202)', () => {
  */
 function linkShapes(c) {
     const byToken = new Map(c.attempts.map(a => [a.attemptToken, a]));
+    /** @type {Map<string, number>} */
     const claims = new Map();
     for (const a of c.attempts) {
         if (a.supersedesAttemptToken)
@@ -599,7 +645,9 @@ function linkShapes(c) {
     }
     let cycle = false, chain = false;
     for (const a of c.attempts) {
+        /** @type {string[]} */
         const walked = [];
+        /** @type {LedgerAttempt|undefined} */
         let at = a;
         while (at?.supersedesAttemptToken && !walked.includes(at.attemptToken)) {
             walked.push(at.attemptToken);
@@ -634,7 +682,8 @@ function withComposite(c, rng) {
     }
     return { ...c, requirements };
 }
-const BASE_REQUEST = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: 'APPROVED' };
+const BASE_REQUEST = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: /** @type {const} */ ('APPROVED') };
+/** @param {string} token @param {string} course @param {number} units @param {Partial<LedgerAttempt>} [over] @returns {LedgerAttempt} */
 const earned = (token, course, units, over = {}) => ({
     attemptToken: token, canonicalCourseId: course, creditUnits: units, ledger: 'EARNED', areaIds: [], recognition: 'RECOGNIZED',
     term: '2024-1', ...over,
@@ -645,7 +694,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
         const tally = { fork: 0, selfLink: 0, cycle: 0, chain: 0 };
         for (const seed of SEEDS.slice(0, 400)) {
             const found = linkShapes(genCase(mulberry32(seed), 6));
-            for (const key of Object.keys(tally))
+            for (const key of /** @type {(keyof typeof tally)[]} */ (Object.keys(tally)))
                 if (found[key])
                     tally[key] += 1;
         }
@@ -656,6 +705,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
         }
     });
     it('an approved retake chain keeps only the last attempt', () => {
+        /** @type {Case} */
         const c = { ...BASE_REQUEST, requirements: [{ id: 'SYN-R-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: 6, evidenceRefs: ['SYN-EV'] }],
             attempts: [
                 earned('SYN-A', 'SYN-C1', 6, { term: '2023-1' }),
@@ -670,6 +720,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
         expect(explain(referenceLedger(c), project(c))).toBeNull();
     });
     it('a chain with an unapproved middle link never counts the course twice', () => {
+        /** @type {Case} */
         const c = { ...BASE_REQUEST, requirements: [{ id: 'SYN-R-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: 6, evidenceRefs: ['SYN-EV'] }],
             attempts: [
                 earned('SYN-A', 'SYN-C1', 6, { term: '2023-1' }),
@@ -682,8 +733,9 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
         expect(explain(referenceLedger(c), project(c))).toBeNull();
     });
     it('refuses credit units outside non-negative safe integers, and sums that leave them', () => {
+        /** @param {LedgerAttempt[]} attempts */
         const run = (attempts) => buildAcademicLedger({ ...BASE_REQUEST, attempts, requirements: [] });
-        for (const bad of [-1, -6, Number.NaN, Number.POSITIVE_INFINITY, 0.5, 2 ** 53, '6']) {
+        for (const bad of [-1, -6, Number.NaN, Number.POSITIVE_INFINITY, 0.5, 2 ** 53, /** @type {number} */ (/** @type {unknown} */ ('6'))]) {
             expect(() => run([earned('SYN-T', 'SYN-C1', bad)]), String(bad)).toThrow(/integer credit unit/);
         }
         expect(run([earned('SYN-T', 'SYN-C1', Number.MAX_SAFE_INTEGER)]).earnedCreditUnits).toBe(Number.MAX_SAFE_INTEGER);
@@ -692,6 +744,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     });
     it('counts half-credit units exactly (1 unit = 0.5학점)', () => {
         const attempts = [earned('SYN-T1', 'SYN-C1', 1), earned('SYN-T2', 'SYN-C2', 1)];
+        /** @param {number} units */
         const row = (units) => buildAcademicLedger({ ...BASE_REQUEST, attempts,
             requirements: [{ id: 'SYN-R', kind: 'CREDIT_TOTAL', requiredCreditUnits: units, evidenceRefs: ['SYN-EV'] }] }).requirements[0];
         expect(row(2)).toMatchObject({ state: 'SATISFIED', earnedCreditUnits: 2 });
@@ -701,10 +754,13 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     it('doubling every credit unit doubles every unit figure and changes no state', () => {
         forAll('unit scale', 12, (c0, rng) => {
             const c = withComposite(c0, rng);
+            /** @type {Case} */
             const doubled = { ...c,
                 attempts: c.attempts.map(a => ({ ...a, creditUnits: a.creditUnits * 2 })),
-                requirements: c.requirements.map(r => ('requiredCreditUnits' in r ? { ...r, requiredCreditUnits: r.requiredCreditUnits * 2 } : r)) };
+                requirements: /** @type {LedgerRequirement[]} */ (c.requirements.map(r => ('requiredCreditUnits' in r ? { ...r, requiredCreditUnits: r.requiredCreditUnits * 2 } : r))) };
+            /** @type {string[]} */
             const problems = [];
+            /** @param {unknown} a @param {unknown} b @param {string} path @returns {void} */
             const walk = (a, b, path) => {
                 if (typeof a === 'number' && /CreditUnits$/.test(path)) {
                     if (b !== a * 2)
@@ -716,7 +772,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
                 else if (a && typeof a === 'object' && b && typeof b === 'object') {
                     const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
                     for (const key of keys)
-                        walk(a[key], b[key], key);
+                        walk(/** @type {Record<string, unknown>} */ (a)[key], /** @type {Record<string, unknown>} */ (b)[key], key);
                 }
                 else if (!same(a, b))
                     problems.push(`${path}: ${JSON.stringify(a)} -> ${JSON.stringify(b)}`);
@@ -735,6 +791,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
             const before = buildAcademicLedger(c), after = buildAcademicLedger({ ...c, attempts: [...c.attempts, extra] });
             if (after.earnedCreditUnits !== before.earnedCreditUnits + units)
                 return `earned ${before.earnedCreditUnits} -> ${after.earnedCreditUnits}, added ${units}`;
+            /** @param {typeof before} out @param {string} id */
             const area = (out, id) => out.areaProgress.find(a => a.areaId === id)?.earnedCreditUnits ?? 0;
             for (const id of AREAS) {
                 const want = area(before, id) + (areaIds.includes(id) ? units : 0);
@@ -752,7 +809,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
                 if (row.state === 'SATISFIED' && next?.state !== 'SATISFIED')
                     return `${row.requirementId} lost SATISFIED`;
                 if (row.state === 'UNSATISFIED' && next?.state === 'NEEDS_REVIEW') {
-                    const ambiguousSpread = row.requirementId === 'SYN-R-SPREAD' && [...c.attempts, extra].some(a => a.ledger === 'EARNED' && a.areaIds.filter(id => AREAS.includes(id)).length >= 2);
+                    const ambiguousSpread = row.requirementId === 'SYN-R-SPREAD' && [...c.attempts, extra].some(a => a.ledger === 'EARNED' && a.areaIds.filter(id => /** @type {readonly string[]} */ (AREAS).includes(id)).length >= 2);
                     if (!unevidenced.has(row.requirementId) && !ambiguousSpread)
                         return `${row.requirementId} went to review`;
                     toReview = true;
@@ -766,13 +823,15 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     it('gives the same result for any attempt order, with spread and group rows too', () => {
         forAll('order independence with composite rows', 12, (c0, rng) => {
             const c = withComposite(c0, rng);
-            const shuffled = [...c.attempts].map(a => [rng(), a]).sort((x, y) => x[0] - y[0]).map(([, a]) => a);
+            const shuffled = [...c.attempts].map(a => /** @type {const} */ ([rng(), a])).sort((x, y) => x[0] - y[0]).map(([, a]) => a);
+            /** @param {Case} x */
             const rows = (x) => buildAcademicLedger(x).requirements;
             return same(rows(c), rows({ ...c, attempts: shuffled })) ? null : 'a row depends on attempt order';
         });
     });
     // 전제 없음. 원장은 요청을 읽기만 하고 입력을 수정하지 않는다.
     it('never modifies its inputs', () => {
+        /** @param {unknown} value @returns {void} */
         const freeze = (value) => {
             if (value && typeof value === 'object') {
                 Object.values(value).forEach(freeze);
@@ -790,6 +849,7 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
         });
     });
     it('the spread and group rows reach both SATISFIED and UNSATISFIED', () => {
+        /** @type {Set<string>} */
         const seen = new Set();
         for (const seed of SEEDS.slice(0, 400)) {
             const rng = mulberry32(seed);
@@ -807,19 +867,20 @@ describe('buildAcademicLedger gaps (#11 본선 전)', () => {
     });
 });
 // #11 본선 전에는 AREA_SPREAD·GROUP_CHOICE를 전수 탐색 기준 모델, 탐색 예산, 대규모 입력과 비교한다. SYN-* 합성 데이터만 사용한다.
-const SPREAD_AREAS = ['SYN-S1', 'SYN-S2', 'SYN-S3', 'SYN-S4', 'SYN-S5', 'SYN-S6'];
+const SPREAD_AREAS = /** @type {const} */ (['SYN-S1', 'SYN-S2', 'SYN-S3', 'SYN-S4', 'SYN-S5', 'SYN-S6']);
 /** 서로 다른 인정 과목이며 재수강 링크가 없고 여러 영역에 걸쳐 있어 영역 분배 계산이 복잡한 사례다. */
 /**
  * @param {Rng} rng
  * @returns {Case}
  */
 function genSpreadCase(rng) {
+    /** @type {LedgerAttempt[]} */
     const attempts = [];
     const count = 1 + Math.floor(rng() * 8);
     for (let i = 0; i < count; i++) {
         const tags = [...SPREAD_AREAS, 'SYN-OUT'].filter(() => chance(rng, 0.3)).slice(0, 3);
         attempts.push({ attemptToken: `SYN-S-T${i}`, canonicalCourseId: `SYN-S-C${i}`, creditUnits: pick(rng, [0, 1, 2, 6, 6]),
-            ledger: pick(rng, ['EARNED', 'EARNED', 'EARNED', 'IN_PROGRESS', 'PLANNED']), areaIds: tags,
+            ledger: pick(rng, /** @type {const} */ (['EARNED', 'EARNED', 'EARNED', 'IN_PROGRESS', 'PLANNED'])), areaIds: tags,
             recognition: 'RECOGNIZED', term: '2023-1' });
     }
     const areaIds = SPREAD_AREAS.filter(() => chance(rng, 0.6));
@@ -835,12 +896,14 @@ function genSpreadCase(rng) {
  * @returns {Case}
  */
 function triangles(count, minAreas) {
+    /** @type {LedgerAttempt[]} */
     const attempts = [];
+    /** @type {string[]} */
     const areaIds = [];
     for (let t = 0; t < count; t++) {
-        const [a, b, c] = ['A', 'B', 'C'].map(v => `SYN-TRI${t}-${v}`);
+        const [a, b, c] = /** @type {[string, string, string]} */ (['A', 'B', 'C'].map(v => `SYN-TRI${t}-${v}`));
         areaIds.push(a, b, c);
-        for (const [x, y] of [[a, b], [b, c], [c, a]]) {
+        for (const [x, y] of /** @type {const} */ ([[a, b], [b, c], [c, a]])) {
             const n = attempts.length;
             attempts.push({ attemptToken: `SYN-TRI-T${n}`, canonicalCourseId: `SYN-TRI-C${n}`, creditUnits: 1, ledger: 'EARNED',
                 areaIds: [x, y], recognition: 'RECOGNIZED', term: '2023-1' });
@@ -851,11 +914,14 @@ function triangles(count, minAreas) {
 }
 describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 전)', () => {
     it('the brute-force spread model agrees with hand-checked cases', () => {
-        const base = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: 'APPROVED' };
+        const base = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: /** @type {const} */ ('APPROVED') };
+        /** @param {number} n @param {string[]} areaIds @returns {LedgerAttempt} */
         const course = (n, areaIds, units = 6) => ({ attemptToken: `SYN-H${n}`, canonicalCourseId: `SYN-HC${n}`,
             creditUnits: units, ledger: 'EARNED', areaIds, recognition: 'RECOGNIZED', term: '2023-1' });
+        /** @param {number} minAreas @returns {LedgerRequirement} */
         const spread = (minAreas, requiredCreditUnits = 6) => ({ id: 'SYN-R', kind: 'AREA_SPREAD',
             areaIds: ['SYN-X', 'SYN-Y', 'SYN-Z'], minAreas, requiredCreditUnits, evidenceRefs: ['SYN-EV'] });
+        /** @param {LedgerAttempt[]} attempts @param {LedgerRequirement} req */
         const state = (attempts, req) => referenceLedger({ ...base, attempts, requirements: [req] }).rows['SYN-R'].state;
         // X·Y 중 하나에 속하는 과목 하나로는 영역 하나만 채운다.
         expect(state([course(1, ['SYN-X', 'SYN-Y'])], spread(2))).toBe('UNSATISFIED');
@@ -868,9 +934,10 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
     });
     it('more multi-area courses than their areas cannot give more areas', () => {
         // 각각 X·Y만 가능한 과목 셋으로는 최대 2개 영역이므로 3개 영역 충족은 불가능하다.
+        /** @type {Case} */
         const three = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-P', rulePackState: 'APPROVED',
-            attempts: [1, 2, 3].map(n => ({ attemptToken: `SYN-M${n}`, canonicalCourseId: `SYN-MC${n}`, creditUnits: 6, ledger: 'EARNED',
-                areaIds: ['SYN-X', 'SYN-Y'], recognition: 'RECOGNIZED', term: '2023-1' })),
+            attempts: [1, 2, 3].map(n => ({ attemptToken: `SYN-M${n}`, canonicalCourseId: `SYN-MC${n}`, creditUnits: 6, ledger: /** @type {const} */ ('EARNED'),
+                areaIds: ['SYN-X', 'SYN-Y'], recognition: /** @type {const} */ ('RECOGNIZED'), term: '2023-1' })),
             requirements: [{ id: 'SYN-R', kind: 'AREA_SPREAD', areaIds: ['SYN-X', 'SYN-Y', 'SYN-Z'], minAreas: 3, requiredCreditUnits: 6,
                     evidenceRefs: ['SYN-EV'] }] };
         expect(project(three).rows['SYN-R'].state).toBe('UNSATISFIED');
@@ -883,6 +950,7 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
         });
     });
     it('matches the brute-force spread model on spread-heavy cases', () => {
+        /** @type {Set<string>} */
         const seen = new Set();
         for (const seed of SEEDS) {
             const c = genSpreadCase(mulberry32(seed));
@@ -898,7 +966,7 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
     });
     it('a spread the search can finish is decided exactly', () => {
         // 삼각형 3개로 9개 영역을 만들면 모든 배정에서 최소 6개, 최대 9개 영역을 채운다.
-        for (const [minAreas, want] of [[6, 'SATISFIED'], [7, 'NEEDS_REVIEW'], [9, 'NEEDS_REVIEW']]) {
+        for (const [minAreas, want] of /** @type {const} */ ([[6, 'SATISFIED'], [7, 'NEEDS_REVIEW'], [9, 'NEEDS_REVIEW']])) {
             const c = triangles(3, minAreas);
             expect(project(c).rows['SYN-R-TRI'].state, `min ${minAreas}`).toBe(want);
             expect(explain(referenceLedger(c), project(c))).toBeNull();
@@ -913,15 +981,17 @@ describe('AREA_SPREAD and GROUP_CHOICE against the reference model (#11 본선 �
         expect(buildAcademicLedger(triangles(10, 21)).requirements[0].state).toBe('NEEDS_REVIEW');
         // 취득 단위가 명확히 부족하면 별도 탐색 없이도 UNSATISFIED로 판정한다.
         const short = triangles(10, 20);
-        short.requirements = [{ ...short.requirements[0], requiredCreditUnits: 31 }];
+        short.requirements = [/** @type {LedgerRequirement} */ ({ ...short.requirements[0], requiredCreditUnits: 31 })];
         expect(buildAcademicLedger(short).requirements[0].state).toBe('UNSATISFIED');
     });
     it('a large transcript of single-area courses matches the reference model', () => {
         const areas = Array.from({ length: 30 }, (_, i) => `SYN-L${i}`);
+        /** @type {LedgerAttempt[]} */
         const attempts = Array.from({ length: 1000 }, (_, i) => ({ attemptToken: `SYN-L-T${i}`,
             canonicalCourseId: `SYN-L-C${i}`, creditUnits: 1 + (i % 6), ledger: i % 7 === 6 ? 'PLANNED' : 'EARNED',
             areaIds: [areas[i % 30]], recognition: 'RECOGNIZED', term: '2023-1' }));
         const groups = Array.from({ length: 10 }, (_, g) => Array.from({ length: 10 }, (_, j) => `SYN-L-C${g * 10 + j}`));
+        /** @type {Case} */
         const c = { asOf: '2026-12-20T12:00:00+09:00', rulePackVersion: 'SYN-PACK-LARGE', rulePackState: 'APPROVED', attempts,
             requirements: [
                 { id: 'SYN-R-TOTAL', kind: 'CREDIT_TOTAL', requiredCreditUnits: 2000, evidenceRefs: ['SYN-EV-T'] },

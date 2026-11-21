@@ -83,7 +83,7 @@ export const AcademicRequirementVNextSchema = z.discriminatedUnion('kind', [
     z.strictObject({ ...RequirementBase, kind: z.literal('NON_CREDIT'),
         criterionId: Id, verificationMode: z.enum(['OFFICIAL', 'MANUAL', 'GPA_NOT_COLLECTED']) }),
 ]).superRefine((r, ctx) => {
-    for (const key of ['sourceClauseIds', 'exceptionClauseIds', 'evidenceRefs']) {
+    for (const key of /** @type {const} */ (['sourceClauseIds', 'exceptionClauseIds', 'evidenceRefs'])) {
         if (new Set(r[key]).size !== r[key].length)
             ctx.addIssue({
                 code: 'custom', path: [key], message: 'Duplicate reference',
@@ -171,6 +171,7 @@ export const AcademicRulePackVNextSchema = z.strictObject({
     independentlyCheckedBy: Id.optional(),
     approvedAt: DateTime.optional(),
 }).superRefine((v, ctx) => {
+    /** @param {(string|number)[]} path @param {string} message */
     const problem = (path, message) => ctx.addIssue({
         code: 'custom', path, message,
     });
@@ -221,7 +222,7 @@ export const AcademicRulePackVNextSchema = z.strictObject({
     else if (v.clauseInventory.some(c => c.sourceDocumentId !== undefined) || v.validationReport?.sourceDocumentHashes) {
         problem(['sourceDocuments'], 'Document-bound clauses and checks require the document inventory');
     }
-    const reqIds = new Set(), semanticKeys = new Set();
+    const reqIds = /** @type {Set<string>} */ (new Set()), semanticKeys = /** @type {Set<string>} */ (new Set());
     for (const [i, req] of v.requirements.entries()) {
         if (reqIds.has(req.id))
             problem(['requirements', i, 'id'], 'Duplicate requirement ID');
@@ -232,6 +233,7 @@ export const AcademicRulePackVNextSchema = z.strictObject({
             ], 'Duplicate semantic requirement key');
         semanticKeys.add(req.semanticKey);
     }
+    /** @type {Map<string, AcademicClauseVNext>} */
     const inventory = new Map();
     for (const [i, c] of v.clauseInventory.entries()) {
         if (inventory.has(c.clauseId))
@@ -255,9 +257,9 @@ export const AcademicRulePackVNextSchema = z.strictObject({
         }
     }
     for (const [i, req] of v.requirements.entries()) {
-        for (const [key, expectedKind] of [
+        for (const [key, expectedKind] of /** @type {const} */ ([
             ['sourceClauseIds', 'source'], ['exceptionClauseIds', 'exception'],
-        ]) {
+        ])) {
             for (const id of req[key]) {
                 const clause = inventory.get(id);
                 if (!clause || clause.coverage.state !== 'LINKED'
@@ -299,12 +301,14 @@ export function verifyAcademicSourceCoverageVNext(pack, original) {
     }
     else if (original.sourceDocuments !== undefined)
         return false;
+    /** @type {Map<string, AcademicClauseVNext>} */
     const actual = new Map();
     for (const clause of pack.clauseInventory) {
         if (actual.has(clause.clauseId))
             return false;
         actual.set(clause.clauseId, clause);
     }
+    /** @type {Set<string>} */
     const seen = new Set();
     for (const clause of original.clauses) {
         if (seen.has(clause.clauseId))
@@ -372,7 +376,8 @@ export function selectAcademicRulePackAsOfVNext(candidates, request) {
             && s.curriculumVersion === request.curriculumVersion
             && s.cohortFrom <= request.admissionYear && request.admissionYear <= s.cohortTo;
     });
-    const axes = ['degreePath', 'track'];
+    const axes = /** @type {const} */ (['degreePath', 'track']);
+    /** @param {string|undefined} value */
     const selected = (value) => !!value && value !== 'UNSELECTED' && value !== 'UNDECIDED';
     // 두 분류 축에서 명확히 불일치하는 항목을 먼저 제외한다. 다른 학위 경로의 트랙을 현재 경로에 잘못 적용하지 않는다.
     const applicable = baseCandidates.filter(p => axes.every(axis => p.scope[axis] === undefined
@@ -383,7 +388,7 @@ export function selectAcademicRulePackAsOfVNext(candidates, request) {
     if (!applicable.length)
         return null;
     // 이전 판본 기록이 있더라도 새로운 분류 축이 무관하다는 근거는 아니다. 대체 연결 사슬도 마찬가지다.
-    for (const axis of ['degreePath', 'track'])
+    for (const axis of /** @type {const} */ (['degreePath', 'track']))
         if (applicable.some(p => p.scope[axis] !== undefined) && applicable.some(p => p.scope[axis] === undefined))
             return null;
     // 분기된 규칙, 연결되지 않은 중복 규칙, 동일한 판본 ID를 거부한다.
@@ -394,12 +399,15 @@ export function selectAcademicRulePackAsOfVNext(candidates, request) {
     if (heads.length !== 1)
         return null;
     const head = heads[0];
+    /** @type {AcademicRulePackVNext|undefined} */
     let cursor = head;
+    /** @type {Set<string>} */
     const chain = new Set();
     while (cursor && !chain.has(cursor.version)) {
         chain.add(cursor.version);
         if (!cursor.supersedesVersion)
             break;
+        /** @type {AcademicRulePackVNext|undefined} */
         const prior = byVersion.get(cursor.supersedesVersion);
         if (!prior)
             break;
@@ -427,7 +435,7 @@ export const AcademicRequirementProgressVNextSchema = z.strictObject({
     notCheckedReason: z.literal('GPA_NOT_COLLECTED').optional(),
     notApplicableReason: z.string().trim().min(8).max(300).optional(),
 }).superRefine((v, ctx) => {
-    for (const [matched, required] of [['matchedAreasCount', 'requiredAreasCount'], ['matchedGroupsCount', 'requiredGroupsCount']]) {
+    for (const [matched, required] of /** @type {const} */ ([['matchedAreasCount', 'requiredAreasCount'], ['matchedGroupsCount', 'requiredGroupsCount']])) {
         if ((v[matched] === undefined) !== (v[required] === undefined)
             || v.state === 'SATISFIED' && v[matched] !== undefined && v[matched] < v[required])
             ctx.addIssue({ code: 'custom', path: [matched], message: 'Composite progress requires paired counts and sufficient earned matches' });
@@ -471,6 +479,7 @@ export const AcademicPlanIssueVNextSchema = z.strictObject({
         'ALLOCATION_SEARCH_LIMIT', 'UNKNOWN',
     ]).optional(),
 }).superRefine((v, ctx) => {
+    /** @type {{ [key:string]:string; }} */
     const mandatory = {
         CREDIT_CAP_EXCEEDED: 'EXCEEDS_APPROVED_LIMIT',
         PREREQUISITE_MISSING: 'UNMET_OFFICIAL_PREREQUISITE',
@@ -636,6 +645,7 @@ export const OfferingOutlookVNextSchema = z.strictObject({
     })).max(20),
     caveat: z.string().trim().min(1).max(300),
 }).superRefine((v, ctx) => {
+    /** @param {(string|number)[]} path @param {string} message */
     const issue = (path, message) => ctx.addIssue({
         code: 'custom', path, message,
     });

@@ -33,6 +33,7 @@ export function findEnglishOnlyComments(source){
       }
       // 기계 지시문과 변경해서는 안 되는 권리 표시는 번역하지 않는다.
       if(/^(?:@ts-(?:check|nocheck|ignore|expect-error)|@eslint\b|eslint-(?:disable|enable|ignore)|prettier-ignore|istanbul ignore|c8 ignore|SPDX-|Copyright\b|©)/i.test(line))continue;
+      if(/^@import\s+\{[\w$,\s]+\}\s+from\s+(['"])[^'"]+\1$/.test(line))continue;
       // JSDoc의 타입·매개변수 식별자는 그대로 두되 뒤에 붙은 영문 설명은 검사한다.
       if(/^@(?:typedef|type|param|returns?|throws|property|template|satisfies|see|deprecated)\b/.test(line)){
         line=line.replace(/^@\w+\s*/,'').trim().replace(/^\{.*\}\s*/,'').trim();

@@ -1,13 +1,7 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicDegreePathVNext} AcademicDegreePathVNext */
-/** @typedef {import("../../contracts/index.js").MajorWhatIfDeltaRow} MajorWhatIfDeltaRow */
-/** @typedef {import("../../contracts/index.js").MajorWhatIfRequirementProgress} MajorWhatIfRequirementProgress */
-/** @typedef {import("../../contracts/index.js").OwnerMajorWhatIfRequest} OwnerMajorWhatIfRequest */
-/** @typedef {import("./double-major.js").DoubleMajorAttempt} DoubleMajorAttempt */
-/** @typedef {import("./double-major.js").MajorRulePack} MajorRulePack */
-/** @typedef {import("./double-major.js").OverlapRowImpact} OverlapRowImpact */
-/** @typedef {import("./double-major.js").OverlapRule} OverlapRule */
-/** @typedef {import("./ledger.js").LedgerRequirement} LedgerRequirement */
+/** @import { AcademicDegreePathVNext, MajorWhatIfDeltaRow, MajorWhatIfRequirementProgress, OwnerMajorWhatIfRequest } from "../../contracts/index.js" */
+/** @import { DoubleMajorAttempt, MajorRulePack, OverlapRowImpact, OverlapRule } from "./double-major.js" */
+/** @import { LedgerRequirement } from "./ledger.js" */
 /** @typedef {OwnerMajorWhatIfRequest['scenario']} WhatIfScenario */
 /** @typedef {AcademicDegreePathVNext} DegreePath */
 /** @typedef {'MAJOR_DEEPENING'|'MAJOR_DEEPENING_MINOR'} LegacyDegreePath */
@@ -47,6 +41,7 @@ function canonicalDegreePath(value, programId) {
 }
 const MAX_REQUIREMENTS = 200;
 const MAX_DELTA_EVIDENCE = 20;
+/** @param {ProgramEnrollment} enrollment @returns {DegreePath} */
 const pathOf = (enrollment) => !enrollment.secondary ? 'ADVANCED_SINGLE' : enrollment.secondary.role === 'DOUBLE_MAJOR' ? 'DOUBLE_MAJOR' : 'ADVANCED_PLUS_MINOR';
 /**
  * @param {ProgramEnrollment} enrollment
@@ -73,17 +68,20 @@ function checkEnrollment(enrollment, label) {
 function applyScenario(current, scenario) {
     const second = current.secondary;
     const target = 'targetMajorId' in scenario ? scenario.targetMajorId : undefined;
+    /** @param {string} id */
     const fresh = (id) => id !== current.primaryProgramId && id !== second?.programId;
     switch (scenario.action) {
         case 'CHANGE_PRIMARY_MAJOR':
             return fresh(target) ? { primaryProgramId: target, ...(second ? { secondary: second } : {}) } : undefined;
         case 'ADD_DOUBLE_MAJOR':
         case 'ADD_MINOR': {
+            /** @type {SecondaryRole} */
             const role = scenario.action === 'ADD_DOUBLE_MAJOR' ? 'DOUBLE_MAJOR' : 'MINOR';
             return !second && fresh(target) ? { primaryProgramId: current.primaryProgramId, secondary: { role, programId: target } } : undefined;
         }
         case 'CHANGE_DOUBLE_MAJOR':
         case 'CHANGE_MINOR': {
+            /** @type {SecondaryRole} */
             const role = scenario.action === 'CHANGE_DOUBLE_MAJOR' ? 'DOUBLE_MAJOR' : 'MINOR';
             return second?.role === role && fresh(target)
                 ? { primaryProgramId: current.primaryProgramId, secondary: { role, programId: target } } : undefined;
@@ -106,13 +104,16 @@ function resolve(enrollment, programs) {
     // 다른 주전공에 승인된 규칙집은 현재 주전공의 규칙을 대신할 수 없다.
     const secondaries = second ? programs.filter((offer) => offer.role === second.role && offer.programId === second.programId
         && (offer.primaryProgramId === undefined || offer.primaryProgramId === enrollment.primaryProgramId)) : [];
+    /** @type {Resolved} */
     const resolved = { unavailable: primaries.length === 0 || (second !== undefined && secondaries.length === 0) };
-    if (primaries[0])
-        resolved.primary = primaries[0];
-    if (secondaries[0])
-        resolved.secondary = secondaries[0];
+    const primary = primaries[0], secondary = secondaries[0];
+    if (primary?.role === 'PRIMARY_MAJOR')
+        resolved.primary = primary;
+    if (secondary && secondary.role !== 'PRIMARY_MAJOR')
+        resolved.secondary = secondary;
     return resolved;
 }
+/** @param {Resolved} resolved @param {ProgramEnrollment} enrollment */
 const approved = (resolved, enrollment) => resolved.primary?.pack.rulePackState === 'APPROVED'
     && (!enrollment.secondary || resolved.secondary?.pack.rulePackState === 'APPROVED');
 /**
@@ -121,17 +122,21 @@ const approved = (resolved, enrollment) => resolved.primary?.pack.rulePackState 
 function checkCatalog(programs) {
     if (!Array.isArray(programs))
         throw new TypeError('programs must be an array');
+    /** @type {Set<string>} */
     const keys = new Set();
+    /** @type {Set<string>} */
     const versions = new Set();
+    /** @type {Map<string, boolean>} */
     const scoping = new Map();
     for (const offer of programs) {
         if (offer.role !== 'PRIMARY_MAJOR' && offer.role !== 'DOUBLE_MAJOR' && offer.role !== 'MINOR') {
             throw new TypeError('program role must be PRIMARY_MAJOR, DOUBLE_MAJOR or MINOR');
         }
         assertId(offer.programId, 'programId');
+        /** @type {string|null} */
         let scope;
         if (offer.role === 'PRIMARY_MAJOR') {
-            if (offer.primaryProgramId !== undefined) {
+            if (/** @type {{primaryProgramId?:unknown}} */ (offer).primaryProgramId !== undefined) {
                 throw new TypeError(`primary pack ${offer.programId} cannot name a primaryProgramId`);
             }
             // 동일한 선택지를 뜻하는 정식·이전 표기를 서로 다른 후보로 중복 계산하지 않는다.
@@ -180,7 +185,9 @@ function project(role, input, enrollment, resolved) {
     });
     const second = audit.doubleMajor.status === 'CHECKED' ? audit.doubleMajor.audit : undefined;
     const rows = [...audit.primary.requirements, ...(second?.requirements ?? [])];
+    /** @type {Map<string, LedgerRequirement>} */
     const definitions = new Map();
+    /** @type {Map<string, MajorRulePack>} */
     const owner = new Map();
     for (const pack of [primary, ...(secondary ? [secondary] : [])]) {
         for (const requirement of pack.requirements) {
@@ -193,6 +200,7 @@ function project(role, input, enrollment, resolved) {
     }
     if (rows.length > MAX_REQUIREMENTS)
         throw new RangeError('too many requirements for one projection');
+    /** @type {Map<string, OverlapRowImpact>} */
     const impacts = new Map();
     for (const impact of [...audit.overlap.rowImpacts.primary, ...audit.overlap.rowImpacts.doubleMajor])
         impacts.set(impact.requirementId, impact);
@@ -204,6 +212,7 @@ function project(role, input, enrollment, resolved) {
         .filter(row => row.reason === 'PENDING_RECOGNITION' || row.reason === 'NEEDS_REVIEW')
         .map(row => byToken.get(row.attemptToken))
         .filter(attempt => attempt.creditUnits > 0);
+    /** @param {LedgerRequirement} definition @returns {boolean} */
     const touchedByUndecided = (definition) => {
         const pack = owner.get(definition.id);
         return undecided.some(attempt => {
@@ -219,7 +228,9 @@ function project(role, input, enrollment, resolved) {
             }
         });
     };
+    /** @type {MajorWhatIfRequirementProgress[]} */
     const requirements = [];
+    /** @type {string[]} */
     const reviewRequirementIds = [];
     for (const row of rows) {
         const definition = definitions.get(row.requirementId);
@@ -230,6 +241,7 @@ function project(role, input, enrollment, resolved) {
         if (row.state === 'NEEDS_REVIEW' || row.state === 'NOT_CHECKED' || touchedByUndecided(definition)) {
             reviewRequirementIds.push(row.requirementId);
         }
+        /** @type {MajorWhatIfRequirementProgress} */
         const progress = { requirementId: row.requirementId, state: 'MISSING' };
         if (definition.kind === 'CREDIT_TOTAL' || definition.kind === 'CATEGORY_MINIMUM') {
             // 공유 과목 때문에 보류된 요건은 중복 인정 불허를 가정한 보수적 수치를 보여준다.
@@ -271,11 +283,13 @@ export function buildMajorWhatIf(input) {
     checkEnrollment(input.current, 'current');
     checkCatalog(input.programs);
     const coreVersion = MAJOR_WHAT_IF_CORE_VERSION;
+    /** @type {Set<MajorWhatIfBlocker>} */
     const blockers = new Set();
     const now = resolve(input.current, input.programs);
     if (!approved(now, input.current))
         blockers.add('CURRENT_RULEPACK_NOT_APPROVED');
     const next = applyScenario(input.current, scenario);
+    /** @type {Resolved|undefined} */
     let then;
     if (!next)
         blockers.add('TARGET_PROGRAM_UNAVAILABLE');
@@ -292,6 +306,7 @@ export function buildMajorWhatIf(input) {
         }
     }
     if (blockers.size > 0) {
+        /** @type {MajorWhatIfBlocker[]} */
         const order = ['CURRENT_RULEPACK_NOT_APPROVED', 'RULEPACK_NOT_APPROVED', 'TARGET_PROGRAM_UNAVAILABLE'];
         return { state: 'BLOCKED_DEPENDENCY', asOf: input.asOf, scenario, blockers: order.filter(code => blockers.has(code)), coreVersion };
     }
@@ -300,7 +315,9 @@ export function buildMajorWhatIf(input) {
     if (current.earnedCreditUnits !== hypothetical.earnedCreditUnits) {
         throw new Error('both sides must read the same unique earned ledger');
     }
+    /** @type {Map<string, LedgerRequirement>} */
     const definitionsBefore = new Map();
+    /** @type {Map<string, LedgerRequirement>} */
     const definitionsAfter = new Map();
     for (const offer of [now.primary, now.secondary].filter(Boolean)) {
         for (const requirement of offer.pack.requirements)
@@ -318,6 +335,7 @@ export function buildMajorWhatIf(input) {
     const delta = ids.map(requirementId => {
         const previous = before.get(requirementId);
         const next = after.get(requirementId);
+        /** @type {MajorWhatIfDeltaRow['change']} */
         let change;
         if (!previous)
             change = next.state === 'SATISFIED' ? 'ALREADY_SATISFIED' : 'NEW_REQUIREMENT';

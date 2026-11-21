@@ -1,9 +1,6 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
-/** @typedef {import("./ledger.js").AcademicLedgerRequest} AcademicLedgerRequest */
-/** @typedef {import("./ledger.js").LedgerAttempt} LedgerAttempt */
-/** @typedef {import("./ledger.js").LedgerRecognition} LedgerRecognition */
-/** @typedef {import("./ledger.js").LedgerSlot} LedgerSlot */
+/** @import { AcademicAuditVNext } from "../../contracts/index.js" */
+/** @import { AcademicLedgerRequest, LedgerAttempt, LedgerRecognition, LedgerSlot } from "./ledger.js" */
 /** @typedef {LedgerAttempt & {identity:'RESOLVED'}} ResolvedLedgerAttempt */
 /** @typedef {{ identity:'NEEDS_REVIEW'; attemptToken:string; creditUnits:number; ledger:LedgerSlot; recognition:LedgerRecognition; term?:string; supersedesAttemptToken?:string; retakeApprovalRef?:string; }} UnresolvedLedgerAttempt */
 /** @typedef {ResolvedLedgerAttempt | UnresolvedLedgerAttempt} IdentifiedLedgerAttempt */
@@ -67,18 +64,21 @@ function checkUnresolved(row) {
 export function buildLedgerWithCourseIdentity(input) {
     if (!Array.isArray(input.attempts))
         throw new TypeError('attempts must be an array');
+    /** @type {LedgerAttempt[]} */
     const resolved = [];
+    /** @type {UnresolvedLedgerAttempt[]} */
     const unresolved = [];
+    /** @type {Set<string>} */
     const tokens = new Set();
     for (const row of input.attempts) {
-        const identity = row.identity;
+        const identity = /** @type {{identity?:unknown}} */ (row).identity;
         if (identity === 'RESOLVED') {
-            const { identity: _drop, ...attempt } = row;
+            const { identity: _drop, ...attempt } = /** @type {ResolvedLedgerAttempt} */ (row);
             resolved.push(attempt);
         }
         else if (identity === 'NEEDS_REVIEW') {
-            checkUnresolved(row);
-            unresolved.push(row);
+            checkUnresolved(/** @type {UnresolvedLedgerAttempt} */ (row));
+            unresolved.push(/** @type {UnresolvedLedgerAttempt} */ (row));
         }
         else {
             throw new TypeError('every attempt needs identity RESOLVED or NEEDS_REVIEW');
@@ -93,7 +93,9 @@ export function buildLedgerWithCourseIdentity(input) {
     if (base.excludedAttempts.length + unresolved.length > MAX_EXCLUDED)
         throw new RangeError('too many excluded attempts');
     const unresolvedTokens = new Set(unresolved.map(row => row.attemptToken));
+    /** @type {Set<string>} */
     const linkedUnresolved = new Set();
+    /** @type {Set<string>} */
     const linkedResolved = new Set();
     for (const row of input.attempts) {
         const target = row.supersedesAttemptToken;
@@ -115,12 +117,12 @@ export function buildLedgerWithCourseIdentity(input) {
     const affectedRequirementIds = live ? input.requirements.filter(r => readsAttempts.has(r.id)).map(r => r.id) : [];
     const affected = new Set(affectedRequirementIds);
     const requirements = base.requirements.map(row => affected.has(row.requirementId) && (row.state === 'SATISFIED' || row.state === 'UNSATISFIED')
-        ? { ...row, state: 'NEEDS_REVIEW' }
+        ? { ...row, state: /** @type {const} */ ('NEEDS_REVIEW') }
         : row);
     const baseReasons = new Map(base.excludedAttempts.map(row => [row.attemptToken, row.reason]));
     const excludedAttempts = input.attempts.flatMap(row => {
         if (unresolvedTokens.has(row.attemptToken))
-            return [{ attemptToken: row.attemptToken, reason: 'NEEDS_REVIEW' }];
+            return [{ attemptToken: row.attemptToken, reason: /** @type {const} */ ('NEEDS_REVIEW') }];
         const reason = baseReasons.get(row.attemptToken);
         return reason ? [{ attemptToken: row.attemptToken, reason }] : [];
     });

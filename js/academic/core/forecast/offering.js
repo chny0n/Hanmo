@@ -30,6 +30,7 @@ const MAX_EVENTS = 30;
 const MAX_COURSES = 20;
 const ASSIGNMENT_REVIEW_KINDS = new Set(['RESEARCH_LEAVE', 'RETIREMENT', 'STAFF_CHANGE', 'COURSE_CANCELLED']);
 const PERSONNEL_KINDS = new Set(['RESEARCH_LEAVE', 'RETIREMENT', 'STAFF_CHANGE']);
+/** @type {ReadonlySet<OfferingOutlookVNext['signal']>} */
 const READY_SIGNALS = new Set([
     'CONFIRMED_OFFERED', 'CONFIRMED_NOT_OFFERED', 'HISTORICAL_PATTERN',
 ]);
@@ -261,6 +262,7 @@ function officialAlternatives(courseId, input, events) {
     if (input.length > MAX_OBSERVATIONS)
         throw new RangeError('more than 20 alternatives');
     const replacements = events.filter(event => event.kind === 'REPLACEMENT_CONFIRMED' && event.impact === 'EXPLICIT_COURSE_STATUS');
+    /** @type {OfferingOutlookVNext['alternatives']} */
     const kept = [];
     for (const alt of input) {
         if (alt.courseId === courseId)
@@ -366,6 +368,7 @@ export function termWindow(term) {
  * @returns {number}
  */
 function termsBefore(term, target) {
+    /** @param {string} value */
     const index = (value) => Number(value.slice(0, 4)) * 2 + Number(value.slice(-1)) - 1;
     return index(target) - index(term);
 }
@@ -374,6 +377,7 @@ function termsBefore(term, target) {
  * @returns {OfferingObservation[]}
  */
 function dedupe(rows) {
+    /** @type {Map<string, OfferingObservation[]>} */
     const groups = new Map();
     for (const row of rows) {
         const group = groups.get(row.term);
@@ -382,6 +386,7 @@ function dedupe(rows) {
         else
             groups.set(row.term, [row]);
     }
+    /** @type {OfferingObservation[]} */
     const kept = [];
     for (const group of groups.values()) {
         const chosen = chooseObservation(group);
@@ -466,7 +471,7 @@ function cloneEvent(event) {
     return { ...copy, effectiveUntil: event.effectiveUntil };
 }
 /**
- * @template T
+ * @template {Timed} T
  * @param {readonly T[]} rows
  * @returns {T}
  */

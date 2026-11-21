@@ -10,7 +10,8 @@
 import { z } from 'zod';
 import { AcademicAuditVNextSchema } from '../contracts/index.js';
 import { NOT_OFFICIAL_GRADUATION_TEXT, creditsText } from './graduationView.js';
-const AUDIT_STATE = { READY: '규칙 적용 결과', NEEDS_REVIEW: '검토가 필요한 결과', INSUFFICIENT_DATA: '자료가 부족해 판단할 수 없음' };
+const AUDIT_STATE = /** @type {const} */ ({ READY: '규칙 적용 결과', NEEDS_REVIEW: '검토가 필요한 결과', INSUFFICIENT_DATA: '자료가 부족해 판단할 수 없음' });
+/** @type {Record<RowState, MajorRowView['badge']>} */
 const ROW_BADGE = {
     SATISFIED: { text: '충족', icon: '✓' },
     UNSATISFIED: { text: '미충족', icon: '○' },
@@ -19,9 +20,12 @@ const ROW_BADGE = {
     NOT_CHECKED: { text: '확인 안 함', icon: '…' },
 };
 // 학생이 먼저 조치해야 할 항목, 남은 항목, 완료 항목 순으로 정렬한다.
+/** @type {Record<RowState, number>} */
 const ROW_RANK = { UNSATISFIED: 0, NEEDS_REVIEW: 1, NOT_CHECKED: 2, SATISFIED: 3, NOT_APPLICABLE: 4 };
+/** @param {unknown} v @returns {v is Record<string, unknown>} */
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
-const isUnits = (v) => Number.isSafeInteger(v) && v >= 0;
+/** @param {unknown} v @returns {v is number} */
+const isUnits = (v) => Number.isSafeInteger(v) && /** @type {number} */ (v) >= 0;
 // 코어의 OverlapRowImpact·DoubleMajorAudit['overlap'] 구조를 그대로 검증한다. 불필요한 키·null·잘못된 숫자는 거부한다.
 const Id = z.string().trim().min(1).max(128);
 const Units = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
@@ -117,7 +121,9 @@ export function buildDoubleMajorView(raw, expected) {
     // 양쪽 전공에 같은 성적표를 쓰므로 고유 총 학점도 같아야 한다. 다르면 서로 다른 사용자 데이터가 섞였을 가능성이 있다.
     if (u.earnedCreditUnits !== primary.data.earnedCreditUnits)
         return { ok: false };
+    /** @type {MajorColumnView | null} */
     let second = null;
+    /** @type {string | null} */
     let note = null;
     switch (dm.status) {
         case 'NOT_APPLICABLE':

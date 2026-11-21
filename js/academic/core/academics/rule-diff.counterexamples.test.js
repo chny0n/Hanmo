@@ -10,7 +10,9 @@ import { describe, expect, it } from 'vitest';
 import { AcademicRulePackVNextSchema } from '../../contracts/index.js';
 import { compareRulePackRevisions } from './rule-diff.js';
 const AS_OF = '2026-11-01T00:00:00.000Z';
-const refs = (id) => ({ sourceClauseIds: [`CL-${id}`], exceptionClauseIds: [], evidenceRefs: [`SYN-EV-${id}`] });
+/** @param {string} id */
+const refs = (id) => ({ sourceClauseIds: [`CL-${id}`], exceptionClauseIds: /** @type {string[]} */ ([]), evidenceRefs: [`SYN-EV-${id}`] });
+/** @type {Req[]} */
 const BASE = [
     { id: 'R-TOTAL', semanticKey: 'total', kind: 'CREDIT_TOTAL', requiredCreditUnits: 24, ...refs('TOTAL') },
     { id: 'R-MAJOR', semanticKey: 'major', kind: 'CATEGORY_MINIMUM', areaId: 'MAJOR', requiredCreditUnits: 12, ...refs('MAJOR') },
@@ -26,6 +28,7 @@ const BASE = [
  * @returns {Pack['clauseInventory']}
  */
 function inventory(requirements) {
+    /** @type {Map<string, {kind:'RULE'|'EXCEPTION'; ids:string[]}>} */
     const linked = new Map();
     for (const req of requirements) {
         for (const id of req.sourceClauseIds) {
@@ -44,6 +47,7 @@ function inventory(requirements) {
         clauseId, kind, sourceSpanRef: `span-${clauseId}`, coverage: { state: 'LINKED', requirementIds: ids },
     }));
 }
+/** @type {Pack['scope']} */
 const SCOPE = {
     campus: 'SYN-CAMPUS', primaryMajor: 'SYN-PRIMARY', majorRole: 'PRIMARY_MAJOR', admissionType: 'REGULAR',
     curriculumVersion: 'SYN-CUR', degreePath: 'ADVANCED_SINGLE', cohortFrom: 2023, cohortTo: 2026,
@@ -85,10 +89,12 @@ function draft(pack) {
     const { approvedBy: _a, independentlyCheckedBy: _b, approvedAt: _c, ...rest } = pack;
     return AcademicRulePackVNextSchema.parse({ ...rest, state: 'DRAFT' });
 }
+/** @param {string} token @param {string} courseId @param {string[]} areaIds @param {Partial<LedgerAttempt>} [over] @returns {LedgerAttempt} */
 const attempt = (token, courseId, areaIds, over = {}) => ({
     attemptToken: token, canonicalCourseId: courseId, creditUnits: 6, ledger: 'EARNED', areaIds,
     recognition: 'RECOGNIZED', term: '2025-2', ...over,
 });
+/** @type {LedgerAttempt[]} */
 const ATTEMPTS = [
     attempt('T-M1', 'SYN-M1', ['MAJOR']),
     attempt('T-M2', 'SYN-M2', ['MAJOR']),
@@ -97,8 +103,17 @@ const ATTEMPTS = [
     attempt('T-K2', 'SYN-K2', ['SCI']),
     attempt('T-G1', 'SYN-G1', ['HUM']),
 ];
+/**
+ * @template T
+ * @param {T} value
+ * @returns {T}
+ */
 const clone = (value) => structuredClone(value);
-const replace = (requirements, id, patch) => requirements.map(req => (req.id === id ? { ...req, ...patch } : req));
+/** @param {Req[]} requirements @param {string} id @param {Record<string, unknown>} patch @returns {Req[]} */
+const replace = (requirements, id, patch) => requirements.map(req => (req.id === id ? /** @type {Req} */ ({ ...req, ...patch }) : req));
+/** @typedef {Omit<Mutation,'expect'> & {expect:Exclude<Mutation['expect'], {blocked:RevisionBlockerCode}>}} RuleMutation */
+/** @typedef {Omit<Mutation,'expect'> & {expect:{blocked:RevisionBlockerCode}}} BlockedMutation */
+/** @type {RuleMutation[]} */
 const RULE_MUTATIONS = [
     { name: 'total credits raised', requirements: r => replace(r, 'R-TOTAL', { requiredCreditUnits: 26 }),
         expect: { changed: [['R-TOTAL', 'requiredCreditUnits']] } },
@@ -130,6 +145,7 @@ const RULE_MUTATIONS = [
             { id: 'R-CORE2', semanticKey: 'core2', kind: 'REQUIRED_COURSE', canonicalCourseId: 'SYN-CORE-B', ...refs('CORE2') }],
         expect: { changed: [], added: ['R-CORE2'] } },
 ];
+/** @type {BlockedMutation[]} */
 const SCOPE_AND_PERIOD_MUTATIONS = [
     { name: 'cohort range extended', pack: { scope: { ...SCOPE, cohortTo: 2027 } }, expect: { blocked: 'SCOPE_MISMATCH' } },
     { name: 'cohort range starts later', pack: { scope: { ...SCOPE, cohortFrom: 2024 } }, expect: { blocked: 'SCOPE_MISMATCH' } },
@@ -157,6 +173,7 @@ function run(mutations, attempts = ATTEMPTS) {
     return compareRulePackRevisions({ asOf: AS_OF, previous: approved('SYN-V1', clone(BASE)),
         next: approved('SYN-V2', reqs, over), attempts, nextAttempts: attempts });
 }
+/** @param {ReturnType<typeof run>} diff */
 const reported = (diff) => ({
     changed: diff.requirements.filter(r => r.definition === 'CHANGED')
         .flatMap(r => r.changedFields.map(field => `${r.requirementId}:${field}`)).sort(),
@@ -169,7 +186,7 @@ describe('every single rule change is reported, and only that change', () => {
         expect(diff.blockers).toEqual([]);
         expect(reported(diff)).toEqual({ changed: [], added: [], removed: [] });
     });
-    it.each(RULE_MUTATIONS.map(m => [m.name, m]))('%s', (_name, m) => {
+    it.each(RULE_MUTATIONS.map(m => /** @type {const} */ ([m.name, m])))('%s', (_name, m) => {
         const diff = run([m]);
         const want = m.expect;
         expect(diff.blockers).toEqual([]);
@@ -180,7 +197,7 @@ describe('every single rule change is reported, and only that change', () => {
     });
 });
 describe('cohort, scope and effective-term changes are blocked, never compared', () => {
-    it.each(SCOPE_AND_PERIOD_MUTATIONS.map(m => [m.name, m]))('%s', (_name, m) => {
+    it.each(SCOPE_AND_PERIOD_MUTATIONS.map(m => /** @type {const} */ ([m.name, m])))('%s', (_name, m) => {
         const diff = run([m]);
         expect(diff.blockers.map(b => b.code)).toContain(m.expect.blocked);
         expect(diff.state).toBe('NEEDS_REVIEW');
@@ -190,9 +207,9 @@ describe('cohort, scope and effective-term changes are blocked, never compared',
 describe('DRAFT versions stay DRAFT', () => {
     it('a DRAFT pair, or a DRAFT on either side, is blocked with no rows', () => {
         const v1 = approved('SYN-V1', clone(BASE)), v2 = approved('SYN-V2', replace(clone(BASE), 'R-TOTAL', { requiredCreditUnits: 26 }));
-        for (const [previous, next, sides] of [
+        for (const [previous, next, sides] of /** @type {const} */ ([
             [draft(v1), draft(v2), ['previous', 'next']], [draft(v1), v2, ['previous']], [v1, draft(v2), ['next']],
-        ]) {
+        ])) {
             const diff = compareRulePackRevisions({ asOf: AS_OF, previous, next, attempts: ATTEMPTS, nextAttempts: ATTEMPTS });
             expect(diff.requirements).toEqual([]);
             expect(diff.blockers).toEqual(sides.map(side => ({ code: 'NOT_APPROVED', side })));
@@ -220,10 +237,10 @@ function rng(seed) {
 describe('combined rule changes (seeded)', () => {
     it('reports exactly the union of 1–3 independent changes, 300 rounds', () => {
         // 요건마다 변경을 하나로 제한해 기대 결과의 합집합을 정확히 유지한다.
-        const target = (m) => m.expect.changed[0]?.[0]
-            ?? m.expect.removed?.[0] ?? 'ADD';
+        /** @param {RuleMutation} m */
+        const target = (m) => m.expect.changed[0]?.[0] ?? m.expect.removed?.[0] ?? 'ADD';
         for (let seed = 1; seed <= 300; seed += 1) {
-            const next = rng(seed), picked = [], used = new Set();
+            const next = rng(seed), picked = [], used = /** @type {Set<string>} */ (new Set());
             const count = 1 + Math.floor(next() * 3);
             while (picked.length < count) {
                 const m = RULE_MUTATIONS[Math.floor(next() * RULE_MUTATIONS.length)];
@@ -233,7 +250,7 @@ describe('combined rule changes (seeded)', () => {
                 picked.push(m);
             }
             const diff = run(picked);
-            const want = { changed: [], added: [], removed: [] };
+            const want = { changed: /** @type {string[]} */ ([]), added: /** @type {string[]} */ ([]), removed: /** @type {string[]} */ ([]) };
             for (const m of picked) {
                 const e = m.expect;
                 want.changed.push(...e.changed.map(([id, field]) => `${id}:${field}`));
@@ -250,6 +267,7 @@ describe('a course that counts in a different area under the next version', () =
     // RulePack에는 과목별 영역표가 없어 변경 내용은 원장 행으로 전달한다. 요건 정의 자체는 같다.
     const v1 = approved('SYN-V1', clone(BASE)), v2 = approved('SYN-V2', clone(BASE));
     const moved = ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? { ...a, areaIds: ['MAJOR', 'HUM'] } : a));
+    /** @param {ReturnType<typeof compareRulePackRevisions>} diff @param {string} id */
     const at = (diff, id) => diff.requirements.find(r => r.requirementId === id);
     it('is reported as an area membership change with the result it causes', () => {
         const diff = compareRulePackRevisions({ asOf: AS_OF, previous: v1, next: v2, attempts: ATTEMPTS, nextAttempts: moved });
@@ -280,7 +298,7 @@ describe('a course that counts in a different area under the next version', () =
             ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? { ...a, creditUnits: 4 } : a)),
             ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? { ...a, term: '2026-1' } : a)),
             ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? { ...a, attemptToken: 'T-OTHER' } : a)),
-            ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? { ...a, ledger: 'PLANNED' } : a)),
+            ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? { ...a, ledger: /** @type {const} */ ('PLANNED') } : a)),
             // 행 수는 같아도 같은 행이 두 번 나타나고 다른 행이 누락된 경우다.
             ATTEMPTS.map(a => (a.attemptToken === 'T-A' ? ATTEMPTS[0] : a)),
         ]) {

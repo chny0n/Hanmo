@@ -10,7 +10,9 @@ import { simulateStudyPlan } from './study-plan.js';
 const AS_OF = '2026-11-01T00:00:00.000Z';
 const TERM = '2027-1';
 const CAP_REF = 'SYN-SEMESTER-CAP';
+/** @param {string} courseId */
 const item = (courseId, targetTerm = TERM, planned = true) => ({ kind: 'STUDY_PLAN', dataMode: 'SYNTHETIC', state: 'DRAFT', courseId, targetTerm, planned });
+/** @type {LedgerAttempt[]} */
 const TRANSCRIPT = [
     { attemptToken: 'SYN-T-A', canonicalCourseId: 'SYN-A', creditUnits: 6, ledger: 'EARNED', areaIds: [], recognition: 'RECOGNIZED', term: '2025-2' },
     { attemptToken: 'SYN-T-B', canonicalCourseId: 'SYN-B', creditUnits: 6, ledger: 'IN_PROGRESS', areaIds: [], recognition: 'RECOGNIZED', term: '2026-2' },
@@ -18,16 +20,19 @@ const TRANSCRIPT = [
 const SEVEN = ['SYN-P1', 'SYN-P2', 'SYN-P3', 'SYN-P4', 'SYN-P5', 'SYN-P6', 'SYN-P7'];
 /** 하나의 수강계획 문제 항목에 담을 수 있는 과목 수를 넘는 경우다. */
 const MANY = Array.from({ length: 25 }, (_, i) => `SYN-M${String(i + 1).padStart(2, '0')}`);
+/** @type {Record<string, number>} */
 const CATALOG = Object.fromEntries([...SEVEN, 'SYN-ADV', 'SYN-ADV2', 'SYN-ADV3', 'SYN-X', 'SYN-Y', 'SYN-C', 'SYN-D'].map(id => [id, 6]));
 /** 과목마다 검증된 분반이 하나씩 있고 시간이 서로 달라 시간표 문제는 발생하지 않는다. */
+/** @param {readonly string[]} courseIds @returns {VerifiedSection[]} */
 const sections = (courseIds) => courseIds.map((courseId, index) => ({
     canonicalCourseId: courseId, sectionId: `${courseId}-01`, term: TERM,
     meetings: [{ day: 'TUE', startMinute: (8 + index) * 60, endMinute: (9 + index) * 60 }],
     evidenceRefs: ['SYN-CATALOG-2027-1'], verifiedAt: '2026-10-15T00:00:00.000Z',
 }));
+/** @param {unknown[]} studyPlan @param {Partial<StudyPlanCheckRequest>} [over] @returns {StudyPlanCheckRequest} */
 const request = (studyPlan, over = {}) => {
     const termCourses = studyPlan
-        .map(raw => raw)
+        .map(raw => /** @type {ReturnType<typeof item>} */ (raw))
         .filter(raw => raw.planned && raw.targetTerm === TERM)
         .map(raw => raw.courseId);
     return {
@@ -42,12 +47,14 @@ const request = (studyPlan, over = {}) => {
         ...over,
     };
 };
+/** @param {readonly string[]} courseIds @returns {VerifiedSection[]} */
 const clashing = (courseIds) => courseIds.map(courseId => ({
     canonicalCourseId: courseId, sectionId: `${courseId}-01`, term: TERM,
     meetings: [{ day: 'MON', startMinute: 540, endMinute: 660 }],
     evidenceRefs: ['SYN-CATALOG-2027-1'], verifiedAt: '2026-10-15T00:00:00.000Z',
 }));
 /** 서버 책임 정보(출처 링크·공개 범위·승인 확인서)를 #103 경로처럼 더한 뒤 OwnerStudyPlanCheckResponse로 파싱한다. */
+/** @param {StudyPlanCheck} check */
 const onTheWire = (check) => {
     const approved = check.creditCapUnits !== undefined;
     const refs = [...new Set([...check.planIssues.flatMap(issue => issue.evidenceRefs), ...(approved ? [CAP_REF] : [])])];
@@ -115,7 +122,8 @@ describe('simulateStudyPlan', () => {
     });
     it('fits the #103 owner study-plan check response in every state', () => {
         const prerequisites = [{ canonicalCourseId: 'SYN-ADV', requiresCourseIds: ['SYN-X'], evidenceRefs: ['SYN-PREREQ-1'] }];
-        const draft = { version: 'SYN-PACK-1', state: 'DRAFT' };
+        const draft = /** @type {const} */ ({ version: 'SYN-PACK-1', state: 'DRAFT' });
+        /** @type {StudyPlanCheck[]} */
         const cases = [
             simulateStudyPlan(request([item('SYN-C')])),
             simulateStudyPlan(request(SEVEN.map(id => item(id)))),

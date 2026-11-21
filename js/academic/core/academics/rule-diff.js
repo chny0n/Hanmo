@@ -1,12 +1,9 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
-/** @typedef {import("../../contracts/index.js").AcademicRulePackVNext} AcademicRulePackVNext */
-/** @typedef {import("./ledger.js").LedgerAttempt} LedgerAttempt */
-/** @typedef {import("./ledger.js").LedgerRequirement} LedgerRequirement */
+/** @import { AcademicAuditVNext, AcademicRulePackVNext } from "../../contracts/index.js" */
+/** @import { LedgerAttempt, LedgerRequirement } from "./ledger.js" */
 /** @typedef {AcademicRulePackVNext} Pack */
 /** @typedef {Pack['requirements'][number]} Requirement */
-/** @typedef {AcademicAuditVNext['requirements'][number]} ProgressRow */
-/** @typedef {ProgressRow['state']} ProgressState */
+/** @import { ProgressRow, ProgressState } from './ledger.js' */
 /** @typedef {| 'NOT_APPROVED' | 'NOT_APPROVED_BY_AS_OF' | 'SAME_VERSION' | 'NOT_SUPERSEDING' | 'REQUIREMENT_ID_UNSTABLE' | 'SCOPE_MISMATCH' | 'HISTORY_INVERTED' | 'EFFECTIVE_GAP' | 'EFFECTIVE_OVERLAP'} RevisionBlockerCode */
 /** @typedef {{ code:RevisionBlockerCode; side?:'previous'|'next'; }} RevisionBlocker */
 /** @typedef {'UNCHANGED'|'CHANGED'|'ADDED'|'REMOVED'} DefinitionChange */
@@ -29,22 +26,24 @@ function movedAreas(previous, next) {
         throw new TypeError('nextAttempts must be an array');
     if (next.length !== previous.length)
         throw new TypeError('nextAttempts must list the same ledger rows');
+    /** @param {LedgerAttempt} row */
     const rest = (row) => JSON.stringify([row.canonicalCourseId, row.creditUnits, row.ledger,
         row.recognition, row.term ?? null, row.supersedesAttemptToken ?? null, row.retakeApprovalRef ?? null]);
+    /** @type {Map<string, LedgerAttempt>} */
     const byToken = new Map();
     for (const row of previous) {
         if (byToken.has(row.attemptToken))
             throw new TypeError(`attempts repeat ${row.attemptToken}`);
         byToken.set(row.attemptToken, row);
     }
-    const seen = new Set(), moved = new Set();
+    const seen = /** @type {Set<string>} */ (new Set()), moved = /** @type {Set<string>} */ (new Set());
     for (const row of next) {
         const before = byToken.get(row.attemptToken);
         if (!before || seen.has(row.attemptToken) || rest(before) !== rest(row)) {
             throw new TypeError(`nextAttempts may change only areaIds (row ${String(row.attemptToken)})`);
         }
         seen.add(row.attemptToken);
-        const a = new Set(before.areaIds), b = new Set(row.areaIds);
+        const a = /** @type {Set<string>} */ (new Set(before.areaIds)), b = /** @type {Set<string>} */ (new Set(row.areaIds));
         for (const id of a)
             if (!b.has(id))
                 moved.add(id);
@@ -66,6 +65,7 @@ function areasRead(requirement) {
         return requirement.areaIds;
     return [];
 }
+/** @type {ReadonlySet<ProgressState>} */
 const UNVERIFIED = new Set(['NEEDS_REVIEW', 'NOT_CHECKED', 'NOT_APPLICABLE']);
 /**
  * @param {Requirement} requirement
@@ -107,6 +107,7 @@ function sameList(a, b) {
  * @returns {Partial<Record<ChangedField, string>>}
  */
 function ruleFields(requirement) {
+    /** @type {Partial<Record<ChangedField, string>>} */
     const fields = {
         kind: requirement.kind,
         sourceClauseIds: sorted(requirement.sourceClauseIds).join('\u0000'),
@@ -139,6 +140,7 @@ function ruleFields(requirement) {
     }
     return fields;
 }
+/** @type {readonly ChangedField[]} */
 const FIELD_ORDER = [
     'kind', 'requiredCreditUnits', 'areaId', 'areaIds', 'minAreas', 'groups', 'canonicalCourseId', 'courseIds', 'k',
     'criterionId', 'verificationMode', 'sourceClauseIds', 'exceptionClauseIds', 'clauses',
@@ -162,6 +164,7 @@ function clausesReworded(previous, next, ids) {
     const after = new Map(next.clauseInventory.map(clause => [clause.clauseId, clause]));
     return ids.some(id => {
         const a = before.get(id), b = after.get(id);
+        /** @param {Pack} pack @param {string|undefined} documentId */
         const sourceHash = (pack, documentId) => documentId === undefined
             ? pack.sourceDocumentSha256 : pack.sourceDocuments?.find(d => d.documentId === documentId)?.sha256;
         return !a || !b || a.kind !== b.kind || a.sourceSpanRef !== b.sourceSpanRef
@@ -191,6 +194,7 @@ function changedFields(previous, next, a, b) {
  * @returns {SideResult}
  */
 function side(requirement, row) {
+    /** @type {SideResult} */
     const result = { state: row.state, clauseIds: clauseIdsOf(requirement) };
     if (row.requiredCreditUnits !== undefined)
         result.requiredCreditUnits = row.requiredCreditUnits;
@@ -301,6 +305,7 @@ function checkRevision(previous, next, blockers) {
  * @returns {RulePackRevisionDiff}
  */
 function blocked(asOf, blockers, inEffectAtAsOf, previous, next) {
+    /** @type {RulePackRevisionDiff} */
     const result = {
         state: 'NEEDS_REVIEW', asOf, inEffectAtAsOf, blockers, requirements: [],
         caveats: ['Revision comparison is blocked; no requirement result is carried across this change.'],
@@ -328,6 +333,7 @@ export function compareRulePackRevisions(input) {
         throw new TypeError('attempts must be an array');
     /** 새 판본에서 어떤 과목이 새로 속하거나 제외된 학점 영역이다. 공급되지 않으면 undefined다. */
     const moved = input.nextAttempts === undefined ? undefined : movedAreas(input.attempts, input.nextAttempts);
+    /** @type {RevisionBlocker[]} */
     const blockers = [];
     const previous = approvedPack(input.previous, 'previous', asOfMs, blockers);
     const next = approvedPack(input.next, 'next', asOfMs, blockers);
@@ -339,6 +345,7 @@ export function compareRulePackRevisions(input) {
     const revisionKind = checkRevision(previous, next, blockers);
     if (blockers.length > 0)
         return blocked(input.asOf, blockers, inEffectAtAsOf, previous, next);
+    /** @param {Pack} pack @param {readonly LedgerAttempt[]} attempts */
     const audit = (pack, attempts) => buildAcademicLedger({
         asOf: input.asOf,
         rulePackVersion: pack.version,
@@ -352,7 +359,7 @@ export function compareRulePackRevisions(input) {
     const reqBefore = new Map(previous.requirements.map(req => [req.id, req]));
     const reqAfter = new Map(next.requirements.map(req => [req.id, req]));
     const ids = sorted([...new Set([...reqBefore.keys(), ...reqAfter.keys()])]);
-    const requirements = ids.map((id) => {
+    const requirements = ids.map(/** @returns {RequirementRevision} */ (id) => {
         const a = reqBefore.get(id), b = reqAfter.get(id);
         if (a && b) {
             const fields = changedFields(previous, next, a, b);

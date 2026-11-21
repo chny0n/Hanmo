@@ -9,7 +9,7 @@ import {assertId, termKey} from './ledger.js';
  * 입력은 수정하지 않으며 시계·네트워크·저장소에 의존하지 않는다.
  */
 
-/** @typedef {import('./ledger.js').LedgerAttempt} SameCourseLedgerAttempt */
+/** @import { LedgerAttempt as SameCourseLedgerAttempt } from './ledger.js' */
 /**
  * @typedef {{
  *   id:string,fromCourseIds:readonly string[],toCourseId:string,

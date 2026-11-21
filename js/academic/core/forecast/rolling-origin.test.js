@@ -11,20 +11,25 @@ import { EVALUATION_METHODS, evaluateOfferingOutlook, } from './rolling-origin.j
 const ORIGIN_2025 = { asOf: '2025-01-01T00:00:00.000+09:00', targetTerm: '2025-1' };
 const ORIGIN_2026 = { asOf: '2026-01-01T00:00:00.000+09:00', targetTerm: '2026-1' };
 const TRUTH_AS_OF = '2026-11-01T00:00:00.000+09:00';
+/** @param {string} term @param {State} state @param {Partial<OfferingObservation>} [over] @returns {OfferingObservation} */
 const row = (term, state, over = {}) => ({
     term, state, coverage: 'COMPLETE_TERM_CATALOG', sourceRef: `SYN-SRC-${term}-${state}`,
     publishedAt: `${term.slice(0, 4)}-01-25T00:00:00.000+09:00`,
     verifiedAt: `${term.slice(0, 4)}-01-26T00:00:00.000+09:00`, ...over,
 });
 /** O는 개설, N은 공식 미개설로 2021-1부터 한 글자가 1개 1학기를 뜻한다. */
+/** @param {string} pattern @returns {OfferingObservation[]} */
 const springs = (pattern) => [...pattern].map((letter, index) => row(`${2021 + index}-1`, letter === 'O' ? 'OFFERED' : 'CONFIRMED_NOT_OFFERED'));
+/** @param {string} courseId @param {readonly OfferingObservation[]} observations @param {readonly OfficialAcademicEvent[]} [officialEvents] @returns {EvaluationCourse} */
 const course = (courseId, observations, officialEvents) => officialEvents === undefined ? { courseId, observations } : { courseId, observations, officialEvents };
+/** @param {OfficialAcademicEvent['kind']} kind @param {OfficialAcademicEvent['impact']} impact @param {string} courseId @param {string} publishedAt @param {number} year @returns {OfficialAcademicEvent} */
 const event = (kind, impact, courseId, publishedAt, year) => ({
     eventId: `SYN-EVENT-${kind}-${year}`, kind, sourceRef: `SYN-SRC-${kind}-${year}`, publishedAt, verifiedAt: publishedAt,
     effectiveFrom: `${year}-03-01T00:00:00.000+09:00`, effectiveUntil: `${year}-06-30T00:00:00.000+09:00`,
     impact, affectedCourseIds: [courseId],
 });
 /** 2021-1~2026-1에 여러 평가 방법의 결과가 다르게 나오도록 과목별 사례를 구성한다. */
+/** @type {EvaluationCourse[]} */
 const COURSES = [
     course('SYN-ALWAYS', springs('OOOOOO')),
     course('SYN-NEVER', springs('NNNNNN')),
@@ -40,7 +45,9 @@ const COURSES = [
     course('SYN-CONFLICT', [...springs('OOOOO'), row('2026-1', 'OFFERED'),
         row('2026-1', 'CONFIRMED_NOT_OFFERED', { sourceRef: 'SYN-SRC-2026-1-RECHECK' })]),
 ];
+/** @param {readonly EvaluationCourse[]} [courses] */
 const evaluate = (courses = COURSES, origins = [ORIGIN_2025, ORIGIN_2026], truthAsOf = TRUTH_AS_OF) => evaluateOfferingOutlook({ truthAsOf, origins, courses });
+/** @param {RollingOriginReport} report @param {string} targetTerm */
 const origin = (report, targetTerm) => {
     const found = report.origins.find(item => item.targetTerm === targetTerm);
     if (!found)
@@ -48,15 +55,16 @@ const origin = (report, targetTerm) => {
     return found;
 };
 /** 평가 방법별 과목·평가 시각의 결과를 TP/FP/FN/TN/ABSTAIN으로 표시한다. */
+/** @param {string} courseId @param {string} targetTerm */
 const outcomes = (courseId, targetTerm) => {
     const one = COURSES.find(item => item.courseId === courseId);
     const methods = origin(evaluate([one]), targetTerm).methods;
-    return Object.fromEntries(EVALUATION_METHODS.map(method => {
+    return /** @type {Record<EvaluationMethod, string>} */ (Object.fromEntries(EVALUATION_METHODS.map(method => {
         const s = methods[method];
         const label = s.truePositive ? 'TP' : s.falsePositive ? 'FP' : s.falseNegative ? 'FN' : s.trueNegative ? 'TN'
             : s.abstained ? 'ABSTAIN' : 'NOT_SCORED';
         return [method, label];
-    }));
+    })));
 };
 describe('evaluateOfferingOutlook: same items for every method', () => {
     it('scores every method on the same denominator and accounts for every course', () => {
@@ -158,6 +166,7 @@ describe('history counts', () => {
     });
     it('holds integers only and has no rate, probability, accuracy or IoU field', () => {
         const report = evaluate();
+        /** @param {unknown} value @param {string} path @returns {void} */
         const walk = (value, path) => {
             if (typeof value === 'number')
                 expect(Number.isInteger(value), path).toBe(true);
@@ -216,14 +225,15 @@ describe('input checks and determinism', () => {
 import { forecastOfferings } from './offering.js';
 // #11 본선 이전 이동 평가의 미검증 구간이다. 합성 데이터이며 각 사례를 사람이 계산해 확인할 수 있는 과목 하나로 구성한다.
 /** 하나의 임시 과목을 하나의 평가 시점에서 평가한 방법별 결과다. */
+/** @param {EvaluationCourse} one @param {string} targetTerm */
 const outcomesOf = (one, targetTerm) => {
     const methods = origin(evaluate([one]), targetTerm).methods;
-    return Object.fromEntries(EVALUATION_METHODS.map(method => {
+    return /** @type {Record<EvaluationMethod, string>} */ (Object.fromEntries(EVALUATION_METHODS.map(method => {
         const s = methods[method];
         const label = s.truePositive ? 'TP' : s.falsePositive ? 'FP' : s.falseNegative ? 'FN' : s.trueNegative ? 'TN'
             : s.abstained ? 'ABSTAIN' : 'NOT_SCORED';
         return [method, label];
-    }));
+    })));
 };
 /** 2025년 평가 시점 이후에 게시된 2025-1 정답 자료다. */
 const TRUTH_2025_O = row('2025-1', 'OFFERED');
@@ -261,7 +271,7 @@ describe('0/n is an answer; missing or partial history is not', () => {
     });
     it('only partial lists: abstain, never 0 of n', () => {
         const partial = course('SYN-PARTIAL-HIST', [
-            ...springs('NNNN').map(item => ({ ...item, coverage: 'PARTIAL' })), TRUTH_2025_O
+            ...springs('NNNN').map(item => ({ ...item, coverage: /** @type {const} */ ('PARTIAL') })), TRUTH_2025_O
         ]);
         expect(outcomesOf(partial, '2025-1')).toEqual({ OUTLOOK: 'ABSTAIN', RECENT_SAME_SEASON: 'ABSTAIN', HISTORY_MAJORITY: 'ABSTAIN', ALWAYS_OFFERED: 'TP' });
         expect(origin(evaluate([partial]), '2025-1').outlookSignals.INSUFFICIENT_DATA).toBe(1);
@@ -269,15 +279,16 @@ describe('0/n is an answer; missing or partial history is not', () => {
 });
 describe('each official event kind at the origin', () => {
     const NOTICE_AT = '2024-12-01T00:00:00.000+09:00';
+    /** @param {string} id @param {OfficialAcademicEvent['kind']} kind @param {OfficialAcademicEvent['impact']} impact */
     const withEvent = (id, kind, impact, truth = TRUTH_2025_O) => course(id, [...springs('OOOO'), truth], [event(kind, impact, id, NOTICE_AT, 2025)]);
-    it.each([
+    it.each(/** @type {const} */ ([
         ['RETIREMENT'], ['STAFF_CHANGE'], ['COURSE_CANCELLED'], ['RESEARCH_LEAVE'],
-    ])('%s as a possible assignment change: the outlook asks for review, history baselines still answer', kind => {
+    ]))('%s as a possible assignment change: the outlook asks for review, history baselines still answer', kind => {
         const one = withEvent(`SYN-EV-${kind}`, kind, 'POTENTIAL_ASSIGNMENT_CHANGE');
         expect(outcomesOf(one, '2025-1')).toEqual({ OUTLOOK: 'ABSTAIN', RECENT_SAME_SEASON: 'TP', HISTORY_MAJORITY: 'TP', ALWAYS_OFFERED: 'TP' });
         expect(origin(evaluate([one]), '2025-1').outlookSignals.EVENT_REVIEW).toBe(1);
     });
-    it.each([['RETIREMENT'], ['STAFF_CHANGE'], ['RESEARCH_LEAVE']])('%s stated for this course is not read as a closure', kind => {
+    it.each(/** @type {const} */ ([['RETIREMENT'], ['STAFF_CHANGE'], ['RESEARCH_LEAVE']]))('%s stated for this course is not read as a closure', kind => {
         const one = withEvent(`SYN-EX-${kind}`, kind, 'EXPLICIT_COURSE_STATUS');
         expect(outcomesOf(one, '2025-1').OUTLOOK).toBe('ABSTAIN');
         expect(origin(evaluate([one]), '2025-1').outlookSignals.INSUFFICIENT_DATA).toBe(1);
@@ -306,6 +317,7 @@ describe('a row published before the origin but verified after it', () => {
 });
 describe('course limits', () => {
     it('a student outlook stays at 20 courses; an evaluation run takes up to 200', () => {
+        /** @param {number} index */
         const one = (index) => ({ courseId: `SYN-${index}`, targetTerm: '2025-1' });
         expect(() => forecastOfferings({ asOf: ORIGIN_2025.asOf, courses: Array.from({ length: 21 }, (_, i) => one(i)) })).toThrow(RangeError);
         expect(forecastOfferings({ asOf: ORIGIN_2025.asOf, courses: Array.from({ length: 20 }, (_, i) => one(i)) }).items).toHaveLength(20);

@@ -7,6 +7,7 @@ import { canonicalJson, sha256Hex } from './content-hash.js';
 import { buildEvidenceIndex, evidenceContentSha256, evidenceRevisionFromFaq } from './evidence-index.js';
 // 모든 문서·날짜·URL은 SYNTHETIC 고정 자료다. 실제 한국외대 공지·FAQ가 아니며 품질 수치의 근거로 쓰지 않는다.
 const AS_OF = '2026-11-21T03:00:00Z';
+/** @param {string} documentId @param {string} revisionId @param {Partial<EvidenceRevision>} [patch] @returns {EvidenceRevision} */
 const rev = (documentId, revisionId, patch = {}) => ({
     kind: 'NOTICE', documentId, revisionId, title: '가상 수강신청 안내 ' + documentId,
     sourceUrl: 'https://example.org/synthetic/' + documentId,
@@ -14,12 +15,15 @@ const rev = (documentId, revisionId, patch = {}) => ({
     state: 'PUBLISHED', rights: 'APPROVED', provenance: 'SYNTHETIC',
     paragraphs: [{ id: 'p1', text: '가상 학생 신청 기간은 가상 1주차입니다.' }], ...patch,
 });
+/** @param {readonly EvidenceRevision[]} rows @param {Partial<EvidenceManifest>} [patch] @returns {EvidenceManifest} */
 const manifestOf = (rows, patch = {}) => ({
     snapshotId: 'SYN-SNAP-1', indexRevision: 'idx-1', builtAt: '2026-11-20T00:00:00Z', provenance: 'SYNTHETIC',
     entries: rows.map(r => ({ kind: r.kind, documentId: r.documentId, revisionId: r.revisionId, contentSha256: evidenceContentSha256(r) })),
     ...patch,
 });
+/** @param {readonly EvidenceRevision[]} revisions @param {readonly EvidenceRevision[]} [listed] */
 const build = (revisions, listed = revisions, asOf = AS_OF) => buildEvidenceIndex({ manifest: manifestOf(listed), revisions, asOf });
+/** @param {ReturnType<typeof build>} index @param {string} documentId */
 const disposition = (index, documentId) => index.documents.find(d => d.documentId === documentId)?.disposition;
 describe('content hash', () => {
     it('matches the standard SHA-256 test vectors', () => {
@@ -73,6 +77,7 @@ describe('#44 evidence index — normal', () => {
         expect(canonicalJson(b)).toBe(canonicalJson(a));
     });
     it('adapts existing FAQ documents and indexes them', () => {
+        /** @type {FaqDocument} */
         const faq = { documentId: 'F1', revisionId: 'r1', title: '가상 휴학 FAQ', sourceUrl: 'https://example.org/synthetic/F1',
             category: 'ACADEMICS', publishedAt: '2026-01-01T00:00:00Z', verifiedAt: '2026-01-02T00:00:00Z', effectiveFrom: '2026-01-01',
             rights: 'APPROVED', provenance: 'SYNTHETIC', accessScope: 'PUBLIC',
@@ -168,6 +173,7 @@ describe('#44 evidence index — hold and exclusion (no silent fallback)', () =>
 });
 describe('#44 evidence index — notice and FAQ reference the same evidence revision', () => {
     const notice = rev('N1', 'r2', { state: 'CORRECTED' });
+    /** @param {string} revisionId */
     const faqWith = (revisionId) => rev('F1', 'r1', { kind: 'FAQ',
         paragraphs: [{ id: 'p1', text: '가상 수강신청 기간은 해당 공지를 따릅니다.', refs: [{ kind: 'NOTICE', documentId: 'N1', revisionId }] }] });
     it('FAQ paragraph citing the indexed notice revision is READY', () => {
@@ -201,7 +207,7 @@ describe('#44 evidence index — failures', () => {
         expect(() => buildEvidenceIndex({ manifest: manifestOf([r, r]), revisions: [r], asOf: AS_OF })).toThrow();
         expect(() => build([{ ...r, sourceUrl: 'http://example.org/insecure' }])).toThrow();
         expect(() => build([{ ...r, paragraphs: [] }])).toThrow();
-        expect(() => build([{ ...r, extra: true }])).toThrow();
+        expect(() => build([/** @type {EvidenceRevision} */ (/** @type {unknown} */ ({ ...r, extra: true }))])).toThrow();
         expect(() => build([rev('N1', 'r1', { conditions: { admissionYears: { from: 2025, until: 2023 } } })])).toThrow();
     });
     it('a repeated paragraph ID inside one revision fails closed', () => {

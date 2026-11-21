@@ -107,6 +107,7 @@ describe('#370 seasonal window uses the target year calendar', () => {
 describe('#371 a cancellation without an exact event date is not ignored', () => {
     const AS_OF = '2027-02-15T00:00:00Z';
     const history = [row(2025), row(2026)];
+    /** @param {Partial<ActivityRecord>} [extra] */
     const undated = (extra = {}) => {
         const c = row(2027, '03', '07', { entryId: 'cancel-2027', sourceId: 'cancel', revisionId: 'cancel-r1',
             status: 'CANCELLED', publishedAt: '2027-02-01T00:00:00Z', verifiedAt: '2027-02-02T00:00:00Z', ...extra });
@@ -158,6 +159,7 @@ describe('#371 review follow-up: cancellation before a dated confirmation, trust
     const history = [row(2025), row(2026)];
     const confirmed2027 = row(2027, '03', '09', { entryId: 'conf-2027', sourceId: 'announce', revisionId: 'conf-r1',
         publishedAt: '2026-10-01T00:00:00Z', verifiedAt: '2026-10-02T00:00:00Z' });
+    /** @param {Partial<ActivityRecord>} [extra] */
     const cancel = (extra = {}) => {
         const c = row(2026, '12', '01', { entryId: 'cancel', sourceId: 'cancel', revisionId: 'cancel-r1', status: 'CANCELLED',
             publishedAt: '2026-12-01T00:00:00Z', verifiedAt: '2026-12-02T00:00:00Z', ...extra });
@@ -179,6 +181,7 @@ describe('#371 review follow-up: cancellation before a dated confirmation, trust
             .toBe('CONFIRMED');
     });
     describe('review case 2: an untrusted supersedes target never lets the cancellation be skipped', () => {
+        /** @param {Partial<ActivityRecord>} extra */
         const other = (extra) => row(2024, '03', '07', { entryId: 'old-2024', sourceId: 'old',
             revisionId: 'old-r1', ...extra });
         const late = cancel({ supersedes: 'old-r1', publishedAt: '2027-02-01T00:00:00Z', verifiedAt: '2027-02-02T00:00:00Z' });
@@ -205,7 +208,12 @@ describe('#371 review follow-up: cancellation before a dated confirmation, trust
 describe('#373 conflicting copies of one revision never depend on input order', () => {
     const AS_OF = '2026-02-01T00:00:00Z';
     const approved = row(2025);
-    const revoked = { ...row(2025), rights: 'REVOKED' };
+    const revoked = { ...row(2025), rights: /** @type {const} */ ('REVOKED') };
+    /**
+     * @template T
+     * @param {T} a
+     * @param {T} b
+     */
     const both = (a, b) => [[a, b], [b, a]];
     it('same source, instant and revision: approved vs revoked -> quarantined in both orders', () => {
         for (const pair of both(approved, revoked))

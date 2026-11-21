@@ -10,9 +10,13 @@ import { importWisTimetable, withoutBlocks } from './wis-timetable.js';
 const SAVED = '<!-- saved from url=(0057)https://wis.hufs.ac.kr/src08/jsp/lecture/LECTURE2020L.jsp -->';
 const HEADER = ['No.', '개설영역', '학년', '학수번호', '교과목명', '강의계획서', '속성<br>Attributes', '담당교수',
     '학점', '시간', '강의시간/<br>강의실', '수강인원/<br>제한인원', '사전수강신청/관심강좌신청<br>(Course Wishlist)', '비고'];
+/** @type {Record<string, string>} */
 const ATTR_CLASS = { '전필': 'req', 'R': 'req', 'ENG': 'eng', 'FRE': 'eng', 'F': 'eng', '팀티칭': 'team', '온라인': 'online', 'P/F': 'pf' };
+/** @param {Row} row */
 const link = (row, code = row.code) => `<a class="btn-plan" href="javascript:lecture_open('${row.year ?? '2026'}','${row.sessn ?? '3'}','A','${code}')">▤</a>`;
+/** @param {Row} row */
 const syllabusCell = (row) => row.syllabus === 'NONE' ? '' : row.syllabus === 'TEXT' ? '준비중' : link(row, row.linkCode ?? row.code);
+/** @param {Row} row @param {number} index */
 const tr = (row, index) => {
     // 실제 페이지처럼 제목 셀에서도 강의계획서를 연다. 계획서가 없는 과목은 제외한다.
     const title = row.syllabus === 'NONE' ? row.title
@@ -24,15 +28,18 @@ const tr = (row, index) => {
     return `<tr>${kept.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
 };
 /** 실제 페이지는 과목당 카드 하나를 생성한다. 카드의 코드와 강의계획서 링크는 표와 같아야 한다. */
+/** @param {Row} row */
 const card = (row) => `<div class="sch-card"><div class="sch-card-top"><div>
   <div class="sch-card-code">${row.code} · ${row.area ?? '전공'} ${row.grade ?? '2'}</div><div class="sch-card-name">${row.title}</div></div>
   ${row.syllabus === 'NONE' ? '' : link(row)}</div></div>`;
+/** @param {readonly Row[]} rows @param {{header?:string[]; saved?:string; cards?:readonly Row[]}} [over] */
 const page = (rows, over = {}) => `<!DOCTYPE html>
 ${over.saved ?? SAVED}
 <html><body><script>var tpl = '<tr><td>'+(i+1)+'</td><td>x</td></tr>';</script>
 <table><thead><tr>${(over.header ?? HEADER).map(h => `<th>${h}</th>`).join('')}</tr></thead>
 <tbody>${rows.map(tr).join('\n')}</tbody></table>
 <div class="sch-cards">${(over.cards ?? rows).map(card).join('\n')}</div></body></html>`;
+/** @type {Row[]} */
 const ROWS = [
     { code: 'SYN010101', title: '가상 영어작문', grade: '1', credits: '2', hours: '2', attrs: ['전필', 'ENG'], time: '수 1 2 (0101)',
         note: '21학번부터 전필. 가상 배치고사 미응시자 수강 불가.' },
@@ -41,6 +48,7 @@ const ROWS = [
     { code: 'SYN020101', title: '가상 언어학 입문 &amp; 실습', area: '이중(부)전공', attrs: ['ENG'], time: '월 3 4 (0303) 수 3 (0303)',
         note: '선수강 과목: 가상 프로그래밍(1). 1전공 수강금지' },
 ];
+/** @param {string} html @param {Partial<TimetableImportRequest>} [over] @returns {TimetableImportRequest} */
 const request = (html, over = {}) => ({
     html, fileName: 'SYNDEPT_2026-2_강의시간표.html', savedAt: '2026-11-02T09:47:00.000Z', ...over,
 });
@@ -146,8 +154,11 @@ describe('importWisTimetable', () => {
         expect(() => importWisTimetable(request(page([]), { fileName: 'SYNDEPT.html' }))).toThrow(/names no term/);
     });
     it('reads the campus only when the checked radio and the department list agree', () => {
+        /** @param {'H1'|'H2'|null} checked */
         const radios = (checked) => ['H1', 'H2'].map(value => `<input name="campus_sect" type="radio" value="${value}"${value === checked ? ' checked=""' : ''}>`).join('');
+        /** @param {...string} labels */
         const list = (...labels) => `<select name="ag_crs_strct_cd">${labels.map(label => `<option>${label}</option>`).join('')}</select>`;
+        /** @param {string} extra */
         const campus = (extra) => importWisTimetable(request(page(ROWS).replace('<table>', `${extra}<table>`))).campus;
         expect(importWisTimetable(request(page(ROWS))).campus).toBe('UNKNOWN');
         expect(campus(radios('H1') + list('&nbsp;(서울)&nbsp;-&nbsp;가상학과&nbsp;', '(서울) - 가상학부'))).toBe('SEOUL');
@@ -157,7 +168,9 @@ describe('importWisTimetable', () => {
         expect(campus(radios('H1') + list('(서울) - 가상학과', '(글로벌) - 가상학과'))).toBe('UNKNOWN');
     });
     it('reads a 기초 row only when its 개설영역 is in the page\'s own 기초 field list', () => {
+        /** @param {...string} labels */
         const fields = (...labels) => `<select name="ag_basic_fld_cd">${labels.map((label, i) => `<option value="7${i}">${label}</option>`).join('')}</select>`;
+        /** @type {Row[]} */
         const basicRows = [
             { code: 'SYN710101', title: '가상 기초 입문', area: '가상단과대학', grade: '' },
             { code: 'SYN720101', title: '가상 대학기초', area: '대학기초', grade: '' },
@@ -185,7 +198,9 @@ describe('importWisTimetable', () => {
         expect(mixed.rows.map(row => row.needsReview)).toEqual([true, true]);
     });
     it('reads the 기초 field list only from a real ag_basic_fld_cd select, in any attribute form', () => {
+        /** @type {Row[]} */
         const rows = [{ code: 'SYN810101', title: '가상 기초', area: '가상단과대학', grade: '' }];
+        /** @param {string} extra */
         const areaOf = (extra) => importWisTimetable(request(page(rows).replace('<table>', `${extra}<table>`))).rows[0].area;
         const opts = '<option value="70">전체&nbsp;(서울)</option><option value="71">가상단과대학&nbsp;(서울)</option>';
         // 속성 순서·따옴표 종류·대소문자·공백·HTML 엔티티 및 option 내부 마크업 차이를 수용한다.
@@ -234,7 +249,7 @@ describe('importWisTimetable', () => {
         expect(result.rows[3]).toMatchObject({ rawCode: 'SYN090101', termEvidence: 'PAGE_ONLY', needsReview: true });
         expect(result.rows.slice(0, 3).every(row => row.termEvidence === 'ROW_LINK')).toBe(true);
         expect(result.issues.filter(issue => issue.code === 'TERM_FROM_PAGE').map(issue => issue.row)).toEqual([4]);
-        expect(() => importWisTimetable(request(page(ROWS.map(row => ({ ...row, syllabus: 'NONE' }))))))
+        expect(() => importWisTimetable(request(page(ROWS.map(row => ({ ...row, syllabus: /** @type {const} */ ('NONE') }))))))
             .toThrow(/no year and session/);
     });
     it('refuses a syllabus cell it cannot read or a link for another course', () => {

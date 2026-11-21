@@ -1,8 +1,6 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
-/** @typedef {import("./ledger.js").LedgerAttempt} LedgerAttempt */
-/** @typedef {import("./ledger.js").LedgerRequirement} LedgerRequirement */
-/** @typedef {import("./ledger.js").RulePackGate} RulePackGate */
+/** @import { AcademicAuditVNext } from "../../contracts/index.js" */
+/** @import { LedgerAttempt, LedgerRequirement, RulePackGate } from "./ledger.js" */
 /** @typedef {Omit<LedgerAttempt, 'areaIds'>} DoubleMajorAttempt */
 /** @typedef {{ rulePackVersion:string; rulePackState:RulePackGate; requirements:readonly LedgerRequirement[]; courseAreas:Readonly<Record<string, readonly string[]>>; }} MajorRulePack */
 /** @typedef {{ maxSharedCreditUnits:number; evidenceRefs:readonly string[]; }} OverlapRule */
@@ -23,11 +21,13 @@ const MAX_AREAS_PER_COURSE = 30;
 function readAreas(pack, label) {
     if (!pack.courseAreas || typeof pack.courseAreas !== 'object')
         throw new TypeError(`${label} courseAreas must be an object`);
+    /** @type {Map<string, string[]>} */
     const map = new Map();
     for (const [courseId, areas] of Object.entries(pack.courseAreas)) {
         assertId(courseId, `${label} course`);
         if (!Array.isArray(areas) || areas.length > MAX_AREAS_PER_COURSE)
             throw new TypeError(`${label} areas of ${courseId} must be an array`);
+        /** @type {Set<string>} */
         const seen = new Set();
         for (const areaId of areas) {
             assertId(areaId, `${label} area of ${courseId}`);
@@ -45,6 +45,7 @@ function readAreas(pack, label) {
  * @returns {Set<string>}
  */
 function namedCourses(requirements) {
+    /** @type {Set<string>} */
     const named = new Set();
     for (const requirement of requirements) {
         if (requirement.kind === 'REQUIRED_COURSE')
@@ -88,7 +89,9 @@ function runPack(asOf, attempts, pack, areas) {
  */
 function rowImpacts(requirements, audit, shared, sharedAreas, withoutShared) {
     const rows = new Map(audit.requirements.map(row => [row.requirementId, row]));
+    /** @param {SharedCourse} course */
     const earned = (course) => course.ledger === 'EARNED';
+    /** @type {OverlapRowImpact[]} */
     const impacts = [];
     for (const requirement of requirements) {
         const row = rows.get(requirement.id);
@@ -151,7 +154,7 @@ function hold(audit, ids, caveat) {
     if (ids.length === 0)
         return audit;
     const held = new Set(ids);
-    const requirements = audit.requirements.map(row => held.has(row.requirementId) && row.state !== 'NOT_CHECKED' ? { ...row, state: 'NEEDS_REVIEW' } : row);
+    const requirements = audit.requirements.map(row => held.has(row.requirementId) && row.state !== 'NOT_CHECKED' ? { ...row, state: /** @type {const} */ ('NEEDS_REVIEW') } : row);
     const state = audit.state === 'INSUFFICIENT_DATA' ? 'INSUFFICIENT_DATA' : 'NEEDS_REVIEW';
     const parsed = AcademicAuditVNextSchema.safeParse({ ...audit, state, requirements, caveats: [...audit.caveats, caveat] });
     if (!parsed.success) {
@@ -179,14 +182,14 @@ export function buildDoubleMajorAudit(input) {
         plannedCreditUnits: primaryRaw.plannedCreditUnits,
         projectedCreditUnits: primaryRaw.projectedUniqueCreditUnits,
     };
-    const none = { status: 'NONE', sharedCourses: [], sharedCreditUnits: 0, evidenceRefs: [],
+    const none = { status: /** @type {const} */ ('NONE'), sharedCourses: [], sharedCreditUnits: 0, evidenceRefs: [],
         heldRequirementIds: { primary: [], doubleMajor: [] }, rowImpacts: { primary: [], doubleMajor: [] } };
     const caveats = ['Primary and double major checked on one transcript; not an official graduation decision.'];
     const selection = input.doubleMajor;
     const packMissing = selection.status === 'SELECTED' && (!selection.pack || selection.pack.rulePackState === 'MISSING');
     if (selection.status === 'NONE' || selection.status === 'UNSET' || packMissing) {
-        const doubleMajor = selection.status === 'NONE' ? { status: 'NOT_APPLICABLE' }
-            : selection.status === 'UNSET' ? { status: 'INPUT_REQUIRED' } : { status: 'RULES_MISSING' };
+        const doubleMajor = selection.status === 'NONE' ? { status: /** @type {const} */ ('NOT_APPLICABLE') }
+            : selection.status === 'UNSET' ? { status: /** @type {const} */ ('INPUT_REQUIRED') } : { status: /** @type {const} */ ('RULES_MISSING') };
         if (doubleMajor.status === 'INPUT_REQUIRED')
             caveats.push('Double major is not entered yet; only the primary major is shown.');
         if (doubleMajor.status === 'RULES_MISSING')
@@ -215,6 +218,7 @@ export function buildDoubleMajorAudit(input) {
     const excluded = new Set(primaryRaw.excludedAttempts.map(row => row.attemptToken));
     const primaryNamed = namedCourses(input.primary.requirements);
     const doubleNamed = namedCourses(pack.requirements);
+    /** @type {Map<string, SharedCourse>} */
     const shared = new Map();
     for (const attempt of input.attempts) {
         if (excluded.has(attempt.attemptToken))
@@ -233,7 +237,9 @@ export function buildDoubleMajorAudit(input) {
         assertUnits(sharedCreditUnits, 'shared credit units');
     }
     const rule = pack.overlapRule;
+    /** @type {OverlapStatus} */
     let status = 'NONE';
+    /** @type {string[]} */
     let evidenceRefs = [];
     if (shared.size > 0) {
         status = 'NO_APPROVED_RULE';
@@ -261,6 +267,7 @@ export function buildDoubleMajorAudit(input) {
     const doubleAudit = hold(doubleRaw, heldDouble, reason);
     if (!covered)
         caveats.push(reason);
+    /** @type {DoubleMajorAudit['state']} */
     let state;
     if (primary.state === 'INSUFFICIENT_DATA')
         state = 'INSUFFICIENT_DATA';

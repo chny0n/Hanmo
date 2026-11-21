@@ -28,7 +28,8 @@ const TERM = /^(19|20|21)\d{2}-[12]$/;
 const OFFSET = /(?:Z|[+-]\d{2}:\d{2})$/;
 const MAX_ORIGINS = 16;
 const MAX_COURSES = 200;
-export const EVALUATION_METHODS = ['OUTLOOK', 'RECENT_SAME_SEASON', 'HISTORY_MAJORITY', 'ALWAYS_OFFERED'];
+export const EVALUATION_METHODS = /** @type {const} */ (['OUTLOOK', 'RECENT_SAME_SEASON', 'HISTORY_MAJORITY', 'ALWAYS_OFFERED']);
+/** @type {readonly Signal[]} */
 const SIGNALS = [
     'CONFIRMED_OFFERED', 'CONFIRMED_NOT_OFFERED', 'HISTORICAL_PATTERN', 'EVENT_REVIEW', 'INSUFFICIENT_DATA', 'UNKNOWN',
 ];
@@ -78,10 +79,10 @@ function emptyScore() {
  * @returns {EvaluationTally}
  */
 function emptyTally() {
-    const methods = {};
+    const methods = /** @type {Record<EvaluationMethod, MethodScore>} */ ({});
     for (const method of EVALUATION_METHODS)
         methods[method] = emptyScore();
-    const outlookSignals = {};
+    const outlookSignals = /** @type {Record<Signal, number>} */ ({});
     for (const signal of SIGNALS)
         outlookSignals[signal] = 0;
     return {
@@ -300,6 +301,7 @@ export function evaluateOfferingOutlook(input) {
         throw new RangeError(`more than ${MAX_ORIGINS} origins`);
     if (input.courses.length > MAX_COURSES)
         throw new RangeError(`more than ${MAX_COURSES} courses`);
+    /** @type {Set<string>} */
     const seenCourses = new Set();
     for (const course of input.courses) {
         checkCourse(course);
@@ -308,6 +310,7 @@ export function evaluateOfferingOutlook(input) {
         seenCourses.add(course.courseId);
     }
     const courses = [...input.courses].sort((a, b) => (a.courseId < b.courseId ? -1 : a.courseId > b.courseId ? 1 : 0));
+    /** @type {Set<string>} */
     const seenOrigins = new Set();
     const origins = input.origins.map(origin => {
         const ms = instant('origin.asOf', origin.asOf);

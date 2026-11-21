@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
+/** @import { AcademicAuditVNext } from "../../contracts/index.js" */
 /** @typedef {'EARNED'|'IN_PROGRESS'|'PLANNED'} LedgerSlot */
 /** @typedef {'RECOGNIZED'|'PENDING'|'EXCLUDED'} LedgerRecognition */
 /** @typedef {'MISSING'|'DRAFT'|'NEEDS_REVIEW'|'APPROVED'} RulePackGate */
@@ -22,8 +22,10 @@ import { AcademicAuditVNextSchema } from '../../contracts/index.js';
  */
 export const ID = /^[A-Za-z0-9_.:-]{1,128}$/;
 export const AS_OF = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
+/** @type {Record<LedgerSlot, number>} */
 const SLOT_RANK = { EARNED: 0, IN_PROGRESS: 1, PLANNED: 2 };
 const TERM = /^(\d{4})-(1|S|2|W)$/;
+/** @type {Record<string, number>} */
 const SEASON_RANK = { '1': 0, S: 1, '2': 2, W: 3 };
 /**
  * @param {string} term
@@ -50,7 +52,7 @@ export function termEndMs(term) {
         S: `${year}-09-01`,
         '2': `${year + 1}-01-01`,
         W: `${year + 1}-03-01`,
-    }[match[2]];
+    }[/** @type {'1'|'S'|'2'|'W'} */ (match[2])];
     return Date.parse(`${end}T00:00:00.000+09:00`);
 }
 /** 취득 기록은 학기가 확인되고 asOf까지 종료된 경우에만 합산한다. */
@@ -88,6 +90,7 @@ function refuse(label, value) {
 /**
  * @param {unknown} value
  * @param {string} label
+ * @returns {asserts value is number}
  */
 export function assertUnits(value, label) {
     if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0)
@@ -96,6 +99,7 @@ export function assertUnits(value, label) {
 /**
  * @param {unknown} value
  * @param {string} label
+ * @returns {asserts value is number}
  */
 export function assertPositiveUnits(value, label) {
     assertUnits(value, label);
@@ -136,6 +140,7 @@ export function byCodeUnit(a, b) {
  */
 function evidenceOf(requirement) {
     const refs = requirement.evidenceRefs ?? [];
+    /** @type {Set<string>} */
     const seen = new Set();
     for (const ref of refs) {
         assertId(ref, `${requirement.id} evidence`);
@@ -164,6 +169,7 @@ function applyPackGate(row, packApproved) {
  * @returns {Classified}
  */
 function classify(attempts, asOfMs) {
+    /** @type {Map<string, LedgerAttempt>} */
     const byToken = new Map();
     for (const attempt of attempts) {
         assertId(attempt.attemptToken, 'attemptToken');
@@ -175,6 +181,7 @@ function classify(attempts, asOfMs) {
         if (attempt.recognition !== 'RECOGNIZED' && attempt.recognition !== 'PENDING' && attempt.recognition !== 'EXCLUDED') {
             throw new TypeError(`${attempt.attemptToken} has no recognition`);
         }
+        /** @type {Set<string>} */
         const areas = new Set();
         for (const areaId of attempt.areaIds) {
             assertId(areaId, `${attempt.attemptToken} area`);
@@ -192,6 +199,7 @@ function classify(attempts, asOfMs) {
             throw new TypeError(`duplicate attempt ${attempt.attemptToken}`);
         byToken.set(attempt.attemptToken, attempt);
     }
+    /** @type {Map<string, string[]>} */
     const claimers = new Map();
     for (const attempt of attempts) {
         const target = attempt.supersedesAttemptToken;
@@ -201,11 +209,14 @@ function classify(attempts, asOfMs) {
         list.push(attempt.attemptToken);
         claimers.set(target, list);
     }
+    /** @type {Set<string>} */
     const cycles = new Set();
     for (const attempt of attempts) {
         if (attempt.supersedesAttemptToken === undefined)
             continue;
+        /** @type {Set<string>} */
         const seen = new Set();
+        /** @type {string|undefined} */
         let cursor = attempt.attemptToken;
         while (cursor !== undefined) {
             if (seen.has(cursor)) {
@@ -217,7 +228,9 @@ function classify(attempts, asOfMs) {
             cursor = byToken.get(cursor)?.supersedesAttemptToken;
         }
     }
+    /** @type {Set<string>} */
     const needsReview = new Set(cycles);
+    /** @type {Set<string>} */
     const notYetEarned = new Set();
     for (const attempt of attempts) {
         if (attempt.ledger === 'EARNED' && !earnedByAsOf(attempt, asOfMs)) {
@@ -225,6 +238,7 @@ function classify(attempts, asOfMs) {
             needsReview.add(attempt.attemptToken);
         }
     }
+    /** @type {Set<string>} */
     const superseded = new Set();
     for (const [target, tokens] of claimers) {
         if (cycles.has(target) || tokens.some(token => cycles.has(token)))
@@ -239,12 +253,16 @@ function classify(attempts, asOfMs) {
         }
         superseded.add(target);
     }
+    /** @type {Map<string, ExclusionReason>} */
     const reasons = new Map();
+    /** @param {string} token @param {ExclusionReason} reason */
     const mark = (token, reason) => {
         if (!reasons.has(token))
             reasons.set(token, reason);
     };
+    /** @type {Map<string, LedgerAttempt[]>} */
     const recognized = new Map();
+    /** @type {Map<string, LedgerAttempt[]>} */
     const pending = new Map();
     for (const attempt of attempts) {
         const token = attempt.attemptToken;
@@ -270,10 +288,13 @@ function classify(attempts, asOfMs) {
         list.push(attempt);
         recognized.set(attempt.canonicalCourseId, list);
     }
+    /** @type {Map<string, LedgerAttempt>} */
     const winners = new Map();
     let ambiguous = needsReview.size > 0;
+    /** @type {Set<string>} */
     const blocked = new Set();
     for (const [courseId, group] of recognized) {
+        /** @type {Map<LedgerSlot, LedgerAttempt[]>} */
         const bySlot = new Map();
         for (const attempt of group) {
             const list = bySlot.get(attempt.ledger) ?? [];
@@ -301,6 +322,7 @@ function classify(attempts, asOfMs) {
         if (group.length !== 1 || winners.has(courseId) || blocked.has(courseId)) {
             if (group.length !== 1 || blocked.has(courseId))
                 ambiguous = true;
+            /** @type {ExclusionReason} */
             const reason = winners.has(courseId) && group.length === 1 ? 'DUPLICATE' : 'NEEDS_REVIEW';
             for (const attempt of group)
                 mark(attempt.attemptToken, reason);
@@ -403,7 +425,9 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
             throw new TypeError('minimum areas exceeds available areas');
         // 미완료 다영역 과목은 취득 영역 판정에 영향을 주지 않는다.
         // 취득한 과목도 여러 영역의 학점을 지원할 수 있지만 서로 다른 두 영역을 동시에 차지할 수는 없다.
+        /** @type {Set<string>} */
         const earnedAreas = new Set();
+        /** @type {string[][]} */
         const ambiguousEarned = [];
         let earnedUnits = 0, projectedUnits = 0;
         for (const course of winners.values()) {
@@ -423,7 +447,9 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
         }
         // 영역 수 최대치는 영역 태그의 합집합이 아닌 이분 매칭으로 계산한다.
         // 취득 과목 하나는 가능한 영역 하나에만 배정할 수 있다.
+        /** @type {Map<string, number>} */
         const matched = new Map();
+        /** @param {number} index @param {Set<string>} visited @returns {boolean} */
         const augment = (index, visited) => {
             for (const area of ambiguousEarned[index] ?? []) {
                 if (earnedAreas.has(area) || visited.has(area))
@@ -444,6 +470,7 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
         // 탐색 예산을 초과하면 임의로 확정하지 않고 검토 보류한다.
         const uncovered = ambiguousEarned.filter(xs => !xs.some(a => earnedAreas.has(a)));
         let searches = 0;
+        /** @param {readonly string[][]} groups @param {number} slots @returns {boolean} */
         const canStayBelow = (groups, slots) => {
             if (groups.length === 0)
                 return true;
@@ -454,6 +481,7 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
             const fewest = groups.reduce((best, next) => next.length < best.length ? next : best);
             return fewest.some(a => canStayBelow(groups.filter(xs => !xs.includes(a)), slots - 1));
         };
+        /** @type {ProgressState} */
         let state;
         if (earnedUnits < requirement.requiredCreditUnits || maxPossibleAreas < requirement.minAreas)
             state = 'UNSATISFIED';
@@ -478,6 +506,7 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
         assertPositiveUnits(requirement.k, 'required groups');
         if (requirement.k > requirement.groups.length)
             throw new TypeError('k exceeds available groups');
+        /** @type {Set<string>} */
         const seen = new Set();
         let matchedGroupsCount = 0;
         for (const group of requirement.groups) {
@@ -497,6 +526,7 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
     }
     if (requirement.kind !== 'K_OF_N')
         throw new TypeError('Unknown academic requirement kind');
+    /** @type {Set<string>} */
     const seen = new Set();
     if (requirement.courseIds.length < 2)
         throw new TypeError(`${requirement.id} needs at least two courses`);
@@ -518,6 +548,7 @@ function evaluateRequirement(requirement, earned, projected, areas, winners) {
         matchedCoursesCount += 1;
         matchedUnits = addUnits(matchedUnits, winner.creditUnits);
     }
+    /** @type {ProgressRow} */
     const row = {
         requirementId: requirement.id,
         state: matchedCoursesCount >= requirement.k ? 'SATISFIED' : 'UNSATISFIED',
@@ -547,6 +578,7 @@ export function buildAcademicLedger(input) {
     }
     if (input.requirements.length > 200)
         throw new RangeError('too many requirements');
+    /** @type {Set<string>} */
     const seenRequirements = new Set();
     for (const requirement of input.requirements) {
         if (seenRequirements.has(requirement.id))
@@ -559,6 +591,7 @@ export function buildAcademicLedger(input) {
     let earned = 0;
     let inProgress = 0;
     let planned = 0;
+    /** @type {Map<string, AreaTotals>} */
     const areas = new Map();
     const winnerList = [...winners.values()].sort((a, b) => byCodeUnit(a.canonicalCourseId, b.canonicalCourseId));
     for (const winner of winnerList) {
@@ -600,6 +633,7 @@ export function buildAcademicLedger(input) {
     if (ambiguous) {
         caveats.push('Some attempts are held for review: an earned row needs a term that ended by asOf, and a retake needs one explicit approval.');
     }
+    /** @type {AcademicAuditVNext['state']} */
     let state;
     if (input.rulePackState === 'MISSING')
         state = 'INSUFFICIENT_DATA';

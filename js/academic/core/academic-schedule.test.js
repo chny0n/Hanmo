@@ -8,6 +8,7 @@ const profile = AcademicProfileSchema.parse({
     campus: 'SEOUL', cohort: 2023, majors: ['경제학부'], targetGraduationTerm: '2028-2',
     enrollmentState: 'ENROLLED', openRequirementIds: ['GRAD-EXAM', 'SYN-TOTAL'],
 });
+/** @param {Partial<AcademicEventInput>} [over] @returns {AcademicEvent} */
 const event = (over = {}) => AcademicEventSchema.parse({
     id: 'SYN-DOUBLE-01', revision: 'r1',
     title: '가상 이중전공 신청', type: 'DOUBLE_MAJOR_APPLICATION',
@@ -17,6 +18,7 @@ const event = (over = {}) => AcademicEventSchema.parse({
     studentActionRequired: true,
     ...over,
 });
+/** @param {AcademicEvent[]} events @param {typeof profile} [user] @param {AcademicEvent[]} [trustedReviewedEvents] */
 const agenda = (events, user = profile, asOf = NOW, trustedReviewedEvents = []) => buildAcademicAgenda({ asOf, profile: user, events, trustedReviewedEvents });
 describe('academic calendar + graduation continuity', () => {
     it('classifies every declared event and all graduation milestones', () => {

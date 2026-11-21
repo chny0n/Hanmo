@@ -1,12 +1,7 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").AcademicAuditVNext} AcademicAuditVNext */
-/** @typedef {import("../../contracts/index.js").OwnerStudyPlanCheckResponse} OwnerStudyPlanCheckResponse */
-/** @typedef {import("../../contracts/index.js").OwnerWorkspaceValue} OwnerWorkspaceValue */
-/** @typedef {import("./ledger.js").LedgerAttempt} LedgerAttempt */
-/** @typedef {import("./ledger.js").RulePackGate} RulePackGate */
-/** @typedef {import("./plan.js").PrerequisiteRule} PrerequisiteRule */
-/** @typedef {import("./plan.js").VerifiedSection} VerifiedSection */
-/** @typedef {AcademicAuditVNext['planIssues'][number]} PlanIssue */
+/** @import { AcademicAuditVNext, OwnerStudyPlanCheckResponse, OwnerWorkspaceValue } from "../../contracts/index.js" */
+/** @import { LedgerAttempt, RulePackGate } from "./ledger.js" */
+/** @import { PrerequisiteRule, VerifiedSection, PlanIssue } from "./plan.js" */
 /** @typedef {OwnerStudyPlanCheckResponse['caveats'][number]} StudyPlanCaveat */
 /** @typedef {Extract<OwnerWorkspaceValue, {kind:'STUDY_PLAN'}>} StudyPlanItem */
 /** @typedef {'TERM_UNDECIDED'|'TERM_ENDED'|'CREDITS_UNKNOWN'} UncheckedReason */
@@ -17,7 +12,8 @@ import { AS_OF, assertId, assertPositiveUnits, byCodeUnit, termEndMs } from './l
 import { checkAcademicPlan } from './plan.js';
 const REGULAR_TERM = /^(19|20|21)\d{2}-[12]$/;
 const MAX_PLAN_ITEMS = 200;
-const VERSION_KEYS = ['rulePack', 'plan', 'catalog', 'transcript'];
+const VERSION_KEYS = /** @type {const} */ (['rulePack', 'plan', 'catalog', 'transcript']);
+/** @type {ReadonlySet<PlanIssue['code']>} */
 const REVIEW_CODES = new Set(['NEEDS_REVIEW', 'SEARCH_LIMIT_REVIEW']);
 /**
  * #62는 미승인 규칙집의 상한·선수요건 경고를 보류하면서 시간 충돌을 보고할 수 있다.
@@ -71,6 +67,7 @@ export function simulateStudyPlan(input) {
     const asOfMs = Date.parse(input.asOf);
     if (termEndMs(input.term) <= asOfMs)
         throw new TypeError(`term ${input.term} has already ended by asOf`);
+    /** @type {StudyPlanCheck['versions']} */
     const versions = {};
     for (const key of VERSION_KEYS) {
         const value = input.versions?.[key];
@@ -84,8 +81,11 @@ export function simulateStudyPlan(input) {
             throw new TypeError(`attempt ${attempt.attemptToken} is PLANNED; plans come only from studyPlan`);
         }
     }
+    /** @type {Map<string, UncheckedReason>} */
     const unchecked = new Map();
+    /** @type {Set<string>} */
     const seen = new Set();
+    /** @type {LedgerAttempt[]} */
     const planned = [];
     for (const item of readPlan(input.studyPlan)) {
         if (!item.planned)
@@ -140,6 +140,7 @@ export function simulateStudyPlan(input) {
     const sectionsUnconfirmed = planIssues.some(issue => issue.reasonCode === 'COURSE_NOT_CONFIRMED');
     // READY 응답에는 모든 판본이 있어야 하며 화면에서 입력에 대응시킬 수 없는 결과는 보류한다.
     const versionsComplete = VERSION_KEYS.every(key => versions[key] !== undefined);
+    /** @type {StudyPlanCheck['state']} */
     let state;
     if (input.rulePack.state === 'MISSING')
         state = 'INSUFFICIENT_DATA';
@@ -148,6 +149,7 @@ export function simulateStudyPlan(input) {
         state = 'NEEDS_REVIEW';
     else
         state = 'READY';
+    /** @type {StudyPlanCaveat[]} */
     const caveats = ['NOT_OFFICIAL_REGISTRATION', 'NOT_GRADUATION_DECISION'];
     if (!approved)
         caveats.push('RULEPACK_UNVERIFIED');
@@ -155,6 +157,7 @@ export function simulateStudyPlan(input) {
         caveats.push('SECTIONS_UNCONFIRMED');
     if (uncheckedRows.length > 0)
         caveats.push('PLAN_PARTIALLY_CHECKED');
+    /** @type {StudyPlanCheck} */
     const result = {
         state, asOf: input.asOf, term: input.term, versions,
         termLoadCreditUnits,

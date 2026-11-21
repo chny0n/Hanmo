@@ -4,11 +4,13 @@
 import { describe, expect, it } from 'vitest';
 import { extractNoticeCandidates } from './notice-extract.js';
 // 모든 공지는 SYNTHETIC 가상 문장이다. 실제 한국외대 공지를 복제하지 않았으며 추출 품질 수치로 쓰지 않는다.
+/** @param {string[]} texts @param {Partial<NoticeExtractInput>} [patch] @returns {NoticeExtractInput} */
 const notice = (texts, patch = {}) => ({
     noticeId: 'SYN-N1', revisionId: 'r1', title: '가상 학사 안내', publishedAt: '2026-02-20T10:00:00+09:00',
     state: 'PUBLISHED', rights: 'APPROVED', provenance: 'SYNTHETIC',
     paragraphs: texts.map((text, i) => ({ id: 'p' + (i + 1), text })), ...patch,
 });
+/** @param {string[]} texts @param {Partial<NoticeExtractInput>} [patch] */
 const x = (texts, patch = {}) => extractNoticeCandidates(notice(texts, patch));
 /** 모든 근거 위치가 원문의 정확한 부분 문자열인지 확인한다. */
 /**
@@ -181,7 +183,7 @@ describe('#46 correction, cancellation and rights', () => {
         expect(mismatch.revisionLink?.kind).toBe('CANCELLATION');
     });
     it('a notice without reuse rights is not extracted at all', () => {
-        for (const rights of ['REVOKED', 'BLOCKED']) {
+        for (const rights of /** @type {const} */ (['REVOKED', 'BLOCKED'])) {
             const out = x(['가상 신청 마감: 2026. 3. 6.(금) 18:00 서울캠퍼스'], { rights });
             expect(out).toMatchObject({ status: 'EXCLUDED', dates: [], studentDeadline: null, reviewReasons: ['RIGHTS_NOT_APPROVED'] });
             expect(out.targets).toEqual({ included: [], excluded: [] });
@@ -192,7 +194,7 @@ describe('#46 failures', () => {
     it('rejects malformed input', () => {
         expect(() => x(['가상'], { publishedAt: '2026-02-20' })).toThrow();
         expect(() => x(['가상'], { noticeId: 'bad id' })).toThrow();
-        expect(() => extractNoticeCandidates({ ...notice(['a']), extra: 1 })).toThrow();
+        expect(() => extractNoticeCandidates(/** @type {NoticeExtractInput} */ (/** @type {unknown} */ ({ ...notice(['a']), extra: 1 })))).toThrow();
     });
     it('rejects duplicate paragraph IDs', () => {
         expect(() => x(['가상 하나', '가상 둘'], { paragraphs: [{ id: 'p1', text: '가상 하나' }, { id: 'p1', text: '가상 둘' }] })).toThrow(/Duplicate/);

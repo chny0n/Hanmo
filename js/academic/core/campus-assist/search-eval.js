@@ -51,19 +51,19 @@ export const SearchEvalRunSchema = z.strictObject({
     ])).max(4).default([]),
 });
 /** §4.6·#40 초기 출시 목표. 설계 요구이며 측정값이 아니다. */
-export const SEARCH_GATE_TARGETS = {
+export const SEARCH_GATE_TARGETS = /** @type {const} */ ({
     recallAt5: 0.90, mrr: 0.80, intentMacroF1: 0.90,
     /** 오타·띄어쓰기 하위집합 Recall@5가 PLAIN 대비 떨어져도 되는 최대 폭(5%p). */
     maxNoiseDrop: 0.05,
     p95LatencyMs: 300,
     safetyViolations: 0,
-};
+});
 // ───────────── 분할 규칙 ─────────────
 /** 문서 계열 ID를 결정적으로 TUNE/HOLDOUT에 배정한다. 같은 seed·계열이면 언제나 같은 결과다. */
 /**
  * @param {string} documentFamily
  * @param {string} seed
- * @param {unknown} [holdoutRatio]
+ * @param {number} [holdoutRatio]
  * @returns {'TUNE'|'HOLDOUT'}
  */
 export function assignFamilySplit(documentFamily, seed, holdoutRatio = 0.3) {
@@ -90,14 +90,18 @@ export function assignFamilySplit(documentFamily, seed, holdoutRatio = 0.3) {
  */
 export function validateSearchEvalSplit(raw) {
     const cases = SearchEvalCaseSchema.array().max(20000).parse(raw);
+    /** @type {SplitIssue[]} */
     const issues = [];
+    /** @type {Set<string>} */
     const ids = new Set();
     for (const c of cases) {
         if (ids.has(c.caseId))
             issues.push({ kind: 'DUPLICATE_CASE', detail: c.caseId });
         ids.add(c.caseId);
     }
+    /** @param {(c:SearchEvalCase)=>string[]} key */
     const splitsBy = (key) => {
+        /** @type {Map<string, Set<string>>} */
         const m = new Map();
         for (const c of cases)
             for (const k of key(c)) {
@@ -119,7 +123,9 @@ export function validateSearchEvalSplit(raw) {
     return issues;
 }
 const DOMAINS = SearchDomainSchema.options;
+/** @param {number} x */
 const round = (x) => Math.round(x * 1e6) / 1e6;
+/** @param {number[]} xs */
 const mean = (xs) => xs.length ? round(xs.reduce((a, b) => a + b, 0) / xs.length) : null;
 /** 최근접 순위 방식 p95(정렬 후 ceil(0.95n)번째). 보간하지 않아 작은 표본에서 과소평가하지 않는다. */
 /**
@@ -171,6 +177,7 @@ export function evaluateSearchRun(rawCases, rawRuns, split = 'HOLDOUT') {
     if (!cases.length)
         throw new RangeError('No cases in split ' + split);
     const runs = SearchEvalRunSchema.array().max(20000).parse(rawRuns);
+    /** @type {Map<string, z.output<typeof SearchEvalRunSchema>>} */
     const runBy = new Map();
     for (const r of runs) {
         if (runBy.has(r.caseId))
@@ -187,22 +194,26 @@ export function evaluateSearchRun(rawCases, rawRuns, split = 'HOLDOUT') {
             throw new RangeError('Missing run for case ' + c.caseId);
         return { c, r };
     });
+    /** @type {SearchEvalReport['bySubset']} */
     const bySubset = {};
     for (const s of SearchEvalSubsetSchema.options) {
         const sub = rows.filter(x => x.c.subsets.includes(s));
         if (sub.length)
             bySubset[s] = retrieval(sub);
     }
+    /** @type {SearchEvalReport['byDomain']} */
     const byDomain = {};
     for (const d of DOMAINS) {
         const sub = rows.filter(x => x.c.intent === d);
         if (sub.length)
             byDomain[d] = retrieval(sub);
     }
-    const confusion = Object.fromEntries(DOMAINS.map(t => [t, Object.fromEntries(DOMAINS.map(p => [p, 0]))]));
+    const confusion = /** @type {Record<SearchDomain,Record<SearchDomain,number>>} */ (Object.fromEntries(DOMAINS.map(t => [t, Object.fromEntries(DOMAINS.map(p => [p, 0]))])));
     for (const { c, r } of rows)
         confusion[c.intent][r.predictedIntent]++;
+    /** @type {SearchEvalReport['intent']['perLabel']} */
     const perLabel = {};
+    /** @type {number[]} */
     const f1s = [];
     // 정답 또는 예측에 한 번이라도 등장한 분야만 macro 평균에 넣는다.
     for (const d of DOMAINS) {
@@ -242,13 +253,17 @@ export function evaluateSearchRun(rawCases, rawRuns, split = 'HOLDOUT') {
  */
 export function checkSearchGate(report, splitIssues) {
     const T = SEARCH_GATE_TARGETS;
-    const atLeast = (v, t) => ({ status: (v === null ? 'NOT_EVALUABLE' : v >= t ? 'PASS' : 'FAIL'), value: v, target: t });
-    const atMost = (v, t) => ({ status: (v === null ? 'NOT_EVALUABLE' : v <= t ? 'PASS' : 'FAIL'), value: v, target: t });
+    /** @param {number|null} v @param {number} t */
+    const atLeast = (v, t) => ({ status: /** @type {GateCheckStatus} */ ((v === null ? 'NOT_EVALUABLE' : v >= t ? 'PASS' : 'FAIL')), value: v, target: t });
+    /** @param {number|null} v @param {number} t */
+    const atMost = (v, t) => ({ status: /** @type {GateCheckStatus} */ ((v === null ? 'NOT_EVALUABLE' : v <= t ? 'PASS' : 'FAIL')), value: v, target: t });
     const plain = report.bySubset.PLAIN?.recallAt5 ?? null;
+    /** @param {SearchEvalSubset} s */
     const drop = (s) => {
         const v = report.bySubset[s]?.recallAt5 ?? null;
         return plain === null || v === null ? null : round(plain - v);
     };
+    /** @type {SearchGateResult['checks']} */
     const checks = {
         recallAt5: atLeast(report.overall.recallAt5, T.recallAt5),
         mrr: atLeast(report.overall.mrr, T.mrr),

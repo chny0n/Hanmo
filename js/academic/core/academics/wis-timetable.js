@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import("./plan.js").Weekday} Weekday */
+/** @import { Weekday } from "./plan.js" */
 /** @typedef {'1'|'SUMMER'|'2'|'WINTER'} TimetableSession */
 /** @typedef {'SEOUL'|'GLOBAL'|'UNKNOWN'} TimetableCampus */
 /** @typedef {'MAJOR'|'DOUBLE_OR_MINOR'|'BASIC'|'OTHER'} TimetableArea */
@@ -20,32 +20,37 @@ import { resolveAcademicCourseCodeVNext } from '../../contracts/index.js';
 export const WIS_TIMETABLE_PATH = '/src08/jsp/lecture/LECTURE2020L.jsp';
 const WIS_HOST = 'wis.hufs.ac.kr';
 /** 원본 표의 열 순서다. 레이아웃이 바뀌면 임의로 추측하지 않고 거부한다. */
-const EXPECTED_HEADER = [
+const EXPECTED_HEADER = /** @type {const} */ ([
     'No.', '개설영역', '학년', '학수번호', '교과목명', '강의계획서', '속성 Attributes', '담당교수',
     '학점', '시간', '강의시간/ 강의실', '수강인원/ 제한인원', '사전수강신청/관심강좌신청 (Course Wishlist)', '비고',
-];
+]);
 /** 데이터 행에는 관심강좌 셀이 없으므로 헤더보다 셀이 하나 적다. */
 const ROW_CELLS = 13;
-const COL = { no: 0, area: 1, grade: 2, code: 3, title: 4, syllabus: 5, attrs: 6, credits: 8, hours: 9, meetings: 10, note: 12 };
+const COL = /** @type {const} */ ({ no: 0, area: 1, grade: 2, code: 3, title: 4, syllabus: 5, attrs: 6, credits: 8, hours: 9, meetings: 10, note: 12 });
+/** @type {Readonly<Record<string, Weekday>>} */
 const DAYS = { 월: 'MON', 화: 'TUE', 수: 'WED', 목: 'THU', 금: 'FRI', 토: 'SAT', 일: 'SUN' };
 /** 강의시간표 조회 화면의 ag_ledg_sessn 학기 선택값이다. */
+/** @type {Readonly<Record<string, TimetableSession>>} */
 const SESSIONS = { '1': '1', '2': 'SUMMER', '3': '2', '4': 'WINTER' };
+/** @type {Readonly<Record<string, TimetableArea>>} */
 const AREAS = { '전공': 'MAJOR', '이중(부)전공': 'DOUBLE_OR_MINOR' };
 /**
  * 속성 배지는 한·영 페이지에 공통인 CSS 수정자 이름으로 식별한다.
  * attr--eng는 언어 코드(ENG, FRE 등)를 표시하며 미등록 시 F로 표시하므로 외국어 강의 속성으로 해석한다.
  */
+/** @type {Readonly<Record<string, TimetableAttribute>>} */
 const ATTRIBUTE_CLASSES = {
     req: 'REQUIRED', eng: 'FOREIGN_LANGUAGE', team: 'TEAM_TEACHING', online: 'ONLINE', pf: 'PASS_FAIL',
 };
 const UNSTATED_LANGUAGE = 'F';
+/** @type {Readonly<Record<string, string>>} */
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'', nbsp: ' ', '#39': '\'' };
 /**
  * @param {string} text
  * @returns {string}
  */
 function decode(text) {
-    return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+|#39);/gi, (whole, name) => {
+    return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+|#39);/gi, (whole, /** @type {string} */ name) => {
         if (name in ENTITIES)
             return ENTITIES[name];
         if (/^#x/i.test(name))
@@ -55,7 +60,9 @@ function decode(text) {
         return whole;
     });
 }
+/** @param {string} cell @returns {string} */
 const cellText = (cell) => decode(cell.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+/** @param {string} row @param {'td'|'th'} tag @returns {string[]} */
 const cells = (row, tag) => [...row.matchAll(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)</${tag}>`, 'gi'))].map(match => match[1]);
 /**
  * 저장된 HTML에서 스크립트 블록과 HTML 주석을 표 행 분석 전에 제외한다.
@@ -112,6 +119,7 @@ function inQuotedTagAttribute(value, offset) {
 export function withoutBlocks(html, kind) {
     // 인덱스가 달라지지 않도록 ASCII A~Z만 소문자로 변환한다.
     // 유니코드 소문자화는 İ처럼 코드 단위 수를 바꿀 수 있다.
+    /** @param {string} s */
     const lowerAscii = (s) => s.replace(/[A-Z]+/g, letters => letters.toLowerCase());
     let out = html;
     let from = 0;
@@ -119,7 +127,9 @@ export function withoutBlocks(html, kind) {
     let floor = 0;
     for (;;) {
         const lower = lowerAscii(out);
+        /** @type {number} */
         let start;
+        /** @type {number} */
         let end;
         if (kind === 'comment') {
             start = lower.indexOf('<!--', from);
@@ -196,6 +206,7 @@ const LINK = /lecture_open\('(\d{4})','(\d)','[A-Z]','([^']*)'\)/g;
  * @returns {{year:number; session:TimetableSession; linkless:Set<number>}}
  */
 function pageTerm(rows, html) {
+    /** @type {Set<number>} */
     const linkless = new Set();
     rows.forEach((row, index) => {
         const no = cellText(row[COL.no]);
@@ -218,7 +229,7 @@ function pageTerm(rows, html) {
     const seen = new Set([...html.matchAll(LINK)].map(match => `${match[1]}:${match[2]}`));
     if (seen.size !== 1)
         throw new TypeError(`page links name ${seen.size === 0 ? 'no' : 'more than one'} year and session`);
-    const [year, code] = [...seen][0].split(':');
+    const [year, code] = /** @type {[string, string]} */ ([...seen][0].split(':'));
     const session = SESSIONS[code];
     if (!session)
         throw new TypeError(`unknown session code ${code}`);
@@ -239,7 +250,9 @@ function cardCodes(html) {
  * @param {string} html
  */
 function assertComplete(rows, html) {
+    /** @param {readonly string[]} codes */
     const count = (codes) => {
+        /** @type {Map<string, number>} */
         const map = new Map();
         for (const code of codes)
             map.set(code, (map.get(code) ?? 0) + 1);
@@ -272,7 +285,9 @@ function fileTerm(fileName) {
 function meetings(text) {
     if (text === '')
         return [];
+    /** @type {TimetableMeeting[]} */
     const found = [];
+    /** @type {{day:Weekday; periods:number[]}[]} */
     let pending = [];
     let consumed = '';
     for (const match of text.matchAll(/([월화수목금토일])((?:\s+\d{1,2})+)|\(([^)]*)\)/g)) {
@@ -320,6 +335,7 @@ export function importWisTimetable(input) {
         if (row.length !== ROW_CELLS)
             throw new TypeError(`row ${cellText(row[0])} has ${row.length} cells, not ${ROW_CELLS}; save the page again`);
     }
+    /** @type {TimetableIssue[]} */
     const issues = [];
     const departmentLabel = input.departmentLabel ?? input.fileName.split(/[_\s]/)[0];
     if (!/^[A-Za-z0-9가-힣&().-]{1,40}$/.test(departmentLabel))
@@ -335,8 +351,9 @@ export function importWisTimetable(input) {
         if (!term)
             throw new TypeError('page lists no rows and the file name names no term');
         issues.push({ code: 'NO_ROWS', detail: 'the saved page lists no courses' });
-        const [year, session] = term.split('-');
-        const mapped = session === 'S' ? 'SUMMER' : session === 'W' ? 'WINTER' : session;
+        const [year, session] = /** @type {[string, string]} */ (term.split('-'));
+        /** @type {TimetableSession} */
+        const mapped = session === 'S' ? 'SUMMER' : session === 'W' ? 'WINTER' : /** @type {'1'|'2'} */ (session);
         return result(url, input, { year: Number(year), session: mapped }, departmentLabel, [], issues);
     }
     assertComplete(raw, html);
@@ -349,9 +366,11 @@ export function importWisTimetable(input) {
     const rows = raw.map((row, index) => {
         const text = row.map(cellText);
         const no = Number(text[COL.no]);
+        /** @param {TimetableIssue['code']} code @param {string} detail */
         const flag = (code, detail) => issues.push({ row: no, code, detail });
         if (no !== index + 1)
             flag('ROW_NUMBER_GAP', `row ${index + 1} is numbered ${no}`);
+        /** @type {TimetableRow['termEvidence']} */
         const termEvidence = linkless.has(index) ? 'PAGE_ONLY' : 'ROW_LINK';
         if (termEvidence === 'PAGE_ONLY')
             flag('TERM_FROM_PAGE', 'no syllabus link; the term comes only from the other rows of this page');
@@ -377,8 +396,11 @@ export function importWisTimetable(input) {
         // class에 정확히 attr 토큰이 있는 span만 속성 배지로 인식한다. attr-none은 빈 칸 표시다.
         const chips = [...row[COL.attrs].matchAll(/<span\b[^>]*class="((?:[^"]*\s)?attr(?:\s[^"]*)?)"[^>]*>([\s\S]*?)<\/span>/gi)]
             .map(match => ({ kind: /\battr--([a-z]+)\b/.exec(match[1])?.[1] ?? '', label: cellText(match[2]) }));
+        /** @type {TimetableAttribute[]} */
         const attributes = [];
+        /** @type {string[]} */
         const otherAttributes = [];
+        /** @type {string|null} */
         let instructionLanguage = null;
         for (const chip of chips) {
             const attribute = ATTRIBUTE_CLASSES[chip.kind];
@@ -437,7 +459,9 @@ function basicFields(html) {
     const keys = new Set(lists.map(list => JSON.stringify([...new Set(list)].sort())));
     return keys.size === 1 ? new Set(lists[0]) : new Set();
 }
+/** @type {Readonly<Record<string, TimetableCampus>>} */
 const CAMPUS_RADIO = { H1: 'SEOUL', H2: 'GLOBAL' };
+/** @type {Readonly<Record<string, TimetableCampus>>} */
 const CAMPUS_PREFIX = { '(서울)': 'SEOUL', '(글로벌)': 'GLOBAL' };
 /**
  * @param {string} html
@@ -465,9 +489,10 @@ function pageCampus(html) {
  */
 function result(savedFrom, input, term, departmentLabel, rows, issues) {
     // 코드 형식을 검토하는 사람을 위한 힌트일 뿐 자동 적용하지 않는다.
+    /** @type {Map<string, Set<string>>} */
     const titles = new Map();
     for (const row of rows) {
-        const set = titles.get(row.rawCode.slice(0, 7)) ?? new Set();
+        const set = titles.get(row.rawCode.slice(0, 7)) ?? /** @type {Set<string>} */ (new Set());
         set.add(row.title);
         titles.set(row.rawCode.slice(0, 7), set);
     }

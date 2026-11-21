@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateExchange, exchangePolicyInEffect, resolveExchangePolicy } from './exchange.js';
 const NOW = '2026-06-01T00:00:00Z';
+/** @type {ExchangePolicy} */
 const policy = {
     ruleId: 'SYN-OIA', sourceRevision: 'SYN-POLICY-1', sourceUrl: 'https://example.org/synthetic-exchange',
     track: 'OIA', publishedAt: '2025-01-01T00:00:00Z', verifiedAt: '2025-01-02T00:00:00Z',
@@ -14,12 +15,14 @@ const policy = {
     twoSemesterTransfersAllowed: false, priorCancellationAllowed: false,
     requiredLanguage: { test: 'TOEFL', minimumScore: 80 },
 };
+/** @type {ExchangeApplicant} */
 const applicant = {
     duration: 1, track: 'OIA', status: 'ENROLLED', completedSemesters: 3, gpa: 3.2,
     transfer: false, previousCancellation: 'CLEAR',
     language: { test: 'TOEFL', score: 90, expiresOn: '2027-01-01' }, departureOn: '2026-09-01',
 };
 describe('deterministic exchange checks (#340)', () => {
+    /** @type {{name:string;change:Record<string,unknown>;policy?:Record<string,unknown>; check?:string;status?:string;overall:string}[]} */
     const cases = [
         { name: 'baseline 1-semester', change: {}, overall: 'PASS' },
         { name: 'GPA lower than 3.0', change: { gpa: 2.99 }, check: 'GPA', status: 'FAIL', overall: 'FAIL' },
@@ -55,15 +58,16 @@ describe('deterministic exchange checks (#340)', () => {
         { name: 'prior cancellation allowed in policy', change: { previousCancellation: 'CANCELLED' }, policy: { priorCancellationAllowed: true }, overall: 'PASS' },
     ];
     it.each(cases)('$name', ({ change, policy: override, check, status, overall }) => {
+        /** @param {Record<string,unknown>} value */
         const clean = (value) => Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined));
-        const actual = evaluateExchange(clean({ ...applicant, ...change }), clean({ ...policy, ...override }), NOW);
+        const actual = evaluateExchange(/** @type {ExchangeApplicant} */ (clean({ ...applicant, ...change })), /** @type {ExchangePolicy} */ (clean({ ...policy, ...override })), NOW);
         expect(actual.result).toBe(overall);
         if (check)
             expect(actual.checks.find(x => x.code === check)?.status).toBe(status);
         expect(actual.disclaimer).toContain('공식 지원 자격');
     });
     it('fails closed if policy revoked, future, expired or absent', () => {
-        for (const other of [null, { ...policy, rights: 'REVOKED' },
+        for (const other of [null, { ...policy, rights: /** @type {const} */ ('REVOKED') },
             { ...policy, verifiedAt: '2027-01-01T00:00:00Z' },
             { ...policy, effectiveUntil: '2025-12-31' }]) {
             const r = evaluateExchange(applicant, other, NOW);
@@ -103,12 +107,14 @@ describe('#365 policy dates are Asia/Seoul calendar days', () => {
     });
 });
 describe('#379 one current policy per partner+track', () => {
+    /** @param {string} rev @param {string} from @param {string|undefined} until @param {Partial<ExchangePolicy>} [extra] @returns {ExchangePolicy} */
     const ed = (rev, from, until, extra = {}) => ({
         ...policy, sourceRevision: rev, publishedAt: '2025-01-01T00:00:00Z', verifiedAt: '2025-01-02T00:00:00Z',
         effectiveFrom: from, ...(until ? { effectiveUntil: until } : {}), ...extra
     });
     const old = ed('OLD', '2025-01-01', '2025-12-31'), neu = ed('NEW', '2026-01-01', '2026-12-31');
     const AT = '2026-09-01T00:00:00+09:00';
+    /** @param {ExchangePolicy[]} rules */
     const pick = (rules, asOf = AT) => resolveExchangePolicy(rules, 'SYN-UNI-A', 'OIA', asOf);
     it('issue example: non-overlapping old and new editions -> the new one, in any order', () => {
         for (const rules of [[old, neu], [neu, old]])

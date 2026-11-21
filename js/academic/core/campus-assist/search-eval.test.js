@@ -5,10 +5,12 @@ import { describe, expect, it } from 'vitest';
 import { FAQ_EVAL_CASES } from './faq-eval.fixtures.js';
 import { assignFamilySplit, checkSearchGate, evaluateSearchRun, percentileNearestRank, validateSearchEvalSplit, } from './search-eval.js';
 // 모든 사례는 SYNTHETIC 또는 테스트용으로 HUMAN_REVIEWED 라벨만 붙인 가상 자료다. 실제 검색 품질 수치가 아니다.
+/** @param {string} caseId @param {Partial<SearchEvalCase>} [patch] @returns {SearchEvalCase} */
 const kase = (caseId, patch = {}) => ({
     caseId, query: '가상 질의 ' + caseId, intent: 'FAQ', subsets: ['PLAIN'], relevant: ['FAQ:' + caseId],
     documentFamily: 'FAM-' + caseId, split: 'HOLDOUT', provenance: 'SYNTHETIC', ...patch,
 });
+/** @param {string} caseId @param {Partial<SearchEvalRun>} [patch] @returns {SearchEvalRun} */
 const run = (caseId, patch = {}) => ({
     caseId, ranked: ['FAQ:' + caseId], predictedIntent: 'FAQ', abstained: false, latencyMs: 10, ...patch,
 });
@@ -88,6 +90,7 @@ describe('#40 metrics', () => {
         expect(r.intent.perLabel.UNKNOWN).toBeUndefined();
     });
     it('measures no-answer false positives and abstention precision/recall', () => {
+        /** @param {string} id */
         const none = (id) => kase(id, { relevant: [], subsets: ['UNANSWERABLE'] });
         const cases = [none('N1'), none('N2'), kase('A')];
         const runs = [run('N1', { abstained: true, ranked: [] }), run('N2', { ranked: ['junk'] }), run('A', { abstained: true })];
@@ -111,11 +114,12 @@ describe('#40 metrics', () => {
     });
 });
 describe('#40 gate', () => {
+    /** @param {string} id @param {Partial<SearchEvalCase>} [p] */
     const reviewed = (id, p = {}) => kase(id, { provenance: 'HUMAN_REVIEWED', ...p });
     const passingCases = [reviewed('P1'), reviewed('T1', { subsets: ['TYPO'] }), reviewed('S1', { subsets: ['SPACING'] })];
     const passingRuns = passingCases.map(c => run(c.caseId));
     it('a synthetic set never yields RELEASE_PASS even when every number meets the target', () => {
-        const cases = passingCases.map(c => ({ ...c, provenance: 'SYNTHETIC' }));
+        const cases = passingCases.map(c => ({ ...c, provenance: /** @type {const} */ ('SYNTHETIC') }));
         const g = checkSearchGate(evaluateSearchRun(cases, passingRuns), []);
         expect(g.status).toBe('SYNTHETIC_ONLY');
         expect(g.checks.recallAt5.status).toBe('PASS');
@@ -138,14 +142,15 @@ describe('#40 gate', () => {
         expect(g.status).toBe('RELEASE_BLOCKED');
     });
     it('one safety violation, slow p95, a split leak, or evaluating on TUNE each block release', () => {
+        /** @param {SearchEvalRun[]} runs */
         const evalWith = (runs) => evaluateSearchRun(passingCases, runs);
-        const unsafe = passingRuns.map((r, i) => i ? r : { ...r, safetyViolations: ['REVOKED_EXPOSED'] });
+        const unsafe = passingRuns.map((r, i) => i ? r : { ...r, safetyViolations: [/** @type {const} */ ('REVOKED_EXPOSED')] });
         expect(checkSearchGate(evalWith(unsafe), []).checks.safety.status).toBe('FAIL');
         const slow = passingRuns.map(r => ({ ...r, latencyMs: 301 }));
         expect(checkSearchGate(evalWith(slow), []).checks.p95Latency.status).toBe('FAIL');
         const leak = checkSearchGate(evalWith(passingRuns), [{ kind: 'FAMILY_LEAK', detail: 'F' }]);
         expect(leak.status).toBe('RELEASE_BLOCKED');
-        const tune = passingCases.map(c => ({ ...c, split: 'TUNE' }));
+        const tune = passingCases.map(c => ({ ...c, split: /** @type {const} */ ('TUNE') }));
         expect(checkSearchGate(evaluateSearchRun(tune, passingRuns, 'TUNE'), []).status).toBe('RELEASE_BLOCKED');
     });
 });
