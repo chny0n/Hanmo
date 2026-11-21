@@ -64,7 +64,7 @@ describe('explicit local academic profile backup',()=>{
   it('refuses an ordinary storage snapshot as an export file',()=>{
     const {storage}=memory();
     saveRoadmap(storage,payload,parseProfile,steps,time);
-    expect(()=>parseRoadmapBackup(storage.getItem(ROADMAP_KEY),parseProfile,steps)).toThrow();
+    expect(()=>parseRoadmapBackup(/** @type {string} */ (storage.getItem(ROADMAP_KEY)),parseProfile,steps)).toThrow();
   });
   it('rejects invalid progress and corrupt JSON',()=>{
     const backup=exportRoadmap(payload,parseProfile,steps,time);
