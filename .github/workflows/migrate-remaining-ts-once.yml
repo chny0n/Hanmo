@@ -1,0 +1,29 @@
+name: One-time JavaScript-only migration
+on:
+  push:
+    branches:
+      - refactor/javascript-only-remove-remaining-ts
+    paths:
+      - scripts/migrate-remaining-ts.mjs
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: node scripts/migrate-remaining-ts.mjs
+      - name: Commit JavaScript-only sources to migration branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor(js): migrate remaining 42 TypeScript files into JavaScript and JSDoc"
+          git push origin HEAD:refs/heads/refactor/javascript-only-remove-remaining-ts
