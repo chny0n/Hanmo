@@ -8,7 +8,6 @@ import {importWisTimetable,withoutBlocks} from './wis-timetable.js';
  */
 /** @typedef {import('./wis-timetable.js').TimetableRow & {instructor:string|null}} FacultyTimetableRow */
 /** @typedef {Omit<import('./wis-timetable.js').TimetableImport,'rows'> & {rows:FacultyTimetableRow[]}} FacultyTimetableImport */
-/** @typedef {import('./wis-timetable.js').TimetableImportRequest} TimetableImportRequest */
 
 /** @type {Readonly<Record<string,string>>} */
 const entities={amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' ','#39':"'"};
@@ -35,7 +34,7 @@ const columns=(row)=>
   [...row.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)].map(match=>match[1]);
 const undecided=/^(?:미정|미배정|담당교수\s*미정|tba|unknown|–|-|)$/i;
 
-/** @param {TimetableImportRequest} input @returns {FacultyTimetableImport} 저장된 강의표의 검증 결과 */
+/** @param {import('./wis-timetable.js').TimetableImportRequest} input @returns {FacultyTimetableImport} 저장된 강의표의 검증 결과 */
 export function extractFacultyFromSavedTimetable(input){
   if(input.html.length>5_000_000)throw new RangeError('Saved timetable is too large');
   // 원본 엄격 파서는 저장 출처 URL·헤더·표와 카드의 일치·강의 링크·학기부터 검증한다.

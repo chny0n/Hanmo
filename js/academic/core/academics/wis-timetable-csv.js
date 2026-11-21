@@ -1,7 +1,7 @@
 // @ts-check
-/** @typedef {import('./wis-timetable.js').TimetableAttribute} TimetableAttribute */
-/** @typedef {import('./wis-timetable.js').TimetableImport} TimetableImport */
-/** @typedef {import('./wis-timetable.js').TimetableRow} TimetableRow */
+/** @typedef {import('./wis-timetable.js').TimetableAttribute} WisTimetableAttribute */
+/** @typedef {import('./wis-timetable.js').TimetableImport} WisTimetableImport */
+/** @typedef {import('./wis-timetable.js').TimetableRow} WisTimetableRow */
 
 /**
  * 사용자가 저장한 학교 시간표를 운영자가 가져올 수 있는 8열 CSV로 변환한다(#133).
@@ -20,10 +20,10 @@ export const SAVED_CURRICULUM_CSV_HEADERS = /** @type {const} */ (['courseCode',
  * @typedef {{
  *   rawCode:string,
  *   completion:'REQUIRED'|'NOT_STATED',
- *   attributes:TimetableAttribute[],
+ *   attributes:WisTimetableAttribute[],
  *   instructionLanguage:string|null,
  *   note:string,
- *   noteHints:TimetableRow['noteHints']
+ *   noteHints:WisTimetableRow['noteHints']
  * }} SavedCurriculumDetail
  * 페이지에 표시된 이수구분과 비고를 자동 공식 판정 없이 보존한다.
  */
@@ -44,7 +44,7 @@ function quote(cell) {
   return /[",\r\n]/.test(cell) ? `"${cell.replaceAll('"', '""')}"` : cell;
 }
 
-/** @param {TimetableImport} page @param {{campus?:string}} [options] @returns {SavedCurriculumCsv} 검증된 시간표의 CSV 변환 결과 */
+/** @param {WisTimetableImport} page @param {{campus?:string}} [options] @returns {SavedCurriculumCsv} 검증된 시간표의 CSV 변환 결과 */
 export function toSavedCurriculumCsv(page,options={}) {
   // 캠퍼스는 페이지의 값을 확인할 때만 사용하며 UNKNOWN을 임의 값으로 변경하지 않는다.
   if (options.campus !== undefined && options.campus !== page.campus) {
