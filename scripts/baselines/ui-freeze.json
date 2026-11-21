@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
+  "purpose": "Current conservative PC UI and original registration paths; changes need explicit approval and full visual/legacy QA.",
+  "files": [
+    {
+      "path": "css/academic-progress.css",
+      "sha": "32a847da85499a7483c60a99b0567388cd320a42"
+    },
+    {
+      "path": "css/developer.css",
+      "sha": "6b21aae0a7f268b1b23b1b75631ff97272d92d73"
+    },
+    {
+      "path": "css/gnb.css",
+      "sha": "854069bf09436ec5c2e3b3756045089c50e4bef3"
+    },
+    {
+      "path": "css/hanmo-components.css",
+      "sha": "663c3243df0136c27edd7367a2b9f51a84fa0c4c"
+    },
+    {
+      "path": "css/hanmo-flat.css",
+      "sha": "6f2cad7f0fe5237bb03b00d2b9db00dcdef6ecd1"
+    },
+    {
+      "path": "css/hanmo-tokens.css",
+      "sha": "f397e8fcef16a853c5770085bd766fe057da3b2f"
+    },
+    {
+      "path": "css/hanmo-views.css",
+      "sha": "3b0279300c0ec03cc45f4501fc2b57ef3ff7b602"
+    },
+    {
+      "path": "css/home-fit.css",
+      "sha": "eb0ff1b92c987dc61e821ed7f82493ed017e25a9"
+    },
+    {
+      "path": "css/index.css",
+      "sha": "392c0a09571c5bc393ac3bd15c4fe4801aa02abf"
+    },
+    {
+      "path": "css/layout.css",
+      "sha": "c616d23b8aa515e9ff6bbda37ff53a8aa093f1a4"
+    },
+    {
+      "path": "css/normalize.css",
+      "sha": "74ce7b3418e4aad794a97a5ec6584837484d1690"
+    },
+    {
+      "path": "css/practice.css",
+      "sha": "46643e4603bca30e17121440081e4232d1393c52"
+    },
+    {
+      "path": "css/result.css",
+      "sha": "c770a0c89dee7f552cf62ab2bb219b4ecb743793"
+    },
+    {
+      "path": "css/scenario-settings.css",
+      "sha": "bb4e0a5cdd5b3c3beaf4b7c34a9843c231d824b1"
+    },
+    {
+      "path": "css/student-ui.css",
+      "sha": "b694be023032943ccc76cce883f65427060e2220"
+    },
+    {
+      "path": "css/vsugang-fit.css",
+      "sha": "648f1d5e13c0cc080e6904b18ff96a4a3d2d1c16"
+    },
+    {
+      "path": "css/vsugang.css",
+      "sha": "d0f4e1f009d2dee1bb43641919066c1679f7589d"
+    },
+    {
+      "path": "html/academic-progress.html",
+      "sha": "7aad26665ec04a7a0464b1cbede81efa34ba79c7"
+    },
+    {
+      "path": "html/academic-timeline.html",
+      "sha": "8095d6e9e370b7fcfc63356e0024cf02195c7650"
+    },
+    {
+      "path": "html/catalog.html",
+      "sha": "a730454ea4d2c70335edaccab3b4c012653b479a"
+    },
+    {
+      "path": "html/developer.html",
+      "sha": "8dbb8a088a24844ae641076472b75015f027fce7"
+    },
+    {
+      "path": "html/forecast.html",
+      "sha": "f2ef9e45fd0026b0493eb42702cd541eb22a621d"
+    },
+    {
+      "path": "html/pc-only.html",
+      "sha": "fbc89a4c93150f80c77384d0dd676b6bde297bbd"
+    },
+    {
+      "path": "html/planner.html",
+      "sha": "3d59acf3197425c4dedaaa2e2fe48c0394be54c3"
+    },
+    {
+      "path": "html/practice.html",
+      "sha": "3813ebcfa4afe4deaa4b41a94859f053bde98509"
+    },
+    {
+      "path": "html/result.html",
+      "sha": "b0fb71046501b446d1647ee41904898cbcc57c8a"
+    },
+    {
+      "path": "html/selectZone.html",
+      "sha": "e5e5f0185615c05a3eb311c7c002c52f1c7b74f6"
+    },
+    {
+      "path": "html/vsugang.html",
+      "sha": "7027ffc1d39347411bac64ea80d4b317fc6d2326"
+    },
+    {
+      "path": "img/background.svg",
+      "sha": "1812812bc0d1ffb1604c5db7aecb5e3796ab0bca"
+    },
+    {
+      "path": "img/delete.png",
+      "sha": "cc816ba3784b625ecc5b5f8f55ee29a0b33544a5"
+    },
+    {
+      "path": "img/developer.jpg",
+      "sha": "0abea4990b3037494f11dbd8f7fca64522dfaffd"
+    },
+    {
+      "path": "img/dlacked.svg",
+      "sha": "20d966eda51b5652654f691650ae500190441b85"
+    },
+    {
+      "path": "img/dlackedLogo.svg",
+      "sha": "c5c65390cfe101bb8ce6fab39152800493c65838"
+    },
+    {
+      "path": "img/hanmo_color.png",
+      "sha": "baeb2dba7e23393844da368d51e6deb4b791fcb7"
+    },
+    {
+      "path": "img/hanmo_white.svg",
+      "sha": "8fe51bea9fe8656ba47850de5720ffc0e69ae805"
+    },
+    {
+      "path": "img/hufs_logo.png",
+      "sha": "16ec2e58eb49cc80fda17f91f951b68782179e45"
+    },
+    {
+      "path": "img/register.png",
+      "sha": "7ac4ce918133af246c3f239073354a0af3ba4296"
+    },
+    {
+      "path": "img/waiting.png",
+      "sha": "9e2f24afad0a1f28c4fbf7fbd5e0338adeba5358"
+    },
+    {
+      "path": "img/watermark.png",
+      "sha": "3ee0a229438e94ffeb8b4566af293c6105409765"
+    },
+    {
+      "path": "index.html",
+      "sha": "0c5f9778f78c3dff50072b100e49bf571140fcec"
+    },
+    {
+      "path": "js/academic-data-source.js",
+      "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
+    },
+    {
+      "path": "js/gnb.js",
+      "sha": "e0d19e1ef615e319252de99e6055ccc506eb7cd0"
+    },
+    {
+      "path": "js/hanmoSys.js",
+      "sha": "6ea398c807ba04a364265ca076c74069469e0546"
+    },
+    {
+      "path": "js/home-fit.js",
+      "sha": "ecf58c3895f4c6c335572a9a27e1a459f46a836d"
+    },
+    {
+      "path": "js/incident-options.js",
+      "sha": "7e46fde0efc4ac2f717bd1a98e88595cb3e55398"
+    },
+    {
+      "path": "js/index.js",
+      "sha": "7e4e5842e75244582882b87b374ef96ae4d47541"
+    },
+    {
+      "path": "js/pc-only.js",
+      "sha": "38519c02973987ba30f76a5c8e3f8d76c9697d16"
+    },
+    {
+      "path": "js/practice.js",
+      "sha": "ec8ee7b776a555dce11415a4e33fb60094e0e93a"
+    },
+    {
+      "path": "js/result.js",
+      "sha": "78479233fa440c176e5c829da5b15ac0e600018e"
+    },
+    {
+      "path": "js/scenario-settings.js",
+      "sha": "3e1be655c3aacd1d6ecf0ec589e76334cf9a7d95"
+    },
+    {
+      "path": "js/selectZone.js",
+      "sha": "6e9be5ba62bbc900e442045595d9ce5741de2abe"
+    },
+    {
+      "path": "js/student-catalog.js",
+      "sha": "de0c936be05c443e841f372fb0e088f1af9e118e"
+    },
+    {
+      "path": "js/student-notices.js",
+      "sha": "d134c2fbd040476df033c55abf04105e6fb4a6f1"
+    },
+    {
+      "path": "js/student-preferences.js",
+      "sha": "7057dcbea2ec19af025c54f4bf34855783f43a24"
+    },
+    {
+      "path": "js/student-profile-bar.js",
+      "sha": "179a4a65bc68f75921b79c1b2d334584974e0892"
+    },
+    {
+      "path": "js/student-progress.js",
+      "sha": "907d4860c0bab3c730d3e04b9602d91380b09765"
+    },
+    {
+      "path": "js/vsugang-fit.js",
+      "sha": "831a6c8ccc50121d9a76982d001da6bf3fc513df"
+    },
+    {
+      "path": "js/vsugang.js",
+      "sha": "e5c8a9466fb1cf78b10af0bdcfcf2c3c8c426e6a"
+    }
+  ]
+}
