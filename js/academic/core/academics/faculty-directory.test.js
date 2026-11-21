@@ -1,10 +1,12 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {extractFacultyFromSavedTimetable} from './faculty-directory.js';
 
 const headers=['No.','개설영역','학년','학수번호','교과목명','강의계획서','속성<br>Attributes','담당교수',
 '학점','시간','강의시간/<br>강의실','수강인원/<br>제한인원','사전수강신청/관심강좌신청<br>(Course Wishlist)','비고'];
 const saved='<!-- saved from url=(0057)https://wis.hufs.ac.kr/src08/jsp/lecture/LECTURE2020L.jsp -->';
-const html=(instructor:string, marker=saved)=>{
+/** @param {string} instructor @param {string} [marker] @returns {string} 검증용 HTML */
+const html=(instructor, marker=saved)=>{
   const link="<a href=\"javascript:lecture_open('2026','3','A','SYN010101')\">▤</a>";
   const row=['1','전공','2','SYN010101','가상 교육학',link,'<span class="attr-none">–</span>',
     instructor,'3','3','화 3 4 5 (0101)','10 / 30',''];
@@ -15,7 +17,8 @@ const html=(instructor:string, marker=saved)=>{
     <div class="sch-card-code">SYN010101 · 전공 2</div>
   </body></html>`;
 };
-const request=(instructor:string, marker?:string)=>({
+/** @param {string} instructor @param {string} [marker] @returns {import('./wis-timetable.js').TimetableImportRequest} 검증용 파일 입력 */
+const request=(instructor, marker)=>({
   html:html(instructor,marker),fileName:'SYNDEPT_2026-2_강의시간표.html',
   savedAt:'2026-11-02T09:47:00.000Z',departmentLabel:'SYNDEPT',
 });

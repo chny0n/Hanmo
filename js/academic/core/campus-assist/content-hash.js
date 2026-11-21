@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * 브라우저와 Node에서 같은 결과를 내는 동기 SHA-256과 키 순서 무관 정규 JSON.
  * 매니페스트 판본 대조(#44)용 무결성 확인이며 서명이나 검수 증명이 아니다.
@@ -12,9 +13,11 @@ const K=new Uint32Array([
   0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
   0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2,
 ]);
-const rotr=(x:number,n:number)=>(x>>>n)|(x<<(32-n));
+/** @param {number} x @param {number} n @returns {number} 오른쪽 회전 결과 */
+const rotr=(x,n)=>(x>>>n)|(x<<(32-n));
 
-export function sha256Hex(text:string):string{
+/** @param {string} text @returns {string} SHA-256 16진수 표현 */
+export function sha256Hex(text){
   const bytes=new TextEncoder().encode(text);
   const bitLength=bytes.length*8;
   const padded=new Uint8Array(Math.ceil((bytes.length+9)/64)*64);
@@ -27,27 +30,28 @@ export function sha256Hex(text:string):string{
   for(let off=0;off<padded.length;off+=64){
     for(let i=0;i<16;i++)w[i]=view.getUint32(off+i*4);
     for(let i=16;i<64;i++){
-      const a=w[i-15]!,b=w[i-2]!;
+      const a=w[i-15],b=w[i-2];
       const s0=rotr(a,7)^rotr(a,18)^(a>>>3),s1=rotr(b,17)^rotr(b,19)^(b>>>10);
-      w[i]=(w[i-16]!+s0+w[i-7]!+s1)>>>0;
+      w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0;
     }
-    let [a,b,c,d,e,f,g,hh]=[h[0]!,h[1]!,h[2]!,h[3]!,h[4]!,h[5]!,h[6]!,h[7]!];
+    let [a,b,c,d,e,f,g,hh]=[h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7]];
     for(let i=0;i<64;i++){
-      const t1=(hh+(rotr(e,6)^rotr(e,11)^rotr(e,25))+((e&f)^(~e&g))+K[i]!+w[i]!)>>>0;
+      const t1=(hh+(rotr(e,6)^rotr(e,11)^rotr(e,25))+((e&f)^(~e&g))+K[i]+w[i])>>>0;
       const t2=((rotr(a,2)^rotr(a,13)^rotr(a,22))+((a&b)^(a&c)^(b&c)))>>>0;
       hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
     }
-    h[0]=(h[0]!+a)>>>0;h[1]=(h[1]!+b)>>>0;h[2]=(h[2]!+c)>>>0;h[3]=(h[3]!+d)>>>0;
-    h[4]=(h[4]!+e)>>>0;h[5]=(h[5]!+f)>>>0;h[6]=(h[6]!+g)>>>0;h[7]=(h[7]!+hh)>>>0;
+    h[0]=(h[0]+a)>>>0;h[1]=(h[1]+b)>>>0;h[2]=(h[2]+c)>>>0;h[3]=(h[3]+d)>>>0;
+    h[4]=(h[4]+e)>>>0;h[5]=(h[5]+f)>>>0;h[6]=(h[6]+g)>>>0;h[7]=(h[7]+hh)>>>0;
   }
   return [...h].map(x=>x.toString(16).padStart(8,'0')).join('');
 }
 
 /** 객체 키 순서와 undefined 필드에 영향받지 않는 JSON 표현이다. 배열 순서는 의미가 있으므로 유지한다. */
-export function canonicalJson(value:unknown):string{
+/** @param {unknown} value @returns {string} 키 순서와 무관한 정규 직렬화 결과 */
+export function canonicalJson(value){
   if(Array.isArray(value))return '['+value.map(canonicalJson).join(',')+']';
   if(value&&typeof value==='object'){
-    const obj=value as Record<string,unknown>;
+    const obj=/** @type {Record<string,unknown>} */ (value);
     return '{'+Object.keys(obj).filter(k=>obj[k]!==undefined).sort()
       .map(k=>JSON.stringify(k)+':'+canonicalJson(obj[k])).join(',')+'}';
   }

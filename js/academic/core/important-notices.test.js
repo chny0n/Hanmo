@@ -1,15 +1,22 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
-import {AcademicEventSchema,buildAcademicAgenda,type AcademicEvent,type AcademicEventInput,type AcademicProfile} from './academic-schedule.js';
+import {AcademicEventSchema,buildAcademicAgenda} from './academic-schedule.js';
 import {importantNotices} from './important-notices.js';
 
 const NOW='2026-11-18T15:00:00+09:00';
-const profile:AcademicProfile={campus:'SEOUL',cohort:2024,majors:['경제학부'],openRequirementIds:null};
-const event=(id:string,override:Partial<AcademicEventInput>={}):AcademicEvent=>AcademicEventSchema.parse({
+/** @typedef {import('./academic-schedule.js').AcademicEvent} AcademicEvent */
+/** @typedef {import('./academic-schedule.js').AcademicEventInput} AcademicEventInput */
+/** @typedef {import('./academic-schedule.js').AcademicProfile} AcademicProfile */
+/** @type {AcademicProfile} */
+const profile={campus:'SEOUL',cohort:2024,majors:['경제학부'],openRequirementIds:null};
+/** @param {string} id @param {Partial<AcademicEventInput>} [override] @returns {AcademicEvent} 검증용 공지 */
+const event=(id,override={})=>AcademicEventSchema.parse({
   id,revision:'r1',title:'학사 안내 '+id,type:'GRADUATION_EXAM',
   source:{title:'학사 공지 게시목록',publishedDate:'2026-11-17',review:'REFERENCE_ONLY'},
   studentActionRequired:true,...override,
 });
-const results=(events:AcademicEvent[],p:AcademicProfile=profile,trusted:AcademicEvent[]=[])=>
+/** @param {AcademicEvent[]} events @param {AcademicProfile} [p] @param {AcademicEvent[]} [trusted] @returns {ReturnType<typeof importantNotices>} 검증용 중요공지 목록 */
+const results=(events,p=profile,trusted=[])=>
   importantNotices(p,buildAcademicAgenda({asOf:NOW,profile:p,events,trustedReviewedEvents:trusted}).items);
 
 describe('major-first important notices without automatic transcript upload',()=>{
@@ -37,7 +44,8 @@ describe('major-first important notices without automatic transcript upload',()=
     expect(result.toCheck).toHaveLength(1);
   });
   it('pins at most two operator-reviewed, applicable and unexpired student deadlines',()=>{
-    const reviewed=(id:string,day:number)=>event(id,{
+    /** @param {string} id @param {number} day @returns {AcademicEvent} 승인 조건 검증용 공지 */
+    const reviewed=(id,day)=>event(id,{
       source:{title:'검수된 자료',url:'https://example.edu/notice',review:'SOURCE_REVIEWED',
         reviewedAt:'2026-11-17T10:00:00+09:00'},
       scope:{majors:['경제학부'],campuses:['SEOUL']},

@@ -1,47 +1,53 @@
-import type {AcademicAgendaItem,AcademicProfile,AcademicEventType} from './academic-schedule.js';
+// @ts-check
+/** @typedef {import('./academic-schedule.js').AcademicAgendaItem} AcademicAgendaItem */
+/** @typedef {import('./academic-schedule.js').AcademicProfile} AcademicProfile */
+/** @typedef {import('./academic-schedule.js').AcademicEventType} AcademicEventType */
 
 /**
  * 중요공지 목록은 학업 자격 판정이 아닌 참고용 정렬 결과다.
  * 독립 검수·대상 확인·학생 마감 검증을 통과한 공지만 상단에 고정한다.
  * 제목만 있는 자료, 사용자 가져오기, 미검증·합성 자료는 확인 필요 영역으로 분리한다.
  */
-const ACTION_TYPES:ReadonlySet<AcademicEventType>=new Set([
+/** @type {ReadonlySet<AcademicEventType>} */
+const ACTION_TYPES=new Set([
   'COURSE_PRE_REGISTRATION','COURSE_REGISTRATION','COURSE_CHANGE','COURSE_WITHDRAWAL',
   'DOUBLE_MAJOR_APPLICATION','DOUBLE_MAJOR_CHANGE','DOUBLE_MAJOR_WITHDRAWAL',
   'PRIMARY_MAJOR_DECLARATION','MINOR_APPLICATION','MINOR_CHANGE',
   'GRADUATION_EXAM','GRADUATION_THESIS','GRADUATION_CERTIFICATION',
   'LANGUAGE_CERTIFICATION','GRADUATION_APPLICATION','GRADUATION_DOCUMENT',
 ]);
-const TYPE_ORDER:Partial<Record<AcademicEventType,number>>={
+/** @type {Partial<Record<AcademicEventType,number>>} */
+const TYPE_ORDER={
   GRADUATION_EXAM:0,DOUBLE_MAJOR_APPLICATION:1,DOUBLE_MAJOR_CHANGE:2,
   COURSE_PRE_REGISTRATION:3,COURSE_REGISTRATION:4,
   GRADUATION_THESIS:5,LANGUAGE_CERTIFICATION:6,GRADUATION_DOCUMENT:7,
 };
 
 /** 전공을 선택하지 않았으면 일반 공지만 보여주고 개인 맞춤 결과인 것처럼 표시하지 않는다. */
-export type ImportantNoticeMode='CHOOSE_MAJOR'|'MAJOR_SELECTED';
-export interface ImportantNoticeSummary {
-  mode:ImportantNoticeMode;
-  /** 독립 검수됐고 대상이 명확하며 아직 지나지 않은 학생 마감 공지를 최대 두 건만 고정한다. */
-  confirmed:AcademicAgendaItem[];
-  /** 검증·적용 대상이 불확실한 공지는 공식 출처 확인이 필요한 제안 항목으로 둔다. */
-  toCheck:AcademicAgendaItem[];
-}
-function matchedMajor(item:AcademicAgendaItem,profile:AcademicProfile):boolean{
+/** @typedef {'CHOOSE_MAJOR'|'MAJOR_SELECTED'} ImportantNoticeMode */
+/**
+ * @typedef {{mode:ImportantNoticeMode,confirmed:AcademicAgendaItem[],toCheck:AcademicAgendaItem[]}} ImportantNoticeSummary
+ * 독립 검수한 학생 마감만 확정 영역에 두고 나머지는 원문 확인 대상으로 분리한다.
+ */
+/** @param {AcademicAgendaItem} item @param {AcademicProfile} profile @returns {boolean} 전공 일치 여부 */
+function matchedMajor(item,profile){
   const scoped=item.event.scope?.majors;
   return !!scoped?.length&&!!profile.majors?.some(m=>scoped.includes(m));
 }
-function sourceDate(item:AcademicAgendaItem):string{
+/** @param {AcademicAgendaItem} item @returns {string} 게시일 또는 빈 문자열 */
+function sourceDate(item){
   return item.event.source.publishedDate??'';
 }
-function order(a:AcademicAgendaItem,b:AcademicAgendaItem,profile:AcademicProfile):number{
+/** @param {AcademicAgendaItem} a @param {AcademicAgendaItem} b @param {AcademicProfile} profile @returns {number} 정렬 순서 */
+function order(a,b,profile){
   const match=Number(matchedMajor(b,profile))-Number(matchedMajor(a,profile));
   if(match)return match;
   const impact=(TYPE_ORDER[a.event.type]??99)-(TYPE_ORDER[b.event.type]??99);
   if(impact)return impact;
   return sourceDate(b).localeCompare(sourceDate(a))||a.event.id.localeCompare(b.event.id);
 }
-export function importantNotices(profile:AcademicProfile,items:readonly AcademicAgendaItem[]):ImportantNoticeSummary{
+/** @param {AcademicProfile} profile @param {readonly AcademicAgendaItem[]} items @returns {ImportantNoticeSummary} 중요공지 표시 후보 */
+export function importantNotices(profile,items){
   // 전공이 비어 있으면 임의의 공지를 개인 맞춤 대상으로 추천하지 않는다.
   if(!profile.majors?.some(x=>x.trim().length>0)){
     return {mode:'CHOOSE_MAJOR',confirmed:[],toCheck:[]};
