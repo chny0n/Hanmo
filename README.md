@@ -64,6 +64,7 @@
 | **학점 정리** | 직접 입력한 학점 합산 및 학기별 A/B/C 계획 비교 | 공식 이수 판정·졸업 가능 여부 아님 · 비필수 기능 |
 
 **핵심 원칙:** 확인된 사실과 가상 시연을 분리하고, 공지·학칙의 근거와 적용 대상을 확인할 수 없는 경우 **‘확인 필요’**로 남깁니다. 한국어 학사 FAQ, 개설·행사 시기 전망과 졸업 요건 계산 코어는 검증 상태에 따라 별도 확장합니다.
+**NLP 코어 진행:** [근거 인덱스 #97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97) · [검색 평가 #98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98) · [공지 후보 추출 #99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99) 병합. **학생 화면·실제 승인 자료와는 미연결**입니다.
 
 <a id="site-flow"></a>
 
