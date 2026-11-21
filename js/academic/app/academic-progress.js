@@ -46,6 +46,8 @@ function selected() {
         return active;
     return 'A';
 }
+/** @param {ScenarioId} scenario */
+const planLabel = scenario => SCENARIO_TERMS[scenario] + '학기';
 /**
  * @returns {string}
  */
@@ -105,7 +107,7 @@ function renderPlanRows() {
     root.replaceChildren();
     const id = selected(), items = plans[id];
     if (!items.length) {
-        root.append(text('p', id + '안에 추가한 과목 없음'));
+        root.append(text('p', '추가한 과목 없음'));
         return;
     }
     for (const [index, item] of items.entries()) {
@@ -115,11 +117,11 @@ function renderPlanRows() {
         const button = document.createElement('button');
         button.type = 'button';
         button.textContent = '삭제';
-        button.setAttribute('aria-label', id + '안 ' + item.term + ' ' + item.courseId + ' 제거');
+        button.setAttribute('aria-label', planLabel(id) + ' 계획 ' + item.term + ' ' + item.courseId + ' 삭제');
         button.addEventListener('click', () => {
             plans[id].splice(index, 1);
             renderAll();
-            write('plan-message', id + '안에서 과목을 삭제했습니다.');
+            write('plan-message', '과목을 삭제했습니다.');
         });
         row.append(button);
         root.append(row);
@@ -174,7 +176,7 @@ function renderAll() {
         const columns = table.createTHead().insertRow();
         appendHeader(columns, '학기', 'col');
         for (const result of results) {
-            appendHeader(columns, result.scenario + '안 · ' + SCENARIO_TERMS[result.scenario] + '학기', 'col');
+            appendHeader(columns, planLabel(result.scenario), 'col');
         }
         const body = table.createTBody();
         const breakdowns = results.map(result => new Map(provisionalTermBreakdown(result).map(term => [term.term, term])));
@@ -204,7 +206,7 @@ function renderAll() {
         for (const result of results) {
             const exclusions = explainProvisionalExclusions(result, records);
             if (!exclusions.length) continue;
-            details.append(text('h3', result.scenario + '안 · ' + exclusions.length + '건'));
+            details.append(text('h3', planLabel(result.scenario) + ' · ' + exclusions.length + '건'));
             const list = document.createElement('ul');
             for (const excluded of exclusions) {
                 const item = document.createElement('li');
@@ -263,7 +265,7 @@ get('plan-form').addEventListener('submit', event => {
         plans[id].push(row);
         control('plan-course', HTMLInputElement).value = '';
         renderAll();
-        write('plan-message', id + '안에 과목을 추가했습니다.');
+        write('plan-message', '과목을 추가했습니다.');
     }
     catch (error) {
         write('plan-message', error instanceof Error ? error.message : String(error));
@@ -271,6 +273,6 @@ get('plan-form').addEventListener('submit', event => {
 });
 get('scenario-choice').addEventListener('change', () => {
     renderAll();
-    write('plan-message', '현재 ' + selected() + '안의 계획을 편집합니다. 다른 안의 내용은 유지됩니다.');
+    write('plan-message', '');
 });
 renderAll();
