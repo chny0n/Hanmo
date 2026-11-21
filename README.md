@@ -66,7 +66,7 @@
 **핵심 원칙:** 확인된 사실과 가상 시연을 분리하고, 공지·학칙의 근거와 적용 대상을 확인할 수 없는 경우 **‘확인 필요’**로 남깁니다. 한국어 학사 FAQ, 개설·행사 시기 전망과 졸업 요건 계산 코어는 검증 상태에 따라 별도 확장합니다.
 **NLP 코어 진행:** [근거 인덱스 #97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97) · [검색 평가 #98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98) · [공지 후보 추출 #99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99) 병합. **학생 화면·실제 승인 자료와는 미연결**입니다.
 
-**UI 동결 · 신규 언어 정책:** 2026-11-21부터 [UI 기준 SHA `da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일을 유지합니다. **새 기능·테스트는 JavaScript/JSDoc**만 사용하며 기존 TS는 **지금부터** 동등성 검증 후 점진 이관합니다. [아키텍처 §3.3·§8](docs/architecture.md)
+**UI 동결 · 신규 언어 정책:** 2026-11-21부터 [UI 기준 SHA `da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일을 유지합니다. **모든 학업 기능·테스트의 유지보수 원본은 JavaScript/JSDoc**으로 통일합니다. 기존 TS 전체를 제거하는 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)는 별도 리뷰·병합 대상으로 남겨 둡니다. [아키텍처 §3.3·§8](docs/architecture.md)
 
 **2차 회귀:** [#84](https://github.com/ot4562-glitch/Hanmo_develop/pull/84) 원본 모드 OFF 동등성 · [#85](https://github.com/ot4562-glitch/Hanmo_develop/pull/85) 가상/실강좌 ID 격리 테스트 통과(모두 Node 기반). 실제 SELECT 키보드 QA는 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71)에서 별도 진행.
 
@@ -133,7 +133,7 @@ npm run check
 npm run check:legacy
 ```
 
-`npm run check`는 TypeScript 타입 검사, 계산 코어 테스트, 정적 빌드와 페이지 검증을 실행합니다. `npm run check:legacy`는 원래 모의신청과 PC 제한 동작을 별도로 검증합니다. 빌드 산출물은 `dist/`에 생성됩니다. 브라우저에서 확인할 때는 로컬 HTTP 서버로 `dist/`를 제공하세요.
+`npm run check`는 JavaScript 구문·한국어 주석·UI 동결 검사, 학업 계산 코어 테스트, 정적 빌드와 페이지 검증을 실행합니다. `npm run check:legacy`는 원래 모의신청과 PC 제한 동작을 별도로 검증합니다. 빌드 산출물은 `dist/`에 생성됩니다. 브라우저에서 확인할 때는 로컬 HTTP 서버로 `dist/`를 제공하세요.
 
 <details>
 <summary><strong>디렉터리와 개발 단계 보기</strong></summary>
@@ -141,13 +141,13 @@ npm run check:legacy
 | 경로 | 역할 |
 | :--- | :--- |
 | `html/` · `css/` | 학생용 정적 화면과 한모 디자인 |
-| `js/academic/` | TypeScript 학업 계산 코어 및 계약 |
+| `js/academic/` | JavaScript/JSDoc 학업 계산 코어·계약·테스트 |
 | `js/` | 기존 모의신청 JavaScript와 화면 로직 |
 | `data/` | 공개 자료 연결 설정 · 기본 비활성, 테스트 학사자료 없음 |
 | `tests/` · `scripts/` | 회귀 테스트, 빌드 및 검증 도구 |
 | `docs/architecture.md` | **현행 제품·기술 설계의 기준 문서** |
 
-**개발 4단계:** ① TypeScript + 정적 HTML/CSS 학업 플랫폼 → ② 원개발자 협의 후 기존 JS 모의신청 시나리오 확장 → ③ 승인 책임자가 운영하는 Supabase 실연동·검증 → ④ 동등성 검증 후 JavaScript/JSDoc으로 점진적 통일. 단계와 승인 조건은 [아키텍처](docs/architecture.md)에서 관리합니다.
+**개발 4단계:** ① JavaScript/JSDoc + 정적 HTML/CSS 학업 플랫폼 → ② 원개발자 협의 후 기존 JS 모의신청 시나리오 확장 → ③ 승인 책임자가 운영하는 Supabase 실연동·검증 → ④ JavaScript 전환 동등성·보안·전체 PC 브라우저 검증과 최종 인수. 단계와 승인 조건은 [아키텍처](docs/architecture.md)에서 관리합니다.
 
 </details>
 
