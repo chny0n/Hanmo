@@ -4,7 +4,7 @@
 
 ## Supabase Free 실제 연결 전제
 
-운영자 임창용 님이 별도로 프로젝트를 생성하고 학교 자료 이용권, 원문/판본 독립 검수, 승인 출처 관리와 RLS 실제 조회 테스트를 거쳐야 합니다. PR #93의 SQL 파일은 별도 검토·적용 단계이며 현재 프로젝트가 연결되었다는 의미가 아닙니다.
+운영자 임창용 님이 별도로 프로젝트를 생성하고 학교 자료 이용권, 원문/판본 독립 검수, 승인 출처 관리와 RLS 실제 조회 테스트를 거쳐야 합니다. [Draft PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 권리 확인일 무효화 시 공개판본 철회 및 `anon`·`authenticated`·`service_role` 권한 검증을 강화했고 정적 CI를 통과했지만, **실제 Supabase 설치/REST·RLS 인수는 미실행**입니다. DB를 연결하거나 운영 공개한 것이 아닙니다.
 
 공개 연결 설정을 활성화할 때 필요한 필드는 schemaVersion=1, mode=supabase, projectUrl=https://실제-프로젝트.supabase.co, publishableKey=sb_publishable_공개키 입니다. URL과 공개용 키만 저장할 수 있으며 secret/service_role/DB 암호·학생 성적·개인 계획은 저장소/브라우저에 넣거나 전송하지 않습니다.
 
