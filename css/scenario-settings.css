@@ -1,4 +1,4 @@
-/* Settings extension only. No rules affect practice.html or selectZone.html. */
+/* 모드 메뉴의 설정과 돌발상황 대화상자에 적용한다. */
 .settingSection{position:fixed!important;inset:0;height:100dvh!important;overflow-y:auto;z-index:90;
   background:rgba(0,10,18,.87)!important;padding:20px}
 .settingPanel{box-sizing:border-box;width:min(720px,100%)!important;height:auto!important;
@@ -8,10 +8,14 @@
 .settingPanel>ul li{margin-bottom:12px}
 .settingPanel .textbox{height:37px;color:#f2f5f8;background:#0f2535;border:1px solid #66849c;border-radius:7px;padding:5px 10px}
 .settingPanel .settingButton{align-self:flex-end;margin-top:20px;min-height:44px;border:0;flex:none}
-/* Reuse the simple native yes/no radio presentation of the legacy waiting-time setting. */
-.hanmo-incident-options{border:0;padding:0;margin:6px 0 0;min-width:0}
-.hanmo-incident-options>legend{font-size:15px;font-weight:700;color:#fff;padding:0;margin-bottom:7px}
-.hanmo-incident-options>p{margin:0 0 12px;color:#c6d6e0;font-size:12px;line-height:1.6}
+#scenario-settings{box-sizing:border-box;width:min(480px,calc(100% - 32px));max-height:calc(100dvh - 32px);
+  padding:22px 26px;border:1px solid #567084;background:#071b29;color:#f5f8fa;font:15px/1.6 "Noto Sans KR",system-ui,sans-serif}
+#scenario-settings::backdrop{background:#000a12d9}
+#scenario-settings h2{margin:0 0 14px;font-size:20px}
+.incident-option-actions{display:flex;justify-content:flex-end;gap:8px}
+.incident-option-actions button{padding:8px 16px;min-height:40px;border:1px solid #6a8699;background:#132c3e;color:#f5f8fa;font:inherit;cursor:pointer}
+.incident-option-actions button[value="save"]{background:#f4c76c;border-color:#f4c76c;color:#08131b;font-weight:700}
+.incident-option-actions button:focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
 .hanmo-incident-choice{min-width:0;border:1px solid #506b7b;padding:9px 12px 8px;margin:0 0 11px}
 .hanmo-incident-choice legend{font-size:14px;font-weight:600;color:#fff;padding:0 5px}
 .hanmo-incident-choice label{display:inline-flex;align-items:center;gap:7px;margin-right:22px;min-height:32px;
@@ -20,7 +24,7 @@
 .hanmo-incident-choice input:focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
 .hanmo-incident-choice small{display:block;margin:5px 0 0;color:#bacad5;font-size:11px;line-height:1.6}
 
-/* Synthetic drill stays inside vsugang.html and never affects practice/selectZone. */
+/* 가상 돌발상황 연습 화면을 구성한다. */
 #incident-practice[hidden],#incident-practice [hidden]{display:none!important}
 #incident-practice{box-sizing:border-box;width:min(1050px,calc(100% - 36px));margin:32px auto 65px;
  background:#071b29;border:1px solid #496c83;border-radius:16px;padding:25px 30px;color:#f5f8fa;
@@ -33,7 +37,6 @@
 .hanmo-incident-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;
  border-bottom:1px solid #43667c;padding-bottom:15px;margin-bottom:16px;flex-wrap:wrap}
 .hanmo-incident-heading h2{font-size:27px;font-weight:750;margin:0}
-.hanmo-incident-kicker{font-size:12px;color:#b6d4e6;margin:0 0 5px}
 .hanmo-incident-warning{padding:12px 16px;border-left:4px solid #f4c76c;
  background:#2a2417;color:#ffdea6;font-size:13px;margin:15px 0 24px}
 .hanmo-incident-feedback{font-size:14px;padding:14px 18px;background:#143249;border-radius:9px;

@@ -57,7 +57,7 @@
     },
     {
       "path": "css/scenario-settings.css",
-      "sha": "bb4e0a5cdd5b3c3beaf4b7c34a9843c231d824b1"
+      "sha": "0b9c9e344406a313bc7657238b00bb394147a22b"
     },
     {
       "path": "css/student-ui.css",
@@ -65,7 +65,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "648f1d5e13c0cc080e6904b18ff96a4a3d2d1c16"
+      "sha": "afe686698398498b12bcbfc23798662f6fcfdc67"
     },
     {
       "path": "css/vsugang.css",
@@ -113,7 +113,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "b8ffc4f0e814cd59b2e53f86ec8061ac2cc835d6"
+      "sha": "57dfcf60023ea2e889024534a31b13ac88863bbd"
     },
     {
       "path": "img/background.svg",
@@ -201,7 +201,7 @@
     },
     {
       "path": "js/scenario-settings.js",
-      "sha": "3e1be655c3aacd1d6ecf0ec589e76334cf9a7d95"
+      "sha": "ae8103dd57ca591a74d1dacfea0a87a263a524c0"
     },
     {
       "path": "js/selectZone.js",

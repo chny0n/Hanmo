@@ -134,7 +134,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | **공통 상단 바** | 왼쪽 **한모 브랜드 클릭→홈**; 독립된 '홈'·'기존/기본 모의수강신청' 링크 없음. 학사 공지→강의 전망→강의 검색→학점 정리→자체 입력 프로필 요약→**내정보(가장 오른쪽)** 순서 | `css/hanmo-components.css`, `js/student-profile-bar.js` |
 | **내정보** | 기존 '학업 플래너'를 `내정보`로 표시. 캠퍼스/주전공/이중전공 **또는** 부전공/입학년도 저장·삭제. 선택하지 않은 부전공·이중전공은 상단에서 숨김. `YYYY학번`은 입력한 입학년도일 뿐 실제 학번/로그인 상태가 아님 | `html/planner.html`, `js/student-preferences.js` |
 | **학업 페이지** | 학사 공지·강의 전망·강의 검색·학점 정리·내정보는 **원본 한모의 남색 계열**, **사이드바 금지**, 대형 둥근 카드/외곽 테두리 및 페이지 소개·중복 메뉴 카드 없음. 표·폼과 의미 있는 내용은 유지 | `html/academic-timeline.html`, `html/forecast.html`, `html/catalog.html`, `html/academic-progress.html`, `css/hanmo-flat.css` |
-| **모의신청 모드** | `html/vsugang.html` PC 화면·SETTING·BASIC/TIME/SELECT 유지. 합성 상황은 **`LAST_VALID` / `RECONNECT` 두 개의 예/아니오**, 기본 OFF. 이전의 `LAST_CONFLICT`와 대체과목 후보 검색·신청 UI 및 조합/워크숍 실험 코드는 제거. 기존 모드의 정상 이동과 개인 학사자료 비연동을 보존 | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang-fit.js`, `js/incident-options.js`, `js/scenario-settings.js`, `css/scenario-settings.css` |
+| **모의신청 모드** | `html/vsugang.html` PC 메뉴의 BASIC 블록 오른쪽 아래에 SETTING과 같은 크기의 **돌발상황** 블록을 둡니다. `LAST_VALID`와 `RECONNECT`는 기본 OFF이며 BASIC에만 적용합니다. TIME/SELECT는 기존 경로를 사용합니다. | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang-fit.js`, `js/incident-options.js`, `js/scenario-settings.js`, `css/scenario-settings.css` |
 | **합성 연습** | 메뉴에서 선택 시 가상 신청 실패 안내 또는 가상 404·새로고침/뒤로 복귀. 실제 수강신청/강좌 검색/충돌 판정과 비연동, OFF는 기존 실습 진입 | `js/incident-options.js`, `js/scenario-settings.js` |
 | **원본·접근 제한** | `practice.html`, `selectZone.html` 및 해당 기존 JS/CSS와 결과/대기열의 핵심 동작 변경 금지. **PC 전용 정책(`js/pc-only.js`)** 유지. 원본 운영 도메인/CNAME은 포크 QA와 별개 | `html/practice.html`, `html/selectZone.html`, `js/pc-only.js` |
 
@@ -261,11 +261,11 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 **현재 화면과 채택 범위:** `html/vsugang.html`의 BASIC/TIME/SELECT 메뉴 안에는 **가상 마지막 과목 실패(`LAST_VALID`)와 가상 404·복귀(`RECONNECT`) 두 개의 기본 OFF 설정**만 남깁니다. 기존의 합성 대체과목 번호 검색/신청, `LAST_CONFLICT` 충돌 판정 및 사용되지 않는 시나리오 워크숍·엔진 모듈은 제거합니다. 학생에게 실제 시간표·대체 가능성·수강신청 결과를 판단하는 것처럼 표현하지 않으며, 별도 승인 전 재개하지 않습니다.
 
-**원본 모의신청과 분리:** 현재 모든 설정이 OFF이면 `goPractice`로 원래 `practice.html`에 들어가고, 선택 시 `vsugang.html` 내부에서만 합성 시나리오가 실행됩니다. 원본 화면에서 실제 시간 충돌/404가 발생한다고 표현하지 않습니다. 원개발자는 기존 SELECT 동작을 확인하면서 필요한 개발을 허용했다고 사용자에게 답변했습니다. 실제 `selectZone` 수정 시 별도 PR·회귀 확인을 전제로 하며 학교 서버 접속/자동 신청/학교 인증을 재현·조작하지 않습니다. 운영 배포는 §6.1을 따릅니다.
+**원본 모의신청과 분리:** 돌발상황을 선택하고 BASIC을 시작하면 `vsugang.html` 내부에서 합성 시나리오가 실행됩니다. BASIC에서 모두 OFF인 경우와 TIME/SELECT는 기존 `goPractice`를 통해 `practice.html`로 이동합니다. 원본 화면에서 실제 시간 충돌/404가 발생한다고 표현하지 않습니다. 원개발자는 기존 SELECT 동작을 확인하면서 필요한 개발을 허용했다고 사용자에게 답변했습니다. 실제 `selectZone` 수정 시 별도 PR·회귀 확인을 전제로 하며 학교 서버 접속/자동 신청/학교 인증을 재현·조작하지 않습니다. 운영 배포는 §6.1을 따릅니다.
 
 | 위치 | 현재 연결과 유지보수 경계 |
 |---|---|
-| `html/vsugang.html`, `js/vsugang.js` | 기존 모드 선택·SETTING. 별도 `js/scenario-settings.js`, `js/incident-courses.js`, `css/scenario-settings.css`가 ON일 때 메뉴 내 합성 연습 담당 |
+| `html/vsugang.html`, `js/vsugang.js` | 모드 선택과 일반 SETTING. BASIC의 별도 돌발상황 대화상자와 합성 연습은 `js/scenario-settings.js`, `js/incident-options.js`, `css/scenario-settings.css`에서 처리합니다. |
 | `html/practice.html`, `js/practice.js` | OFF에서 시작하는 **원본 실습 화면 보호**. 합성 상태 훅·재디자인 금지 |
 | `html/selectZone.html`, `js/selectZone.js` | 기존 검색·신청·취소·키보드·대기열 계약 보호 |
 | `html/result.html`, `js/result.js` | 기존 시간/결과 경로 보존. 합성 연습 성공을 실제 결과나 학점으로 저장하지 않음 |
@@ -299,7 +299,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 |---|---|---|
 | `LAST_COURSE_FAIL` | **현행 범위:** `READY → LAST_REJECTED → VERIFY_STATUS / UNRESOLVED`의 합성 실패·확인 동작을 우선 검증. **이전 설계의 `SEARCH_ALTERNATIVE → REPLACED / NO_VALID_ALTERNATIVE` 흐름은 후속 보류** | 실제 대체분반 검색·시간/학점/선수 제약 자동 판정을 2차 완료 조건으로 삼지 않음; 미확인 결과의 자동 성공/재신청 금지 |
 | `RECONNECT_RECOVERY` | `ACTIVE → REQUEST_SENT → VIRTUAL_DROP → RECONNECT_QUEUE → RECONCILE → CONFIRMED / NOT_APPLIED / UNKNOWN` | 첫 버전 단절점은 **모의 신청 직후**. `UNKNOWN`은 수강 성공도 실패도 아니며 중복 재신청·자동 성공 금지. 합성 재입장·대기열만 사용하고 실제 네트워크·학교 인증·SSO를 조작하지 않음 |
-| **조합 설정(현행)** | `LAST_VALID`·`RECONNECT` 둘을 각각 또는 동시에 선택할 수 있습니다. 대체과목 검색·시간 충돌 관련 설정/버튼/상태는 없음 | 기본 OFF이면 원래 `practice.html` 경로, ON이면 메뉴 안의 합성 훈련. 실강좌·실제 학교 네트워크와 연결하지 않음 |
+| **조합 설정(현행)** | BASIC의 돌발상황 블록에서 `LAST_VALID`와 `RECONNECT`를 각각 또는 동시에 선택합니다. | BASIC에서 ON이면 메뉴 안에서 가상 연습을 실행합니다. BASIC에서 OFF인 경우와 TIME/SELECT는 `practice.html` 경로를 사용합니다. |
 
 **미래 확장용 고정 시나리오 입력 DTO(설계 전용, 현행 SETTING 사용자 입력 아님):** `{schemaVersion:1,scenarioId,scenarioSeed,mode,syntheticCourseIds,virtualClockStart,scenarioEnabled}`. 결과는 `{scenarioId,scenarioSeed,terminalState,actions,errors,elapsedVirtualMs,duplicateAttempts,source:'SYNTHETIC'}`이며 학업 원장 API/학교 네트워크로 전달하지 않습니다. 고정 시드와 입력은 **동일한 사건·상태 전이·결과**를 생성해야 합니다. 기존 대기열의 `Math.random()` 표현 및 실제 벽시계 UI를 그대로 통제했다고 가정하지 말고, 신규 시나리오의 의사난수·가상 시간만 분리해 주입합니다. 테스트에서는 랜덤 애니메이션 프레임을 비교하지 않고 정규화한 이벤트·저장 키·결과 상태를 비교합니다.
 

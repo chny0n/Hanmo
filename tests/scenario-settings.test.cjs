@@ -11,15 +11,17 @@ function node(attrs={}){
  return {checked:false,hidden:false,disabled:false,value:'',textContent:'',dataset:{},style:{},attrs,
   setAttribute(k,v){this.attrs[k]=v;},removeAttribute(k){delete this.attrs[k];},
   getAttribute(k){return this.attrs[k];},addEventListener(type,fn){events[type]=fn;},
-  fire(type){assert.ok(events[type],type);events[type]({preventDefault(){}});},
+  fire(type,event={}){assert.ok(events[type],type);events[type](event);},
   focus(){this.focused=true;},scrollIntoView(){},};
 }
 function harness(resume=null,navType='navigate',now=100000000){
  const store=new Map([['psubjectValue','3'],['subjectValue','2'],['waitingValue','no']]);
  const cache=new Map(resume||[]),timers=[],listeners={};
  const ids={};
- for(const id of ['scenario-settings','incident-practice','incident-feedback','incident-mode',
+ for(const id of ['incident-options','scenario-settings','incident-practice','incident-feedback','incident-mode',
   'incident-404','incident-exit','incident-404-refresh','incident-404-back'])ids[id]=node();
+ const dialog=ids['scenario-settings'];
+ dialog.showModal=()=>{dialog.open=true;};
  ids['incident-practice'].hidden=true;ids['incident-404'].hidden=true;
  const toggles=logic.OPTIONS.map(id=>node({'data-scenario-toggle':id}));
  const negatives=logic.OPTIONS.map(id=>{const n=node({'data-scenario-off':id});n.checked=true;return n});
@@ -42,7 +44,7 @@ function harness(resume=null,navType='navigate',now=100000000){
   addEventListener:(type,fn)=>{listeners[type]=fn},
   validSetting:(p,r,w)=>Number.isInteger(p)&&p>=1&&p<=15&&Number.isInteger(r)
     &&r>=1&&r<=p&&(w==='no'||w==='yes'),
-  goPractice(mode){host.lastOriginal=mode;host.location.href='practice.html';},
+  goPractice(mode){host.lastOriginal=mode;store.set('practiceSetter',String(mode));host.location.href='practice.html';},
   getSettingValue(){host.saves=(host.saves||0)+1;store.set('psubjectValue',form['.psugangVal'].value);
    store.set('subjectValue',form['.vsugangVal'].value);
    store.set('waitingValue',form['input[name="waitingYN"]:checked'].value);},
@@ -52,8 +54,14 @@ function harness(resume=null,navType='navigate',now=100000000){
  return {app,host,ids,toggles,negatives,store,cache,timers,listeners,form};
 }
 function select(h,...ids){
+ h.ids['incident-options'].fire('click');
  for(const toggle of h.toggles)toggle.checked=ids.includes(toggle.getAttribute('data-scenario-toggle'));
- h.host.getSettingValue();
+ submit(h,'save');
+}
+function submit(h,value){
+ const dialog=h.ids['scenario-settings'];
+ dialog.fire('submit',{submitter:{value}});
+ dialog.open=false;
 }
 
 test('only failure and reconnect options remain, OFF by default',()=>{
@@ -69,32 +77,39 @@ test('only failure and reconnect options remain, OFF by default',()=>{
   assert.equal(h.ids['incident-practice'].hidden,true);
  }
 });
-test('two independent yes/no switches persist only when valid settings are saved',()=>{
+test('incident choices save independently of SETTING and cancel restores the saved choices',()=>{
  const h=harness();
  assert.equal(h.toggles.length,2);
+ h.ids['incident-options'].fire('click');
+ assert.equal(h.ids['scenario-settings'].open,true);
  h.toggles[0].checked=true;h.toggles[0].fire('change');
  assert.equal(h.negatives[0].checked,false);
  assert.equal(h.negatives[1].checked,true);
  h.host.getSettingValue();
+ assert.deepEqual(h.app.getEnabled(),[]);
+ submit(h,'save');
  assert.deepEqual(h.app.getEnabled(),['LAST_VALID']);
- h.host.openSettingPanel();
+ h.ids['incident-options'].fire('click');
  assert.equal(h.toggles[0].checked,true);
  h.negatives[0].checked=true;h.negatives[0].fire('change');
  assert.equal(h.toggles[0].checked,false);
- h.host.getSettingValue();
+ submit(h,'cancel');
+ h.ids['incident-options'].fire('click');
+ assert.equal(h.toggles[0].checked,true);
+ h.negatives[0].checked=true;h.negatives[0].fire('change');
+ submit(h,'save');
  assert.deepEqual(h.app.getEnabled(),[]);
  const bad=harness();
- bad.toggles[0].checked=true;bad.form['.psugangVal'].value='0';
- bad.host.getSettingValue();assert.deepEqual(bad.app.getEnabled(),[]);
+ select(bad,'LAST_VALID');bad.store.set('psubjectValue','0');
  bad.host.goPractice(1);assert.equal(bad.host.lastOriginal,1);
 });
 test('last-course failure shows a warning but never searches or selects a substitute',()=>{
  const h=harness();select(h,'LAST_VALID');
- h.host.goPractice(3);
- assert.equal(h.app.getMode(),3);
+ h.host.goPractice(1);
+ assert.equal(h.app.getMode(),1);
  assert.equal(h.ids['incident-practice'].hidden,false);
  assert.match(h.ids['incident-feedback'].textContent,/가상 정원 마감으로 실패/);
- assert.equal(h.store.get('practiceSetter'),'3');
+ assert.equal(h.store.get('practiceSetter'),'1');
  assert.equal(h.timers.length,0);
  assert.equal(h.cache.size,0);
  h.ids['incident-exit'].fire('click');
@@ -103,7 +118,7 @@ test('last-course failure shows a warning but never searches or selects a substi
 });
 test('reconnect-only and combined options show a dismissible synthetic 404',()=>{
  for(const enabled of [['RECONNECT'],['LAST_VALID','RECONNECT']]){
-  const h=harness();select(h,...enabled);h.host.goPractice(2);
+  const h=harness();select(h,...enabled);h.host.goPractice(1);
   assert.equal(h.timers.at(-1).ms,3000);
   h.timers.at(-1).fn();
   assert.equal(h.app.is404(),true);
@@ -135,6 +150,10 @@ test('404 refresh resumes only a fresh v2 reconnect session, not an old alternat
   version:2,at:100000000,mode:1,enabled:['LAST_CONFLICT','RECONNECT']})]],'reload');
  assert.deepEqual(unexpected.app.getEnabled(),[]);
  assert.equal(unexpected.cache.size,0);
+ const otherMode=harness([['hanmo.synthetic404.resume.v1',JSON.stringify({
+  version:2,at:100000000,mode:2,enabled:['RECONNECT']})]],'reload');
+ assert.equal(otherMode.ids['incident-practice'].hidden,true);
+ assert.equal(otherMode.cache.size,0);
 });
 test('removed alternative files and controls do not leak into runtime assets',()=>{
  const root=path.join(__dirname,'..');
@@ -161,6 +180,13 @@ test('all incident combinations keep real-course mapping and academic records ab
    assert.equal(h.store.get('practiceSetter'),String(mode));
    assert.deepEqual([...h.store.keys()].sort(),[...originalKeys,'practiceSetter'].sort());
    assert.doesNotMatch(JSON.stringify([...h.store]),forbidden);
+   if(mode!==1){
+    assert.equal(h.host.lastOriginal,mode);
+    assert.equal(h.ids['incident-practice'].hidden,true);
+    assert.equal(h.timers.length,0);
+    assert.equal(h.cache.size,0);
+    continue;
+   }
    assert.equal(h.ids['incident-practice'].hidden,false);
    if(options.includes('RECONNECT')){
     assert.equal(h.timers.length,1);

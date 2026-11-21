@@ -304,10 +304,9 @@ test('each actual HTML page loads classic scripts in order without global collis
     const html=fs.readFileSync(path.join(ROOT,page),'utf8');
     const scripts=[...html.matchAll(/<script\s+src=['"](?:\.\/|\.\.\/)js\/([^'"]+\.js)['"]/g)]
       .map(match=>match[1]).filter(file=>file!=='pc-only.js'&&file!=='student-profile-bar.js'&&file!=='home-fit.js'&&file!=='vsugang-fit.js');
-    // The registration menu may load isolated, opt-in synthetic controllers;
-    // the three original classic scripts and their order must remain unchanged.
+    // 별도 돌발상황 스크립트가 있어도 원본 스크립트 세 개와 실행 순서를 유지한다.
     const originalScripts=page==='html/vsugang.html'?scripts.slice(0,3):scripts;
-    // Restore the original notice/device/semester behavior alongside the shared top navigation.
+    // 공통 상단 메뉴와 함께 원본 공지·기기 확인·학기 표시를 유지한다.
     assert.equal(originalScripts.length,page==='index.html'?2:3,page+' original script count');
     if(page==='html/vsugang.html')assert.deepEqual(scripts.slice(3),[
       'incident-options.js','scenario-settings.js',
@@ -324,9 +323,8 @@ test('each actual HTML page loads classic scripts in order without global collis
 
 
 /**
- * #71: Test the CURRENT registration-menu incident overlay, not the retired
- * scenario-engine. The two options are OFF unless the student opts in.
- * This is Node VM parity only, not a physical SELECT/Enter keyboard test.
+ * #71: 모드 메뉴의 원본 경로를 비교한다. 돌발상황은 사용자가 선택하기 전까지 두 옵션 모두 꺼져 있다.
+ * 이 검사는 Node VM에서 실행하며 실제 브라우저의 SELECT 키보드 동작은 별도 확인한다.
  */
 test('current incident options OFF preserve all BASIC/TIME/SELECT menu routes and storage',()=>{
   const kinds=['LAST_VALID','RECONNECT'];
@@ -348,7 +346,7 @@ test('current incident options OFF preserve all BASIC/TIME/SELECT menu routes an
 
     if(withMenuOverlay){
       const ids=new Map();
-      for(const id of ['scenario-settings','incident-practice','incident-feedback',
+      for(const id of ['incident-options','scenario-settings','incident-practice','incident-feedback',
         'incident-mode','incident-404','incident-exit','incident-404-refresh',
         'incident-404-back'])ids.set(id,element());
       ids.get('incident-practice').hidden=true;

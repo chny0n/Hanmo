@@ -75,7 +75,10 @@ test('new views preserve original Hanmo palette, watermark and shared layers',()
 
 test('in-page incident workflow keeps default OFF and original practice contracts',()=>{
   const source=fs.readFileSync(path.join(ROOT,'js/scenario-settings.js'),'utf8');
-  assert.ok(source.includes('OFF: the untouched legacy route.'));
+  const menu=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+  assert.match(menu,/<button id="incident-options"[^>]*aria-controls="scenario-settings"/);
+  assert.match(menu,/<dialog id="scenario-settings"[^>]*>[\s\S]*data-scenario-toggle=/);
+  assert.doesNotMatch(menu.match(/class='settingSection'[\s\S]*?<\/section>/)?.[0]??'',/data-scenario-toggle/);
   assert.ok(source.includes('sessionStorage'),'reload recovery must have short-lived scoped state');
   assert.ok(!source.includes('fetch(')&&!source.includes('XMLHttpRequest('));
 });

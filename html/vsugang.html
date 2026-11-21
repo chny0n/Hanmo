@@ -85,20 +85,6 @@
 							</fieldset>
 						</li>
 					</ul>
-<fieldset id="scenario-settings" class="hanmo-incident-options">
-  <legend>돌발상황 연습</legend>
-  <fieldset class="hanmo-incident-choice">
-    <legend>마지막 과목 신청 실패</legend>
-    <label><input type="radio" name="incident-LAST_VALID" value="yes" data-scenario-toggle="LAST_VALID"><span>예</span></label>
-    <label><input type="radio" name="incident-LAST_VALID" value="no" data-scenario-off="LAST_VALID" checked><span>아니오</span></label>
-  </fieldset>
-  <fieldset class="hanmo-incident-choice">
-    <legend>가상 404·접속 끊김</legend>
-    <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
-    <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
-    <small>시작 후 0~6초 사이 404 예시 화면 표시</small>
-  </fieldset>
-</fieldset>
 					<button type='button' class='settingButton' onclick='getSettingValue()'>
 						확인
 					</button>
@@ -123,6 +109,7 @@
 								수강신청의 전 과정을 연습할 수 있어요.
 							</p>
 						</div>
+						<button id="incident-options" type="button" aria-haspopup="dialog" aria-controls="scenario-settings">돌발상황</button>
 						<div style='grid-area: t' onclick='goPractice(2)'>
 							<h2>
 								TIME MODE
@@ -148,9 +135,29 @@
 					</div>
 				</section>
 			</section>
+<dialog id="scenario-settings" aria-labelledby="scenario-settings-title">
+  <form method="dialog">
+    <h2 id="scenario-settings-title">BASIC 모드 돌발상황</h2>
+    <fieldset class="hanmo-incident-choice">
+      <legend>마지막 과목 신청 실패</legend>
+      <label><input type="radio" name="incident-LAST_VALID" value="yes" data-scenario-toggle="LAST_VALID"><span>예</span></label>
+      <label><input type="radio" name="incident-LAST_VALID" value="no" data-scenario-off="LAST_VALID" checked><span>아니오</span></label>
+    </fieldset>
+    <fieldset class="hanmo-incident-choice">
+      <legend>가상 404·접속 끊김</legend>
+      <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
+      <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
+      <small>시작 후 0~6초 사이 404 예시 화면 표시</small>
+    </fieldset>
+    <div class="incident-option-actions">
+      <button type="submit" value="cancel">취소</button>
+      <button type="submit" value="save">확인</button>
+    </div>
+  </form>
+</dialog>
 <section id="incident-practice" class="hanmo-incident-practice" aria-label="가상 돌발상황 모의수강신청" tabindex="-1" hidden>
   <div class="hanmo-incident-heading">
-    <h2 id="incident-mode">SELECT MODE · 가상 돌발상황</h2>
+    <h2 id="incident-mode">BASIC MODE · 가상 돌발상황</h2>
     <button id="incident-exit" type="button">모드 선택으로 돌아가기</button>
   </div>
   <p class="hanmo-incident-warning">모의 연습 · 실제 수강신청과 무관</p>
