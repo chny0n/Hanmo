@@ -1,14 +1,21 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
-import {buildAcademicLedger,type LedgerAttempt,type LedgerRequirement} from './ledger.js';
+import {buildAcademicLedger} from './ledger.js';
 import {buildDoubleMajorAudit} from './double-major.js';
+/** @typedef {import('./ledger.js').LedgerAttempt} LedgerAttempt */
+/** @typedef {import('./ledger.js').LedgerRequirement} LedgerRequirement */
 const asOf='2026-11-05T00:00:00.000Z';
-const attempt=(id:string,areas:string[],ledger:LedgerAttempt['ledger']='EARNED',creditUnits=6):LedgerAttempt=>({
+/** @param {string} id @param {string[]} areas @param {LedgerAttempt['ledger']} [ledger] @param {number} [creditUnits] @returns {LedgerAttempt} 검증용 이수 기록 */
+const attempt=(id,areas,ledger='EARNED',creditUnits=6)=>({
   attemptToken:id,canonicalCourseId:id,creditUnits,ledger,areaIds:areas,recognition:'RECOGNIZED',term:'2025-2',
 });
+/** @type {LedgerRequirement} */
 const area={id:'SYN-AREA-SPREAD',kind:'AREA_SPREAD',areaIds:['A','B','C'],minAreas:2,
-  requiredCreditUnits:12,evidenceRefs:['SYN-REF']} as LedgerRequirement;
-const group={id:'SYN-GROUP',kind:'GROUP_CHOICE',groups:[['G1','G2'],['H1','H2']],k:1,evidenceRefs:['SYN-REF']} as LedgerRequirement;
-const run=(r:LedgerRequirement,attempts:LedgerAttempt[])=>buildAcademicLedger({asOf,rulePackVersion:'SYN-PACK',
+  requiredCreditUnits:12,evidenceRefs:['SYN-REF']};
+/** @type {LedgerRequirement} */
+const group={id:'SYN-GROUP',kind:'GROUP_CHOICE',groups:[['G1','G2'],['H1','H2']],k:1,evidenceRefs:['SYN-REF']};
+/** @param {LedgerRequirement} r @param {LedgerAttempt[]} attempts @returns {ReturnType<typeof buildAcademicLedger>} 합성 학사 원장 */
+const run=(r,attempts)=>buildAcademicLedger({asOf,rulePackVersion:'SYN-PACK',
   rulePackState:'APPROVED',requirements:[r],attempts});
 
 describe('#133 composite requirements consume the unique earned ledger',()=>{
@@ -26,7 +33,7 @@ describe('#133 composite requirements consume the unique earned ledger',()=>{
       state:'UNSATISFIED',earnedCreditUnits:12,matchedAreasCount:0});
   });
   it('does not let ambiguous uncompleted courses invalidate an earned spread',()=>{
-    for(const slot of ['PLANNED','IN_PROGRESS'] as const){
+    for(const slot of /** @type {const} */ (['PLANNED','IN_PROGRESS'])){
       expect(run(area,[attempt('A1',['A']),attempt('B1',['B']),attempt('AB',['A','B'],slot)])
         .requirements[0]).toMatchObject({state:'SATISFIED',earnedCreditUnits:12,
           matchedAreasCount:2,projectedCreditUnits:18});
@@ -47,7 +54,7 @@ describe('#133 composite requirements consume the unique earned ledger',()=>{
   });
   it('does not count planned, in-progress, pending or zero-credit area membership as earned',()=>{
     for(const candidate of [attempt('B1',['B'],'IN_PROGRESS'),attempt('B1',['B'],'PLANNED'),
-      {...attempt('B1',['B']),recognition:'PENDING' as const},attempt('B1',['B'],'EARNED',0)]){
+      {...attempt('B1',['B']),recognition:/** @type {const} */ ('PENDING')},attempt('B1',['B'],'EARNED',0)]){
       expect(run(area,[attempt('A1',['A'],'EARNED',12),candidate]).requirements[0]).toMatchObject({
         state:'UNSATISFIED',matchedAreasCount:1});
     }
@@ -59,15 +66,16 @@ describe('#133 composite requirements consume the unique earned ledger',()=>{
   it('counts only fully earned groups, including an approved single-course alternative',()=>{
     expect(run(group,[attempt('G1',[]),attempt('G2',[])]).requirements[0]).toMatchObject({
       state:'SATISFIED',matchedGroupsCount:1,requiredGroupsCount:1});
-    const alternative={...group,groups:[['G1','G2'],['NEW1']]} as LedgerRequirement;
+    const alternative=/** @type {LedgerRequirement} */ ({...group,groups:[['G1','G2'],['NEW1']]});
     expect(run(alternative,[attempt('NEW1',[])]).requirements[0]?.state).toBe('SATISFIED');
     expect(run(group,[attempt('G1',[]),attempt('G2',[],'PLANNED')]).requirements[0]?.state).toBe('UNSATISFIED');
   });
   it('rejects cross-group duplicate courses rather than counting the same credit twice',()=>{
-    expect(()=>run({...group,groups:[['G1'],['G1']]} as LedgerRequirement,[attempt('G1',[])])).toThrow();
+    expect(()=>run(/** @type {LedgerRequirement} */ ({...group,groups:[['G1'],['G1']]}),[attempt('G1',[])])).toThrow();
   });
   it('keeps manual language conditions unresolved despite matching course names or units',()=>{
-    const manual:LedgerRequirement={id:'SYN-LANGUAGE',kind:'NON_CREDIT',criterionId:'LANGUAGE_FAMILY',
+    /** @type {LedgerRequirement} */
+    const manual={id:'SYN-LANGUAGE',kind:'NON_CREDIT',criterionId:'LANGUAGE_FAMILY',
       verificationMode:'MANUAL',evidenceRefs:['SYN-REF']};
     expect(run(manual,[attempt('ENGLISH-NAMED-COURSE',[],'EARNED',24)]).requirements[0]?.state).toBe('NEEDS_REVIEW');
   });
