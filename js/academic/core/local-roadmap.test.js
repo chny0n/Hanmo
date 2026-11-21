@@ -1,20 +1,25 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {ROADMAP_KEY,ROADMAP_MAX_BYTES,readRoadmap,saveRoadmap,exportRoadmap,
-  parseRoadmapBackup,clearRoadmap,type RoadmapStorage} from './local-roadmap.js';
+  parseRoadmapBackup,clearRoadmap} from './local-roadmap.js';
 
-const parseProfile=(x:unknown):{major:string}=>{
-  if(!x||typeof x!=='object'||typeof (x as {major?:unknown}).major!=='string')throw new Error('bad profile');
-  return x as {major:string};
+/** @typedef {import('./local-roadmap.js').RoadmapStorage} RoadmapStorage */
+/** @param {unknown} x @returns {{major:string}} 사용자 제공 프로필 */
+const parseProfile=(x)=>{
+  if(!x||typeof x!=='object'||typeof (/** @type {{major?:unknown}} */ (x)).major!=='string')throw new Error('bad profile');
+  return /** @type {{major:string}} */ (x);
 };
 const steps=new Set(['STEP1','STEP2']);
-const payload={profile:{major:'경제학부'},progress:{STEP1:'DONE' as const}};
+const payload=/** @type {const} */ ({profile:{major:'경제학부'},progress:{STEP1:'DONE'}});
 const time='2026-11-19T09:00:00+09:00';
 function memory(){
-  const values=new Map<string,string>();
-  const storage:RoadmapStorage={
-    getItem:(k:string)=>values.get(k)??null,
-    setItem:(k:string,v:string)=>{values.set(k,v);},
-    removeItem:(k:string)=>{values.delete(k);},
+  /** @type {Map<string,string>} */
+  const values=new Map();
+  /** @type {RoadmapStorage} */
+  const storage={
+    getItem:(k)=>values.get(k)??null,
+    setItem:(k,v)=>{values.set(k,v);},
+    removeItem:(k)=>{values.delete(k);},
   };
   return {storage,values};
 }
@@ -59,7 +64,7 @@ describe('explicit local academic profile backup',()=>{
   it('refuses an ordinary storage snapshot as an export file',()=>{
     const {storage}=memory();
     saveRoadmap(storage,payload,parseProfile,steps,time);
-    expect(()=>parseRoadmapBackup(storage.getItem(ROADMAP_KEY)!,parseProfile,steps)).toThrow();
+    expect(()=>parseRoadmapBackup(storage.getItem(ROADMAP_KEY),parseProfile,steps)).toThrow();
   });
   it('rejects invalid progress and corrupt JSON',()=>{
     const backup=exportRoadmap(payload,parseProfile,steps,time);
