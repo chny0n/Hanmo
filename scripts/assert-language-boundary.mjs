@@ -24,10 +24,13 @@ function list(dir,prefix=''){
     if(entry.isDirectory()&&ignored.has(entry.name))return [];
     const path=prefix?prefix+'/'+entry.name:entry.name;
     if(entry.isDirectory())return list(join(dir,entry.name),path);
-    return entry.isFile()&&/\.(?:ts|tsx|mts|cts)$/.test(entry.name)?[path]:[];
+    return entry.isFile()?[path]:[];
   });
 }
-const all=list(root),permitted=new Map(baseline.files.map(x=>[x.path,x.sha]));
+const files=list(root);
+const all=files.filter(path=>/\.(?:ts|tsx|mts|cts)$/.test(path));
+const academicJs=files.filter(path=>/^js\/academic\/.+\.js$/.test(path));
+const permitted=new Map(baseline.files.map(x=>[x.path,x.sha]));
 if(permitted.size!==baseline.files.length)throw Error('Duplicate TypeScript inventory entries');
 for(const path of all){
   const original=permitted.get(path);
@@ -37,5 +40,12 @@ for(const path of all){
   if(hash!==original)throw new Error('Existing TypeScript was edited: '+path+
     '. Convert its source and tests to JavaScript in a scoped PR.');
 }
+for(const path of academicJs){
+  const source=readFileSync(resolve(root,path),'utf8');
+  if(!/^\uFEFF?\/\/ @ts-check\b/.test(source)){
+    throw new Error('Academic JavaScript must opt into JSDoc checking: '+path);
+  }
+}
+console.log('JSDoc-checked academic JS: '+academicJs.length+' files');
 console.log('Existing TypeScript left to migrate: '+all.length+
   '/'+baseline.files.length+' (no new/edited TS)');

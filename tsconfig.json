@@ -19,9 +19,6 @@
   },
   "include": [
     "js/academic/**/*.ts",
-    "js/academic/core/academic-display.js",
-    "js/academic/core/academic-display.test.js",
-    "js/academic/core/academics/faculty-search.js",
-    "js/academic/core/academics/faculty-search.test.js"
+    "js/academic/**/*.js"
   ]
 }
