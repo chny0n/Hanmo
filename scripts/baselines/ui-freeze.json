@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "css/academic-progress.css",
-      "sha": "3052b4455743f7b4a5eee4856e654107b662e71f"
+      "sha": "8a68eb1de7009fa62a64f015a6891aea22115897"
     },
     {
       "path": "css/developer.css",
@@ -17,7 +17,7 @@
     },
     {
       "path": "css/hanmo-components.css",
-      "sha": "663c3243df0136c27edd7367a2b9f51a84fa0c4c"
+      "sha": "717a86eea5693c1e6a09b5676cda92e12257ba86"
     },
     {
       "path": "css/hanmo-flat.css",
@@ -73,15 +73,15 @@
     },
     {
       "path": "html/academic-progress.html",
-      "sha": "22c2927a65c850f68b3c0b7dec025565c06a10e0"
+      "sha": "73cc906843b7ad8fe50e75401ff726eaf5466fc1"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "32dce600c9a374f70a2c248e95ced526c537babd"
+      "sha": "72a20cb75b93d618a91624668b3bc072daac88bf"
     },
     {
       "path": "html/catalog.html",
-      "sha": "0844b2ea6bad01c0366464064eee213136268901"
+      "sha": "cd36d7aee9a7bec995b574725b450f795a9447f9"
     },
     {
       "path": "html/developer.html",
@@ -89,7 +89,7 @@
     },
     {
       "path": "html/forecast.html",
-      "sha": "4065d26f96bd65332d75715ca16bf8f0ce873b2e"
+      "sha": "e4eaf6d57881bd25d9eb2303947f6073fd25a7cd"
     },
     {
       "path": "html/pc-only.html",
@@ -97,7 +97,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "64ea3f1fe8db982219b92c10c6189af2069f7f36"
+      "sha": "27eff06d28866aeb74d5e087a06d409c2f540690"
     },
     {
       "path": "html/practice.html",

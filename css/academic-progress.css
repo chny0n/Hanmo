@@ -17,7 +17,6 @@
 .progress-page-heading p{grid-column:1;grid-row:1;margin:0}
 .progress-page-heading a{justify-self:end}
 .progress-page-heading a,.exclusion-details summary{color:#f4d28c}
-.progress-main + .hanmo-footer{padding:7px 24px}
 .progress-panel{min-width:0;border-top:1px solid #385367;padding-top:7px}
 .progress-panel h2{margin:0 0 5px;color:#f5f7fa;font-size:20px;line-height:1.25}
 .progress-calculator{display:grid;grid-template-columns:minmax(0,2fr) minmax(200px,1fr);gap:6px 18px;align-items:start}
@@ -99,7 +98,6 @@ body.hanmo-ui .progress-main .plan-row{display:flex;justify-content:space-betwee
   .progress-panel-heading h2,.progress-calculator h2{margin-bottom:0}
   .progress-table-scroll,.plan-rows{min-height:min(84px,var(--progress-list-height))}
   .exclusion-details summary{inset-block-start:15px}
-  .progress-main + .hanmo-footer{padding-block:13px}
 }
 
 @media(max-width:1050px){
