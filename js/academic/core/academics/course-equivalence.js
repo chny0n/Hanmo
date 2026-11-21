@@ -89,7 +89,7 @@ export function applySameCourseRules(attempts,rules) {
   /** @type {HeldSameCourse[]} */
   const held = [];
   const out = attempts.map(attempt => {
-    /** @type {LedgerAttempt} */
+    /** @type {SameCourseLedgerAttempt} */
     const copy = {...attempt, areaIds:[...attempt.areaIds]};
     const named = byFrom.get(attempt.canonicalCourseId);
     if (!named) return copy;
