@@ -24,7 +24,7 @@ function list(dir,prefix=''){
     if(entry.isDirectory()&&ignored.has(entry.name))return [];
     const path=prefix?prefix+'/'+entry.name:entry.name;
     if(entry.isDirectory())return list(join(dir,entry.name),path);
-    return entry.isFile()&&/\.tsx?$/.test(entry.name)?[path]:[];
+    return entry.isFile()&&/\.(?:ts|tsx|mts|cts)$/.test(entry.name)?[path]:[];
   });
 }
 const all=list(root),permitted=new Map(baseline.files.map(x=>[x.path,x.sha]));

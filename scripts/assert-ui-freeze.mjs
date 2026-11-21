@@ -29,9 +29,9 @@ function list(dir,prefix=''){
   });
 }
 function isUI(p){
-  return p==='index.html'||/^html\/[^/]+\.html$/.test(p)||
-    /^css\/[^/]+\.css$/.test(p)||/^js\/[^/]+\.js$/.test(p)||
-    /^img\/[^/]+$/.test(p);
+  return p==='index.html'||/^html\/.+\.html$/.test(p)||
+    /^css\/.+\.css$/.test(p)||/^js\/[^/]+\.js$/.test(p)||
+    /^img\/.+$/.test(p);
 }
 const actual=[...list(root)].filter(isUI).sort();
 const expected=baseline.files.map(x=>x.path).sort();
