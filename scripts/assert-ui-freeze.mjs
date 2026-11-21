@@ -1,23 +1,10 @@
 // 화면 파일별 Git blob 해시를 검증한다. 브라우저 실기기 QA 완료를 의미하지 않는다.
-import {createHash} from 'node:crypto';
-import {execFileSync} from 'node:child_process';
 import {readFileSync,readdirSync} from 'node:fs';
-import {resolve,relative,dirname,join} from 'node:path';
+import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {gitBlobHashes} from './git-blob-hashes.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const baseline=JSON.parse(readFileSync(resolve(root,'scripts/baselines/ui-freeze.json'),'utf8'));
-// Windows 체크아웃의 줄바꿈이 달라도 Git 저장소의 원본 blob 해시를 사용한다.
-// Git 실행이 불가능한 정적 아카이브에서는 파일 내용으로 계산한다.
-function blobSha(path){
-  try{
-    return execFileSync('git',['hash-object','--path='+path,path],
-      {cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
-  }catch{
-    const contents=readFileSync(resolve(root,path));
-    return createHash('sha1').update('blob '+contents.length+'\0').update(contents).digest('hex');
-  }
-}
-
 function list(dir,prefix=''){
   return readdirSync(dir,{withFileTypes:true}).flatMap(x=>{
     const path=prefix?prefix+'/'+x.name:x.name;
@@ -41,9 +28,9 @@ if(JSON.stringify(actual)!==JSON.stringify(expected)){
     '; missing: '+expected.filter(x=>!found.has(x))+
     '. Exception requires explicit UI approval, visual review and manifest revision.');
 }
+const hashes=gitBlobHashes(root,expected);
 for(const {path,sha} of baseline.files){
-  const blob=blobSha(path);
-  if(blob!==sha)throw new Error('Frozen UI content changed: '+path+
+  if(hashes.get(path)!==sha)throw new Error('Frozen UI content changed: '+path+
     '. Use a separately approved UI exception with PC/legacy QA.');
 }
 console.log('UI freeze verified: '+expected.length+' files, baseline '+baseline.baselineCommit.slice(0,12));

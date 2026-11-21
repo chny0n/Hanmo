@@ -3,24 +3,22 @@ import {resolve,join} from 'node:path';
 
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
-const compiled=join(root,'.build','student-forecast.js');
-const compiledEntry=join(root,'.build','student-entry.js');
-const compiledProgress=join(root,'.build','academic-progress.js');
+const build=join(root,'.build');
+const bundles=['student-forecast.js','student-entry.js','academic-progress.js'];
 const exists=async p=>{try{return(await stat(p)).isFile()}catch{return false}};
-for(const filename of [compiled,compiledEntry,compiledProgress])
-  if(!await exists(filename))throw Error('Missing generated academic JS bundle: '+filename);
+for(const bundle of bundles)
+  if(!await exists(join(build,bundle)))throw Error('Missing generated academic JS bundle: '+bundle);
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 await copyFile(join(root,'index.html'),join(dist,'index.html'));
+const academicSource=join(root,'js','academic');
 for(const directory of ['css','js','html','img'])
-  await cp(join(root,directory),join(dist,directory),{recursive:true});
-await rm(join(dist,'js','academic'),{recursive:true,force:true});
+  await cp(join(root,directory),join(dist,directory),{recursive:true,filter:source=>source!==academicSource});
 await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(root,'data','academic-source-config.json'),
   join(dist,'data','academic-source-config.json'));
-await copyFile(compiled,join(dist,'js','student-forecast.js'));
-await copyFile(compiledEntry,join(dist,'js','student-entry.js'));
-await copyFile(compiledProgress,join(dist,'js','academic-progress.js'));
+for(const bundle of bundles)
+  await copyFile(join(build,bundle),join(dist,'js',bundle));
 for(const name of [
  'index.html','html/planner.html','html/forecast.html','html/catalog.html',
  'html/academic-timeline.html','html/academic-progress.html',

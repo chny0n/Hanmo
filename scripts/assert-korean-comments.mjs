@@ -1,10 +1,9 @@
 // @ts-check
-import {createHash} from 'node:crypto';
-import {execFileSync} from 'node:child_process';
 import {readFileSync,readdirSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {findEnglishOnlyComments} from './korean-comment-policy.mjs';
+import {gitBlobHashes} from './git-blob-hashes.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const approved=JSON.parse(readFileSync(resolve(root,'scripts/baselines/legacy-js-comments.json'),'utf8'));
@@ -18,21 +17,13 @@ function list(dir,prefix=''){
     return item.isFile()&&/\.(?:js|mjs|cjs)$/.test(path)?[path]:[];
   });
 }
-/** @param {string} path @returns {string} */
-function gitBlob(path){
-  try{
-    return execFileSync('git',['hash-object','--path='+path,path],
-      {cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
-  }catch{
-    const data=readFileSync(resolve(root,path));
-    return createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex');
-  }
-}
+const paths=list(root);
+const hashes=gitBlobHashes(root,paths.filter(path=>legacy.has(path)));
 let checked=0,exempt=0;
 /** @type {string[]} */
 const findings=[];
-for(const path of list(root)){
-  if(legacy.has(path)&&legacy.get(path)===gitBlob(path)){exempt++;continue;}
+for(const path of paths){
+  if(hashes.has(path)&&legacy.get(path)===hashes.get(path)){exempt++;continue;}
   checked++;
   const source=readFileSync(resolve(root,path),'utf8');
   let hits;
