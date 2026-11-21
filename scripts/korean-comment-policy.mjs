@@ -17,7 +17,7 @@ export function findEnglishOnlyComments(source){
     onComment:(_block,text,_start,_end,startLocation)=>comments.push({line:startLocation.line,text})});
   for(let token=lex.getToken();token.type.label!=='eof';token=lex.getToken()){}
   for(const token of comments){
-    const lines=token.text.split(/\\r?\\n/);
+    const lines=token.text.split(/\r?\n/);
     const initialLine=token.line;
     let typeDeclaration=false;
     for(let i=0;i<lines.length;i++){
