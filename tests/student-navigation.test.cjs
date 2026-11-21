@@ -51,7 +51,7 @@ test('academic public assets are still under html; engine remains independently 
 test('academic package is flat: no nested source package remains',()=>{
  const root=path.join(ROOT,'degree-rescue');
  assert.equal(fs.existsSync(root),false);
- assert.ok(fs.existsSync(path.join(ROOT,'js','academic','core','forecast','offering.ts')));
+ assert.ok(fs.existsSync(path.join(ROOT,'js','academic','core','forecast','offering.js')));
  assert.ok(fs.existsSync(path.join(ROOT,'package.json')));
 });
 
@@ -215,7 +215,7 @@ test('academic pages have no repeated marketing introduction or rounded section 
  assert.doesNotMatch(profile,/CAMPUS LIFE|ACADEMIC PLANNER|내 전공 공지를 찾고/);
  const blocker=fs.readFileSync(path.join(ROOT,'html/pc-only.html'),'utf8');
  assert.doesNotMatch(blocker,/border-radius:20px/);
- // Protected registration imitation files remain unchanged by this UI-only test.
+ // 학생 UI 검사 과정에서도 원본 모의수강신청 파일을 변경하지 않는다.
  for(const name of ['practice.html','selectZone.html'])
   assert.ok(fs.existsSync(path.join(ROOT,'html',name)));
 });

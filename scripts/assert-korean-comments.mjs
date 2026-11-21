@@ -35,7 +35,9 @@ for(const path of list(root)){
   if(legacy.get(path)===gitBlob(path)){exempt++;continue;}
   checked++;
   const source=readFileSync(resolve(root,path),'utf8');
-  for(const hit of findEnglishOnlyComments(source)){
+  let hits;
+  try{hits=findEnglishOnlyComments(source);}catch(error){throw new Error('주석 구문 검사 실패: '+path,{cause:error});}
+  for(const hit of hits){
     findings.push(path+':'+hit.line+': 영어 설명 주석 금지: '+hit.comment);
   }
 }

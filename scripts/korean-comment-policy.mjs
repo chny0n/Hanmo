@@ -1,5 +1,5 @@
 // @ts-check
-import ts from 'typescript';
+import {parse} from 'acorn';
 
 /**
  * JavaScript의 주석 토큰을 분리해 문자열·URL 안의 // 문자를 주석으로 오인하지 않는다.
@@ -8,16 +8,16 @@ import ts from 'typescript';
  * @returns {{line:number,comment:string}[]} 한국어가 없는 영문 설명 목록
  */
 export function findEnglishOnlyComments(source){
-  const scanner=ts.createScanner(ts.ScriptTarget.Latest,false,ts.LanguageVariant.Standard,source);
   /** @type {{line:number,comment:string}[]} */
   const violations=[];
-  for(let kind=scanner.scan();kind!==ts.SyntaxKind.EndOfFileToken;kind=scanner.scan()){
-    if(kind!==ts.SyntaxKind.SingleLineCommentTrivia&&kind!==ts.SyntaxKind.MultiLineCommentTrivia)continue;
-    const token=scanner.getTokenText();
-    const start=scanner.getTokenPos();
-    const initialLine=source.slice(0,start).split('\n').length;
-    const body=token.replace(/^\/\/|^\/\*+|\*\/$/g,'');
-    const lines=body.split(/\r?\n/);
+  /** @type {{line:number,text:string}[]} */
+  const comments=[];
+  // 문자열·정규식 안의 슬래시를 제외하기 위해 ECMAScript 토크나이저를 사용한다.
+  parse(source,{ecmaVersion:'latest',sourceType:'module',locations:true,allowHashBang:true,
+    onComment:(_block,text,_start,_end,startLocation)=>comments.push({line:startLocation.line,text})});
+  for(const token of comments){
+    const lines=token.text.split(/\r?\n/);
+    const initialLine=token.line;
     let typeDeclaration=false;
     for(let i=0;i<lines.length;i++){
       let line=lines[i].trim().replace(/^\*\s?/,'').trim();
