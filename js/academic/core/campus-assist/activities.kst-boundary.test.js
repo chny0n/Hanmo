@@ -1,9 +1,11 @@
+// @ts-check
 import {describe,expect,it} from 'vitest';
-import type {ActivityRecord} from '../../contracts/campus-assist/index.js';
+/** @typedef {import('../../contracts/campus-assist/index.js').ActivityRecord} ActivityRecord */
 import {archiveActivities,currentActivityRecords,forecastActivity} from './activities.js';
 
 const AS_OF='2027-01-02T00:00:00Z';
-function record(id:string,publishedAt:string,extra:Partial<ActivityRecord>={}):ActivityRecord{
+/** @param {string} id @param {string} publishedAt @param {Partial<ActivityRecord>} [extra] @returns {ActivityRecord} 합성 검증용 게시 기록 */
+function record(id,publishedAt,extra={}){
   return {
     entryId:id,sourceId:'SYN-SOURCE-'+id,revisionId:'SYN-REV-'+id,
     organizationId:'SYN-DEPT',seriesId:'SYN-ANNUAL',
