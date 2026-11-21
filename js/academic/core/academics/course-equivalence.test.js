@@ -1,18 +1,27 @@
+// @ts-check
 import {describe, expect, it} from 'vitest';
-import {applySameCourseRules, type SameCourseRule} from './course-equivalence.js';
-import {buildAcademicLedger, type LedgerAttempt, type LedgerRequirement} from './ledger.js';
+import {applySameCourseRules} from './course-equivalence.js';
+import {buildAcademicLedger} from './ledger.js';
 
+/** @typedef {import('./course-equivalence.js').SameCourseRule} SameCourseRule */
+/** @typedef {import('./ledger.js').LedgerAttempt} LedgerAttempt */
+/** @typedef {import('./ledger.js').LedgerRequirement} LedgerRequirement */
 const AS_OF = '2026-12-20T12:00:00+09:00';
-const attempt = (token:string, course:string, term = '2024-1', extra:Partial<LedgerAttempt> = {}):LedgerAttempt =>
+/** @param {string} token @param {string} course @param {string} [term] @param {Partial<LedgerAttempt>} [extra] @returns {LedgerAttempt} 검증용 이수 기록 */
+const attempt = (token,course,term='2024-1',extra={}) =>
   ({attemptToken:token, canonicalCourseId:course, creditUnits:6, ledger:'EARNED', areaIds:['SYN-MAJOR'], recognition:'RECOGNIZED', term, ...extra});
-const rule = (id:string, from:string[], to:string, state:SameCourseRule['state'] = 'APPROVED'):SameCourseRule =>
+/** @param {string} id @param {string[]} from @param {string} to @param {SameCourseRule['state']} [state] @returns {SameCourseRule} 검증용 동일 교과목 규칙 */
+const rule = (id,from,to,state='APPROVED') =>
   ({id, fromCourseIds:from, toCourseId:to, state, evidenceRefs:state === 'APPROVED' ? ['SYN-EV-SAME-TABLE'] : []});
-const requirements:LedgerRequirement[] = [
+/** @type {LedgerRequirement[]} */
+const requirements = [
   {id:'SYN-REQ-NEW', kind:'REQUIRED_COURSE', canonicalCourseId:'SYN-NEW', evidenceRefs:['SYN-EV-REQ']},
   {id:'SYN-REQ-TOTAL', kind:'CREDIT_TOTAL', requiredCreditUnits:6, evidenceRefs:['SYN-EV-TOTAL']},
 ];
-const ledger = (attempts:LedgerAttempt[]) => buildAcademicLedger({asOf:AS_OF, rulePackVersion:'SYN-PACK-1', rulePackState:'APPROVED', attempts, requirements});
-const row = (result:ReturnType<typeof ledger>, id:string) => result.requirements.find(r => r.requirementId === id)!;
+/** @param {LedgerAttempt[]} attempts @returns {ReturnType<typeof buildAcademicLedger>} 규칙집에 따른 검증용 원장 */
+const ledger = (attempts) => buildAcademicLedger({asOf:AS_OF, rulePackVersion:'SYN-PACK-1', rulePackState:'APPROVED', attempts, requirements});
+/** @param {ReturnType<typeof ledger>} result @param {string} id @returns {ReturnType<typeof ledger>['requirements'][number]} 검증용 요건 행 */
+const row = (result,id) => /** @type {ReturnType<typeof ledger>['requirements'][number]} */ (result.requirements.find(r => r.requirementId === id));
 
 describe('applySameCourseRules', () => {
   it('lets an approved rule meet a requirement on the current course with the old one', () => {
@@ -34,7 +43,8 @@ describe('applySameCourseRules', () => {
     expect(after.excludedAttempts).toEqual([{attemptToken:'SYN-A1', reason:'NEEDS_REVIEW'}, {attemptToken:'SYN-A2', reason:'NEEDS_REVIEW'}]);
     // 이전 과목은 취득했고 새 과목은 진행 중인 경우 두 번째 기록을 중복으로 본다.
     const {term:_term, ...current} = attempt('SYN-A2', 'SYN-NEW');
-    const planned:LedgerAttempt[] = [attempt('SYN-A1', 'SYN-OLD', '2023-1'), {...current, ledger:'IN_PROGRESS'}];
+    /** @type {LedgerAttempt[]} */
+    const planned = [attempt('SYN-A1', 'SYN-OLD', '2023-1'), {...current, ledger:'IN_PROGRESS'}];
     const after2 = ledger(applySameCourseRules(planned, [rule('SYN-R1', ['SYN-OLD'], 'SYN-NEW')]).attempts);
     expect(after2.earnedCreditUnits).toBe(6);
     expect(after2.excludedAttempts).toEqual([{attemptToken:'SYN-A2', reason:'DUPLICATE'}]);
@@ -51,10 +61,10 @@ describe('applySameCourseRules', () => {
   });
 
   it('does not apply an unapproved rule and lists the attempt as held', () => {
-    for (const state of ['DRAFT', 'NEEDS_REVIEW'] as const) {
+    for (const state of /** @type {const} */ (['DRAFT','NEEDS_REVIEW'])) {
       const out = applySameCourseRules([attempt('SYN-A1', 'SYN-OLD')], [rule('SYN-R1', ['SYN-OLD'], 'SYN-NEW', state)]);
       expect(out).toMatchObject({state:'NEEDS_REVIEW', applied:[], held:[{attemptToken:'SYN-A1', courseId:'SYN-OLD', ruleIds:['SYN-R1'], reason:'RULE_NOT_APPROVED'}]});
-      expect(out.attempts[0]!.canonicalCourseId).toBe('SYN-OLD');
+      expect(out.attempts[0].canonicalCourseId).toBe('SYN-OLD');
       expect(row(ledger(out.attempts), 'SYN-REQ-NEW').state).toBe('UNSATISFIED');
     }
   });
@@ -71,7 +81,7 @@ describe('applySameCourseRules', () => {
     const rules = [rule('SYN-R1', ['SYN-OLD'], 'SYN-NEW'), rule('SYN-R2', ['SYN-OLD'], 'SYN-NEWER', 'DRAFT')];
     const out = applySameCourseRules([attempt('SYN-A1', 'SYN-OLD')], rules);
     expect(out).toMatchObject({state:'NEEDS_REVIEW', applied:[], held:[{courseId:'SYN-OLD', ruleIds:['SYN-R1', 'SYN-R2'], reason:'AMBIGUOUS'}]});
-    expect(out.attempts[0]!.canonicalCourseId).toBe('SYN-OLD');
+    expect(out.attempts[0].canonicalCourseId).toBe('SYN-OLD');
     expect(applySameCourseRules([attempt('SYN-A1', 'SYN-OLD')], [...rules].reverse()).held[0]!.ruleIds).toEqual(['SYN-R1', 'SYN-R2']);
   });
 
@@ -92,7 +102,7 @@ describe('applySameCourseRules', () => {
     expect(() => applySameCourseRules(a, [rule('SYN-R1', [], 'SYN-B')])).toThrow(/fromCourseIds/);
     expect(() => applySameCourseRules(a, [rule('SYN-R1', ['SYN-A', 'SYN-A'], 'SYN-B')])).toThrow(/repeats/);
     expect(() => applySameCourseRules(a, [rule('bad id', ['SYN-A'], 'SYN-B')])).toThrow();
-    expect(() => applySameCourseRules(a, [{...rule('SYN-R1', ['SYN-A'], 'SYN-B'), state:'OK' as never}])).toThrow(/unknown state/);
+    expect(() => applySameCourseRules(a, [{...rule('SYN-R1', ['SYN-A'], 'SYN-B'), state:/** @type {never} */ ('OK')}])).toThrow(/unknown state/);
     expect(() => applySameCourseRules([attempt('SYN-A1', 'SYN-X'), attempt('SYN-A1', 'SYN-Y')], [])).toThrow(/duplicate attemptToken/);
     expect(() => applySameCourseRules([attempt('SYN-A1', 'SYN-X', '2024-3')], [])).toThrow(/term/);
   });
@@ -103,11 +113,11 @@ describe('applySameCourseRules', () => {
     const one = applySameCourseRules(attempts, rules);
     const two = applySameCourseRules(attempts, [...rules].reverse());
     expect(one).toEqual(two);
-    expect(attempts[0]!.canonicalCourseId).toBe('SYN-OLD');
+    expect(attempts[0].canonicalCourseId).toBe('SYN-OLD');
     expect(one.attempts[0]).not.toBe(attempts[0]);
     // 어떤 규칙도 참조하지 않은 수강 시도도 새 복사본으로 반환해 호출자가 원본을 변경하지 못하게 한다.
     const untouched = Object.freeze(attempt('SYN-A3', 'SYN-KEEP'));
-    const kept = applySameCourseRules([untouched], rules).attempts[0]!;
+    const kept = applySameCourseRules([untouched], rules).attempts[0];
     expect(kept).toEqual(untouched);
     expect(kept).not.toBe(untouched);
     expect(kept.areaIds).not.toBe(untouched.areaIds);

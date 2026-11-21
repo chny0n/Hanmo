@@ -1,4 +1,5 @@
-import {assertId, termKey, type LedgerAttempt} from './ledger.js';
+// @ts-check
+import {assertId, termKey} from './ledger.js';
 
 /**
  * 동일 교과목 규칙(#133 F②)을 원장 계산 전에 적용한다.
@@ -8,43 +9,35 @@ import {assertId, termKey, type LedgerAttempt} from './ledger.js';
  * 입력은 수정하지 않으며 시계·네트워크·저장소에 의존하지 않는다.
  */
 
-export interface SameCourseRule {
-  id:string;
-  /** 이전 학수번호 목록. 각 값은 toCourseId와 달라야 한다. */
-  fromCourseIds:readonly string[];
-  /** 이전 학수번호의 수강 기록을 귀속시킬 현재 학수번호. */
-  toCourseId:string;
-  state:'APPROVED'|'DRAFT'|'NEEDS_REVIEW';
-  /** 승인 규칙에는 동일 교과목 공식 목록 등 근거 자료가 필요하다. */
-  evidenceRefs:readonly string[];
-}
+/** @typedef {import('./ledger.js').LedgerAttempt} LedgerAttempt */
+/**
+ * @typedef {{
+ *   id:string,fromCourseIds:readonly string[],toCourseId:string,
+ *   state:'APPROVED'|'DRAFT'|'NEEDS_REVIEW',evidenceRefs:readonly string[]
+ * }} SameCourseRule
+ * 과거 학수번호의 공식 동일 과목 연결 근거를 요구한다.
+ */
+/** @typedef {{attemptToken:string,fromCourseId:string,toCourseId:string,ruleId:string}} AppliedSameCourse */
+/**
+ * @typedef {{
+ *   attemptToken:string,courseId:string,ruleIds:string[],
+ *   reason:'RULE_NOT_APPROVED'|'AMBIGUOUS'
+ * }} HeldSameCourse
+ * 규칙이 미승인됐거나 서로 충돌해 동일 과목을 확정할 수 없는 기록이다.
+ */
+/**
+ * @typedef {{
+ *   state:'APPLIED'|'NEEDS_REVIEW',attempts:LedgerAttempt[],
+ *   applied:AppliedSameCourse[],held:HeldSameCourse[]
+ * }} SameCourseResult
+ * 보류 대상의 학수번호는 원본 상태로 남겨 둔다.
+ */
 
-export interface AppliedSameCourse {
-  attemptToken:string;
-  fromCourseId:string;
-  toCourseId:string;
-  ruleId:string;
-}
-
-export interface HeldSameCourse {
-  attemptToken:string;
-  courseId:string;
-  ruleIds:string[];
-  /** RULE_NOT_APPROVED는 미승인 규칙만 있는 상태, AMBIGUOUS는 서로 다른 목표 과목을 가리키는 충돌 상태다. */
-  reason:'RULE_NOT_APPROVED'|'AMBIGUOUS';
-}
-
-export interface SameCourseResult {
-  /** 보류 항목이 없으면 APPLIED, 하나라도 있으면 NEEDS_REVIEW다. 보류된 기록의 학수번호는 유지한다. */
-  state:'APPLIED'|'NEEDS_REVIEW';
-  attempts:LedgerAttempt[];
-  applied:AppliedSameCourse[];
-  held:HeldSameCourse[];
-}
-
-function validate(rules:readonly SameCourseRule[]):void {
+/** @param {readonly SameCourseRule[]} rules @returns {void} 동일 과목 규칙의 형식·승인 관계 검증 */
+function validate(rules) {
   if (!Array.isArray(rules)) throw new TypeError('rules must be an array');
-  const ids = new Set<string>();
+  /** @type {Set<string>} */
+  const ids = new Set();
   for (const rule of rules) {
     assertId(rule.id, 'same-course rule id');
     if (ids.has(rule.id)) throw new TypeError(`duplicate same-course rule ${rule.id}`);
@@ -70,10 +63,12 @@ function validate(rules:readonly SameCourseRule[]):void {
   }
 }
 
-export function applySameCourseRules(attempts:readonly LedgerAttempt[], rules:readonly SameCourseRule[]):SameCourseResult {
+/** @param {readonly LedgerAttempt[]} attempts @param {readonly SameCourseRule[]} rules @returns {SameCourseResult} 승인된 동일 과목 규칙의 적용 결과 */
+export function applySameCourseRules(attempts,rules) {
   if (!Array.isArray(attempts)) throw new TypeError('attempts must be an array');
   validate(rules);
-  const tokens = new Set<string>();
+  /** @type {Set<string>} */
+  const tokens = new Set();
   for (const attempt of attempts) {
     assertId(attempt.attemptToken, 'attemptToken');
     assertId(attempt.canonicalCourseId, `${attempt.attemptToken} canonicalCourseId`);
@@ -83,15 +78,19 @@ export function applySameCourseRules(attempts:readonly LedgerAttempt[], rules:re
   }
 
   // 학수번호별로 이를 이전 과목으로 참조하는 규칙을 수집한다.
-  const byFrom = new Map<string, SameCourseRule[]>();
+  /** @type {Map<string,SameCourseRule[]>} */
+  const byFrom = new Map();
   for (const rule of rules) {
     for (const from of rule.fromCourseIds) byFrom.set(from, [...(byFrom.get(from) ?? []), rule]);
   }
 
-  const applied:AppliedSameCourse[] = [];
-  const held:HeldSameCourse[] = [];
+  /** @type {AppliedSameCourse[]} */
+  const applied = [];
+  /** @type {HeldSameCourse[]} */
+  const held = [];
   const out = attempts.map(attempt => {
-    const copy:LedgerAttempt = {...attempt, areaIds:[...attempt.areaIds]};
+    /** @type {LedgerAttempt} */
+    const copy = {...attempt, areaIds:[...attempt.areaIds]};
     const named = byFrom.get(attempt.canonicalCourseId);
     if (!named) return copy;
     const approved = named.filter(r => r.state === 'APPROVED');
@@ -106,7 +105,7 @@ export function applySameCourseRules(attempts:readonly LedgerAttempt[], rules:re
       held.push({attemptToken:attempt.attemptToken, courseId:attempt.canonicalCourseId, ruleIds, reason:'RULE_NOT_APPROVED'});
       return copy;
     }
-    const rule = [...approved].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0]!;
+    const rule = [...approved].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
     applied.push({attemptToken:attempt.attemptToken, fromCourseId:attempt.canonicalCourseId, toCourseId:rule.toCourseId, ruleId:rule.id});
     return {...copy, canonicalCourseId:rule.toCourseId};
   });
