@@ -1,4 +1,7 @@
-import type {TimetableAttribute, TimetableImport, TimetableRow} from './wis-timetable.js';
+// @ts-check
+/** @typedef {import('./wis-timetable.js').TimetableAttribute} TimetableAttribute */
+/** @typedef {import('./wis-timetable.js').TimetableImport} TimetableImport */
+/** @typedef {import('./wis-timetable.js').TimetableRow} TimetableRow */
 
 /**
  * 사용자가 저장한 학교 시간표를 운영자가 가져올 수 있는 8열 CSV로 변환한다(#133).
@@ -10,38 +13,39 @@ import type {TimetableAttribute, TimetableImport, TimetableRow} from './wis-time
 export const WIS_TIMETABLE_CONVERTER_VERSION = 'hufs-wis-timetable-3';
 
 /** apps/api의 permitted-curriculum courseCsvHeaders와 일치해야 하며 테스트로 동기화한다. */
-export const SAVED_CURRICULUM_CSV_HEADERS = ['courseCode', 'courseName', 'credits', 'category', 'major', 'semester', 'campus', 'cohort'] as const;
+export const SAVED_CURRICULUM_CSV_HEADERS = /** @type {const} */ (['courseCode', 'courseName', 'credits', 'category', 'major', 'semester', 'campus', 'cohort']);
 
-export type WithheldReason = 'NEEDS_REVIEW'|'TERM_FROM_PAGE'|'NOT_A_REGULAR_TERM'|'CELL_NOT_ACCEPTED';
-
-/** CSV 행에 담을 수 없는 추가 정보를 같은 학수번호와 연결해 보존한다. */
-export interface SavedCurriculumDetail {
-  rawCode:string;
-  /** 페이지의 이수구분을 그대로 옮기고 REQUIRED 표기가 있을 때에만 전필로 판단한다. */
-  completion:'REQUIRED'|'NOT_STATED';
-  attributes:TimetableAttribute[];
-  instructionLanguage:string|null;
-  /** 비고 원문을 보존하되 선수과목·입학년도·동일과목 텍스트를 자동 규칙으로 해석하지 않는다. */
-  note:string;
-  noteHints:TimetableRow['noteHints'];
-}
-
-export interface SavedCurriculumCsv {
-  csv:string;
-  rows:number;
-  campus:string;
-  details:SavedCurriculumDetail[];
-  withheld:{no:number; rawCode:string; reason:WithheldReason}[];
-}
+/** @typedef {'NEEDS_REVIEW'|'TERM_FROM_PAGE'|'NOT_A_REGULAR_TERM'|'CELL_NOT_ACCEPTED'} WithheldReason */
+/**
+ * @typedef {{
+ *   rawCode:string,
+ *   completion:'REQUIRED'|'NOT_STATED',
+ *   attributes:TimetableAttribute[],
+ *   instructionLanguage:string|null,
+ *   note:string,
+ *   noteHints:TimetableRow['noteHints']
+ * }} SavedCurriculumDetail
+ * 페이지에 표시된 이수구분과 비고를 자동 공식 판정 없이 보존한다.
+ */
+/**
+ * @typedef {{
+ *   csv:string,rows:number,campus:string,details:SavedCurriculumDetail[],
+ *   withheld:{no:number,rawCode:string,reason:WithheldReason}[]
+ * }} SavedCurriculumCsv
+ * 승인할 수 없는 행은 자동 보정하지 않고 보류한다.
+ */
 
 /** 빈 셀, 200자 초과 셀 또는 =·+·@로 시작하는 셀이 있으면 CSV 전체 가져오기를 거부한다. */
-const acceptable = (cell:string) => cell.trim() !== '' && cell.trim().length <= 200 && !/^[=+@]/.test(cell.trim());
+/** @param {string} cell @returns {boolean} 안전한 CSV 셀인지 확인 */
+const acceptable = (cell) => cell.trim() !== '' && cell.trim().length <= 200 && !/^[=+@]/.test(cell.trim());
 
-function quote(cell:string):string {
+/** @param {string} cell @returns {string} CSV 인용 규칙에 따른 셀 */
+function quote(cell) {
   return /[",\r\n]/.test(cell) ? `"${cell.replaceAll('"', '""')}"` : cell;
 }
 
-export function toSavedCurriculumCsv(page:TimetableImport, options:{campus?:string} = {}):SavedCurriculumCsv {
+/** @param {TimetableImport} page @param {{campus?:string}} [options] @returns {SavedCurriculumCsv} 검증된 시간표의 CSV 변환 결과 */
+export function toSavedCurriculumCsv(page,options={}) {
   // 캠퍼스는 페이지의 값을 확인할 때만 사용하며 UNKNOWN을 임의 값으로 변경하지 않는다.
   if (options.campus !== undefined && options.campus !== page.campus) {
     throw new TypeError(`campus ${options.campus} does not match the page, which shows ${page.campus}`);
@@ -49,10 +53,13 @@ export function toSavedCurriculumCsv(page:TimetableImport, options:{campus?:stri
   const campus = page.campus;
   if (!acceptable(page.departmentLabel)) throw new TypeError('department label is not accepted by the import');
   const lines = [SAVED_CURRICULUM_CSV_HEADERS.join(',')];
-  const details:SavedCurriculumDetail[] = [];
-  const withheld:SavedCurriculumCsv['withheld'] = [];
+  /** @type {SavedCurriculumDetail[]} */
+  const details = [];
+  /** @type {SavedCurriculumCsv['withheld']} */
+  const withheld = [];
   for (const row of page.rows) {
-    const hold = (reason:WithheldReason) => withheld.push({no:row.no, rawCode:row.rawCode, reason});
+    /** @param {WithheldReason} reason */
+    const hold = (reason) => withheld.push({no:row.no, rawCode:row.rawCode, reason});
     if (!page.term.academicTerm) { hold('NOT_A_REGULAR_TERM'); continue; }
     if (row.termEvidence === 'PAGE_ONLY') { hold('TERM_FROM_PAGE'); continue; }
     if (row.needsReview || row.creditUnits === null) { hold('NEEDS_REVIEW'); continue; }

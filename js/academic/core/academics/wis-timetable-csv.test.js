@@ -1,15 +1,19 @@
+// @ts-check
 import {describe, expect, it} from 'vitest';
-import type {TimetableImport, TimetableRow} from './wis-timetable.js';
+/** @typedef {import('./wis-timetable.js').TimetableImport} TimetableImport */
+/** @typedef {import('./wis-timetable.js').TimetableRow} TimetableRow */
 import {SAVED_CURRICULUM_CSV_HEADERS, toSavedCurriculumCsv} from './wis-timetable-csv.js';
 
 /** 가상의 학수번호·강좌명·학과 표시를 사용한 합성 자료다. */
-const row = (no:number, over:Partial<TimetableRow> = {}):TimetableRow => ({
+/** @param {number} no @param {Partial<TimetableRow>} [over] @returns {TimetableRow} 검증용 가상 강의 행 */
+const row = (no,over={}) => ({
   no, area:'MAJOR', areaLabel:'전공', gradeYear:2, rawCode:`SYN0${no}0101`, code:{status:'NEEDS_REVIEW'}, title:`가상 과목 ${no}`,
   attributes:[], instructionLanguage:null, otherAttributes:[], creditUnits:6, hours:3,
   meetings:[{day:'MON', periods:[1, 2], room:'0101'}], note:'',
   noteHints:{prerequisite:false, cohort:false, restriction:false, equivalent:false}, termEvidence:'ROW_LINK', needsReview:false, ...over,
 });
-const page = (rows:TimetableRow[], over:Partial<TimetableImport> = {}):TimetableImport => ({
+/** @param {TimetableRow[]} rows @param {Partial<TimetableImport>} [over] @returns {TimetableImport} 저장된 강의표 가상 페이지 */
+const page = (rows,over={}) => ({
   source:{system:'HUFS_WIS_LECTURE_TIMETABLE', savedFromUrl:'https://wis.hufs.ac.kr/src08/jsp/lecture/LECTURE2020L.jsp',
     fileName:'SYNDEPT_2026-2_강의시간표.html', savedAt:'2026-11-02T09:47:00.000Z'},
   term:{year:2026, session:'2', academicTerm:'2026-2'}, departmentLabel:'SYNDEPT', campus:'UNKNOWN', coverage:'ONE_DEPARTMENT_PAGE',

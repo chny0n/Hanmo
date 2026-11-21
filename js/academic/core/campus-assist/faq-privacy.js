@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * 학생이 FAQ 질문에 입력할 수 있는 개인정보 식별자를 처리한다.
  * 공개 FAQ 답변에 필요 없으므로 향후 선택적 모델 전송 전에 마스킹해야 한다.
@@ -5,8 +6,9 @@
  */
 import {FaqPublicContactsSchema} from '../../contracts/campus-assist/index.js';
 
-export type FaqRedaction='RRN'|'PHONE'|'EMAIL'|'STUDENT_ID'|'NAME'|'LONG_NUMBER';
-const RULES:readonly [FaqRedaction,RegExp,string][]=[
+/** @typedef {'RRN'|'PHONE'|'EMAIL'|'STUDENT_ID'|'NAME'|'LONG_NUMBER'} FaqRedaction */
+/** @type {readonly [FaqRedaction,RegExp,string][]} */
+const RULES=[
   ['RRN',/\d{6}\s*-\s*[1-4]\d{6}/g,'[주민번호]'],
   ['PHONE',/(?:\+\s?82[-\s.]?0?1[016789]|01[016789])[-\s.]?\d{3,4}[-\s.]?\d{4}/g,'[전화번호]'],
   ['EMAIL',/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,'[이메일]'],
@@ -16,12 +18,15 @@ const RULES:readonly [FaqRedaction,RegExp,string][]=[
   // 하이픈으로 나뉜 학번·식별번호도 확인한다. 더 짧은 학년도·학점·점수나 ISO 날짜(2026-03-02)는 보존한다.
   ['LONG_NUMBER',/\d{7,}|\d{2,}(?:-\d{2,})+/g,'[번호]'],
 ];
-function keepNumber(m:string):boolean{
+/** @param {string} m @returns {boolean} 날짜 등 보존할 숫자 여부 */
+function keepNumber(m){
   return /^\d{4}-\d{1,2}-\d{1,2}$/.test(m)||m.replace(/-/g,'').length<7;
 }
-export function maskFaqQuestion(question:string):{text:string;redactions:FaqRedaction[]}{
+/** @param {string} question @returns {{text:string,redactions:FaqRedaction[]}} 개인정보를 가린 질문 */
+export function maskFaqQuestion(question){
   let text=question;
-  const redactions:FaqRedaction[]=[];
+  /** @type {FaqRedaction[]} */
+  const redactions=[];
   for(const [kind,pattern,label] of RULES){
     const next=kind==='LONG_NUMBER'?text.replace(pattern,m=>keepNumber(m)?m:label):text.replace(pattern,label);
     if(next!==text){redactions.push(kind);text=next;}
@@ -34,13 +39,16 @@ export function maskFaqQuestion(question:string):{text:string;redactions:FaqReda
  * 검토된 공개 연락처 예외는 신뢰 가능한 출처·판본 범위의 메타데이터에서만 제공할 수 있다.
  * 학과명·학교 도메인·질문자의 주장만으로 예외를 인정하지 않는다.
  */
-export function faqEvidenceIsModelSafe(evidence:{text:string;publicContacts?:readonly string[]}):boolean{
+/** @param {{text:string,publicContacts?:readonly string[]}} evidence @returns {boolean} 공개 근거 문단의 개인정보 안전 여부 */
+export function faqEvidenceIsModelSafe(evidence){
   const parsed=FaqPublicContactsSchema.safeParse(evidence.publicContacts??[]);
   if(!parsed.success)return false;
   // 공개 연락처는 일반 EMAIL·LONG_NUMBER 탐지의 예외가 될 수 있지만,
   // 학번·주민등록번호·이름·휴대전화는 검토된 연락처와 우연히 같아도 개인정보로 보호한다.
   if(maskFaqQuestion(evidence.text).redactions.some(kind=>kind!=='EMAIL'&&kind!=='LONG_NUMBER'))return false;
-  const allowed=new Set(parsed.data),seen=new Set<string>();
+  const allowed=new Set(parsed.data);
+  /** @type {Set<string>} */
+  const seen=new Set();
   const inspected=evidence.text.replace(
     /[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?<![\d-])(?:02|0[3-6][1-5])-\d{3,4}-\d{4}(?![\d-])/g,
     value=>{
