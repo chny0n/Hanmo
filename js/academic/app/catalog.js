@@ -1,9 +1,16 @@
-import {extractFacultyFromSavedTimetable,type FacultyTimetableImport} from '../core/academics/faculty-directory.js';
+// @ts-check
+import {extractFacultyFromSavedTimetable} from '../core/academics/faculty-directory.js';
 import {searchFacultyTimetable} from '../core/academics/faculty-search.js';
 import {toSavedCurriculumCsv} from '../core/academics/wis-timetable-csv.js';
 
-/** 필수 HTML 컨트롤을 한 번 조회하고 콜백 안에서도 구체적인 타입을 보존한다. */
-function requireControl<T extends HTMLElement>(id:string,ctor:{new():T}):T{
+/**
+ * 필수 화면 컨트롤을 조회하며 실제 DOM 요소 종류를 검사한다.
+ * @template {HTMLElement} T
+ * @param {string} id
+ * @param {new()=>T} ctor
+ * @returns {T} 검증된 입력 요소
+ */
+function requireControl(id,ctor){
   const node=document.getElementById(id);
   if(!(node instanceof ctor))throw new Error('Missing static catalog control: '+id);
   return node;
@@ -16,14 +23,17 @@ const rowsElement=requireControl('catalog-rows',HTMLTableSectionElement);
 const rowCount=requireControl('catalog-count',HTMLElement);
 const csvButton=requireControl('export-csv',HTMLButtonElement);
 const loadButton=requireControl('load-wis',HTMLButtonElement);
-let imported:FacultyTimetableImport|null=null;
+/** @type {import('../core/academics/faculty-directory.js').FacultyTimetableImport|null} */
+let imported=null;
 
-function addCell(tr:HTMLTableRowElement,value:string):void{
+/** @param {HTMLTableRowElement} tr @param {string} value @returns {void} 표에 새 셀 추가 */
+function addCell(tr,value){
   const td=document.createElement('td');
   td.textContent=value;
   tr.append(td);
 }
-function render():void{
+/** @returns {void} 검색 결과 및 상태 표시 갱신 */
+function render(){
   rowsElement.replaceChildren();
   const matches=searchFacultyTimetable(imported?.rows??[],search.value);
   rowCount.textContent=imported

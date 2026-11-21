@@ -1,6 +1,8 @@
+// @ts-check
 import {stageStudentEntry,takeStudentEntry} from '../views/student-entry.js';
 
-const get=(id:string):HTMLInputElement|HTMLSelectElement|null=>{
+/** @param {string} id @returns {HTMLInputElement|HTMLSelectElement|null} 화면 입력 요소 */
+const get=(id)=>{
  const n=document.getElementById(id);
  return n instanceof HTMLInputElement||n instanceof HTMLSelectElement?n:null;
 };
@@ -25,7 +27,7 @@ if(go instanceof HTMLButtonElement){
 const context=document.getElementById('notice-context');
 if(context){
  let entry=null;
- try{entry=takeStudentEntry(sessionStorage);}catch{/* private mode */}
+ try{entry=takeStudentEntry(sessionStorage);}catch{/* 브라우저 저장소 접근 제한 */}
  if(entry){
    const campus=entry.campus==='SEOUL'?'서울캠퍼스':'글로벌캠퍼스';
    const optional=entry.doubleMajor?' · 이중전공 '+entry.doubleMajor:

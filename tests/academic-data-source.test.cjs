@@ -96,6 +96,6 @@ test('website does not ship retired test feeds or demo controls',()=>{
  }
  const catalog=fs.readFileSync(path.join(root,'js/student-catalog.js'),'utf8');
  assert.ok(!catalog.includes('SYN-ECON')&&!catalog.includes('samples='));
- const forecast=fs.readFileSync(path.join(root,'js/academic/app/student-forecast.ts'),'utf8');
+ const forecast=fs.readFileSync(path.join(root,'js/academic/app/student-forecast.js'),'utf8');
  assert.ok(!forecast.includes('DEMO_FORECAST'));
 });
