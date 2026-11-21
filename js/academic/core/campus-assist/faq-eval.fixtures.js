@@ -1,13 +1,15 @@
-import type {FaqDocument} from '../../contracts/campus-assist/index.js';
+// @ts-check
+/** @typedef {import('../../contracts/campus-assist/index.js').FaqDocument} FaqDocument */
 
 /**
  * FAQ 검색 회귀 시험 세트(#341)다. 문서와 숫자는 모두 개발자가 작성한 가상 자료(SYNTHETIC)다.
  * 실제 학교 학칙도 독립 검토자가 만든 골드셋도 아니다.
  */
-const BASE={sourceUrl:'https://example.org/synthetic/faq-eval',publishedAt:'2026-01-01T00:00:00Z',
-  verifiedAt:'2026-01-02T00:00:00Z',effectiveFrom:'2026-01-01',rights:'APPROVED' as const,
-  provenance:'SYNTHETIC' as const,accessScope:'PUBLIC' as const};
-const docs:[string,FaqDocument['category'],string,string][]=[
+const BASE=/** @type {const} */ ({sourceUrl:'https://example.org/synthetic/faq-eval',publishedAt:'2026-01-01T00:00:00Z',
+  verifiedAt:'2026-01-02T00:00:00Z',effectiveFrom:'2026-01-01',rights:'APPROVED',
+  provenance:'SYNTHETIC',accessScope:'PUBLIC'});
+/** @type {[string,FaqDocument['category'],string,string][]} */
+const docs=[
   ['GPA','EXCHANGE','가상 교환학생 평점 기준','가상 교환학생 지원자는 총평점평균 3.0 이상이어야 합니다.'],
   ['LANG','EXCHANGE','가상 교환학생 어학 성적','가상 교환학생 어학 성적(TOEFL, IELTS)은 파견 시작일까지 유효해야 합니다.'],
   ['TERMS','EXCHANGE','가상 교환학생 파견 기간','가상 교환학생은 최대 2개 학기까지 파견할 수 있습니다.'],
@@ -30,20 +32,23 @@ const docs:[string,FaqDocument['category'],string,string][]=[
   ['DELETE','SERVICE','가상 내 기록 삭제','가상 HUFS One AI에서 내 기록 삭제는 설정의 데이터 관리에서 요청합니다.'],
   ['ALERT','SERVICE','가상 마감 알림 설정','가상 마감 알림은 알림 설정에서 켜고 끌 수 있습니다.'],
 ];
-export const FAQ_EVAL_DOCUMENTS:readonly FaqDocument[]=docs.map(([id,category,title,text])=>({...BASE,
+/** @type {readonly FaqDocument[]} */
+export const FAQ_EVAL_DOCUMENTS=docs.map(([id,category,title,text])=>({...BASE,
   documentId:'SYN-EVAL-'+id,revisionId:'SYN-EVAL-'+id+'-r1',title,category,paragraphs:[{id:'p1',text}]}));
 
-export type FaqEvalKind='PLAIN'|'COLLOQUIAL'|'TYPO'|'SYNONYM'|'MULTI'|'OFF_TOPIC'|'NEAR_MISS'|'INJECTION';
+/** @typedef {'PLAIN'|'COLLOQUIAL'|'TYPO'|'SYNONYM'|'MULTI'|'OFF_TOPIC'|'NEAR_MISS'|'INJECTION'} FaqEvalKind */
 /**
  * expect는 반드시 찾아야 할 문서 ID이고 null은 정직한 결과가 NOT_FOUND인 경우다.
  * TUNED 사례는 불용어·동의어·검증 문턱값을 조정할 때 사용했다.
  * HOLDOUT 사례는 이후 작성해 한 번만 측정했으므로 처음 보는 표현에 대한 평가에만 HOLDOUT을 사용한다.
  */
-export interface FaqEvalCase{question:string;expect:string|null;kind:FaqEvalKind;split:'TUNED'|'HOLDOUT';}
-const at=(split:FaqEvalCase['split'])=>(kind:FaqEvalKind,expect:string|null,...questions:string[]):FaqEvalCase[]=>
+/** @typedef {{question:string,expect:string|null,kind:FaqEvalKind,split:'TUNED'|'HOLDOUT'}} FaqEvalCase */
+/** @param {FaqEvalCase['split']} split @returns {(kind:FaqEvalKind,expect:string|null,...questions:string[])=>FaqEvalCase[]} 검증셋 생성기 */
+const at=(split)=>(kind,expect,...questions)=>
   questions.map(question=>({question,kind,split,expect:expect&&'SYN-EVAL-'+expect}));
 const c=at('TUNED'),h=at('HOLDOUT');
-export const FAQ_EVAL_CASES:readonly FaqEvalCase[]=[
+/** @type {readonly FaqEvalCase[]} */
+export const FAQ_EVAL_CASES=[
   ...c('PLAIN','GPA','교환학생 평점 기준','교환학생 지원 평점'),
   ...c('TYPO','GPA','교환학셍 평점 기준'),
   ...c('COLLOQUIAL','GPA','교환학생 가려면 학점 몇 점 넘어야 돼요?','교환학생은 평점이 몇이에요','교환 가려면 총평점 얼마나 필요해요'),

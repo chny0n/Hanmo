@@ -1,12 +1,10 @@
-import type {FaqCandidate} from '../../contracts/campus-assist/index.js';
+// @ts-check
+/** @typedef {import('../../contracts/campus-assist/index.js').FaqCandidate} FaqCandidate */
 import {bigramCoverage,faqNumbers,normalizeFaqText} from './faq-text.js';
 
 /** 검색된 문단 한 건에서 답변 검증기가 필요로 하는 정보다. */
-export interface FaqGuardEvidence{citationId:string;title:string;text:string;}
-export type FaqRejectReason=
-  |'DUPLICATE_CITATION'|'UNKNOWN_CITATION'|'QUOTE_TOO_SHORT'|'QUOTE_NOT_IN_SOURCE'
-  |'NUMBER_NOT_QUOTED'|'AMOUNT_NOT_QUOTED'|'RELATIVE_DATE_NOT_IN_SOURCE'|'NEGATION_NOT_IN_SOURCE'
-  |'NEGATION_DROPPED'|'UNSUPPORTED_CLAIM'|'ELIGIBILITY_VERDICT'|'URL_OR_CONTACT';
+/** @typedef {{citationId:string,title:string,text:string}} FaqGuardEvidence */
+/** @typedef {'DUPLICATE_CITATION'|'UNKNOWN_CITATION'|'QUOTE_TOO_SHORT'|'QUOTE_NOT_IN_SOURCE'|'NUMBER_NOT_QUOTED'|'AMOUNT_NOT_QUOTED'|'RELATIVE_DATE_NOT_IN_SOURCE'|'NEGATION_NOT_IN_SOURCE'|'NEGATION_DROPPED'|'UNSUPPORTED_CLAIM'|'ELIGIBILITY_VERDICT'|'URL_OR_CONTACT'} FaqRejectReason */
 /** 공백을 제외하고 이보다 짧은 인용은 대부분의 문단에서도 우연히 찾을 수 있다. */
 export const FAQ_MIN_QUOTE_CHARS=8;
 /** 답변의 문자 2그램 중 인용 문단에서 확인돼야 하는 최소 비율이다. */
@@ -25,10 +23,12 @@ const NEGATION=/아니|아닙|아님|않|없(?!이|는)|불가|못(?:\s|하|해|
  * '기간 제한 없는' 같은 부수적 수식어와 행위 가능·불가의 극성을 구별한다.
  * 문단 전체의 부정 여부 하나로 판단하지 말고 행위별 패턴을 우선한다.
  */
-function modalClaims(sentence:string):{action:string;negative:boolean}[]{
-  const matches:{action:string;negative:boolean}[]=[];
+/** @param {string} sentence @returns {{action:string,negative:boolean}[]} 문장의 가능·불가 서술 */
+function modalClaims(sentence){
+  /** @type {{action:string,negative:boolean}[]} */
+  const matches=[];
   for(const m of sentence.matchAll(/([가-힣]*(?:할|될|받을))\s*수\s*(있|없)/g)){
-    matches.push({action:m[1]!,negative:m[2]==='없'});
+    matches.push({action:m[1],negative:m[2]==='없'});
   }
   return matches;
 }
@@ -41,12 +41,16 @@ const KOREAN_AMOUNT=/[일이삼사오육칠팔구]?[십백천만억][일이삼�
 const KOREAN_COUNT=/(?<![\p{L}\p{N}])(?:한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|일|이|삼|사|오|육|칠|팔|구)\s*(?:개\s*)?(?:학기|학점|개월|년|명|회|번|주|시간|과목|개)(?![\p{L}\p{N}])/gu;
 const LINK=/https?:\/\/|www\.|[\w.+-]+@[\w-]+\.[\w.-]+|\b0\d{1,2}-\d{3,4}-\d{4}\b/i;
 
-function splitSentences(s:string):string[]{
+/** @param {string} s @returns {string[]} 문장 배열 */
+function splitSentences(s){
   return s.split(/(?<=[.?!。])\s+|\n+/).map(x=>x.trim()).filter(x=>x.length>1);
 }
 /** 답변 문장을 가장 많이 뒷받침하는 인용·근거 문장이다. 동률이면 먼저 나열된 직접 인용을 우선한다. */
-function bestSupport(sentence:string,sources:readonly string[]):string|undefined{
-  let best:string|undefined,score=POLARITY_MIN_OVERLAP;
+/** @param {string} sentence @param {readonly string[]} sources @returns {string|undefined} 일치하는 근거 문장 */
+function bestSupport(sentence,sources){
+  /** @type {string|undefined} */
+  let best;
+  let score=POLARITY_MIN_OVERLAP;
   for(const candidate of sources){
     const value=bigramCoverage(sentence,candidate);
     if(value>score||value===score&&!best){best=candidate;score=value;}
@@ -59,12 +63,19 @@ function bestSupport(sentence:string,sources:readonly string[]):string|undefined
  * 숫자·한글 수량은 검증된 인용 안에 있어야 하고 문구·상대 날짜는 근거 문단에서 나와야 한다.
  * 각 문장의 부정 의미도 원문과 같아야 하며 개인의 자격을 확정하는 답변은 항상 금지한다.
  */
-export function checkFaqCandidate(candidate:FaqCandidate,evidence:readonly FaqGuardEvidence[]):FaqRejectReason[]{
-  const reasons=new Set<FaqRejectReason>();
+/** @param {FaqCandidate} candidate @param {readonly FaqGuardEvidence[]} evidence @returns {FaqRejectReason[]} 확인되지 않은 주장 유형 */
+export function checkFaqCandidate(candidate,evidence){
+  /** @type {Set<FaqRejectReason>} */
+  const reasons=new Set();
   const refs=new Map(evidence.map(e=>[e.citationId,e]));
   if(refs.size!==evidence.length||new Set(candidate.citations.map(c=>c.citationId)).size!==candidate.citations.length)
     reasons.add('DUPLICATE_CITATION');
-  const quotes:string[]=[],cited:string[]=[],sentences:string[]=[];
+  /** @type {string[]} */
+  const quotes=[];
+  /** @type {string[]} */
+  const cited=[];
+  /** @type {string[]} */
+  const sentences=[];
   for(const item of candidate.citations){
     const paragraph=refs.get(item.citationId);
     if(!paragraph){reasons.add('UNKNOWN_CITATION');continue;}

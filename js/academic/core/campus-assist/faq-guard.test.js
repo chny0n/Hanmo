@@ -1,23 +1,27 @@
+// @ts-check
 import {describe,expect,it} from 'vitest';
-import type {FaqCandidate} from '../../contracts/campus-assist/index.js';
+/** @typedef {import('../../contracts/campus-assist/index.js').FaqCandidate} FaqCandidate */
 import {checkFaqCandidate} from './faq-guard.js';
 import {maskFaqQuestion} from './faq-privacy.js';
 import {retrieveFaqEvidence} from './faq.js';
 import {FAQ_EVAL_DOCUMENTS} from './faq-eval.fixtures.js';
 const NOW='2026-11-08T00:00:00Z';
 const ev=retrieveFaqEvidence('교환학생 평점 기준',FAQ_EVAL_DOCUMENTS,NOW);
-const id=ev[0]!.citationId;
-const honest:FaqCandidate={
+const id=ev[0].citationId;
+/** @type {FaqCandidate} */
+const honest={
   answer:'가상 교환학생 지원자는 총평점평균 3.0 이상이어야 합니다.',
   citations:[{citationId:id,quote:'총평점평균 3.0 이상이어야 합니다.'}],
   needsHumanConfirmation:true,suggestedLinks:['/exchange'],
 };
-const check=(patch:Partial<FaqCandidate>)=>checkFaqCandidate({...honest,...patch},ev);
-const quote=(q:string)=>({citations:[{citationId:id,quote:q}]});
+/** @param {Partial<FaqCandidate>} patch @returns {import('./faq-guard.js').FaqRejectReason[]} 판단 보류 이유 */
+const check=(patch)=>checkFaqCandidate({...honest,...patch},ev);
+/** @param {string} q @returns {Partial<FaqCandidate>} 검증할 인용 */
+const quote=(q)=>({citations:[{citationId:id,quote:q}]});
 
 describe('#341 code-side FAQ answer guard (offline fake model outputs)',()=>{
   it('accepts a grounded answer, tolerating whitespace differences in the quote',()=>{
-    expect(ev[0]!.documentId).toBe('SYN-EVAL-GPA');
+    expect(ev[0].documentId).toBe('SYN-EVAL-GPA');
     expect(check({})).toEqual([]);
     expect(check(quote('총평점평균   3.0\n이상이어야 합니다.'))).toEqual([]);
   });
@@ -35,13 +39,14 @@ describe('#341 code-side FAQ answer guard (offline fake model outputs)',()=>{
     ['invented link',{answer:'가상 교환학생 지원자는 총평점평균 3.0 이상이어야 합니다. https://evil.example'},'URL_OR_CONTACT'],
     ['invented contact',{answer:'가상 교환학생 총평점평균 3.0 이상이어야 합니다. oia@evil.example 로 문의'},'URL_OR_CONTACT'],
     ['duplicate citation',{citations:[{citationId:id,quote:'총평점평균 3.0 이상이어야 합니다.'},{citationId:id,quote:'교환학생 지원자는 총평점평균'}]},'DUPLICATE_CITATION'],
-  ] as const)('rejects %s',(_name,patch,reason)=>{
-    expect(check(patch as Partial<FaqCandidate>)).toContain(reason);
+  ])('rejects %s',(_name,patch,reason)=>{
+    expect(check(/** @type {Partial<FaqCandidate>} */ (patch))).toContain(reason);
   });
   it('allows a rule quoted from the source but not applying it to the asker',()=>{
     const rule=retrieveFaqEvidence('사회봉사 학점 인정',FAQ_EVAL_DOCUMENTS,NOW);
-    const ok:FaqCandidate={answer:'가상 사회봉사 활동은 30시간 이수 시 1학점으로 인정됩니다.',
-      citations:[{citationId:rule[0]!.citationId,quote:'사회봉사 활동은 30시간 이수 시 1학점으로 인정됩니다.'}],
+    /** @type {FaqCandidate} */
+    const ok={answer:'가상 사회봉사 활동은 30시간 이수 시 1학점으로 인정됩니다.',
+      citations:[{citationId:rule[0].citationId,quote:'사회봉사 활동은 30시간 이수 시 1학점으로 인정됩니다.'}],
       needsHumanConfirmation:true,suggestedLinks:[]};
     expect(checkFaqCandidate(ok,rule)).toEqual([]);
   });
