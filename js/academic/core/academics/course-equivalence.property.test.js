@@ -300,9 +300,9 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
     };
     forAll('old course meets new requirement', 0, c => {
       const to = c.rules[0].toCourseId;
-      const before = ledger(c.attempts).requirements.find(r => r.requirementId === `SYN-REQ-C${COURSES.indexOf(to)}`)!;
-      const after = ledger(applySameCourseRules(c.attempts, c.rules).attempts).requirements
-        .find(r => r.requirementId === `SYN-REQ-C${COURSES.indexOf(to)}`)!;
+      const before = /** @type {ReturnType<typeof ledger>['requirements'][number]} */ (ledger(c.attempts).requirements.find(r => r.requirementId === `SYN-REQ-C${COURSES.indexOf(to)}`));
+      const after = /** @type {ReturnType<typeof ledger>['requirements'][number]} */ (ledger(applySameCourseRules(c.attempts,c.rules).attempts).requirements
+        .find(r => r.requirementId === `SYN-REQ-C${COURSES.indexOf(to)}`));
       if (before.state !== 'UNSATISFIED') return `before the rule the new course row is ${before.state}`;
       return after.state === 'SATISFIED' ? null : `after the rule the new course row is ${after.state}`;
     }, gen);
@@ -358,7 +358,7 @@ describe('applySameCourseRules + ledger properties (#202)', () => {
         genCase, EXPLORATION_SEEDS);
     } catch (error) { message = (/** @type {Error} */ (error)).message; }
     expect(message).toMatch(/^property "demo: nothing rewritten" failed: rewritten$/m);
-    const seed = Number(/seed=(\d+)/.exec(message)![1]);
+    const seed = Number((/** @type {RegExpExecArray} */ (/seed=(\d+)/.exec(message)))[1]);
     expect(message).toContain(`inputHash=${hash(genCase(mulberry32(seed), 8))}`);
     expect(message).toContain(`codeSha=${CODE_SHA}`);
     expect(message).toContain(`repro: SAME_COURSE_PROP_SEED=${seed} npx vitest run`);
