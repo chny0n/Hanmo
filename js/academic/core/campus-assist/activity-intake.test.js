@@ -1,22 +1,28 @@
+// @ts-check
 import {describe,expect,it} from 'vitest';
-import type {ActivityChannel,ActivityOrganization,ActivityRecord} from '../../contracts/campus-assist/index.js';
+/** @typedef {import('../../contracts/campus-assist/index.js').ActivityChannel} ActivityChannel */
+/** @typedef {import('../../contracts/campus-assist/index.js').ActivityOrganization} ActivityOrganization */
+/** @typedef {import('../../contracts/campus-assist/index.js').ActivityRecord} ActivityRecord */
 import {reviewSyntheticActivityIntake} from './activity-intake.js';
 import {currentActivityRecords} from './activities.js';
 
 const AS_OF='2026-06-01T00:00:00Z';
-const org:ActivityOrganization={
+/** @type {ActivityOrganization} */
+const org={
   organizationId:'SYN-ECON',displayName:'가상 경제학부 학생회',
   campus:'SEOUL',aliases:['가상 과거 학생회명'],
   verifiedAt:'2026-01-01T00:00:00Z',
 };
-const channel:ActivityChannel={
+/** @type {ActivityChannel} */
+const channel={
   channelId:'SYN-BOARD',organizationId:'SYN-ECON',
   sourceBaseUrl:'https://example.org/synthetic/events',
   verifiedAt:'2026-01-01T00:00:00Z',
   effectiveFrom:'2026-01-01T00:00:00Z',
   rights:'APPROVED',provenance:'SYNTHETIC',status:'ACTIVE',reviewRef:'SYN-INDEPENDENT-REVIEW',
 };
-const record:ActivityRecord={
+/** @type {ActivityRecord} */
+const record={
   entryId:'SYN-EVENT',sourceId:'SYN-EVENT-SOURCE',revisionId:'SYN-EVENT-REV',
   channelId:'SYN-BOARD',organizationId:'SYN-ECON',
   seriesId:'ORIENTATION',title:'가상 학과 오리엔테이션',
@@ -27,10 +33,11 @@ const record:ActivityRecord={
   sourceUrl:'https://example.org/synthetic/events/syn-2026',
   status:'CONFIRMED',rights:'APPROVED',provenance:'SYNTHETIC',
 };
-function review(input:{
-  row?:Partial<ActivityRecord>;org?:Partial<ActivityOrganization>;
-  channel?:Partial<ActivityChannel>;asOf?:string;
-}={}){
+/**
+ * @param {{row?:Partial<ActivityRecord>,org?:Partial<ActivityOrganization>,channel?:Partial<ActivityChannel>,asOf?:string}} [input]
+ * @returns {import('./activity-intake.js').ActivityIntakeReview} 합성 검증용 결과
+ */
+function review(input={}){
   return reviewSyntheticActivityIntake({
     raw:[{...record,...input.row}],
     organizations:[{...org,...input.org}],
@@ -57,23 +64,23 @@ describe('#339 pre-NCP source/channel manual intake is synthetic-only and fail-c
     ['future publish',{publishedAt:'2026-07-01T00:00:00Z'},'RECORD_NOT_CURRENT'],
     ['future source verification',{verifiedAt:'2026-07-01T00:00:00Z'},'RECORD_NOT_CURRENT'],
     ['unsupported real production source',{provenance:'REAL_APPROVED'},'REAL_SOURCE_REQUIRES_OPERATOR'],
-  ] as const)('quarantines %s without leaking rows',(_label,overrides,reason)=>{
-    const r=review({row:overrides as Partial<ActivityRecord>});
+  ])('quarantines %s without leaking rows',(_label,overrides,reason)=>{
+    const r=review({row:/** @type {Partial<ActivityRecord>} */ (overrides)});
     expect(r.records).toEqual([]);
     expect(r.quarantined[0]?.reason).toBe(reason);
     expect(r.acceptedCount).toBe(0);
   });
   it.each([
-    ['revoked channel',{rights:'REVOKED' as const},'CHANNEL_NOT_CLEARED'],
-    ['blocked channel',{rights:'BLOCKED' as const},'CHANNEL_NOT_CLEARED'],
-    ['removed channel',{status:'REMOVED' as const},'CHANNEL_NOT_CLEARED'],
-    ['not independently permitted as synthetic',{provenance:'REAL_APPROVED' as const},'CHANNEL_NOT_CLEARED'],
+    ['revoked channel',{rights:'REVOKED'},'CHANNEL_NOT_CLEARED'],
+    ['blocked channel',{rights:'BLOCKED'},'CHANNEL_NOT_CLEARED'],
+    ['removed channel',{status:'REMOVED'},'CHANNEL_NOT_CLEARED'],
+    ['not independently permitted as synthetic',{provenance:'REAL_APPROVED'},'CHANNEL_NOT_CLEARED'],
     ['cross-organization source',{organizationId:'SYN-OTHER'},'SCOPE_MISMATCH'],
     ['future channel verification',{verifiedAt:'2026-07-01T00:00:00Z'},'CHANNEL_OUT_OF_PERIOD'],
     ['future effective date',{effectiveFrom:'2026-07-01T00:00:00Z'},'CHANNEL_OUT_OF_PERIOD'],
     ['expired channel',{effectiveUntil:'2026-05-31T23:59:59Z'},'CHANNEL_OUT_OF_PERIOD'],
-  ] as const)('quarantines %s',(_label,overrides,reason)=>{
-    const r=review({channel:overrides as Partial<ActivityChannel>});
+  ])('quarantines %s',(_label,overrides,reason)=>{
+    const r=review({channel:/** @type {Partial<ActivityChannel>} */ (overrides)});
     expect(r.records).toEqual([]);
     expect(r.quarantined[0]?.reason).toBe(reason);
   });
@@ -102,7 +109,8 @@ describe('#339 pre-NCP source/channel manual intake is synthetic-only and fail-c
     expect(r.quarantined[0]?.reason).toBe('UNKNOWN_ORGANIZATION');
   });
   it('keeps an approved channel tombstone so the old event cannot be resurrected',()=>{
-    const tombstone:ActivityRecord={...record,revisionId:'SYN-REV-REVOKED',
+    /** @type {ActivityRecord} */
+    const tombstone={...record,revisionId:'SYN-REV-REVOKED',
       publishedAt:'2026-04-01T00:00:00Z',verifiedAt:'2026-04-02T00:00:00Z',
       rights:'REVOKED',status:'DELETED'};
     const result=reviewSyntheticActivityIntake({
