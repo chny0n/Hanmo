@@ -46,7 +46,7 @@
 | `HMD-025` | [#31](https://github.com/ot4562-glitch/Hanmo_develop/issues/31) | 허용 자료 수집·정정·철회·정적 대체 흐름 확정 | 완료 |
 | `HMD-026` | [#32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) | Supabase 공개 읽기·RLS·비밀키 권한 모델 확정 | 완료 |
 | `HMD-027` | [#33](https://github.com/ot4562-glitch/Hanmo_develop/issues/33) | 개인 학업자료의 로컬 우선·선택적 동기화/인증 범위를 결정한다 | 완료 |
-| `HMD-028` | [#34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) | Supabase 3차 인수 시험 항목과 4차 착수 게이트 확정 | 완료 |
+| `HMD-028` | [#34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) | Supabase 3차와 4차 최종 제품 인수 조건(소스 이관은 조기 착수 가능) | 완료 |
 | `HMD-029` | [#35](https://github.com/ot4562-glitch/Hanmo_develop/issues/35) | 1차 TypeScript→JavaScript 소스 전환 대상·순서·의존성 목록을 정의한다 | 완료 |
 | `HMD-030` | [#36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | TypeScript→JavaScript/JSDoc 정적·동등성 검사 계약 확정 | 완료 |
 | `HMD-031` | [#37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) | 위기 대응 기본·복합 시나리오/난이도 평가 설계 확정 | 완료 |
@@ -61,7 +61,7 @@
 | 제품 전체 PC 접근성·비지원 기기 안내 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) |
 | 실배포 라이선스·학교 자료 허용 범위 점검 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
 | Supabase Free($0) DB·API·갱신·실환경 인수 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64), [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65), [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66), [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
-| 4차 JavaScript/JSDoc 이관 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) |
+| 조기 JavaScript/JSDoc 이관·4차 최종 검증 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) |
 | 경쟁 서비스 출처/홍보 오해·학생 사용성 검증 | [#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) |
 
 새 이슈는 [agent.md](../agent.md#github-이슈-작성과-분류)의 **`[설계|구현|검증][차수][P0|P1|P2][담당 영역]`** 제목, 선행조건, 담당자, 검증 가능한 완료 기준을 따릅니다. `Issue labels` 워크플로가 제목에 맞춰 차수/우선순위/유형을 부여합니다.

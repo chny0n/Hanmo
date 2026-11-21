@@ -1,29 +1,21 @@
-# HUFS One AI → Hanmo_develop 이식 범위
+# HUFS One AI → Hanmo 이식 및 JavaScript 전환 경계
 
-| 원본 | 현재 위치 | 상태 |
+2026-11-21 결정: **새 기능·테스트는 차수와 관계없이 JavaScript + JSDoc만 사용**합니다. TypeScript는 이전 HUFS One AI에서 이식할 때 사용한 과도기 원본과 현재 혼입돼 있는 TS의 이관 기준일 뿐, 신규 구현의 표준이 아닙니다.
+
+| 과거 HUFS One AI 이식 계열 | 현재 코드 경로 | 앞으로의 처리 |
 |---|---|---|
-| `packages/core/src/academics/{ledger,plan,course-identity,course-equivalence,...}.ts` | `src/core/academics/` | 순수 로직 이식, 계약 경로 조정 |
-| `packages/core/src/forecast/{offering,rolling-origin,scenario}.ts` | `src/core/forecast/` | 코드와 실험 평가 로직 이식 |
-| `packages/contracts/src/academics/` | `src/contracts/academics/` | 관련 Zod 검증 계약 이식 |
-| `packages/contracts/src/self/{study-plan-check,major-what-if}.ts` | `src/contracts/self/` | 학업 관련 계약만 이식 |
-| `apps/web/src/features/{graduation,plan-check,double-major}/*View.ts` | `src/views/` | React 무관한 뷰 모델 이식 |
-| `apps/web/src/pages/graduationPage.tsx` 및 관련 React panels | `index.html`, `style.css`, `src/app/main.ts` | React/Fastify/계정 의존성 제거, DOM 화면으로 재구성 중 |
-| `apps/api/src/modules/academics/` | 미이식 | PostgreSQL·actor·RLS 종속. 정적 실행에 부적합 |
-| `csv/` 및 개인 성적/이수 파일 | **이식 금지** | 실제 학생 원본 보호 |
-| `packages/ai/`, 인증/키, NCP | **이식 금지** | LLM/API/서버 미사용 |
+| `packages/core/src/academics/` | `js/academic/core/academics/` | 원본 계산/예외 보존 후 JS 이관 |
+| `packages/core/src/forecast/` | `js/academic/core/forecast/` | 예측/보류 판정 보존 후 JS 이관 |
+| `packages/contracts/src/academics/`, `packages/contracts/src/self/` | `js/academic/contracts/` | Zod/타입 계약 유지 후 JS 이관 |
+| `apps/web/src/features/`의 순수 뷰 모델 | `js/academic/views/` | React 종속 부분은 제외, 뷰 모델·로컬 입력 동등성 후 JS |
+| 이후 작성한 새 학업·검색·공지/NLP·학생 화면 코어 | `js/academic/core/campus-assist/`, `js/academic/app/` 등 | **기존 TS도 모두 이관 대상**. 상세 출처가 불명확한 파일은 Git 기록으로 확인 |
+| 서버·LLM·인증/학생 개인 성적 파일 | 이식 금지 | 권리/개인정보 경계 유지 |
 
-### 정적 웹 연결
+## 동결 및 마이그레이션
 
-기존 `index.html`, `js/selectZone.js` 등 한모 모의연습 코드는 불변입니다. 신규 화면은 `/`으로 독립 개설합니다. 미래 통합 시 한모의 가상 과목 번호를 실제 학수번호로 착각하지 않고, 명시적으로 작성하는 `HanmoAdapter` 계약을 통해 안전한 **모의 결과**만 전달합니다.
+- 현재 UI/UX **58개 자산** 기준 SHA: [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031). HTML/CSS/브라우저 UI 모드 재디자인은 별도 승인 필요.
+- 현재 TypeScript **98개 중 테스트 42개**. 기존 파일은 이관 대기 목록으로만 허용, 신규 TS/TSX 생성과 기존 TS 코드 기능 확장은 금지.
+- 작업 단위: 순수 TS 모듈·테스트 → **JS/JSDoc + `.test.js`**로 변환하고 동일 고정 입력·예외·출처/판본/스토리지·API 결과를 비교합니다. 출력 번들을 직접 편집하지 않습니다.
+- **3차 실제 Supabase 연동과 무관하게 지금부터 코드 이전**을 진행합니다. **4차 최종 인수**는 실DB·권리·QA 인수 완료 이후로 구분합니다.
 
-### 기능 우선순위
-
-1. 전체 학사 코어의 번들·타입·합성 테스트 검증
-2. 승인된 강좌 이력과 규정 출처 확보, 비공식 출처 배지
-3. 예측 검증/성능 지표 및 다학기 제약 계획 추가
-4. 가상 수강신청 실패 후 계획 재계산
-5. 실제 한모 UI 통합·GPL/공개 재배포 권리 검토
-
-### 상한 및 검증
-
-규정 원문은 승인받기 전 `APPROVED`라고 표시하지 않습니다. 현재 `SYN-DEMO-V1`은 가상 테스트 시나리오에만 사용합니다. 공식 졸업 판정, 실제 개설 확률, 학교 로그인, 실시간 정원 등은 제공하지 않습니다.
+[현행 아키텍처](architecture.md) · [이관 #68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68) · [이관 #69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69)

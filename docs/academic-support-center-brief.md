@@ -24,7 +24,7 @@
 
 ## 3. 현재 단계와 향후 계획
 
-개발은 **① TypeScript 학업 코어와 정적 페이지 → ② 기존 JavaScript 모의신청 연습 안전성 → ③ 승인된 학사자료 Supabase 실연동 및 운영 검증 → ④ 검증 후 JavaScript/JSDoc 통일**의 4단계입니다. **4차는 새로운 학사자료 수집 단계가 아니라 기존 TypeScript 코드의 기능 동등성 검증을 수반하는 소스 전환 단계**입니다.
+현재 PC 웹 화면은 **원본 스타일을 보존하도록 동결**했습니다. HUFS One AI에서 이식한 기존 TypeScript와 그동안 새로 작성했던 TS는 **지금부터** JavaScript/JSDoc으로 순차 전환하며 신규 기능은 처음부터 JS로 개발합니다. 3차 Supabase 실연동과 4차 제품 최종 품질 인수는 각각 별도로 검증합니다.
 
 ![04 개발 단계 로드맵](images/hanmo-04-roadmap.svg)
 
