@@ -38,7 +38,7 @@ describe('#133 revision comparisons preserve new rule meanings',()=>{
     const previous=AcademicRulePackVNextSchema.parse(syntheticMultiDocumentPack());
     const next=AcademicRulePackVNextSchema.parse({...previous,version:'SYN-PACK-2',supersedesVersion:previous.version,
       sourceDocuments:(/** @type {NonNullable<typeof previous.sourceDocuments>} */ (previous.sourceDocuments)).map(d=>d.documentId==='SYN-DOC-B'?{...d,sha256:'c'.repeat(64)}:d),
-      validationReport:{...previous.validationReport,sourceDocumentHashes:(/** @type {NonNullable<typeof previous.validationReport>['sourceDocumentHashes']} */ (previous.validationReport?.sourceDocumentHashes)).map(
+      validationReport:{...previous.validationReport,sourceDocumentHashes:(/** @type {NonNullable<NonNullable<typeof previous.validationReport>['sourceDocumentHashes']>} */ (previous.validationReport?.sourceDocumentHashes)).map(
         h=>h.documentId==='SYN-DOC-B'?{...h,sha256:'c'.repeat(64)}:h)}});
     const result=compareRulePackRevisions({asOf:SYNTHETIC_AS_OF,previous,next,attempts:[]});
     expect(result.requirements[0]).toMatchObject({definition:'CHANGED',changedFields:['clauses']});
