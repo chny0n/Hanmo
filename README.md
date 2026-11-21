@@ -130,10 +130,9 @@ git clone https://github.com/ot4562-glitch/Hanmo_develop.git
 cd Hanmo_develop
 npm install --ignore-scripts --no-audit --no-fund
 npm run check
-npm run check:legacy
 ```
 
-`npm run check`는 JavaScript 구문·한국어 주석·UI 동결 검사, 학업 JavaScript의 `checkJs` 타입 검사, 코어 테스트, 정적 빌드와 페이지 검증을 실행합니다. 타입 검사만 실행하려면 `npm run check:types`를 사용합니다. `npm run check:legacy`는 원래 모의신청과 PC 제한 동작을 별도로 검증합니다. 빌드 산출물은 `dist/`에 생성됩니다. 브라우저에서 확인할 때는 로컬 HTTP 서버로 `dist/`를 제공하세요.
+`npm run check`는 JavaScript 구문·한국어 주석·UI 동결 검사, 학업 타입·코어 검사, 모의수강신청 회귀, 정적 빌드와 페이지 검증을 실행합니다. 타입 검사만 실행하려면 `npm run check:types`, 원본 모의신청·PC 제한·돌발상황만 검증하려면 `npm run check:legacy`를 사용합니다. 브라우저에서 확인할 때는 로컬 HTTP 서버로 `dist/`를 제공하세요.
 
 <details>
 <summary><strong>디렉터리와 개발 단계 보기</strong></summary>

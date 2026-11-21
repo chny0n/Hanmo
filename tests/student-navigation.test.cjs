@@ -70,7 +70,7 @@ test('new views preserve original Hanmo palette, watermark and shared layers',()
  const originalMenu=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
  assert.match(originalMenu,/class='titleContainer'/);
  assert.match(originalMenu,/id="incident-practice"/);
- assert.match(originalMenu,/href="\.\.\/css\/scenario-settings\.css"/);
+ assert.match(originalMenu,/href="\.\.\/css\/vsugang-fit\.css"/);
 });
 
 test('in-page incident workflow keeps default OFF and original practice contracts',()=>{

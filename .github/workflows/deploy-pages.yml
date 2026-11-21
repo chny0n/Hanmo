@@ -4,15 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'js/academic/**'
       - 'data/**'
       - 'scripts/**'
       - 'package.json'
-      - 'tsconfig.json'
+      - 'jsconfig.json'
       - 'index.html'
-      - 'html/pc-only.html'
-      - 'tests/device-gate.test.cjs'
-      - 'tests/legacy-baseline.test.cjs'
+      - 'tests/**'
       - 'html/**'
       - 'js/**'
       - 'css/**'
@@ -50,9 +47,7 @@ jobs:
           node-version: '22'
       - name: Install browser-only planner dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Check PC-only policy and original practice behavior
-        run: node --test tests/device-gate.test.cjs tests/legacy-baseline.test.cjs
-      - name: Run TypeScript, synthetic regression and static-site checks
+      - name: Run repository checks and build the preview
         run: npm run check
       - name: Protect the original site's custom domain
         run: |

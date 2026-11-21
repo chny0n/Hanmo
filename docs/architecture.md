@@ -88,7 +88,7 @@ index.html — 기존 한모 홈(학기 제목, NOTICE, 이용 시간, 비공식
 
 /html/vsugang.html — 기존 BASIC/TIME/SELECT 메뉴 + SETTING
   ├─ LAST_VALID / RECONNECT : 2개 예/아니오, 기본 아니오 (대체과목 검색·충돌 데모 제거)
-  ├─ js/incident-courses.js · js/scenario-settings.js · css/scenario-settings.css
+  ├─ js/scenario-settings.js · css/vsugang-fit.css
   ├─ ON: 동일 메뉴 안의 가상 신청 실패 알림 또는 가상 404·복귀 연습; 실제 강좌 검색·신청과 비연동
   └─ OFF: 기존 html/practice.html → html/selectZone.html → html/result.html
        기존 JS/CSS와 신청 동작은 손대지 않음; PC-only 정책 유지
@@ -134,11 +134,11 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | **공통 상단 바** | 왼쪽 **한모 브랜드 클릭→홈**; 독립된 '홈'·'기존/기본 모의수강신청' 링크 없음. 학사 공지→강의 전망→강의 검색→학점 정리→자체 입력 프로필 요약→**내정보(가장 오른쪽)** 순서 | `css/hanmo-components.css`, `js/student-profile-bar.js` |
 | **내정보** | 기존 '학업 플래너'를 `내정보`로 표시. 캠퍼스/주전공/이중전공 **또는** 부전공/입학년도 저장·삭제. 선택하지 않은 부전공·이중전공은 상단에서 숨김. `YYYY학번`은 입력한 입학년도일 뿐 실제 학번/로그인 상태가 아님 | `html/planner.html`, `js/student-preferences.js` |
 | **학업 페이지** | 학사 공지·강의 전망·강의 검색·학점 정리·내정보는 **원본 한모의 남색 계열**, **사이드바 금지**, 대형 둥근 카드/외곽 테두리 및 페이지 소개·중복 메뉴 카드 없음. 표·폼과 의미 있는 내용은 유지 | `html/academic-timeline.html`, `html/forecast.html`, `html/catalog.html`, `html/academic-progress.html`, `css/hanmo-flat.css` |
-| **모의신청 모드** | `html/vsugang.html` PC 메뉴의 BASIC 블록 오른쪽 아래에 SETTING과 같은 크기의 **돌발상황** 블록을 둡니다. `LAST_VALID`와 `RECONNECT`는 기본 OFF이며 BASIC에만 적용합니다. TIME/SELECT는 기존 경로를 사용합니다. | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang-fit.js`, `js/incident-options.js`, `js/scenario-settings.js`, `css/scenario-settings.css` |
-| **합성 연습** | 메뉴에서 선택 시 가상 신청 실패 안내 또는 가상 404·새로고침/뒤로 복귀. 실제 수강신청/강좌 검색/충돌 판정과 비연동, OFF는 기존 실습 진입 | `js/incident-options.js`, `js/scenario-settings.js` |
+| **모의신청 모드** | `html/vsugang.html` PC 메뉴의 BASIC 블록 오른쪽 아래에 SETTING과 같은 크기의 **돌발상황** 블록을 둡니다. `LAST_VALID`와 `RECONNECT`는 기본 OFF이며 BASIC에만 적용합니다. TIME/SELECT는 기존 경로를 사용합니다. | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang-fit.js`, `js/scenario-settings.js` |
+| **합성 연습** | 메뉴에서 선택 시 가상 신청 실패 안내 또는 가상 404·새로고침/뒤로 복귀. 실제 수강신청/강좌 검색/충돌 판정과 비연동, OFF는 기존 실습 진입 | `js/scenario-settings.js` |
 | **원본·접근 제한** | `practice.html`, `selectZone.html` 및 해당 기존 JS/CSS와 결과/대기열의 핵심 동작 변경 금지. **PC 전용 정책(`js/pc-only.js`)** 유지. 원본 운영 도메인/CNAME은 포크 QA와 별개 | `html/practice.html`, `html/selectZone.html`, `js/pc-only.js` |
 
-**동결의 의미(2026-11-21):** 현행 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 `index.html`, `html/*.html`, `css/*.css`, 최상위 `js/*.js`, `img/*` **58개 UI 파일의 blob SHA를 동결 기준선**으로 기록합니다. 임의 재디자인·메뉴 변경·새 UI 자산은 차단하며 보안·접근성·치명적 오류·권리 문제 등 예외는 별도 승인/검증과 기준선 수정이 필요합니다. 화면 동결은 #71 Windows 실기기 검증이 완료됐다는 뜻이 아닙니다.
+**동결의 의미(2026-11-21):** 현행 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 `index.html`, `html/*.html`, `css/*.css`, 최상위 `js/*.js`, `img/*` UI 파일의 blob SHA를 [화면 기준 목록](../scripts/baselines/ui-freeze.json)에서 관리합니다. 임의 재디자인·메뉴 변경·새 UI 자산은 차단하며 보안·접근성·치명적 오류·권리 문제 등 예외는 별도 승인/검증과 기준선 수정이 필요합니다. 화면 동결은 #71 Windows 실기기 검증이 완료됐다는 뜻이 아닙니다.
 
 **검증·복원:** `npm run check:legacy`, `npm run check`, `npm run smoke`, 합성 돌발상황·홈 뷰포트/상단 메뉴·내정보 보존 테스트, `dist/`의 정적 자산/PC-only 검사, Windows Chrome/Edge에서 1280×720·1920×1080 및 고배율/키보드 확인을 사용합니다. 문제가 생기면 **기준선의 UI 관련 파일만** 복원하고 이미 검증된 다른 코어·자료 변경을 통째로 되돌리지 않습니다. 문서만 수정할 때는 현재 UI와 원본 코드 SHA·테스트 계약이 그대로인지 확인합니다.
 
@@ -259,66 +259,28 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 ## 5. 2차 — 기존 모의수강신청 실전 시나리오
 
-**현재 화면과 채택 범위:** `html/vsugang.html`의 BASIC/TIME/SELECT 메뉴 안에는 **가상 마지막 과목 실패(`LAST_VALID`)와 가상 404·복귀(`RECONNECT`) 두 개의 기본 OFF 설정**만 남깁니다. 기존의 합성 대체과목 번호 검색/신청, `LAST_CONFLICT` 충돌 판정 및 사용되지 않는 시나리오 워크숍·엔진 모듈은 제거합니다. 학생에게 실제 시간표·대체 가능성·수강신청 결과를 판단하는 것처럼 표현하지 않으며, 별도 승인 전 재개하지 않습니다.
+`html/vsugang.html`의 BASIC 오른쪽 아래 **돌발상황** 블록에서 가상 마지막 과목 실패(`LAST_VALID`)와 가상 404·복귀(`RECONNECT`)를 각각 선택합니다. 두 옵션은 기본 OFF입니다. BASIC에서 옵션을 켜면 메뉴 안에서 가상 연습을 시작합니다. BASIC에서 모두 OFF인 경우와 TIME/SELECT는 `goPractice`를 통해 기존 `practice.html`로 이동합니다.
 
-**원본 모의신청과 분리:** 돌발상황을 선택하고 BASIC을 시작하면 `vsugang.html` 내부에서 합성 시나리오가 실행됩니다. BASIC에서 모두 OFF인 경우와 TIME/SELECT는 기존 `goPractice`를 통해 `practice.html`로 이동합니다. 원본 화면에서 실제 시간 충돌/404가 발생한다고 표현하지 않습니다. 원개발자는 기존 SELECT 동작을 확인하면서 필요한 개발을 허용했다고 사용자에게 답변했습니다. 실제 `selectZone` 수정 시 별도 PR·회귀 확인을 전제로 하며 학교 서버 접속/자동 신청/학교 인증을 재현·조작하지 않습니다. 운영 배포는 §6.1을 따릅니다.
-
-| 위치 | 현재 연결과 유지보수 경계 |
+| 파일 | 책임 |
 |---|---|
-| `html/vsugang.html`, `js/vsugang.js` | 모드 선택과 일반 SETTING. BASIC의 별도 돌발상황 대화상자와 합성 연습은 `js/scenario-settings.js`, `js/incident-options.js`, `css/scenario-settings.css`에서 처리합니다. |
-| `html/practice.html`, `js/practice.js` | OFF에서 시작하는 **원본 실습 화면 보호**. 합성 상태 훅·재디자인 금지 |
-| `html/selectZone.html`, `js/selectZone.js` | 기존 검색·신청·취소·키보드·대기열 계약 보호 |
-| `html/result.html`, `js/result.js` | 기존 시간/결과 경로 보존. 합성 연습 성공을 실제 결과나 학점으로 저장하지 않음 |
+| `html/vsugang.html`, `js/vsugang.js` | 모드 선택, SETTING, 기존 설정 저장 키와 연습 경로 |
+| `js/scenario-settings.js` | 돌발상황 선택, 가상 실패·404, 복구 세션 |
+| `js/vsugang-fit.js`, `css/vsugang-fit.css` | 화면 맞춤, 메뉴와 가상 연습의 표시 |
+| `practice.html`, `selectZone.html`, `result.html` 및 연결 스크립트 | 원본 연습, 대기열, 신청·취소, 키보드, 결과 보고서 |
 
 ### 5.1 마지막 과목 신청 실패 대응 · 대체과목 검색/시간 충돌 보류
 
-**현행 2차 구현·검증 범위:** 합성 마지막 과목 신청이 실패했을 때 실패 여부·현재 신청 상태·수동 확인 필요를 명확하게 표시합니다. **실제 대체과목 검색·추천·자동 신청·시간표 충돌 판정은 만들지 않습니다.** 가상 연습 결과를 실제 한국외대 수강신청 결과로 오인시키지 않습니다.
-
-**제거된 범위:** 이전 `LAST_VALID`의 합성 1·2·3번 후보 검색 및 `LAST_CONFLICT`의 번호 충돌 코드는 제거합니다. **남은 `LAST_VALID`는 실패 상태 안내만 제공**하고 대체과목을 자동 제안·선택하지 않습니다. `RECONNECT`의 0~6초 가상 404, 새로고침/뒤로가기 복귀, 짧은 세션 상태 복원은 유지하되 구버전의 후보 선택 세션은 복원하지 않습니다.
-
-**재검토 조건:** 다음 수강신청 관련 기간에 활용 가능한 개설·분반/요일·시간 자료의 취득 경로를 확인하고, 학교의 자료 접근·재사용 허가(#27), 원문/판본 독립 검수(#41·#42), 실제 수강신청 UI 기준선 및 SELECT 대기열/Enter 동작 QA(#19·#71)를 확보한 뒤 **별도 승인**으로 재개 여부를 결정합니다. 단순 수강신청기간 도래가 곧 권리 확인·연동 허가가 되는 것은 아닙니다. 부정확한 ‘대체 가능’ 안내를 제공해야 한다면 기능을 재개하지 않습니다.
+가상 정원 마감을 표시하고 신청 상태를 확인하도록 안내합니다. 실제 대체과목 검색·추천·자동 신청·시간표 충돌 판정은 학교 자료의 승인·검수와 원본 UI 회귀 검증까지 보류합니다. 가상 연습은 학교 시스템 또는 학업 원장과 연결하지 않습니다. [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
 
 ### 5.2 가상 404·새로고침·뒤로가기 (RECONNECT)
 
-- `RECONNECT`가 ON인 가상 연습을 시작하면 **0~6초 사이**에 `404 예시화면 입니다`가 표시됩니다. **실제 HTTP 404를 반환하거나 통신을 끊지 않습니다**.
-- 예시 화면의 새로고침·뒤로가기 선택으로 **진행 중이던 가상 수강신청을 이어서 수행**할 수 있습니다. 브라우저 새로고침 복원을 위해 `sessionStorage`의 짧은 수명 합성 상태만 사용합니다. 새 방문 시 설정은 다시 모두 OFF입니다.
-- 재접속이 실제 신청 성공을 보장하거나 미확정 결과를 성공으로 바꾸지 않습니다. 학교 사이트·SSO·사용자 성적/학적 데이터에 연결하지 않습니다.
-- 이후 대기열 지연·취소 실수·난이도별 복기 등의 확장은 **현재 UI 동결 범위를 넘어서는 선택 작업**이며 별도 우선순위 결정 전까지 구현을 요구하지 않습니다.
-
-**평가 경계:** 현재 UI는 위의 합성 단계만 구현한 상태이며, 복잡한 상태전이/난이도 점수/학생 실기기 QA가 모두 완료됐다는 뜻이 아닙니다.
-
-**시뮬레이션과 실제 강의의 경계:** 가상 수강신청 과목 코드와 공식 과목/분반 ID 사이의 연결은 명시적인 변환 계약으로만 수행합니다. 연습의 성공·취소·대기열은 실제 수강 확정이나 학점 취득을 뜻하지 않으며 이수 원장에 반영하거나 학교 시스템으로 전송하지 않습니다.
-
-변환은 버전이 있는 표에 근거한 조회로 한정합니다. 가상 과목 ID에 대응하는 확인된 학교 과목·분반 ID가 없으면 `UNMAPPED`를 반환합니다. 1차 코어와 연결할 때는 브라우저용으로 빌드된 JavaScript 공개 계약만 사용합니다. [#22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
+가상 연습을 시작한 뒤 0~6초 사이에 404 예시 화면을 열고, 새로고침 또는 뒤로가기로 가상 연습에 돌아옵니다. 실제 네트워크 연결과 신청 결과에는 영향이 없습니다. 새로고침 복원에는 유효한 BASIC의 `RECONNECT` 세션만 최대 5분 동안 사용합니다. 새 방문의 옵션은 모두 OFF입니다. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50)
 
 ### 5.3 시나리오 런타임 계약·회귀 기준 (#19·#20·#21·#22·#37)
 
-**공통 계약:** 기존 한모의 `practiceSetter=1/2/3`은 각각 BASIC/TIME/SELECT입니다(`js/practice.js`). 원래 `js/practice.js`는 `TIMEtime`, `SELECTtime`, `SELECTWaitTime`을 초기화하고, `js/selectZone.js`의 `registerClick(val)`→대기열→`saveSugang(val)`이 모의신청을 처리하며, `js/result.js`가 시간을 요약합니다. **상태를 변경하는 훅은 승인된 실습 이벤트에만 두고, 시나리오가 OFF이면 기존 함수·키보드·타이머·결과 저장 경로와 호출 순서를 보존합니다.** 별도 시나리오 상태 저장 키는 `hanmo.practice.scenario.v1.*`처럼 학업 키와도 분리합니다. 합성 이벤트와 실제 신청·학점 원장은 연결하지 않습니다.
-
-| 시나리오 | 시작·입력/상태 전이 | 종료/금지 |
-|---|---|---|
-| `LAST_COURSE_FAIL` | **현행 범위:** `READY → LAST_REJECTED → VERIFY_STATUS / UNRESOLVED`의 합성 실패·확인 동작을 우선 검증. **이전 설계의 `SEARCH_ALTERNATIVE → REPLACED / NO_VALID_ALTERNATIVE` 흐름은 후속 보류** | 실제 대체분반 검색·시간/학점/선수 제약 자동 판정을 2차 완료 조건으로 삼지 않음; 미확인 결과의 자동 성공/재신청 금지 |
-| `RECONNECT_RECOVERY` | `ACTIVE → REQUEST_SENT → VIRTUAL_DROP → RECONNECT_QUEUE → RECONCILE → CONFIRMED / NOT_APPLIED / UNKNOWN` | 첫 버전 단절점은 **모의 신청 직후**. `UNKNOWN`은 수강 성공도 실패도 아니며 중복 재신청·자동 성공 금지. 합성 재입장·대기열만 사용하고 실제 네트워크·학교 인증·SSO를 조작하지 않음 |
-| **조합 설정(현행)** | BASIC의 돌발상황 블록에서 `LAST_VALID`와 `RECONNECT`를 각각 또는 동시에 선택합니다. | BASIC에서 ON이면 메뉴 안에서 가상 연습을 실행합니다. BASIC에서 OFF인 경우와 TIME/SELECT는 `practice.html` 경로를 사용합니다. |
-
-**미래 확장용 고정 시나리오 입력 DTO(설계 전용, 현행 SETTING 사용자 입력 아님):** `{schemaVersion:1,scenarioId,scenarioSeed,mode,syntheticCourseIds,virtualClockStart,scenarioEnabled}`. 결과는 `{scenarioId,scenarioSeed,terminalState,actions,errors,elapsedVirtualMs,duplicateAttempts,source:'SYNTHETIC'}`이며 학업 원장 API/학교 네트워크로 전달하지 않습니다. 고정 시드와 입력은 **동일한 사건·상태 전이·결과**를 생성해야 합니다. 기존 대기열의 `Math.random()` 표현 및 실제 벽시계 UI를 그대로 통제했다고 가정하지 말고, 신규 시나리오의 의사난수·가상 시간만 분리해 주입합니다. 테스트에서는 랜덤 애니메이션 프레임을 비교하지 않고 정규화한 이벤트·저장 키·결과 상태를 비교합니다.
-
-**난이도 및 평가(현행 범위):** 첫 검증은 마지막 과목 실패 시 결과를 성급히 성공으로 간주하지 않는지, 재접속 후 신청 상태를 확인하는지, 중복 신청을 피하는지, 정상 BASIC/TIME/SELECT 조작을 보존하는지에 집중합니다. **대체과목 적합성/시간 충돌/대안 없음 판정·복합 난이도 점수는 보류된 확장 범위**이며 해당 기능의 실행·사용성 결과 없이 출시 완료로 계산하지 않습니다.
-
-**1·2차 과목 ID 어댑터 v1(후속 설계 보존·현행 구현 의무 없음):** `{version:1,syntheticCourseId,courseId?,sectionId?,term?,campus?,catalogSnapshotId?,mappingStatus:'MAPPED'|'UNMAPPED'|'STALE'}` 계약은 실제 대체과목 검색을 재개할 때만 검토합니다. 검수된 분반 ID가 없는 상태에서 가상 번호/유사 제목을 공식 실강좌로 매핑하지 않으며, 관련 타입/연동 구현은 현재 2차 완료 조건이 아닙니다.
-
-**원본 회귀 시험표 (#19·#71):** #84에서 현행 `incident-options.js`·`scenario-settings.js` 기본 OFF로 세 모드의 경로·localStorage·알림을 Node VM 비교하여 CI를 통과했습니다. #85는 가상 연습 상태에 강좌/분반 ID가 누출되지 않도록 테스트를 추가했으며 합성 대체과목 기능을 다시 넣지 않았습니다. **두 테스트는 실기기 브라우저·키보드·대기번호 검증이 아닙니다.**
-
-| 비교 대상 | 고정해야 할 관측값 | 실패 조건 |
-|---|---|---|
-| BASIC (`practiceSetter=1`) | 설정→practice→selectZone→result, 신청/중복/삭제, 완료 시간·저장 키·키보드 이동 | 시나리오 OFF에서 원본 대비 클릭/포커스·신청 수·결과 경로 변화 |
-| TIME (`practiceSetter=2`) | 10시 진입 전·후 조작, `TIMEtime` 저장과 result 경로, 단축키/포커스 | 기존 시간 측정·전환·경고 동작 변화 |
-| SELECT (`practiceSetter=3`) | 기존 대기/검색/신청·취소, `SELECTtime/SELECTWaitTime`, 결과 합계 | 대기시간 계산·중복 등록 방어·저장 동작 변화 |
-| 시나리오 ON | 같은 시드의 상태전이/종료/오류, 대기열 취소·새로고침·중복 클릭·결과 불명 | 자동 재신청, 합성 결과의 실제 원장 유입, 무한 루프, OFF 설정 후 잔존 개입 |
-
-시험은 **기존 `main`/원본 버전에서 먼저 기대 상태·이벤트 로그를 채집하고**, 신규 시나리오 OFF 빌드에서 동일 입력과 테스트 시계를 비교합니다. 실제 Windows Chrome/Edge 키보드·타이머 재현도 기록합니다. 테스트를 아직 실행하지 않았다면 ‘설계 확정’일 뿐 ‘회귀 통과’가 아닙니다. [#19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) · [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
-
-**대안 평가:** (A) 기존 `registerClick`을 전면 개조하는 안은 회귀 면적이 크므로 보류합니다. (B) **시나리오 ON에만 별도 이벤트 제어 계층을 끼우고 OFF에서 기존 경로로 즉시 통과시키는 안을 채택**합니다. 프레임워크 전환·실제 접속 중단은 채택하지 않습니다.
+- `practiceSetter=1/2/3`은 BASIC/TIME/SELECT입니다. 원본 경로에서는 관심강좌와 신청 과목 수, 대기 여부, 시간 측정, 신청·취소, 결과 저장 계약을 보존합니다.
+- `npm run check:legacy`는 PC 제한, 원본 모드, 돌발상황 등 모의신청 회귀를 실행합니다. `npm run check`는 이를 포함해 전체를 확인하며 PR 검사와 Pages 배포에서 공통으로 사용합니다.
+- Windows Chrome·Edge에서는 화면 및 키보드 진입과 함께 원본 SELECT의 대기 번호, Enter 반복 확인창, 신청·취소를 별도로 확인합니다. Node 테스트 결과와 실기기 확인 결과는 구분해 기록합니다. [#19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) · [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71)
 
 ## 6. 1·2차 자료·검증·배포 원칙
 

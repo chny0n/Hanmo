@@ -1,4 +1,4 @@
-/* Menu-only viewport fitting, separate from legacy BASIC/TIME/SELECT handlers. */
+/* 모드 메뉴의 배치를 화면 크기에 맞춘다. */
 (function(){
   'use strict';
   function mount(){
@@ -13,7 +13,7 @@
       frame=0;
       const bottom=Math.max(0,Math.ceil(bar.getBoundingClientRect().bottom));
       body.style.setProperty('--vsugang-topbar-bottom',bottom+'px');
-      /* Measure natural mode-menu dimensions, not its compact layout. */
+      /* 기본 배치를 기준으로 필요한 축소 비율을 구한다. */
       body.classList.toggle('vsugang-compact-scroll',false);
       const style=window.getComputedStyle(main),px=v=>Number.parseFloat(v)||0;
       const adHeight=footer?Math.max(0,footer.getBoundingClientRect().height):0;

@@ -7,7 +7,7 @@ body.hanmo-vsugang>main{box-sizing:border-box;position:relative;flex:1 1 auto;he
 body.hanmo-vsugang .f-dirt-down{position:absolute;top:calc((100% - var(--vsugang-footer-height,0px))/2);left:50%;width:max-content;max-width:none;transform:translate(-50%,-50%) scale(var(--vsugang-fit-scale,1));transform-origin:center}
 body.hanmo-vsugang .titleContainer{top:0;margin:0}
 body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
-body.hanmo-vsugang .grid{margin-top:0}
+body.hanmo-vsugang .grid{margin-top:0;--vsugang-narrow-areas:"b b" "b b" "s t" "set t"}
 body.hanmo-vsugang .grid > :is(.setting,#incident-options){border:1px solid #000912;background:#06111c;transition:0.3s}
 body.hanmo-vsugang .grid:has(:hover) > :is(.setting,#incident-options):not(:hover){background:#000a13}
 /* BASIC의 오른쪽 아래 칸을 독립 버튼으로 덮는다. */
@@ -19,15 +19,59 @@ body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){margin:5px
 body.hanmo-vsugang .grid .mode-tile-description{margin:0 20px;font-size:12px}
 body.hanmo-vsugang #incident-options:focus-visible{outline:3px solid #ffcf76;outline-offset:-4px}
 @media(max-width:1000px){
-  body.hanmo-vsugang .grid{grid-template-rows:repeat(4,200px);grid-template-areas:"b b" "b b" "s t" "set t"}
+  body.hanmo-vsugang .grid{grid-template-rows:repeat(4,200px);grid-template-areas:var(--vsugang-narrow-areas)}
   body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:36px}
   body.hanmo-vsugang .grid .mode-tile-description{display:none}
 }
 body.hanmo-vsugang .f-dirt-up{position:absolute;bottom:0;left:0;right:0;box-sizing:border-box;width:100%;height:auto;min-height:0;max-height:35%}
 /* SETTING은 상단 메뉴 아래에 표시하고 내부에서 스크롤한다. */
-body.hanmo-vsugang :is(.settingSection,#scenario-settings){box-sizing:border-box;top:var(--vsugang-topbar-bottom,66px)!important;bottom:0!important;height:auto!important;max-height:none;z-index:110}
-body.hanmo-vsugang .settingPanel{max-height:calc(100dvh - var(--vsugang-topbar-bottom,66px) - 32px)}
-/* 돌발상황 연습 중에도 상단 메뉴는 화면에 남는다. */
+body.hanmo-vsugang :is(.settingSection,#scenario-settings){
+  box-sizing:border-box;position:fixed;inset:var(--vsugang-topbar-bottom,66px) 0 0;
+  height:auto;max-height:none;z-index:110;overflow-y:auto;background:rgba(0,10,18,.87);padding:20px;
+}
+body.hanmo-vsugang .settingPanel{
+  box-sizing:border-box;width:min(720px,100%);height:auto;max-height:calc(100dvh - var(--vsugang-topbar-bottom,66px) - 32px);
+  overflow-y:auto;align-items:stretch;justify-content:flex-start;padding:25px 30px;border:1px solid #567084;
+}
+.settingPanel>ul{list-style:none;padding:0;margin:0}
+.settingPanel>ul li{margin-bottom:12px}
+.settingPanel .textbox{height:37px;color:#f2f5f8;background:#0f2535;border:1px solid #66849c;border-radius:7px;padding:5px 10px}
+.settingPanel .settingButton{align-self:flex-end;margin-top:20px;min-height:44px;border:0;flex:none}
+#scenario-settings{width:100%;max-width:none;margin:0;border:0;color:inherit}
+#scenario-settings[open]{display:flex;align-items:center;justify-content:center}
+#scenario-settings::backdrop{background:transparent}
+.settingPanel fieldset{min-width:0}
+#scenario-settings h2{margin:0 0 14px;font-size:20px;font-weight:700}
+.incident-option-group{margin-bottom:12px}
+.incident-option-group small{display:block;margin-top:5px}
+.incident-option-actions{display:flex;justify-content:flex-end;gap:8px}
+.settingPanel :is(button,input):focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
+/* 가상 연습 화면과 스크롤 동작을 정의한다. */
+#incident-practice[hidden],#incident-practice [hidden]{display:none!important}
+#incident-practice{box-sizing:border-box;width:min(1050px,calc(100% - 36px));margin:32px auto 65px;
+ background:#071b29;border:1px solid #496c83;border-radius:16px;padding:25px 30px;color:#f5f8fa;
+ font-size:15px;line-height:1.65;position:relative}
+#incident-practice *{box-sizing:border-box}
+#incident-practice button{cursor:pointer;min-height:44px;border:1px solid #507c94;border-radius:9px;
+ background:#123b51;color:#f8f8f8;font-family:inherit;font-size:14px;font-weight:700;line-height:1.35;padding:10px 17px}
+#incident-practice button:hover{background:#225a73}
+#incident-practice button:focus-visible,#incident-practice input:focus-visible{outline:3px solid #ffcb73;outline-offset:3px}
+.hanmo-incident-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;
+ border-bottom:1px solid #43667c;padding-bottom:15px;margin-bottom:16px;flex-wrap:wrap}
+.hanmo-incident-heading h2{font-size:27px;font-weight:750;margin:0}
+.hanmo-incident-warning{padding:12px 16px;border-left:4px solid #f4c76c;
+ background:#2a2417;color:#ffdea6;font-size:13px;margin:15px 0 24px}
+.hanmo-incident-feedback{font-size:14px;padding:14px 18px;background:#143249;border-radius:9px;
+ border:1px solid #3f718e;min-height:56px}
+.hanmo-incident-feedback[data-result="error"]{background:#3b241e;border-color:#b67861;color:#ffdbc8}
+.hanmo-incident-feedback[data-result="success"]{background:#143c2f;border-color:#639580;color:#d7f4e5}
+.hanmo-example-404{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;
+ background:#06121ff7;color:#fff}
+.hanmo-example-404 h2{font-size:clamp(27px,4vw,44px);font-weight:800;margin:0}
+.hanmo-example-404 p{max-width:630px;line-height:1.8;color:#d0e0eb;margin:0}
+.hanmo-example-404>div{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+@media(max-width:700px){#incident-practice{padding:19px 15px}}
 body.hanmo-vsugang main:has(#incident-practice:not([hidden])) .f-dirt-down,
 body.hanmo-vsugang main:has(#incident-practice:not([hidden])) .f-dirt-up{display:none}
 body.hanmo-vsugang #incident-practice:not([hidden]){box-sizing:border-box;width:min(1050px,calc(100% - 16px));max-height:100%;height:100%;margin:0 auto;overflow-y:auto;overscroll-behavior:contain}
@@ -35,7 +79,7 @@ body.hanmo-vsugang #incident-practice:not([hidden]){box-sizing:border-box;width:
 body.hanmo-vsugang.vsugang-compact-scroll>main{display:block;overflow-y:auto;overscroll-behavior:contain}
 body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-down{position:relative;top:auto;left:auto;width:min(600px,100%);max-width:100%;margin:0 auto 20px;transform:none}
 body.hanmo-vsugang.vsugang-compact-scroll .container{width:100%;margin-top:15px}
-body.hanmo-vsugang.vsugang-compact-scroll .grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(110px,auto));grid-template-areas:"b b" "b b" "s t" "set t"}
+body.hanmo-vsugang.vsugang-compact-scroll .grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(110px,auto));grid-template-areas:var(--vsugang-narrow-areas)}
 body.hanmo-vsugang.vsugang-compact-scroll .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:clamp(20px,4vw,32px)}
 body.hanmo-vsugang.vsugang-compact-scroll .grid :is(p,.mode-tile-description){display:none}
 body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-up{display:none}

@@ -16,11 +16,15 @@ function validSetting(preselected,requested,waiting){
     &&(waiting==='yes'||waiting==='no');
 }
 
-function setValue(){
+function hasValidPracticeSettings(){
   const preselected=Number(localStorage.getItem('psubjectValue'));
   const requested=Number(localStorage.getItem('subjectValue'));
   const waiting=localStorage.getItem('waitingValue');
-  isSettedValue=validSetting(preselected,requested,waiting);
+  return validSetting(preselected,requested,waiting);
+}
+
+function setValue(){
+  isSettedValue=hasValidPracticeSettings();
   const background=isSettedValue?'#001203':'#120000';
   setting.style.background=background;
   if(incidentOptions)incidentOptions.style.background=background;

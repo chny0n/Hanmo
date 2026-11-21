@@ -1,12 +1,12 @@
-name: Academic core and student UI
+name: Repository checks
 on:
   pull_request:
     paths:
-      - 'js/academic/**'
-      - 'js/student-*.js'
+      - 'index.html'
+      - 'js/**'
       - 'html/**'
-      - 'css/student-ui.css'
-      - 'css/scenario-workshop.css'
+      - 'css/**'
+      - 'img/**'
       - 'scripts/**'
       - 'tests/**'
       - 'data/**'
@@ -14,7 +14,6 @@ on:
       - 'package.json'
       - 'jsconfig.json'
       - '.github/workflows/academic-ci.yml'
-      - 'degree-rescue/**'
 permissions:
   contents: read
 concurrency:
@@ -35,7 +34,6 @@ jobs:
       - run: node scripts/assert-protected.mjs
       - run: npm install --ignore-scripts --no-audit --no-fund
       - run: npm run check
-      - run: npm run check:legacy
       - uses: actions/upload-artifact@v4
         with:
           name: hanmo-root-static-preview

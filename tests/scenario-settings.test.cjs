@@ -3,7 +3,6 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const logic=require('../js/incident-options.js');
 const ui=require('../js/scenario-settings.js');
 
 function node(attrs={}){
@@ -23,8 +22,8 @@ function harness(resume=null,navType='navigate',now=100000000){
  const dialog=ids['scenario-settings'];
  dialog.showModal=()=>{dialog.open=true;};
  ids['incident-practice'].hidden=true;ids['incident-404'].hidden=true;
- const toggles=logic.OPTIONS.map(id=>node({'data-scenario-toggle':id}));
- const negatives=logic.OPTIONS.map(id=>{const n=node({'data-scenario-off':id});n.checked=true;return n});
+ const toggles=ui.PRESETS.map(id=>node({'data-scenario-toggle':id}));
+ const negatives=ui.PRESETS.map(id=>{const n=node({'data-scenario-off':id});n.checked=true;return n});
  const form={'.printValue':node(),'.psugangVal':node(),'.vsugangVal':node(),
   'input[name="waitingYN"]:checked':node(),'.setting':node()};
  form['.psugangVal'].value='3';form['.vsugangVal'].value='2';
@@ -42,8 +41,10 @@ function harness(resume=null,navType='navigate',now=100000000){
   location:{href:'http://mock/html/vsugang.html',hash:'',reload(){host.reloads++}},
   reloads:0,performance:{getEntriesByType:()=>[{type:navType}]},
   addEventListener:(type,fn)=>{listeners[type]=fn},
-  validSetting:(p,r,w)=>Number.isInteger(p)&&p>=1&&p<=15&&Number.isInteger(r)
-    &&r>=1&&r<=p&&(w==='no'||w==='yes'),
+  hasValidPracticeSettings(){
+   const p=Number(store.get('psubjectValue')),r=Number(store.get('subjectValue')),w=store.get('waitingValue');
+   return Number.isInteger(p)&&p>=1&&p<=15&&Number.isInteger(r)&&r>=1&&r<=p&&(w==='no'||w==='yes');
+  },
   goPractice(mode){host.lastOriginal=mode;store.set('practiceSetter',String(mode));host.location.href='practice.html';},
   getSettingValue(){host.saves=(host.saves||0)+1;store.set('psubjectValue',form['.psugangVal'].value);
    store.set('subjectValue',form['.vsugangVal'].value);
@@ -65,10 +66,10 @@ function submit(h,value){
 }
 
 test('only failure and reconnect options remain, OFF by default',()=>{
- assert.deepEqual(logic.OPTIONS,['LAST_VALID','RECONNECT']);
- assert.deepEqual(logic.enabled(['LAST_CONFLICT','LAST_VALID']),['LAST_VALID']);
- assert.equal(logic.delayMs(0),0);assert.equal(logic.delayMs(0.5),3000);
- assert.equal(logic.delayMs(1),6000);
+ assert.deepEqual(ui.PRESETS,['LAST_VALID','RECONNECT']);
+ assert.deepEqual(ui.selected(['LAST_CONFLICT','LAST_VALID']),['LAST_VALID']);
+ assert.equal(ui.delayMs(0),0);assert.equal(ui.delayMs(0.5),3000);
+ assert.equal(ui.delayMs(1),6000);
  const h=harness();
  assert.deepEqual(h.app.getEnabled(),[]);
  assert.ok(h.negatives.every(x=>x.checked));
@@ -159,7 +160,7 @@ test('removed alternative files and controls do not leak into runtime assets',()
  const root=path.join(__dirname,'..');
  const page=fs.readFileSync(path.join(root,'html/vsugang.html'),'utf8');
  const controller=fs.readFileSync(path.join(root,'js/scenario-settings.js'),'utf8');
- const css=fs.readFileSync(path.join(root,'css/scenario-settings.css'),'utf8');
+ const css=fs.readFileSync(path.join(root,'css/vsugang-fit.css'),'utf8');
  for(const s of [page,controller,css]){
   assert.doesNotMatch(s,/LAST_CONFLICT|data-alt-course|incident-search|incident-candidates|대체과목 검색/);
  }

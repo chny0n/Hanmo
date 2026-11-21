@@ -29,7 +29,7 @@ payload는 notices, offerings, faq 세 배열이어야 합니다. 공지에는 i
 ## 검증
 
 node --test tests/academic-data-source.test.cjs
-npm run check && npm run check:legacy
+npm run check
 실운영 전에 API 실응답, 권한/RLS, 만료·철회, 빈 응답, 403/5xx/오프라인, PC 브라우저 접근성, 페이지 하위 경로·재시도, 원본 SELECT 대기열·Enter 연타 회귀를 추가 확인합니다.
 
 관련 이슈: #64 스키마/RLS, #65 공개 읽기, #66 승인 파이프라인, #67 실환경 인수, #71 원본 회귀.

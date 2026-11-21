@@ -134,7 +134,7 @@ for(const id of ['scenario-settings','incident-practice','incident-404',
  'incident-404-refresh','incident-404-back']){
  if(!menu.includes('id="'+id+'"'))throw Error('Missing in-menu incident UI: '+id);
 }
-for(const file of ['js/incident-options.js','js/scenario-settings.js','css/scenario-settings.css'])
+for(const file of ['js/scenario-settings.js','css/vsugang-fit.css'])
  await must(file);
 if((menu.match(/data-scenario-toggle=/g)||[]).length!==2||
    (menu.match(/data-scenario-off=/g)||[]).length!==2)
@@ -147,12 +147,12 @@ if(/LAST_CONFLICT|data-base-course|data-alt-course|incident-search|incident-cand
  throw Error('Deferred substitute/conflict UI must be absent');
 if(/학업 플래너로 이동|scenario-all-on|scenario-all-off/.test(menu))
  throw Error('Legacy-mode landing has an obsolete extra link or bulk incident control');
-for(const retired of ['js/incident-courses.js','js/scenario-engine.js','js/scenario-composite.js',
+for(const retired of ['js/incident-options.js','css/scenario-settings.css','js/incident-courses.js','js/scenario-engine.js','js/scenario-composite.js',
  'js/scenario-lab.js','js/scenario-workshop.js','js/scenario-review.js'])
  if(await exists(join(dist,retired)))throw Error('Removed prototype leaked: '+retired);
 
 for(const page of [root]){
- // Landing must not advertise a standalone incident exercise.
+ // 돌발상황은 모드 메뉴에서만 시작한다.
  if(page.includes('scenario-workshop.html')||page.includes('vsugang.html#scenario-settings'))
    throw Error('Standalone incident link remains on landing');
 }

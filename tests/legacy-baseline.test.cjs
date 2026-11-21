@@ -309,7 +309,7 @@ test('each actual HTML page loads classic scripts in order without global collis
     // 공통 상단 메뉴와 함께 원본 공지·기기 확인·학기 표시를 유지한다.
     assert.equal(originalScripts.length,page==='index.html'?2:3,page+' original script count');
     if(page==='html/vsugang.html')assert.deepEqual(scripts.slice(3),[
-      'incident-options.js','scenario-settings.js',
+      'scenario-settings.js',
     ],'isolated synthetic scripts must load only after original settings/gnb/hanmoSys');
     const h=createHarness({deviceInfo:'true',practiceSetter:1,psubjectValue:2,
       subjectValue:2,waitingValue:'no',TIMEtime:'1',SELECTtime:'1',SELECTWaitTime:'0'});
@@ -335,7 +335,7 @@ test('current incident options OFF preserve all BASIC/TIME/SELECT menu routes an
   }
   for(const file of ['practice.html','selectZone.html','result.html']){
     const html=fs.readFileSync(path.join(ROOT,'html',file),'utf8');
-    assert.doesNotMatch(html,/src=["'][^"']*(?:incident-options|scenario-settings)\.js/);
+    assert.doesNotMatch(html,/src=["'][^"']*scenario-settings\.js/);
   }
 
   function observed(mode,withMenuOverlay){
@@ -362,9 +362,8 @@ test('current incident options OFF preserve all BASIC/TIME/SELECT menu routes an
       h.doc.getElementById=id=>ids.get(id)??null;
       h.doc.querySelectorAll=selector=>selector==='[data-scenario-toggle]'?yes:
         selector==='[data-scenario-off]'?no:[];
-      h.load('incident-options.js');
       h.load('scenario-settings.js');
-      assert.deepEqual(JSON.parse(h.expr('JSON.stringify(HanmoIncidentOptions.OPTIONS)')),kinds);
+      assert.deepEqual(JSON.parse(h.expr('JSON.stringify(HanmoScenarioSettings.PRESETS)')),kinds);
       assert.deepEqual(JSON.parse(h.expr('JSON.stringify(HanmoScenarioSettings.selected([]))')),[]);
       assert.ok(no.every(input=>input.checked));
       assert.ok(yes.every(input=>!input.checked));
