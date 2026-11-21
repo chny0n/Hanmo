@@ -1,3 +1,4 @@
+// @ts-check
 import {z} from 'zod';
 import {CreditUnitsSchema} from '../academics/index.js';
 
@@ -63,34 +64,32 @@ const Projection=z.strictObject({
     ctx.addIssue({code:'custom',path:['requirements'],
       message:'Duplicate requirement projection ID'});
 });
-export type MajorWhatIfRequirementProgress=z.infer<typeof RequirementProgress>;
-export type MajorWhatIfDeltaRow={
-  requirementId:string;
-  change:'NEW_REQUIREMENT'|'ALREADY_SATISFIED'|'REMOVED_REQUIREMENT'
-    |'UNCHANGED'|'PROGRESS_CHANGED';
-};
+/** @typedef {z.infer<typeof RequirementProgress>} MajorWhatIfRequirementProgress */
+/** @typedef {{requirementId:string,change:'NEW_REQUIREMENT'|'ALREADY_SATISFIED'|'REMOVED_REQUIREMENT'|'UNCHANGED'|'PROGRESS_CHANGED'}} MajorWhatIfDeltaRow */
 /**
  * 변경안의 형식과 일관성만 확인한다. 과목 인정·전공별 요건 계산 또는 승인된 학사 코어를 대체하지 않는다.
  * 현재와 가상 상태의 모든 요건은 차이 결과에 각각 정확히 한 번 나타나야 한다.
  */
-export function isConsistentMajorWhatIfDelta(input:{
-  current:readonly MajorWhatIfRequirementProgress[];
-  hypothetical:readonly MajorWhatIfRequirementProgress[];
-  delta:readonly MajorWhatIfDeltaRow[];
-}):boolean{
+/**
+ * @param {{current:readonly MajorWhatIfRequirementProgress[],hypothetical:readonly MajorWhatIfRequirementProgress[],delta:readonly MajorWhatIfDeltaRow[]}} input
+ * @returns {boolean} 전공 변경 전후 모든 요건의 차이 기록이 일관적인지 여부
+ */
+export function isConsistentMajorWhatIfDelta(input){
   const before=new Map(input.current.map(r=>[r.requirementId,r]));
   const after=new Map(input.hypothetical.map(r=>[r.requirementId,r]));
   const ids=new Set([...before.keys(),...after.keys()]);
   if(before.size!==input.current.length||after.size!==input.hypothetical.length
     ||ids.size!==input.delta.length)return false;
-  const seen=new Set<string>();
+  /** @type {Set<string>} */
+  const seen=new Set();
   for(const row of input.delta){
     const id=row.requirementId;
     if(seen.has(id)||!ids.has(id))return false;
     seen.add(id);
     const previous=before.get(id),next=after.get(id);
-    let expected:MajorWhatIfDeltaRow['change'];
-    if(!previous)expected=next!.state==='SATISFIED'
+    /** @type {MajorWhatIfDeltaRow['change']} */
+    let expected;
+    if(!previous)expected=(/** @type {MajorWhatIfRequirementProgress} */ (next)).state==='SATISFIED'
       ?'ALREADY_SATISFIED':'NEW_REQUIREMENT';
     else if(!next)expected='REMOVED_REQUIREMENT';
     else expected=previous.state===next.state
@@ -135,7 +134,8 @@ export const OwnerMajorWhatIfReadySchema=z.strictObject({
   approval:Proof,
   caveat:Caveat,
 }).superRefine((v,ctx)=>{
-  const issue=(path:(string|number)[],message:string)=>ctx.addIssue({
+  /** @param {(string|number)[]} path @param {string} message @returns {void} 검증 오류 기록 */
+  const issue=(path,message)=>ctx.addIssue({
     code:'custom',path,message,
   });
   if(v.current.asOf!==v.asOf||v.hypothetical.asOf!==v.asOf)
@@ -146,14 +146,14 @@ export const OwnerMajorWhatIfReadySchema=z.strictObject({
     current:v.current.requirements,hypothetical:v.hypothetical.requirements,
     delta:v.delta,
   }))issue(['delta'],'Diff must cover each requirement once and match both projections');
-  for(const [key,field] of [
+  for(const [key,field] of /** @type {const} */ ([
     ['currentRulePack','currentRulePackVersion'],
     ['hypotheticalRulePack','hypotheticalRulePackVersion'],
     ['cohort','cohortApplicabilityVersion'],
     ['overlapPolicy','overlapPolicyVersion'],
     ['transcriptProjection','transcriptProjectionVersion'],
     ['core','coreVersion'],
-  ] as const){
+  ])){
     if(v.versions[key]!==v.approval[field])
       issue(['approval',field],'Rule or runtime version is not attested');
   }
@@ -177,5 +177,5 @@ export const OwnerMajorWhatIfReadySchema=z.strictObject({
 export const OwnerMajorWhatIfResponseSchema=z.discriminatedUnion('state',[
   OwnerMajorWhatIfBlockedSchema,OwnerMajorWhatIfReadySchema,
 ]);
-export type OwnerMajorWhatIfRequest=z.infer<typeof OwnerMajorWhatIfRequestSchema>;
-export type OwnerMajorWhatIfResponse=z.infer<typeof OwnerMajorWhatIfResponseSchema>;
+/** @typedef {z.infer<typeof OwnerMajorWhatIfRequestSchema>} OwnerMajorWhatIfRequest */
+/** @typedef {z.infer<typeof OwnerMajorWhatIfResponseSchema>} OwnerMajorWhatIfResponse */
