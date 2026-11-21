@@ -19,8 +19,8 @@
 | 핵심 가치 | 학생에게 주는 경험 | 구현 단계·검증 경계 |
 |---|---|---|
 | **① 선택형 돌발상황 연습** | 마지막 과목 **가상** 신청 실패 상태 확인, 가상 404 화면 후 복귀 | **2차 · `html/vsugang.html`/JavaScript**: `LAST_VALID`·`RECONNECT` 두 설정, 기본 OFF. 대체과목 검색과 시간 충돌 기능은 제외·후속 보류. 원본 `practice.html`·`selectZone.html`을 변경하지 않고 SELECT 동작을 회귀 검증합니다. [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) |
-| **② 강의 개설 전망** | 과거 같은 계절의 강의 개설 이력을 근거로 다음 학기와 2~4학기 **수강계획 A/B/C**, 대체 가능 과목을 미리 준비 | **1차 · TypeScript**. 과거 관측값과 검증된 공식 개설 목록을 구분하고, 표본·관측 공백·불확실성을 보여줌. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) |
-| **③ 학사행사·공지 시기 전망** | 졸업시험·논문·졸업인증, 이중전공 신청·변경 등 반복 학사행사의 과거 일정을 분석해 **대략적인 준비 기간**과 확인할 원문 공지를 안내 | **1차 · TypeScript**. 역사적 예상 구간은 학교의 확정 신청기간·학생 마감과 엄격히 구분. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) · [#14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) |
+| **② 강의 개설 전망** | 학기별 개설 근거와 향후 수강계획 A/B/C를 준비 | 과거 HUFS One AI에서 이식한 전망 TS는 현재 JS 동등성 전환 대상. **새 전망 기능은 JS/JSDoc**, 미검수 개설 이력을 공식 확정으로 표시하지 않음. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) |
+| **③ 학사행사·공지 시기 전망** | 졸업·전공 신청 등 학사행사 반복 관측을 통한 대략적 준비 시기 안내 | **새 기능은 JS/JSDoc**, 기존 이식 TS는 조기 전환 대상. 예상 구간은 공식 확정 신청기간·개인 마감과 분리. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) · [#14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) |
 
 **대외 안내의 사실성 계약 (#38):** 외부 소개에는 “내 전공 공지를 찾고, 다음 학기 수강신청을 미리 준비하는 곳”을 설명 문구 후보로 사용하되, **현행 홈·학업 페이지에 별도 대형 홍보 카드나 반복 소개 문구를 다시 넣지 않습니다**. 세 차별점은 **현재 제공 / 합성 시연 / 예정 / 검수 자료 필요** 중 한 상태를 기능별로 명시하고, 과거 개설 횟수는 미래 확률로, 행사 예상 구간은 공식 접수일로, 가상 복구 훈련은 실제 학교 네트워크 장애로 표현하지 않습니다. 외부 비교표는 기능·확인일·공식 링크·실제로 확인한 사용 흐름이 있는 경우에만 작성하고 “최초/유일/무조건 성공” 표현은 객관적 증거 전까지 금지합니다. 학생 사용성 과제는 (A) 확정/전망/검수 필요를 구별하는가, (B) 근거를 실제로 열어보는가, (C) 실패 후 상태 확인·재접속을 판단하는가로 나누어 성공률과 오해 사례를 기록합니다. 경쟁 기능 미확인은 ‘없음’이 아닌 ‘확인 안 됨’으로 둡니다.
 
@@ -62,7 +62,7 @@
 | **3차 — Supabase 연계·제품 안정화** | 신규 데이터 어댑터는 **JavaScript**, DB는 SQL/RLS | 기존 TS를 병행하더라도 새 TS 기능을 작성하지 않고, 승인·읽기/철회·복구 기능을 구축 | 임창용 님 운영·자료 권리·실환경 인수 게이트 |
 | **4차 — JavaScript 소스 통합 검증** | **JavaScript + JSDoc/`checkJs`** 중심 | **조기 이관된** TypeScript 소스의 잔여 파일·정적 타입/런타임·브라우저 전체 회귀와 운영 인수 | **코드 이관은 지금 시작**, 4차 **최종 제품 인수는 3차 실연동 후** |
 
-우리 팀은 **1·2차의 실제 구현과 검증**에 집중합니다. 원개발자가 모방 페이지를 원사이트와 비교해 **직접 제작**했고, `selectZone` 변경은 프로젝트 범위 안에서 진행해도 된다고 사용자에게 답변한 것으로 전달받았습니다. 이는 보호된 학교 서버 소스를 확보했다는 뜻이 아니며, 해당 허락만으로 기본 SELECT 대기열·확인창 동작을 파괴해도 된다는 뜻은 아닙니다(§5.3). **Supabase 사용 또한 원개발자가 허용한다고 답변한 것으로 사용자에게서 확인했습니다.** 실제 Supabase Free($0) 프로젝트의 소유·관리 책임은 **임창용 님**으로 유지하고, 계정·접근 권한·비밀키·실연동 승인과 학교 학사자료 사용권은 별도입니다. 3차 설계 인계만으로 실연동 완료나 4차 착수를 선언하지 않습니다. [운영 책임 #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29)
+우리 팀은 **1·2차의 실제 구현과 검증**에 집중합니다. 원개발자가 모방 페이지를 원사이트와 비교해 **직접 제작**했고, `selectZone` 변경은 프로젝트 범위 안에서 진행해도 된다고 사용자에게 답변한 것으로 전달받았습니다. 이는 보호된 학교 서버 소스를 확보했다는 뜻이 아니며, 해당 허락만으로 기본 SELECT 대기열·확인창 동작을 파괴해도 된다는 뜻은 아닙니다(§5.3). **Supabase 사용 또한 원개발자가 허용한다고 답변한 것으로 사용자에게서 확인했습니다.** 실제 Supabase Free($0) 프로젝트의 소유·관리 책임은 **임창용 님**으로 유지하고, 계정·접근 권한·비밀키·실연동 승인과 학교 학사자료 사용권은 별도입니다. 3차 설계 인계만으로 실연동 완료나 **4차 최종 제품 인수**를 선언하지 않습니다. [운영 책임 #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29)
 
 **현재 작업 원칙(2026-11-21 재확정):** UI/UX를 현재 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일 기준으로 **동결**합니다. 신규 HTML/CSS·메뉴·표시문구의 리디자인은 하지 않고, UI 파일의 예외 수정은 사용자 승인·시각/PC 실기기 QA가 필요합니다. **신규 학업/NLP/데이터 기능과 테스트는 JavaScript + JSDoc만 사용**하며 현재 TS 98개(테스트 42개)는 과거 이식/혼입 코드 이관 대상으로만 유지합니다. 3차 실DB·학교 권리 회신이 없어도 **TS→JS 모듈별 전환을 지금부터 진행**할 수 있습니다. 이는 학교 데이터 실연동/최종 인수 승인과 다릅니다.
 
@@ -396,7 +396,7 @@ index.html — 기존 한모 홈(학기 제목, NOTICE, 이용 시간, 비공식
 - 자료 출처별 접근/재사용 조건, 갱신 주기, 수집 실패·정정/취소 처리, 검수자와 운영 점검.
 - GitHub Pages 데이터 어댑터 전환, API 장애 시 로컬 대체, 테스트·배포·롤백 및 운영자 인수 체크리스트.
 - **임창용 님 운영 관리·Free($0) 유지** 및 개발팀 공동 장애 대응, 관리자 접근권·비밀키 보관·복구 연락망·주기적 데이터 용량/전송량 점검을 명시한 인계 문서. 원개발자 코드 반영 범위와 학교 자료 사용 권한은 별개로 기록합니다.
-- **실연동 인수 기준:** DB/API의 판본·원문 검수·읽기 권한·보안·정적 대체 경로·정정/취소·운영 실패 복구·브라우저 E2E를 실제 승인된 환경에서 확인하고 인수합니다. 문서 인계만으로 제품 완성이나 4차 착수를 선언하지 않습니다.
+- **실연동 인수 기준:** DB/API의 판본·원문 검수·읽기 권한·보안·정적 대체 경로·정정/취소·운영 실패 복구·브라우저 E2E를 실제 승인된 환경에서 확인하고 인수합니다. 문서 인계만으로 제품 완성이나 4차 최종 인수를 선언하지 않습니다.
 
 ### 7.4 학교 회신 전 확정할 데이터·배포 경계 (#30·#31·#32)
 
@@ -440,7 +440,7 @@ index.html — 기존 한모 홈(학기 제목, NOTICE, 이용 시간, 비공식
 4. **장애/복구:** DB/API 5xx·연결 끊김·속도 제한·갱신 지연, 스냅샷 불일치와 복구 가능 백업을 각각 주입하여 유효한 정적 대체 또는 명시적 보류를 확인합니다. 이전 배포 SHA로 롤백 후 경로·데이터 재확인.
 5. **회귀/인수:** 1차 학생 흐름·2차 BASIC/TIME/SELECT 시나리오 OFF/ON, 개인정보 네트워크 요청 0건, 브라우저/접근성 시험을 통과하고 비용·장애 대응·백업 복원·담당 연락처와 **실제 운영 책임자의 명시적 인수**를 기록합니다.
 
-**3차 완료는 실제 운영 환경의 시험 기록과 인수일이 있을 때만** 선언합니다. 위 체크리스트만 작성하거나 정적 샘플에서 성공한 것은 완료가 아니며 4차 JavaScript 소스 이관의 선행 조건을 충족하지 않습니다. [#29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) · [#34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) · [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
+**3차 완료는 실제 운영 환경의 시험 기록과 인수일이 있을 때만** 선언합니다. 위 체크리스트만 작성하거나 정적 샘플에서 성공한 것은 완료가 아니며 4차 최종 제품 인수의 선행 조건을 충족하지 않습니다. 다만 TS→JS 소스 변환 작업 자체는 즉시 시작할 수 있습니다. [#29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29) · [#34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) · [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
 
 ### 7.6 Free($0) 전용 운영·용량·공동 장애 대응 계약 (#29·#30·#34)
 
@@ -507,7 +507,7 @@ index.html — 기존 한모 홈(학기 제목, NOTICE, 이용 시간, 비공식
 | PC 전용 지원·접근성 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72), [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39), [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | Windows PC Chrome/Edge·키보드·NVDA, 비지원 기기 안내 |
 | 자료 이용 조건 준수·라이선스 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73), [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41), [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) | 학교 회신 이후 실제 자료·배포 후보에서 제한 위반 없음 |
 | 3차 Supabase Free 실연동/보안/인수 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64), [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65), [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66), [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | 물리 DB·RLS·스냅샷·무료 용량·장애 복원·운영 인수 실증 |
-| 4차 TS→JS 이관 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) | 3차 운영 인수 후 실제 이관 코드의 판정 동등성 |
+| 조기 TS→JS 이관·4차 최종 검증 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) | 이관 코드는 즉시 착수; 4차 제품 최종 승인에는 3차 실운영 인수 필요 |
 | 소개 문구·비교 근거·학생 오해 | [#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) | 제품 상태 표기·비교 출처·학생 시연의 실제 검증 |
 
 **이슈 운영 규칙:** [agent.md](https://github.com/ot4562-glitch/Hanmo_develop/blob/main/agent.md)의 제목·차수·P0/P1/P2·담당자·선행 조건·검증 가능한 완료 기준을 따릅니다. `[설계]`는 사용자/팀의 설계 결정과 아키텍처 반영까지만 추적하고, `[구현]`/ `[검증]`은 별도의 실행 결과가 확인된 때 닫습니다. 새 실데이터나 실환경이 들어왔다는 이유만으로 닫힌 설계 이슈를 재개하지 않고, **실제 설계 선택의 변경이 필요한 때**에만 정책을 수정합니다.
