@@ -68,7 +68,7 @@ function docsOf(sf){
 for(const path of old){
   const absolute=join(root,path);
   const input=readFileSync(absolute,'utf8');
-  const sf=ts.createSourceFile(path,input,ts.ScriptTarget.Latest,true,path.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);
+  const sf=ts.createSourceFile(path,input,ts.ScriptTarget.Latest,true,path.endsWith('.js')?ts.ScriptKind.TSX:ts.ScriptKind.TS);
   if(sf.parseDiagnostics.length)throw Error(path+': TypeScript 구문 오류 '+sf.parseDiagnostics.map(d=>d.messageText).join(','));
   const {defs,functions}=docsOf(sf);
   // 유효한 TypeScript 원본에서 먼저 실행 코드를 생성하고, 이후 주석만 덧붙인다.
@@ -90,7 +90,7 @@ for(const path of old){
     }
   }
   // 코드나 검사 도구가 아직 참조하는 TypeScript 원본 경로를 JavaScript에 맞춘다.
-  output=output.replace(/(\.test|\.property)?\.tsx?\b/g,match=>match.replace(/\.tsx?$/,'.js'));
+  output=output.replace(/(\.test|\.property)?\.js?\b/g,match=>match.replace(/\.js?$/,'.js'));
   const next=absolute.replace(/\.(?:ts|tsx|mts|cts)$/,'.js');
   if(existsSync(next))throw Error('JS 파일과 이름 충돌: '+next);
   writeFileSync(next,output);
@@ -104,7 +104,7 @@ for(const path of walk(root)){
   if(path.startsWith('js/')&&!path.startsWith('js/academic/'))continue;
   if(path.startsWith('scripts/baselines/'))continue;
   const absolute=join(root,path),input=readFileSync(absolute,'utf8');
-  const updated=input.replace(/(\.test|\.property)?\.tsx?\b/g,match=>match.replace(/\.tsx?$/,'.js'));
+  const updated=input.replace(/(\.test|\.property)?\.js?\b/g,match=>match.replace(/\.js?$/,'.js'));
   if(updated!==input)writeFileSync(absolute,updated);
 }
 
