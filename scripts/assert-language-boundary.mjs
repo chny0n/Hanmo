@@ -1,4 +1,4 @@
-// Prevent accidental new TypeScript modules while the historical source is migrated.
+// 기존 TypeScript 이관 중 새 TS 파일이나 원본 TS의 무검증 변경을 차단한다.
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {readFileSync,readdirSync} from 'node:fs';
@@ -6,8 +6,8 @@ import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const baseline=JSON.parse(readFileSync(resolve(root,'scripts/baselines/ts-migration.json'),'utf8'));
-// Use Git clean filters so an unchanged Windows CRLF checkout hashes to its
-// canonical repository blob. Fallback supports archive/static checkouts.
+// Windows 체크아웃의 줄바꿈이 달라도 Git 저장소의 원본 blob 해시를 사용한다.
+// Git 실행이 불가능한 정적 아카이브에서는 파일 내용으로 계산한다.
 function blobSha(path){
   try{
     return execFileSync('git',['hash-object','--path='+path,path],

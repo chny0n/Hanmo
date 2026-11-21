@@ -2,7 +2,7 @@
 /** @typedef {import('./faculty-directory.js').FacultyTimetableRow} FacultyTimetableRow */
 
 /**
- * Search a student-supplied timetable locally. No network requests or student record lookup.
+ * 학생이 제공한 시간표 안에서만 검색하며 네트워크 요청이나 학교 학적 조회는 하지 않는다.
  * @param {readonly FacultyTimetableRow[]} rows
  * @param {string} query
  * @returns {FacultyTimetableRow[]}

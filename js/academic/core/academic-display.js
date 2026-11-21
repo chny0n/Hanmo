@@ -4,7 +4,7 @@
 /** @typedef {{kind:'NONE'|'VERIFIED'|'SYNTHETIC'|'UNVERIFIED',status:string}} DeadlineDisplay */
 
 /**
- * Require a primary major before a secondary major can affect the local display.
+ * 주전공을 선택하지 않았다면 이중전공 입력만으로 화면의 전공 목록을 만들지 않는다.
  * @param {string} primary
  * @param {string} secondary
  * @returns {string[]}
@@ -17,7 +17,7 @@ export function selectedMajors(primary,secondary){
 }
 
 /**
- * Domain matching alone does not prove the contents are officially reviewed.
+ * 학교 도메인과 주소가 일치해도 공지 내용의 실제 검수·승인을 증명하지 않는다.
  * @param {string|undefined} raw
  * @returns {AcademicSourceLink}
  */
@@ -34,7 +34,7 @@ export function academicSourceLink(raw){
 }
 
 /**
- * Do not show unreviewed or inapplicable deadlines as verified student D-days.
+ * 검수하지 않았거나 학생에게 적용되지 않는 마감일을 확정된 학생용 D-day로 표시하지 않는다.
  * @param {AcademicAgendaItem} item
  * @returns {DeadlineDisplay}
  */
