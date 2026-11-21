@@ -25,3 +25,9 @@ test('기존 영어 주석을 한글 한 단어로 덮어 쓰지 않고 직접 �
   const text='// This English explanation should be translated.\n/** 자료 연결 확인 */';
   assert.equal(findEnglishOnlyComments(text).length,1);
 });
+
+test('여러 줄 객체 타입 선언은 한국어 주석 오류로 오인하지 않는다',async()=>{
+  const {findEnglishOnlyComments}=await import(lib);
+  const source='/**\n * @typedef {{\n *   courseCode:string, title:string,\n *   status:\'UNVERIFIED\'|\'NEEDS_REVIEW\'\n * }} LocalCourse\n */';
+  assert.deepEqual(findEnglishOnlyComments(source),[]);
+});

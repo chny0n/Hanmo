@@ -18,9 +18,19 @@ export function findEnglishOnlyComments(source){
     const initialLine=source.slice(0,start).split('\n').length;
     const body=token.replace(/^\/\/|^\/\*+|\*\/$/g,'');
     const lines=body.split(/\r?\n/);
+    let typeDeclaration=false;
     for(let i=0;i<lines.length;i++){
       let line=lines[i].trim().replace(/^\*\s?/,'').trim();
       if(!line)continue;
+      // 여러 줄에 걸친 JSDoc 객체 타입은 문장이 아니라 선언 구문이다.
+      if(/^@typedef\s+\{\{/.test(line)){
+        typeDeclaration=!/\}\}\s+[A-Za-z_$][\w$]*$/.test(line);
+        continue;
+      }
+      if(typeDeclaration){
+        if(/\}\}\s+[A-Za-z_$][\w$]*$/.test(line))typeDeclaration=false;
+        continue;
+      }
       // 기계 지시문과 변경해서는 안 되는 권리 표시는 번역하지 않는다.
       if(/^(?:@ts-(?:check|nocheck|ignore|expect-error)|@eslint\b|eslint-(?:disable|enable|ignore)|prettier-ignore|istanbul ignore|c8 ignore|SPDX-|Copyright\b|©)/i.test(line))continue;
       // JSDoc의 타입·매개변수 식별자는 그대로 두되 뒤에 붙은 영문 설명은 검사한다.
