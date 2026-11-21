@@ -82,7 +82,7 @@ describe('applySameCourseRules', () => {
     const out = applySameCourseRules([attempt('SYN-A1', 'SYN-OLD')], rules);
     expect(out).toMatchObject({state:'NEEDS_REVIEW', applied:[], held:[{courseId:'SYN-OLD', ruleIds:['SYN-R1', 'SYN-R2'], reason:'AMBIGUOUS'}]});
     expect(out.attempts[0].canonicalCourseId).toBe('SYN-OLD');
-    expect(applySameCourseRules([attempt('SYN-A1', 'SYN-OLD')], [...rules].reverse()).held[0]!.ruleIds).toEqual(['SYN-R1', 'SYN-R2']);
+    expect(applySameCourseRules([attempt('SYN-A1', 'SYN-OLD')], [...rules].reverse()).held[0].ruleIds).toEqual(['SYN-R1', 'SYN-R2']);
   });
 
   it('applies one rule that lists several old courses (e.g. two former section codes)', () => {
