@@ -1,3 +1,4 @@
+// @ts-check
 import {AcademicRulePackVNextSchema} from '../contracts/index.js';
 export const SYNTHETIC_AS_OF='2026-11-05T00:00:00.000Z';
 const date='2026-01-01T00:00:00.000Z';
@@ -26,10 +27,10 @@ export function syntheticMultiDocumentPack(){
     {documentId:'SYN-DOC-B',url:'https://synthetic.invalid/rules/exception',version:'SYN-DOC-V2',
       sha256:'b'.repeat(64),publishedAt:date},
   ],requirements:pack.requirements.map(r=>({...r,exceptionClauseIds:['SYN-C2']})),
-  clauseInventory:[{...pack.clauseInventory[0]!,sourceDocumentId:'SYN-DOC-A'},
-    {clauseId:'SYN-C2',sourceDocumentId:'SYN-DOC-B',kind:'EXCEPTION' as const,sourceSpanRef:'SYN-SPAN-2',
-      coverage:{state:'LINKED' as const,requirementIds:['SYN-TOTAL']}}],
-  validationReport:{...pack.validationReport!,sourceDocumentHashes:[
+  clauseInventory:[{...pack.clauseInventory[0],sourceDocumentId:'SYN-DOC-A'},
+    {clauseId:'SYN-C2',sourceDocumentId:'SYN-DOC-B',kind:/** @type {const} */ ('EXCEPTION'),sourceSpanRef:'SYN-SPAN-2',
+      coverage:{state:/** @type {const} */ ('LINKED'),requirementIds:['SYN-TOTAL']}}],
+  validationReport:{...pack.validationReport,sourceDocumentHashes:[
     {documentId:'SYN-DOC-A',sha256:'a'.repeat(64)},{documentId:'SYN-DOC-B',sha256:'b'.repeat(64)}]}};
 }
 export function syntheticTrustedDocuments(){
@@ -39,4 +40,4 @@ export function syntheticTrustedDocuments(){
     clauses:pack.clauseInventory.map(({clauseId,sourceDocumentId,kind,sourceSpanRef})=>({clauseId,sourceDocumentId,kind,sourceSpanRef}))};
 }
 export const syntheticAcademicSelection={asOf:SYNTHETIC_AS_OF,campus:'SYN-CAMPUS',primaryMajor:'SYN-MAJOR',
-  majorRole:'PRIMARY_MAJOR' as const,admissionType:'REGULAR',curriculumVersion:'SYN-CUR-2024',admissionYear:2024};
+  majorRole:/** @type {const} */ ('PRIMARY_MAJOR'),admissionType:'REGULAR',curriculumVersion:'SYN-CUR-2024',admissionYear:2024};
