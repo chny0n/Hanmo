@@ -6,7 +6,10 @@ export const ROADMAP_SOURCE='hanmo-degree-rescue-v1';
 const STATUSES=new Set(['UNREVIEWED','IN_PROGRESS','DONE','NOT_APPLICABLE']);
 
 /** @typedef {Record<string,'UNREVIEWED'|'IN_PROGRESS'|'DONE'|'NOT_APPLICABLE'>} RoadmapProgress */
-/** @template T @typedef {{profile:T,progress:RoadmapProgress}} RoadmapPayload */
+/**
+ * @template T
+ * @typedef {{profile:T,progress:RoadmapProgress}} RoadmapPayload
+ */
 /** @typedef {Pick<Storage,'getItem'|'setItem'|'removeItem'>} RoadmapStorage */
 
 /** @param {unknown} value @returns {Record<string,unknown>} 입력 객체 */
