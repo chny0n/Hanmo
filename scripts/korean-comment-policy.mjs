@@ -1,5 +1,5 @@
 // @ts-check
-import {tokenizer} from 'acorn';
+import {parse} from 'acorn';
 
 /**
  * JavaScript의 주석 토큰을 분리해 문자열·URL 안의 // 문자를 주석으로 오인하지 않는다.
@@ -13,9 +13,8 @@ export function findEnglishOnlyComments(source){
   /** @type {{line:number,text:string}[]} */
   const comments=[];
   // 문자열·정규식 안의 슬래시를 제외하기 위해 ECMAScript 토크나이저를 사용한다.
-  const lex=tokenizer(source,{ecmaVersion:'latest',sourceType:'module',locations:true,
+  parse(source,{ecmaVersion:'latest',sourceType:'module',locations:true,allowHashBang:true,
     onComment:(_block,text,_start,_end,startLocation)=>comments.push({line:startLocation.line,text})});
-  for(let token=lex.getToken();token.type.label!=='eof';token=lex.getToken()){}
   for(const token of comments){
     const lines=token.text.split(/\r?\n/);
     const initialLine=token.line;
