@@ -1,42 +1,38 @@
-import type {AcademicSummary, ForecastSummary} from '../contracts/index.js';
+// @ts-check
+/** @typedef {import('../contracts/index.js').AcademicSummary} AcademicSummary */
+/** @typedef {import('../contracts/index.js').ForecastSummary} ForecastSummary */
 
 /**
  * 졸업 화면의 표시 모델이다. 학사 계산 코어의 결과를 그대로 보여주며 화면에서 학점을 합산하거나 요건 충족을 판정하지 않는다.
  * 과거 개설 패턴을 확정 개설 정보로 바꾸지 않는다. 1 학점 단위는 0.5학점이다.
  */
-export interface CreditLine { readonly label: string; readonly credits: string }
+/** @typedef {{readonly label:string,readonly credits:string}} CreditLine */
+/**
+ * @typedef {{
+ *   readonly stateText:string,readonly notOfficialText:string,
+ *   readonly credits:readonly CreditLine[],
+ *   readonly deficits:readonly {readonly id:string,readonly text:string}[],
+ *   readonly caveats:readonly string[],readonly rulePackText:string
+ * }} GraduationView
+ */
+/** @typedef {{readonly courseId:string,readonly targetTerm:string,readonly signalText:string,readonly basisText:string,readonly caveat:string}} OutlookItemView */
 
-export interface GraduationView {
-  readonly stateText: string;
-  /** 이 화면은 비공식 학업 보조 기능이므로 졸업 확정이 아니라는 안내를 항상 표시한다. */
-  readonly notOfficialText: string;
-  readonly credits: readonly CreditLine[];
-  readonly deficits: readonly {readonly id: string; readonly text: string}[];
-  readonly caveats: readonly string[];
-  readonly rulePackText: string;
-}
-
-export interface OutlookItemView {
-  readonly courseId: string;
-  readonly targetTerm: string;
-  readonly signalText: string;
-  readonly basisText: string;
-  readonly caveat: string;
-}
-
-const STATE_TEXT: Record<AcademicSummary['state'], string> = {
+/** @type {Record<AcademicSummary['state'],string>} */
+const STATE_TEXT = {
   READY: '규칙 적용 결과',
   NEEDS_REVIEW: '검토가 필요한 결과',
   INSUFFICIENT_DATA: '자료가 부족해 판단할 수 없음',
 };
 
-const DEFICIT_TEXT: Record<AcademicSummary['deficits'][number]['state'], string> = {
+/** @type {Record<AcademicSummary['deficits'][number]['state'],string>} */
+const DEFICIT_TEXT = {
   MISSING: '부족',
   NEEDS_REVIEW: '검토 필요',
   UNKNOWN: '확인 불가',
 };
 
-const SIGNAL_TEXT: Record<ForecastSummary['items'][number]['signal'], string> = {
+/** @type {Record<ForecastSummary['items'][number]['signal'],string>} */
+const SIGNAL_TEXT = {
   CONFIRMED_OFFERED: '개설 확정(공식 공지)',
   CONFIRMED_NOT_OFFERED: '미개설 확정(공식 공지)',
   HISTORICAL_PATTERN: '과거 개설 패턴 — 확정 아님',
@@ -44,21 +40,24 @@ const SIGNAL_TEXT: Record<ForecastSummary['items'][number]['signal'], string> = 
   UNKNOWN: '알 수 없음',
 };
 
-const COVERAGE_TEXT: Record<ForecastSummary['items'][number]['coverage'], string> = {
+/** @type {Record<ForecastSummary['items'][number]['coverage'],string>} */
+const COVERAGE_TEXT = {
   COMPLETE_TERM_CATALOG: '학기 개설목록 전체 확인',
   PARTIAL: '일부 학기 자료만 확인',
   UNKNOWN: '자료 범위 알 수 없음',
 };
 
 /** 학점 단위 12는 6학점, 13은 6.5학점으로 표시한다. */
-export function creditsText(units: number): string {
+/** @param {number} units @returns {string} 0.5학점 단위의 표시 문자열 */
+export function creditsText(units) {
   return `${units % 2 === 0 ? units / 2 : (units / 2).toFixed(1)}학점`;
 }
 
 /** 학점 수치가 표시·보류·비공개된 모든 상태에서 졸업 화면에 나타낸다. */
 export const NOT_OFFICIAL_GRADUATION_TEXT = '공식 졸업 판정이 아닙니다. 확정은 학과·학사지원팀에서 확인해 주세요.';
 
-export function buildGraduationView(s: AcademicSummary): GraduationView {
+/** @param {AcademicSummary} s @returns {GraduationView} 학업 요건의 비공식 표시 결과 */
+export function buildGraduationView(s) {
   return {
     stateText: STATE_TEXT[s.state],
     notOfficialText: NOT_OFFICIAL_GRADUATION_TEXT,
@@ -77,7 +76,8 @@ export function buildGraduationView(s: AcademicSummary): GraduationView {
   };
 }
 
-export function buildOutlookView(f: ForecastSummary): readonly OutlookItemView[] {
+/** @param {ForecastSummary} f @returns {readonly OutlookItemView[]} 개설 전망의 비공식 표시 결과 */
+export function buildOutlookView(f) {
   return f.items.map(i => ({
     courseId: i.courseId,
     targetTerm: i.targetTerm,

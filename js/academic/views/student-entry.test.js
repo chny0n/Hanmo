@@ -1,15 +1,18 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {normalizeStudentEntry,stageStudentEntry,takeStudentEntry,STUDENT_ENTRY_KEY} from './student-entry.js';
 
-function memory():Storage {
-  const values=new Map<string,string>();
+/** @returns {Storage} 단위 테스트용 메모리 저장소 */
+function memory() {
+  /** @type {Map<string,string>} */
+  const values=new Map();
   return {
     get length(){return values.size;},
     clear(){values.clear();},
-    key(i:number){return [...values.keys()][i]??null;},
-    getItem(k:string){return values.get(k)??null;},
-    setItem(k:string,v:string){values.set(k,String(v));},
-    removeItem(k:string){values.delete(k);},
+    key(i){return [...values.keys()][i]??null;},
+    getItem(k){return values.get(k)??null;},
+    setItem(k,v){values.set(k,String(v));},
+    removeItem(k){values.delete(k);},
   };
 }
 
