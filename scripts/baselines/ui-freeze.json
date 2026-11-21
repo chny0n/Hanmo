@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "css/academic-progress.css",
-      "sha": "32a847da85499a7483c60a99b0567388cd320a42"
+      "sha": "e4d415863611808246dd528a6ae4c23335f4b27e"
     },
     {
       "path": "css/developer.css",
@@ -73,15 +73,15 @@
     },
     {
       "path": "html/academic-progress.html",
-      "sha": "7aad26665ec04a7a0464b1cbede81efa34ba79c7"
+      "sha": "0bdc3eac8c2ae2af382049340fff1a95a9e4a435"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "8095d6e9e370b7fcfc63356e0024cf02195c7650"
+      "sha": "32dce600c9a374f70a2c248e95ced526c537babd"
     },
     {
       "path": "html/catalog.html",
-      "sha": "a730454ea4d2c70335edaccab3b4c012653b479a"
+      "sha": "0844b2ea6bad01c0366464064eee213136268901"
     },
     {
       "path": "html/developer.html",
@@ -89,7 +89,7 @@
     },
     {
       "path": "html/forecast.html",
-      "sha": "f2ef9e45fd0026b0493eb42702cd541eb22a621d"
+      "sha": "4065d26f96bd65332d75715ca16bf8f0ce873b2e"
     },
     {
       "path": "html/pc-only.html",
@@ -97,7 +97,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "3d59acf3197425c4dedaaa2e2fe48c0394be54c3"
+      "sha": "64ea3f1fe8db982219b92c10c6189af2069f7f36"
     },
     {
       "path": "html/practice.html",
@@ -113,7 +113,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "7027ffc1d39347411bac64ea80d4b317fc6d2326"
+      "sha": "b8ffc4f0e814cd59b2e53f86ec8061ac2cc835d6"
     },
     {
       "path": "img/background.svg",
@@ -209,11 +209,11 @@
     },
     {
       "path": "js/student-catalog.js",
-      "sha": "de0c936be05c443e841f372fb0e088f1af9e118e"
+      "sha": "caab269772b788d14e495893fc8b56d8be6a4e57"
     },
     {
       "path": "js/student-notices.js",
-      "sha": "d134c2fbd040476df033c55abf04105e6fb4a6f1"
+      "sha": "04beef806f6e561e151357b66e38cd90308c8d7a"
     },
     {
       "path": "js/student-preferences.js",
@@ -225,7 +225,7 @@
     },
     {
       "path": "js/student-progress.js",
-      "sha": "907d4860c0bab3c730d3e04b9602d91380b09765"
+      "sha": "06ed9ead7d271157a035a6f54f3a7568fadbd6e9"
     },
     {
       "path": "js/vsugang-fit.js",

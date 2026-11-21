@@ -1,4 +1,4 @@
-/* Approved course offering search; no synthetic courses or school data harvesting. */
+/* 공개 승인을 받은 강좌를 검색한다. */
 (function(){
  'use strict';
  const query=document.getElementById('catalog-query');
@@ -22,10 +22,7 @@
  };
  function render(){
    results.replaceChildren();
-   if(state!=='READY'){
-     results.append(text('p',messages[state]||messages.INVALID,'hanmo-empty'));
-     return;
-   }
+   if(state!=='READY')return;
    const q=query.value.trim().toLocaleLowerCase('ko');
    const matches=offerings.filter(item=>
      (campus.value==='ALL'||campus.value===item.campus)&&
@@ -33,14 +30,13 @@
        item.title.toLocaleLowerCase('ko').includes(q)));
    status.textContent='검수된 공개 강좌 '+matches.length+'건 / '+offerings.length+
      '건 · 출처 검수일 '+meta.sourceCheckedAt.slice(0,10)+
-     ' · 다음 학기 개설 보장은 아닙니다.';
+     ' · 실제 개설은 학교 원문 확인';
    if(!matches.length){
-     results.append(text('p','조건에 맞는 승인 강좌가 없습니다. 검색어나 캠퍼스를 변경해 보세요.','hanmo-empty'));
+     results.append(text('p','검색 결과 없음','hanmo-empty'));
      return;
    }
    for(const item of matches){
      const card=text('article','','hanmo-item');
-     card.append(text('span','검수된 공개 강좌 · 학기별 근거','hanmo-tag'));
      card.append(text('h3',item.title));
      const campusName=item.campus==='SEOUL'?'서울':'글로벌';
      card.append(text('p',item.courseId+' · '+item.term+' · '+campusName+'캠퍼스'+

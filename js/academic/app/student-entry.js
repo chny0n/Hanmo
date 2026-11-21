@@ -33,7 +33,6 @@ if(context){
    const optional=entry.doubleMajor?' · 이중전공 '+entry.doubleMajor:
      entry.minor?' · 부전공 '+entry.minor:'';
    const cohort=entry.cohort?' · 입학년도 '+entry.cohort:'';
-   context.textContent='선택한 학업 조건: '+campus+' · '+entry.major+optional+cohort+
-    ' · 본인 입력값이며 공식 소속/공지 대상 판정이 아닙니다. 참고 공지의 실제 적용 여부는 학교 원문에서 확인하세요.';
+   context.textContent='자가 입력 프로필: '+campus+' · '+entry.major+optional+cohort;
  }
 }

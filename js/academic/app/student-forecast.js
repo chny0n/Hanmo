@@ -24,22 +24,25 @@ if(!(form instanceof HTMLFormElement)||!(course instanceof HTMLInputElement)
 function paragraph(message){
   const n=document.createElement('p');n.textContent=message;return n;
 }
-/** @param {string} title @param {string} detail @param {string} sub @param {string} notice @returns {void} 연결 상태 표시 */
-function render(title,detail,sub,notice){
+/** @param {string} title @param {string} detail */
+function render(title,detail){
+  const region=(/** @type {HTMLElement} */ (response));
   const heading=document.createElement('h3');heading.textContent=title;
-  (/** @type {HTMLElement} */ (response)).replaceChildren(heading,paragraph(detail),paragraph(sub));
-  (/** @type {HTMLElement} */ (status)).textContent=notice;
+  region.replaceChildren(heading,paragraph(detail));
+  region.hidden=false;
+}
+/** @param {string} message */
+function showStatus(message){
+  (/** @type {HTMLElement} */ (status)).textContent=message;
 }
 /** @type {Record<PublicStatus,string>} */
 const labels={
-  NOT_CONNECTED:'승인된 학기별 강좌 데이터가 아직 연결되지 않았습니다.',
-  EMPTY:'연결은 되었지만 승인된 강좌·개설 자료가 없습니다.',
-  READY:'승인된 공개 강좌 자료가 연결됐습니다. 개설 전망은 추가 근거 검증이 필요합니다.',
-  OFFLINE:'자료 서버에 연결할 수 없습니다. 다시 시도하거나 학교 공식 사이트를 확인하세요.',
-  INVALID:'자료 판본·유효기간을 검증하지 못해 개설 전망을 중단했습니다.'
+  NOT_CONNECTED:'개설 자료 미연결',
+  EMPTY:'승인된 개설 자료 없음',
+  READY:'강좌 자료 연결됨 · 개설 근거 확인 필요',
+  OFFLINE:'자료 서버 연결 실패',
+  INVALID:'자료 판본·유효기간 검증 실패'
 };
-/** @type {PublicStatus} */
-let dataStatus='NOT_CONNECTED';
 let loading=false;
 const kstParts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'numeric'})
   .formatToParts(new Date());
@@ -53,19 +56,13 @@ if(Number.isSafeInteger(yyyy)&&Number.isSafeInteger(mm)){
 async function refresh(){
   if(loading)return;
   loading=true;(/** @type {HTMLButtonElement} */ (retry)).disabled=true;
-  render('개설 근거 연결 상태 확인 중','승인된 공개 자료를 조회하고 있습니다.',
-    '검증되지 않은 강좌 개설 이력을 임의로 표시하지 않습니다.','자료 연결 확인 중');
+  (/** @type {HTMLElement} */ (response)).hidden=true;
+  showStatus('개설 자료 연결 확인 중');
   try{
     const result=dataSource?await dataSource.load():/** @type {const} */ ({status:'OFFLINE'});
-    dataStatus=result.status;
-    const note=labels[dataStatus]??labels.INVALID;
-    render(dataStatus==='READY'?'강의 개설 근거 연결됨':'아직 개설 여부를 판정할 수 없습니다.',
-      note,'과거 관측 자료의 범위·학수번호 동일성·분반 판본 검증 없이 개설 여부를 예측하지 않습니다.',
-      note);
+    showStatus(labels[result.status]??labels.INVALID);
   }catch{
-    dataStatus='OFFLINE';
-    render('강의 개설 자료를 확인할 수 없습니다.',labels.OFFLINE,
-      '안전하게 재사용할 승인된 자료가 없으므로 개설 여부는 미확인입니다.',labels.OFFLINE);
+    showStatus(labels.OFFLINE);
   }finally{loading=false;(/** @type {HTMLButtonElement} */ (retry)).disabled=false;}
 }
 (/** @type {HTMLFormElement} */ (form)).addEventListener('submit',event=>{
@@ -78,14 +75,9 @@ async function refresh(){
       asOf:new Date().toISOString()
     });
     const outcome=forecastOffering(input);
-    render('현재 개설 여부는 확인이 필요합니다.',
-      '과목 '+outcome.courseId+' · '+outcome.targetTerm+'학기 · 근거 검증 전 UNKNOWN',
-      labels[dataStatus]+' 학수번호 동일성과 완전한 학기별 개설 근거가 없으면 개설/미개설로 확정하지 않습니다.',
-      labels[dataStatus]);
+    render('개설 여부 확인 필요',outcome.courseId+' · '+outcome.targetTerm);
   }catch(error){
-    render('입력 내용을 확인해 주세요.',
-      error instanceof Error?error.message:String(error),
-      '학수번호와 학년·학기를 다시 입력해 주세요.','입력 확인 필요');
+    render('입력 확인',error instanceof Error?error.message:String(error));
   }
 });
 (/** @type {HTMLButtonElement} */ (retry)).addEventListener('click',()=>{void refresh();});

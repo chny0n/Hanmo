@@ -85,14 +85,12 @@
 							</fieldset>
 						</li>
 					</ul>
-<fieldset id="scenario-settings" class="hanmo-incident-options" aria-describedby="scenario-settings-note">
-  <legend>돌발상황 연습 (기본값: 아니오)</legend>
-  <p id="scenario-settings-note">기존 접속 대기 시간 설정과 같은 예/아니오 방식입니다. 원하는 상황만 예로 설정한 뒤 확인을 누르세요.</p>
+<fieldset id="scenario-settings" class="hanmo-incident-options">
+  <legend>돌발상황 연습</legend>
   <fieldset class="hanmo-incident-choice">
     <legend>마지막 과목 신청 실패</legend>
     <label><input type="radio" name="incident-LAST_VALID" value="yes" data-scenario-toggle="LAST_VALID"><span>예</span></label>
     <label><input type="radio" name="incident-LAST_VALID" value="no" data-scenario-off="LAST_VALID" checked><span>아니오</span></label>
-    <small>마지막 과목 가상 실패 후 신청 상태 확인</small>
   </fieldset>
   <fieldset class="hanmo-incident-choice">
     <legend>가상 404·접속 끊김</legend>
@@ -152,11 +150,10 @@
 			</section>
 <section id="incident-practice" class="hanmo-incident-practice" aria-label="가상 돌발상황 모의수강신청" tabindex="-1" hidden>
   <div class="hanmo-incident-heading">
-    <div><p class="hanmo-incident-kicker">한국외국어대학교 모의수강신청 · 가상 연습</p>
-    <h2 id="incident-mode">SELECT MODE · 가상 돌발상황</h2></div>
+    <h2 id="incident-mode">SELECT MODE · 가상 돌발상황</h2>
     <button id="incident-exit" type="button">모드 선택으로 돌아가기</button>
   </div>
-  <p class="hanmo-incident-warning">가상 신청 실패·404 연습입니다. 실제 대학 강좌 정보·신청 결과와 연결되지 않습니다.</p>
+  <p class="hanmo-incident-warning">모의 연습 · 실제 수강신청과 무관</p>
   <p id="incident-feedback" class="hanmo-incident-feedback" role="status" aria-live="polite">연습을 시작하세요.</p>
   <section id="incident-404" class="hanmo-example-404" role="alertdialog" aria-modal="true" aria-labelledby="incident-404-title" aria-describedby="incident-404-desc" hidden>
     <h2 id="incident-404-title">404 예시화면 입니다</h2>

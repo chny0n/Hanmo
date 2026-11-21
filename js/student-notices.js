@@ -1,4 +1,4 @@
-/* Read-only academic notices; never show unapproved reference titles or fake deadlines. */
+/* 공개 승인을 받은 학사 공지만 표시한다. */
 (function(){
  'use strict';
  const list=document.getElementById('notice-list');
@@ -41,21 +41,16 @@
      (filter==='ALL'||category(item.type)===filter)&&
      (!search||item.title.toLocaleLowerCase('ko').includes(search))):[];
    list.replaceChildren();
-   count.textContent=String(matches.length)+'개 공지';
-   if(!available||!matches.length){
-     const message=!available
-       ?messages[state]||messages.INVALID
-       :events.length?'조건에 맞는 공지가 없습니다. 검색어 또는 분류를 변경해 보세요.'
-         :messages.EMPTY;
-     list.append(node('p',message,'hanmo-empty'));
+   count.textContent=available?matches.length+'개 공지':'';
+   if(!available)return;
+   if(!matches.length){
+     list.append(node('p','검색 결과 없음','hanmo-empty'));
      return;
    }
    for(const item of matches){
      const card=node('article','','hanmo-item');
-     card.append(node('span','승인된 공개 자료 · 실제 적용 대상은 원문 확인','hanmo-tag'));
      card.append(node('h3',item.title));
-     card.append(node('p','게시일: '+(item.publishedDate||'원문 확인 필요')+
-       ' · 자료 검수: '+(meta?.sourceCheckedAt?.slice(0,10)||'기준일 미확인')));
+     card.append(node('p','게시일: '+(item.publishedDate||'원문 확인 필요')));
      const link=node('a','학교 공식 원문 확인 →');
      link.href=item.sourceUrl;link.rel='noopener noreferrer';link.target='_blank';
      card.append(link);
@@ -68,7 +63,7 @@
    meta=result.meta;
    status.textContent=state==='READY'
      ?'승인 공개판본 '+meta.snapshotId+' · 출처 검수일 '+meta.sourceCheckedAt.slice(0,10)+
-       ' · 실제 신청 가능 여부·학생 대상은 공식 원문에서 확인하세요.'
+       ' · 신청 대상과 마감은 원문 확인'
      :messages[state]||messages.INVALID;
    query.disabled=state!=='READY';
    type.disabled=state!=='READY';

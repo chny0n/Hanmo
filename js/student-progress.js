@@ -1,4 +1,4 @@
-/* Self-reported credit arithmetic only. No persistence and no degree audit. */
+/* 입력한 학점의 합계를 계산한다. */
 (function(){
  'use strict';
  const form=document.getElementById('credit-form');
@@ -18,16 +18,13 @@
    }
    const left=Math.max(0,target-earned);
    summary.replaceChildren();
-   summary.append(text('h3','현재 취득 '+earned+'학점 · 목표까지 '+left+'학점'));
-   summary.append(text('p','수강 중 '+going+'학점과 예정 '+planned+'학점은 취득 학점에 합산하지 않았습니다.'));
-   summary.append(text('p','입력값끼리만 비교한 참고 결과입니다. 재수강, 필수 이수영역, 교육과정 적용 기준은 확인하지 않았습니다.'));
+   summary.append(text('strong','취득 '+earned+'학점 · 남은 '+left+'학점'));
+   summary.append(text('p','수강 중 '+going+'학점 · 예정 '+planned+'학점'));
    bar.style.width=Math.min(100,Math.max(0,earned/target*100))+'%';
-   status.textContent='현재 목표 대비 취득 학점 비율 '+Math.round(Math.min(100,earned/target*100))+'%';
+   status.textContent='목표 달성률 '+Math.round(Math.min(100,earned/target*100))+'%';
  });
  form.addEventListener('reset',()=>{
-   summary.replaceChildren();
-   summary.append(text('h3','숫자를 입력하면 결과가 표시됩니다.'));
-   summary.append(text('p','학칙·대체인정·중복 이수는 계산하지 않습니다.'));
+   summary.textContent='—';
    bar.style.width='0%';status.textContent='';
  });
 })();

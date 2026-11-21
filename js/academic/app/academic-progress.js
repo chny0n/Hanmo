@@ -57,7 +57,7 @@ function renderRecords() {
     if (!records.length) {
         const row = document.createElement('tr'), cell = document.createElement('td');
         cell.colSpan = 5;
-        cell.textContent = '입력한 과목이 없습니다. 취득 완료 또는 수강 중 과목을 추가해 보세요.';
+        cell.textContent = '입력한 과목 없음';
         row.append(cell);
         tbody.append(row);
         return;
@@ -67,7 +67,7 @@ function renderRecords() {
         tr.append(text('td', record.courseId));
         tr.append(text('td', record.term));
         tr.append(text('td', creditsText(record.credits * 2)));
-        tr.append(text('td', record.slot === 'EARNED' ? '취득 완료(자가 입력)' : '수강 중'));
+        tr.append(text('td', record.slot === 'EARNED' ? '취득 완료' : '수강 중'));
         const cell = document.createElement('td'), button = document.createElement('button');
         button.type = 'button';
         button.textContent = '삭제';
@@ -75,7 +75,7 @@ function renderRecords() {
         button.addEventListener('click', () => {
             records.splice(index, 1);
             renderAll();
-            write('record-message', '기록을 삭제했습니다. 이 페이지의 임시 입력만 변경되었습니다.');
+            write('record-message', '기록을 삭제했습니다.');
         });
         cell.append(button);
         tr.append(cell);
@@ -105,7 +105,7 @@ function renderPlanRows() {
     root.replaceChildren();
     const id = selected(), items = plans[id];
     if (!items.length) {
-        root.append(text('p', id + '안에 추가한 과목이 없습니다. 다음 학기별 수강계획을 직접 입력해 보세요.'));
+        root.append(text('p', id + '안에 추가한 과목 없음'));
         return;
     }
     for (const [index, item] of items.entries()) {
@@ -114,12 +114,12 @@ function renderPlanRows() {
         row.append(text('span', item.term + ' · ' + item.courseId + ' · ' + creditsText(item.credits * 2)));
         const button = document.createElement('button');
         button.type = 'button';
-        button.textContent = '과목 제거';
+        button.textContent = '삭제';
         button.setAttribute('aria-label', id + '안 ' + item.term + ' ' + item.courseId + ' 제거');
         button.addEventListener('click', () => {
             plans[id].splice(index, 1);
             renderAll();
-            write('plan-message', id + '안에서 과목을 제거했습니다. 다른 안의 계획은 그대로입니다.');
+            write('plan-message', id + '안에서 과목을 삭제했습니다.');
         });
         row.append(button);
         root.append(row);
@@ -135,8 +135,18 @@ function addMetric(root, label, units) {
     card.className = 'credit-card';
     card.append(text('span', label));
     card.append(text('strong', creditsText(units)));
-    card.append(text('span', '검수된 졸업요건과 무관한 자가 입력 학점'));
     root.append(card);
+}
+/**
+ * @param {HTMLTableRowElement} row
+ * @param {string} label
+ * @param {'row'|'col'} scope
+ */
+function appendHeader(row, label, scope) {
+    const header = document.createElement('th');
+    header.scope = scope;
+    header.textContent = label;
+    row.append(header);
 }
 /** @returns {void} */
 function renderAll() {
@@ -152,54 +162,60 @@ function renderAll() {
             asOf: at, scenario, records, plans: plans[scenario],
         }));
         const first = results[0].audit;
-        addMetric(creditRoot, '입력된 취득 학점 (확정 아님)', first.earnedCreditUnits);
-        addMetric(creditRoot, '입력된 수강 중 학점', first.inProgressCreditUnits);
+        addMetric(creditRoot, '취득', first.earnedCreditUnits);
+        addMetric(creditRoot, '수강 중', first.inProgressCreditUnits);
         if (first.excludedAttempts.length > 0) {
-            const warning = text('p', '중복·미완료 학기 등 확인할 기록 ' + first.excludedAttempts.length + '건은 합산에서 제외 또는 보류되었습니다.');
+            const warning = text('p', '합산 제외·보류 ' + first.excludedAttempts.length + '건');
             warning.className = 'small-note';
             creditRoot.append(warning);
         }
+        const table = document.createElement('table');
+        table.setAttribute('aria-labelledby', 'compare-heading');
+        const columns = table.createTHead().insertRow();
+        appendHeader(columns, '학기', 'col');
         for (const result of results) {
-            const card = document.createElement('article');
-            card.className = 'scenario-card';
-            card.append(text('h3', result.scenario + '안 · 앞으로 ' + SCENARIO_TERMS[result.scenario] + '학기'));
-            card.append(text('p', '대상 학기: ' + result.terms.join(' · ')));
-            const planned = text('p', '계획 학점 ' + creditsText(result.audit.plannedCreditUnits));
-            planned.className = 'important';
-            card.append(planned);
-            const termList = document.createElement('ul');
-            termList.className = 'term-breakdown';
-            for (const term of provisionalTermBreakdown(result)) {
-                const courseCount = term.countedCourses + '과목';
-                const omitted = term.excludedCourses ? ' · 합산 제외/보류 ' + term.excludedCourses + '건' : '';
-                termList.append(text('li', term.term + ' · 계획 학점 ' + creditsText(term.countedCreditUnits)
-                    + ' (' + courseCount + omitted + ')'));
-            }
-            card.append(termList);
-            card.append(text('p', '입력 과목 ' + result.rows.length + '건 · 취득 학점 ' + creditsText(result.audit.earnedCreditUnits)
-                + ' · 수강 중 ' + creditsText(result.audit.inProgressCreditUnits)));
-            const note = text('p', '자료 부족 · 공식 학칙·분반이 없어 졸업 가능 시점/계획 추천을 판정하지 않습니다.');
-            note.className = 'warning';
-            card.append(note);
-            const exclusions = explainProvisionalExclusions(result, records);
-            if (exclusions.length) {
-                const details = document.createElement('details');
-                details.className = 'exclusion-details';
-                details.append(text('summary', '학점 합산에서 제외·보류된 입력 ' + exclusions.length + '건 · 이유 확인'));
-                const list = document.createElement('ul');
-                list.className = 'exclusion-list';
-                for (const excluded of exclusions) {
-                    const item = document.createElement('li');
-                    item.append(text('strong', (excluded.origin === 'record' ? '내 과목 기록' : '이 계획의 과목')
-                        + ' · ' + excluded.courseId + ' · ' + excluded.term));
-                    item.append(text('span', excluded.explanation + ' 다음 확인: ' + excluded.nextAction));
-                    list.append(item);
-                }
-                details.append(list);
-                card.append(details);
-            }
-            root.append(card);
+            appendHeader(columns, result.scenario + '안 · ' + SCENARIO_TERMS[result.scenario] + '학기', 'col');
         }
+        const body = table.createTBody();
+        const breakdowns = results.map(result => new Map(provisionalTermBreakdown(result).map(term => [term.term, term])));
+        for (const term of new Set(results.flatMap(result => result.terms))) {
+            const row = body.insertRow();
+            appendHeader(row, term, 'row');
+            for (const breakdown of breakdowns) {
+                const entry = breakdown.get(term);
+                const cell = row.insertCell();
+                if (entry) {
+                    cell.textContent = creditsText(entry.countedCreditUnits) + ' · ' + entry.countedCourses + '과목';
+                    if (entry.excludedCourses) cell.append(text('small', '제외·보류 ' + entry.excludedCourses + '건'));
+                } else {
+                    cell.textContent = '—';
+                    cell.setAttribute('aria-label', '대상 학기 아님');
+                }
+            }
+        }
+        const totals = table.createTFoot().insertRow();
+        appendHeader(totals, '계획 학점 합계', 'row');
+        for (const result of results) totals.insertCell().textContent = creditsText(result.audit.plannedCreditUnits);
+        root.append(table);
+
+        const details = document.createElement('details');
+        details.className = 'exclusion-details';
+        details.append(text('summary', '합산 제외·보류 내역'));
+        for (const result of results) {
+            const exclusions = explainProvisionalExclusions(result, records);
+            if (!exclusions.length) continue;
+            details.append(text('h3', result.scenario + '안 · ' + exclusions.length + '건'));
+            const list = document.createElement('ul');
+            for (const excluded of exclusions) {
+                const item = document.createElement('li');
+                item.append(text('strong', excluded.courseId + ' · ' + excluded.term
+                    + ' (' + (excluded.origin === 'record' ? '과목 기록' : '계획 과목') + ')'));
+                item.append(text('p', excluded.explanation + ' ' + excluded.nextAction));
+                list.append(item);
+            }
+            details.append(list);
+        }
+        if (details.childElementCount > 1) root.append(details);
     }
     catch (error) {
         const message = '입력 자료를 계산할 수 없습니다: ' + (error instanceof Error ? error.message : String(error));
@@ -226,7 +242,7 @@ get('record-form').addEventListener('submit', event => {
         records.push(row);
         control('record-course', HTMLInputElement).value = '';
         renderAll();
-        write('record-message', '과목 기록을 추가했습니다. 취득 여부와 학점은 학교의 원문으로 별도 확인해야 합니다.');
+        write('record-message', '기록을 추가했습니다.');
     }
     catch (error) {
         write('record-message', error instanceof Error ? error.message : String(error));
@@ -247,7 +263,7 @@ get('plan-form').addEventListener('submit', event => {
         plans[id].push(row);
         control('plan-course', HTMLInputElement).value = '';
         renderAll();
-        write('plan-message', id + '안에 과목을 추가했습니다. 개설 여부·선수요건·충돌은 검수 자료가 없어 확인할 수 없습니다.');
+        write('plan-message', id + '안에 과목을 추가했습니다.');
     }
     catch (error) {
         write('plan-message', error instanceof Error ? error.message : String(error));
