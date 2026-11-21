@@ -10,7 +10,7 @@ if(offenders.length)throw Error('Protected HUFS imitation changed:\n'+offenders.
 const allowed=p=>p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/incident-courses.js','js/incident-options.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('css/')||p.startsWith('html/')
- ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json',
+ ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
  '.gitignore','README.md','AGENTS.md','agent.md'].includes(p);
 const unexpected=changed.filter(p=>!allowed(p));
 if(unexpected.length)throw Error('Unexpected files:\n'+unexpected.join('\n'));
