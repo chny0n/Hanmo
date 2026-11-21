@@ -54,9 +54,9 @@ describe('#40 metrics', () => {
     it('computes Recall@5 and MRR by hand-checked values', () => {
         const cases = [kase('A', { relevant: ['a1', 'a2'] }), kase('B'), kase('C')];
         const runs = [
-            run('A', { ranked: ['x', 'a1', 'y', 'z', 'w', 'a2'] }), // a1 rank2, a2 rank6 → recall 0.5, rr 0.5
-            run('B', { ranked: ['FAQ:B'] }), // recall 1, rr 1
-            run('C', { ranked: ['x', 'y'] }), // recall 0, rr 0
+            run('A', { ranked: ['x', 'a1', 'y', 'z', 'w', 'a2'] }), // a1은 2위, a2는 6위이므로 상위 5개 재현율과 역순위 모두 0.5
+            run('B', { ranked: ['FAQ:B'] }), // 정답이 1위이므로 재현율과 역순위 모두 1
+            run('C', { ranked: ['x', 'y'] }), // 정답이 없어 재현율과 역순위 모두 0
         ];
         const r = evaluateSearchRun(cases, runs);
         expect(r.overall).toEqual({ cases: 3, recallAt5: 0.5, mrr: 0.5 });
@@ -82,7 +82,7 @@ describe('#40 metrics', () => {
         const cases = [kase('A', { intent: 'FAQ' }), kase('B', { intent: 'FAQ' }), kase('C', { intent: 'NOTICE' }), kase('D', { intent: 'COURSE' })];
         const runs = [run('A'), run('B', { predictedIntent: 'NOTICE' }), run('C', { predictedIntent: 'NOTICE' }), run('D', { predictedIntent: 'COURSE' })];
         const r = evaluateSearchRun(cases, runs);
-        // FAQ P=1 R=0.5 F1=2/3, NOTICE P=0.5 R=1 F1=2/3, COURSE F1=1 → macro 7/9
+        // FAQ·공지의 F1은 각각 2/3이고 강좌 F1은 1이므로 전체 매크로 평균은 7/9
         expect(r.intent.macroF1).toBeCloseTo(7 / 9, 5);
         expect(r.intent.confusion.FAQ.NOTICE).toBe(1);
         expect(r.intent.perLabel.UNKNOWN).toBeUndefined();

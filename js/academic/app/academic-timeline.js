@@ -129,7 +129,7 @@ function clearSaved() {
     try {
         sessionStorage.removeItem(ACADEMIC_AUDIT_BRIDGE_KEY);
     }
-    catch { /* storage disabled */ }
+    catch { /* 브라우저 저장소 접근이 제한된 경우 */ }
     fillProfile({ openRequirementIds: null });
     progress = {};
     renderSteps();

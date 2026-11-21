@@ -215,7 +215,7 @@ test('academic pages have no repeated marketing introduction or rounded section 
  assert.doesNotMatch(profile,/CAMPUS LIFE|ACADEMIC PLANNER|내 전공 공지를 찾고/);
  const blocker=fs.readFileSync(path.join(ROOT,'html/pc-only.html'),'utf8');
  assert.doesNotMatch(blocker,/border-radius:20px/);
- // Protected registration imitation files remain unchanged by this UI-only test.
+ // 학생 UI 검사 과정에서도 원본 모의수강신청 파일을 변경하지 않는다.
  for(const name of ['practice.html','selectZone.html'])
   assert.ok(fs.existsSync(path.join(ROOT,'html',name)));
 });
