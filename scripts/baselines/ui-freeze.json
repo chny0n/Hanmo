@@ -33,7 +33,7 @@
     },
     {
       "path": "css/home-fit.css",
-      "sha": "91600c29a28fca6c2649a2eb0bc384e668037665"
+      "sha": "f8a48ace466de9849244b4fa0359f1f1d40666bc"
     },
     {
       "path": "css/incident-404.css",
@@ -165,7 +165,7 @@
     },
     {
       "path": "index.html",
-      "sha": "0c5f9778f78c3dff50072b100e49bf571140fcec"
+      "sha": "4b155e494413a6d3eff5c2380ba1475bda302dfe"
     },
     {
       "path": "js/academic-data-source.js",
@@ -181,7 +181,7 @@
     },
     {
       "path": "js/home-fit.js",
-      "sha": "ecf58c3895f4c6c335572a9a27e1a459f46a836d"
+      "sha": "5942bc5b4991aeb383303d92f642b13994bdd048"
     },
     {
       "path": "js/incident-404.js",
