@@ -147,6 +147,12 @@
         <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked> <span>아니오</span></label>
         <small id="incident-reconnect-description">BASIC에서 수강신청 화면으로 이동할 때 1회 가상 404가 표시됩니다.</small>
       </fieldset>
+      <fieldset class="waiting-setting-group" aria-describedby="incident-capacity-description">
+        <legend>정원 마감 · 대체 과목 찾기</legend>
+        <label><input type="radio" name="incident-CAPACITY" value="yes" data-capacity-toggle> <span>예</span></label>
+        <label><input type="radio" name="incident-CAPACITY" value="no" data-capacity-off checked> <span>아니오</span></label>
+        <small id="incident-capacity-description">BASIC의 첫 신청에 가상 정원 마감을 적용합니다. 마감된 신청 버튼이 사라지면 다른 수강유형에서 가상 대체 과목을 검색하세요.</small>
+      </fieldset>
     </div>
     <div class="incident-option-actions">
       <button class="settingButton" type="submit" value="cancel">취소</button>
@@ -166,6 +172,7 @@
 		<script src="../js/gnb.js"></script>
 		<script src='../js/hanmoSys.js'></script>
 <script src="../js/scenario-settings.js"></script>
+<script src="../js/capacity-settings.js"></script>
     </body>
 
 </html>
