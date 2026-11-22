@@ -1,0 +1,74 @@
+// @ts-check
+import {test,expect} from '@playwright/test';
+
+const safeDate=new Date('2026-11-19T12:00:00+09:00');
+
+/** @param {import('@playwright/test').Page} page */
+async function setPracticeOptions(page){
+  await page.goto('/html/vsugang.html');
+  await page.locator('.psugangVal').fill('3');
+  await page.locator('.vsugangVal').fill('1');
+  await page.locator('input[name="waitingCourseYN"][value="no"]').check();
+  await page.locator('.settingSection .settingButton').click();
+  await expect(page.locator('.settingSection')).toBeHidden();
+}
+
+test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인다',async({page})=>{
+  await page.clock.install({time:safeDate});
+  await setPracticeOptions(page);
+  const tile=page.locator('.basic-mode-tile');
+  await tile.focus();
+  await expect(tile).toBeFocused();
+  await expect(tile).toHaveCSS('clip-path',/polygon/);
+  await tile.hover();
+  await expect.poll(()=>tile.evaluate(element=>
+    Number(getComputedStyle(element,'::before').opacity))).toBeGreaterThan(0.5);
+});
+
+test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',async({page})=>{
+  await page.clock.install({time:safeDate});
+  await setPracticeOptions(page);
+  await page.locator('.basic-mode-tile').click();
+  await expect(page).toHaveURL(/\/html\/practice\.html$/);
+  await page.clock.fastForward(11_000);
+  await page.locator('.sugang').click();
+  await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
+  await expect(page.locator('button.register')).toHaveCount(3);
+  await page.locator('button.register').first().click();
+  await expect(page).toHaveURL(/\/html\/result\.html$/);
+  await expect(page.locator('.result p span')).toContainText('초');
+});
+
+test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 복구를 요구하지 않는다',async({page})=>{
+  await page.clock.install({time:safeDate});
+  await setPracticeOptions(page);
+  await page.locator('#incident-options').click();
+  await expect(page.locator('#scenario-settings')).toBeVisible();
+  await page.locator('[data-scenario-toggle="RECONNECT"]').check();
+  await page.locator('#scenario-settings button[value="save"]').click();
+  await page.locator('.basic-mode-tile').click();
+  await page.clock.fastForward(11_000);
+  await page.locator('.sugang').click();
+  await expect(page).toHaveURL(/\/html\/incident-404\.html$/);
+  await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
+  await expect(page.locator('.navigation')).toHaveAttribute('inert','');
+  await page.reload();
+  await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
+});
+
+test('조작한 과목 수가 결과 화면에서 HTML로 해석되지 않는다',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('deviceInfo','true');
+    localStorage.setItem('practiceSetter','1');
+    localStorage.setItem('psubjectValue','<img src=x onerror=alert(1)>');
+    localStorage.setItem('subjectValue','1');
+    localStorage.setItem('TIMEtime','1.25');
+    localStorage.setItem('SELECTtime','2');
+    localStorage.setItem('SELECTWaitTime','0');
+  });
+  await page.clock.install({time:safeDate});
+  await page.goto('/html/result.html');
+  await expect(page.locator('.time p').first()).toContainText('연습한 과목 수 0개');
+  await expect(page.locator('.time img')).toHaveCount(0);
+  await expect(page.locator('.result p span')).toContainText('초');
+});
