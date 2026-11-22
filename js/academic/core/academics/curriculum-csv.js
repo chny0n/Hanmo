@@ -67,13 +67,14 @@ export function parseLocalCurriculumCsv(csv){
       category,major,semester,campus,cohort,verification:'UNVERIFIED'
     };
     const identity=JSON.stringify([courseCode,major,semester,campus,cohort]);
-    const existing=byIdentity.get(identity)??[];
-    if(existing.length){
+    const existing=byIdentity.get(identity);
+    if(existing){
       course.verification='NEEDS_REVIEW';
-      for(const old of existing)old.verification='NEEDS_REVIEW';
+      if(existing.length===1)existing[0].verification='NEEDS_REVIEW';
+      existing.push(course);
+    }else{
+      byIdentity.set(identity,[course]);
     }
-    existing.push(course);
-    byIdentity.set(identity,existing);
     courses.push(course);
   }
   return {courses,duplicateRows,source:'USER_SUPPLIED_LOCAL_CSV',scope:'UNVERIFIED'};

@@ -33,12 +33,12 @@ export function searchFaqParagraphs(question,items,opts={}){
   /** @type {Map<string,FaqSearchHit>} */
   const best=new Map();
   for(const words of clauses){
+    // 내용어가 없는 절은 검색하지 않는다.
+    const topical=words.filter(w=>!isGenericFaqWord(w));
+    if(topical.length===0)continue;
     // 각 질문 절의 IDF를 문단마다 다시 계산하지 않는다.
     const terms=[...new Set(words.flatMap(w=>synonymsOf(w).flatMap(wordBigrams)))]
       .map(g=>{const n=df.get(g)||0;return {gram:g,weight:Math.log(1+(docs.length-n+0.5)/(n+0.5))};});
-    // 여러 절로 나뉜 질문마다 내용어를 확인해 무관한 문단의 단순 문자열 일치를 배제한다.
-    const topical=words.filter(w=>!isGenericFaqWord(w));
-    if(topical.length===0)continue;
     // 주제어가 한두 개면 모두 일치해야 한다. 예를 들어 '주차 등록'은 '4주차까지'와 다르다.
     // 긴 질문은 내용어 일치 비율을 사용한다.
     const needed=topical.length<=2?topical.length:Math.ceil(topical.length*minMatchedShare);
