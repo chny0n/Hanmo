@@ -11,7 +11,9 @@
     "check:protected": "node scripts/assert-protected.mjs",
     "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs && node scripts/assert-korean-comments.mjs && node --test tests/korean-comment-policy.test.cjs",
     "check:syntax": "node scripts/check-js-syntax.mjs",
-    "check:types": "tsc -p jsconfig.json"
+    "check:types": "tsc -p jsconfig.json",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "papaparse": "5.7.0",
@@ -23,6 +25,7 @@
     "acorn": "8.15.0",
     "esbuild": "0.28.2",
     "typescript": "5.9.3",
-    "vitest": "5.1.1"
+    "vitest": "5.1.1",
+    "@playwright/test": "1.65.1"
   }
 }
