@@ -65,7 +65,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "8ee82321d0722fcff61eaccb97cb5e9b2be5a62c"
+      "sha": "0ab436dc1c210041a7579ffd250df5c255e0fd1b"
     },
     {
       "path": "css/vsugang.css",
@@ -117,7 +117,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "6f2ef774a7477266443506539fde43f9c81730f4"
+      "sha": "a81ec72a66dc1ca64adeaa8c8c6c3363292759e6"
     },
     {
       "path": "img/background.svg",
@@ -177,7 +177,7 @@
     },
     {
       "path": "js/hanmoSys.js",
-      "sha": "5c41b35834b25b94840d01b203f6c81d650a54db"
+      "sha": "cacb16f3da8c4a9a61826234492d7b52ba333e76"
     },
     {
       "path": "js/home-fit.js",
@@ -201,7 +201,7 @@
     },
     {
       "path": "js/result.js",
-      "sha": "78479233fa440c176e5c829da5b15ac0e600018e"
+      "sha": "17b08d91bf33b769e8ff760ab07ed029171fa072"
     },
     {
       "path": "js/scenario-settings.js",
@@ -237,7 +237,7 @@
     },
     {
       "path": "js/vsugang.js",
-      "sha": "61a245964c0380d26f4c11ce14b260e4aac04330"
+      "sha": "f1600cffd02276cc41d0a5c261d90fcec8088b3c"
     }
   ]
 }

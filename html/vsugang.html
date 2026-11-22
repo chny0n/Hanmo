@@ -71,16 +71,16 @@
 						수강신청할 과목 개수
 						<li><input class='textbox vsugangVal' type='textbox'></li>
 						'접속 대기 시간' 활성화 여부
-						<li>
-							<fieldset>
-								<label>
-									<input type='radio' name='waitingYN' value='yes' checked />
-									<span>예(권장)</span>
-								</label>
-								<label>
-									<input type='radio' name='waitingYN' value='no' class='no' />
-									<span>아니오</span>
-								</label>
+						<li class='waiting-setting-groups'>
+							<fieldset class='waiting-setting-group'>
+								<legend>강의 신청에 적용할까요?</legend>
+								<label><input type='radio' name='waitingCourseYN' value='yes' checked /> 예</label>
+								<label><input type='radio' name='waitingCourseYN' value='no' /> 아니오</label>
+							</fieldset>
+							<fieldset class='waiting-setting-group'>
+								<legend>수강신청 페이지 접속 시에 적용할까요?</legend>
+								<label><input type='radio' name='waitingEntryYN' value='yes' /> 예</label>
+								<label><input type='radio' name='waitingEntryYN' value='no' checked /> 아니오</label>
 							</fieldset>
 						</li>
 					</ul>

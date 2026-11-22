@@ -45,15 +45,18 @@ function goPractice(mode){
 function getSettingValue(){
   const preselected=Number(psugangInput.value);
   const requested=Number(vsugangInput.value);
-  const checked=document.querySelector('input[name="waitingYN"]:checked');
-  const waiting=checked?.value;
-  if(!validSetting(preselected,requested,waiting)){
+  const courseWaiting=document.querySelector('input[name="waitingCourseYN"]:checked')?.value;
+  const entryWaiting=document.querySelector('input[name="waitingEntryYN"]:checked')?.value;
+  if(!validSetting(preselected,requested,courseWaiting)||
+    (entryWaiting!=='yes'&&entryWaiting!=='no')){
     alert('설정 값을 다시 확인해주세요.');
     return;
   }
   localStorage.setItem('psubjectValue',preselected);
   localStorage.setItem('subjectValue',requested);
-  localStorage.setItem('waitingValue',waiting);
+  // 기존 waitingValue는 강의 신청 대기열 전용으로 유지한다.
+  localStorage.setItem('waitingValue',courseWaiting);
+  localStorage.setItem('waitingEntryValue',entryWaiting);
   settingSection.style.display='none';
   setValue();
 }
@@ -62,6 +65,17 @@ function openSettingPanel(){
   settingSection.style.display='flex';
   psugangInput.value=localStorage.getItem('psubjectValue');
   vsugangInput.value=localStorage.getItem('subjectValue');
+  // 저장된 사용자 선택을 복원하며, 최초 방문은 HTML의 기본값(예/아니오)을 사용한다.
+  const storedCourse=localStorage.getItem('waitingValue');
+  const storedEntry=localStorage.getItem('waitingEntryValue');
+  if(storedCourse==='yes'||storedCourse==='no'){
+    const choice=document.querySelector('input[name="waitingCourseYN"][value="'+storedCourse+'"]');
+    if(choice)choice.checked=true;
+  }
+  if(storedEntry==='yes'||storedEntry==='no'){
+    const choice=document.querySelector('input[name="waitingEntryYN"][value="'+storedEntry+'"]');
+    if(choice)choice.checked=true;
+  }
 }
 
 setValue();
