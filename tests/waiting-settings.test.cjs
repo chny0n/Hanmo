@@ -156,8 +156,8 @@ test('수강신청 페이지 접속 예는 BASIC과 SELECT 진입 직후 기존 
     assert.deepEqual(h.queued,['start']);
     assert.ok([...h.controls.values()].every(x=>x.inert));
     h.resolveWaiting(true);
-    await Promise.resolve();
-    await Promise.resolve();
+    // VM 내부 Promise의 후속 완료 처리는 다음 이벤트 루프 턴까지 확인합니다.
+    await new Promise(resolve=>setImmediate(resolve));
     assert.ok([...h.controls.values()].every(x=>!x.inert));
     assert.deepEqual(h.movement,[]);
   }
@@ -199,8 +199,7 @@ test('404 예 + 접속 대기 예는 404 직전 대기가 없고 새로고침으
 test('접속 대기 취소는 신청 화면을 우회하지 않고 연습 화면으로 돌아간다',async()=>{
   const h=router({entry:'yes'});
   h.resolveWaiting(false);
-  await Promise.resolve();
-  await Promise.resolve();
+  await new Promise(resolve=>setImmediate(resolve));
   assert.deepEqual(h.movement,[{type:'replace',target:'./practice.html'}]);
   assert.ok([...h.controls.values()].every(x=>!x.inert));
 });
