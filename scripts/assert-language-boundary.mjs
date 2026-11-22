@@ -1,5 +1,4 @@
 // @ts-check
-// 저장소 전체의 TypeScript 소스 금지와 학업 JavaScript 검사 지시문을 점검한다.
 import {readFileSync,readdirSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';

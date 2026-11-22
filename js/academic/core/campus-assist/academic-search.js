@@ -47,7 +47,6 @@
 import {searchFaqParagraphs} from './faq-search.js';
 import {normalizeFaqText,faqWords,wordMatches,textBigrams} from './faq-text.js';
 
-// ───────────── 정규화 ─────────────
 
 /** 흔한 오타 → 표준 표기. 한 글자 차이로 다른 뜻이 되는 단어는 넣지 않는다. */
 /** @type {Readonly<Record<string,string>>} */
@@ -125,7 +124,6 @@ export function normalizeAcademicQuery(raw){
     protectedTokens};
 }
 
-// ───────────── 검색 분야 분류 ─────────────
 
 const COURSE_CUES=/강의|강좌|분반|교수|과목|시간표|개설|수업|학수번호|원어강의|온라인강의/;
 const NOTICE_CUES=/공지|안내|일정|기간|마감|접수|신청\s*기간|발표|모집|언제/;
@@ -152,7 +150,6 @@ export function classifySearchIntent(q){
   return {primary:close.length>1?'UNKNOWN':ranked[0],domains:ranked,ambiguous:close.length>1,scores};
 }
 
-// ───────────── 학생 조건 적용 ─────────────
 
 /**
  * 근거 문단의 적용 조건과 학생 조건을 비교한다. 조건 미기재·학생 값 미입력은 UNKNOWN이다(전체 대상으로 보지 않음).
@@ -180,7 +177,6 @@ export function evidenceApplicability(c,ctx){
   return unknown.length?{applicability:'UNKNOWN',reasons:unknown}:{applicability:'YES',reasons:[]};
 }
 
-// ───────────── 검색 ─────────────
 
 /**
  * 공지·FAQ 근거 문단을 변형 질의로 검색하고 문단별 최고 점수를 남긴다.
