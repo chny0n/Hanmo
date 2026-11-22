@@ -1,6 +1,6 @@
 # 한모 학업 코어 · 학생용 화면 현황
 
-> **현행 기준: 2026-11-23 `main`** · [제품/기술 아키텍처](architecture.md) · [GitHub 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues). 이 문서는 구현 경로와 검증 범위의 안내이며, 공식 학교 자료의 사용 허가·사람 검수·서비스 운영을 완료했다고 선언하지 않습니다.
+> 2026-11-23 `main` 기준. [아키텍처](architecture.md) · [실행 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues). 공식 학사자료 사용권·사람 검수·운영 인수는 미완료입니다.
 
 ## 현재 학생용 PC 화면
 
@@ -21,7 +21,7 @@
 
 - `js/academic/`: **JavaScript/JSDoc 코어·Zod 계약·뷰·테스트**. `js/academic/core/campus-assist/`의 근거 인덱스 [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97), 평가 [#98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98), 공지 후보 추출 [#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99)은 `main`에 있으나 합성 회귀 단계입니다.
 - **`main` 병합 완료:** 통합 학업 검색 [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117), 중요공지 후보 분류 [#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119). 각 PR은 소유자의 코드/CI 검토 후 병합했으며 순수 코어·합성 테스트 단계로 실제 승인 학교 자료·학생 화면 답변은 아직 미연결입니다.
-- **미병합/변경 요청:** FAQ 답변 [#118](https://github.com/ot4562-glitch/Hanmo_develop/pull/118)(#117 병합 후 `main`으로 대상 변경, YES+UNKNOWN 오판), 반복 행사 백테스트 [#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120)(존재하지 않는 MM-DD 입력), 학칙 조항/숫자 대조 [#121](https://github.com/ot4562-glitch/Hanmo_develop/pull/121)(비교 연산자 누락). 협업자 작성 PR은 **별도 협업자 승인 없이도** 소유자 검토·차단 이슈 해결·필수 CI 후 병합 가능하지만, 소유자 본인 Draft #93은 독립 협업자 승인이 있어야 합니다. [운영 규칙](../agent.md).
+- **수정 대기:** FAQ [#118](https://github.com/ot4562-glitch/Hanmo_develop/pull/118)은 혼합 YES/UNKNOWN 근거, 행사 백테스트 [#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120)은 잘못된 월일, 학칙 조항 [#121](https://github.com/ot4562-glitch/Hanmo_develop/pull/121)은 임계값 비교 연산자 문제로 미병합입니다. 작성자별 승인 조건은 [운영 규칙](../agent.md)을 따릅니다.
 - `js/academic-data-source.js`: `NOT_CONNECTED`, `EMPTY`, `OFFLINE`, `INVALID`, `READY` 구분. `data/academic-source-config.json`은 `mode: disabled`이며 승인 학교 자료와 실제 Supabase 공개 API는 **연결되지 않았습니다**.
 - `js/scenario-settings.js`, `js/capacity-settings.js`, `js/hanmoSys.js`, `js/selectZone.js`: 모의 신청 설정 및 합성 돌발상황. `html/practice.html` 원본 행동과 BASIC/TIME/SELECT 대기·키보드·결과를 보호하며, `selectZone` 승인 수정과 기존 원본 보호는 서로 구별합니다.
 - [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)로 TS 소스 이관은 완료됐습니다. 새 `.ts/.tsx/.mts/.cts`와 영어 자연어 주석 추가를 금지하고 `jsconfig.json`의 `checkJs` 및 현행 [`ui-freeze.json`](../scripts/baselines/ui-freeze.json)을 따릅니다.

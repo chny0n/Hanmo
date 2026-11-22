@@ -2,7 +2,7 @@
 
 > **설계 정본:** [docs/architecture.md §7.1](architecture.md)의 데이터 경계·수명주기 계약. 이 문서는 운영자용 절차이며, 설계를 독립적으로 변경하거나 학교의 자료 이용 허가를 대신하지 않습니다.
 >
-> **현황 (2026-11-22):** 현재 `main`에는 **실제 Supabase DB, 실데이터 반입, 자동 보존·정리 기능이 없습니다.** [Draft PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 별도 SQL 초안은 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44982079826)에서 정적 테스트 14/14·설치/권한 검증 20/20 PASS이지만, 운영 설치·공개/API 인수가 아닙니다. [학교 자료 사용권 #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) 확인 전에는 수집·재배포·운영 공개하지 않습니다.
+> **상태 (2026-11-23):** `main`에는 실제 Supabase DB 연결, 학교 자료 반입, 자동 보존·정리 기능이 없습니다. [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 SQL은 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했으나 운영 설치·API·권한 인수를 마치지 않았습니다. [학교 자료 사용권 #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) 확인 전에는 자료를 수집·재배포하지 않습니다.
 
 ## 1. 자료 등급과 보존 정책
 
@@ -33,7 +33,7 @@
 - 매월 분류·기한·철회 상태를 점검하고 매 학년도 전환 시 3개 학년도 경계를 다시 계산합니다.
 - 현재/최근 분반의 보존기간이 끝나면 출처·관측 완전성·검증된 분반 수·과목/학기별 이력을 먼저 검증합니다. 이후 **teaching_assignments → sections** 순서의 상세 제거 계획을 작성합니다. 역사적 과목 개설 관측과 참조 중인 source_revisions는 삭제하지 않습니다.
 - 일반 공지의 상세 후보는 정정/취소와 관련 RulePack/반복 행사 자료로 **필요한 역사 정보를 먼저 추출·검수**합니다. 실제로 지울 수 있는 내용과 남겨야 할 감사 증거를 분리합니다.
-- **검수 확정·철회:** Draft #93에서 출처는 `DRAFT` 스냅샷에만 연결할 수 있게 하는 트리거를 제안합니다. `READY` 또는 공개 후 출처 연결 추가·수정·삭제는 거부하고, `REVOKED`는 상태 복원·삭제·동일 ID 재발행을 거부하며 공개 전 후보도 철회 감사에 남기도록 했습니다. **코드가 Draft PR에만 있으므로 실제 DB에 적용된 정책이라고 주장하지 않습니다.**
+- **검수 확정·철회:** Draft #93은 `DRAFT`에서 첫 검수·승인 기록이 생기면 출처 연결을 동결합니다. `READY` 이후에도 출처 추가·수정·삭제를 금지합니다. `REVOKED`는 공개 전 후보까지 감사에 남기며, 복원·삭제·동일 ID 재발행을 막습니다. 이 SQL은 운영 DB에 설치되지 않았습니다.
 - 공개 스냅샷은 승인된 현행판 중심으로 크기를 제한합니다. 지난판 payload를 무한 복제하지 말고, 안전한 롤백 필요·철회 의무·독립 승인·백업을 확인한 뒤 별도 코드 리뷰를 거친 정리 기능을 적용합니다. **철회판본은 재활성화 금지**입니다.
 - 어떤 DELETE/아카이브/인덱스 정리도 **운영자 사전 승인, 영향행 미리보기, 참조관계 검사, 검수된 최신판 보존, 수동 암호화 백업·복구 시험 및 사후 DB 용량 측정** 이전에는 실행하지 않습니다. 권리 철회 시 데이터 공개를 즉시 중지하는 것은 보존기간보다 우선합니다.
 
@@ -52,6 +52,6 @@
 - [ ] 공지의 단순 안내/반복 행사/규정 변경 분류와 최신·정정·취소·90일 경계 검증
 - [ ] 출처 권리 철회 시 공개 스냅샷·FAQ·예측 근거가 함께 무효화되고 구판 복구 불가능함을 검증
 - [ ] 1개 학기 표본 기반 DB·인덱스/전송량 실측, 2년 성장 투영, 백업/복원 검증
-- [ ] 소스 코드 PR에 대한 작성자 외 협업자 검토 승인·실제 Supabase 인수·운영자 승인
+- [ ] 소유자 작성 PR의 협업자 승인 또는 협업자 작성 PR의 소유자 검토, 그리고 실제 Supabase 인수·운영자 승인
 
-**미구현 경계:** PR #93의 최초 설치 SQL은 별도 Draft의 빈 테이블/승인 공개 구조 초안이며, 격리 PostgreSQL 설치·역할/철회 검증까지 수행했습니다. 실제 Supabase 운영 DB에는 적용되지 않았습니다. 자동 90일 만료 삭제, 3개 학년도 분반 압축, 스냅샷 payload 중복 제거, REST 부분 조회, 법적 보존 판단은 아직 구현·실검증되지 않았습니다. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)·[#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65)·[#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)·[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)에서 별도로 확인합니다.
+**미구현:** #93 SQL은 격리 PostgreSQL 설치·권한·철회 회귀까지만 검증했습니다. 실제 Supabase 운영 DB에는 적용되지 않았고, 자동 90일 삭제·3개 학년도 분반 압축·payload 중복 제거·REST 부분 조회·법적 보존 판단은 구현하지 않았습니다. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)·[#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65)·[#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)·[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)에서 별도로 확인합니다.
