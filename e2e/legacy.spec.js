@@ -6,6 +6,8 @@ const safeDate=new Date('2026-11-19T12:00:00+09:00');
 /** @param {import('@playwright/test').Page} page */
 async function setPracticeOptions(page){
   await page.goto('/html/vsugang.html');
+  await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+  await expect(page.locator('.settingSection')).toBeVisible();
   await page.locator('.psugangVal').fill('3');
   await page.locator('.vsugangVal').fill('1');
   await page.locator('input[name="waitingCourseYN"][value="no"]').check();
