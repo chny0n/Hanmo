@@ -15,6 +15,18 @@ async function setPracticeOptions(page){
   await expect(page.locator('.settingSection')).toBeHidden();
 }
 
+/** @param {import('@playwright/test').Page} page */
+async function useAllowedPracticeHour(page){
+  // 원본의 이용 제한 시각만 고정하고 타이머와 performance 탐색 정보는 그대로 둔다.
+  await page.addInitScript(()=>{
+    const NativeDate=Date;
+    window.Date=class extends NativeDate {
+      getHours(){return 12;}
+      getMinutes(){return 0;}
+    };
+  });
+}
+
 test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인다',async({page})=>{
   await page.clock.install({time:safeDate});
   await setPracticeOptions(page);
@@ -29,7 +41,7 @@ test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인�
 });
 
 test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',async({page})=>{
-  await page.clock.setFixedTime(safeDate);
+  await useAllowedPracticeHour(page);
   // 원작의 확인·완료 대화상자를 실제 브라우저에서 수락해야 신청이 진행된다.
   page.on('dialog',dialog=>{void dialog.accept();});
   await setPracticeOptions(page);
@@ -50,7 +62,7 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
 });
 
 test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 복구를 요구하지 않는다',async({page})=>{
-  await page.clock.setFixedTime(safeDate);
+  await useAllowedPracticeHour(page);
   await setPracticeOptions(page);
   await page.locator('#incident-options').click();
   await expect(page.locator('#scenario-settings')).toBeVisible();
@@ -67,16 +79,9 @@ test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 �
   await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
   await expect(page.locator('.navigation')).toHaveAttribute('inert','');
   await page.reload();
-  // 새로고침 탐색 유형과 저장된 일회성 상태를 실패 로그에 남긴다.
-  const browserState=await page.evaluate(()=>({
-    url:location.href,
-    navigation:performance.getEntriesByType('navigation')[0]?.type,
-    legacyNavigation:performance.navigation?.type,
-    saved:sessionStorage.getItem('hanmo.synthetic404.transition.v3'),
-    api:typeof window.HanmoIncident404,
-    time:Date.now(),
-  }));
-  console.log('404_BROWSER_STATE '+JSON.stringify(browserState));
+  await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
+  // 실패 상태가 없는 직접 오류 페이지 방문은 원래 신청 화면으로 복귀한다.
+  await page.goto('/html/incident-404.html');
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
 });
 
