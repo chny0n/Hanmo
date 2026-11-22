@@ -104,10 +104,10 @@ test('academic entry handoff and three A/B/C plans integrate into existing pages
   assert.ok(planner.includes('id="'+id+'"'),id);
  assert.ok(planner.includes('../js/student-entry.js'));
  assert.ok(notices.includes('id="notice-context"'));
- for(const id of ['record-form','record-rows','credit-overview','scenario-choice',
-  'plan-form','scenario-comparison','plan-term','plan-course'])
+ for(const id of ['degree-context-summary','degree-credit-form','degree-guidance','degree-credits-panel','degree-requirements-panel'])
   assert.ok(progress.includes('id="'+id+'"'),id);
- assert.ok(progress.includes('../js/academic-progress.js'));
+ assert.doesNotMatch(progress,/degree-advanced|record-form|plan-form|scenario-choice|academic-progress\.js|student-progress\.js/);
+ assert.ok(progress.includes('../js/degree-preparation.js'));
  assert.ok(progress.includes('../css/academic-progress.css'));
  assert.doesNotMatch(progress,/class="planner-sidebar"|type="file"|<textarea/);
  const plannerNav=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
@@ -252,16 +252,17 @@ test('홈·모드·학업·개발자 조작에만 느린 글로우를 적용한�
  const home=fs.readFileSync(path.join(ROOT,'css/home-fit.css'),'utf8');
  const common=fs.readFileSync(path.join(ROOT,'css/hanmo-components.css'),'utf8');
  const credit=fs.readFileSync(path.join(ROOT,'css/academic-progress.css'),'utf8');
- for(const css of [mode,home,common,credit]){
-   assert.ok(css.includes('radial-gradient'));
-   assert.ok(css.includes('transition: opacity 1.08s'));
-   assert.ok(css.includes('prefers-reduced-motion'));
- }
+ for(const css of [mode,home,common]){
+    assert.ok(css.includes('radial-gradient'));
+    assert.ok(css.includes('transition: opacity 1.08s'));
+    assert.ok(css.includes('prefers-reduced-motion'));
+  }
+  assert.doesNotMatch(credit,/radial-gradient|\.progress-main \.progress-form button::before/,
+    '졸업 준비의 신규 미니멀 조작에는 별도 글로우를 두지 않는다');
  assert.ok(common.includes('--hm-glow-ease'));
  assert.ok(home.includes('body.hanmo-home .button::before'));
  assert.ok(common.includes('body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a)::before'));
  assert.ok(common.includes('body.hanmo-flat-legacy .container > .button::before'));
- assert.ok(credit.includes('.progress-main .progress-form button::before'));
  assert.ok(mode.includes('.grid > .basic-mode-tile'));
  assert.ok(common.includes('.hanmo-topbar .hanmo-nav-inline a::before'));
  assert.ok(!credit.includes('.progress-main table::before'));
