@@ -18,6 +18,8 @@
 | **Supabase 3차** | **Draft PR [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 `main` 미병합**. 분리된 PostgreSQL 16 CI에서 Node 14/14, SQL 보안 점검 20/20, 철회·출처 변경 회귀 통과([실행](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44982079826)); 저장소에 SQL 초안만 존재 | 실 Supabase 프로젝트 설치/REST·RLS·권한/경합/백업/실데이터 인수 없음. 학교 권리 미확인, 유료화 금지, 자동 90일 정리·분반 압축·경량 API 미구현. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)–[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
 | **공개·브라우저 품질** | 포크의 Pages QA 빌드/사이트맵 8개 공용 URL은 [#107](https://github.com/ot4562-glitch/Hanmo_develop/pull/107)에서 반영. `dist`에 원본 도메인 `CNAME`을 포함하지 않음 | QA Pages와 원본 운영 도메인은 별도. 공개 라이선스/학교 권리·NVDA·Windows 브라우저·실운영 승인은 완료되지 않음. [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72)·[#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
 
+**품질 증거의 범위:** npm 잠금 파일의 고정 설치·Node 회귀·실제 Chromium 자동 조작 테스트는 서로 다른 검증 단계입니다. E2E 자동화 결과를 Windows Chrome/Edge·NVDA·고배율 실기기 인수로 표시하지 않습니다. 역사적 감사·에이전트용 디자인 체크리스트와 현재 정책은 [문서 안내](README.md)에서 구분합니다.
+
 **단일 정본과 실행 목록:** 이 문서에는 **현재 정책·설계·미완료 인수 조건**만 둡니다. [문서/이슈 상태 색인](pending-issues.md)은 현재 열린 실행 이슈를 연결하고, 개별 작업의 테스트 로그·진행 이력은 GitHub Issues와 PR에 남깁니다. [학업 코어 안내](academic-core.md)·[SQL/데이터 인계](student-data-source-handoff.md)·[수명주기 운영 체크리스트](academic-data-lifecycle-operations.md)는 여기의 상태와 충돌할 수 없습니다. **배포·학교 공식 서비스·수강신청 실서버·로그인/학적은 이 프로젝트가 제공하지 않습니다.**
 
 

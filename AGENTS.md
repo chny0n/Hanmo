@@ -1,6 +1,6 @@
 # Agent instructions
 
-이 저장소의 자동화·코딩 에이전트는 먼저 루트 [agent.md](agent.md)를 읽고 해당 운영 규칙을 따릅니다.
+이 저장소의 자동화·코딩 에이전트는 먼저 루트 [agent.md](agent.md)를 읽고 해당 운영 규칙을 따릅니다. 문서의 용도와 현행/역사적 기록의 구분은 [docs/README.md](docs/README.md)를 참고합니다.
 
 - **[docs/architecture.md](docs/architecture.md)는 현재 유효한 제품·기술 설계의 유일한 기준 문서**입니다. 변경 이력·폐기된 안을 누적하지 않으며, 결정되지 않은 설계는 문서 하단의 **미결 사항 / GitHub Issue**로 관리합니다.
 - 확정된 **문서만** 고칠 때에는 별도 문서 PR을 만들지 않고 `main`에 직접 커밋합니다. 코드 변경은 별도의 PR·테스트·승인 규칙을 따릅니다.
