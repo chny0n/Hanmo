@@ -1,5 +1,7 @@
 # PR #1~#5 파일 선별과 검증
 
+> **역사적 감사 기록 (2026-11-18 당시 기준).** 아래 PR별 SHA·테스트 개수·이관/선별 판정은 당시 작업물에 대한 기록이며, **2026-11-22 현재 `main`의 기능 목록·JS 전환·모의신청·배포 상태를 나타내지 않습니다.** 현행 계약은 [아키텍처 구현 상태표](architecture.md), 작업별 최신 판정은 [이슈 상태 색인](pending-issues.md)을 확인하세요. 이 감사의 과거 숫자·링크는 검증 추적을 위해 그대로 보존합니다.
+
 2026-11-18 KST에 비교한 최종 검증 대상은 [PR #5 e83f3eb](https://github.com/ot4562-glitch/Hanmo_develop/commit/e83f3eb3f29b3159bb28bbf60404afa9f7b733a7)입니다. GitHub의 각 PR 비교에서 133개 변경 행을 확인했습니다. 여러 PR에 걸쳐 수정된 경로는 각각 기록했습니다.
 
 - main의 `2dcac33`과 비교해 기존 `index.html`, `html/`, `js/`, `css/`, `img/`, `CNAME` 경로의 차이는 0건입니다. 최종 검증 대상에 옛 `legacy-academic/` 아카이브 및 `docs/superpowers/`가 포함되지 않습니다.
