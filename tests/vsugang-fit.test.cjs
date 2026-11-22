@@ -126,11 +126,11 @@ test('모드 타일은 기존 명암에 느린 방사형 글로우를 적용한�
 test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 스타일을 사용한다',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
  const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
- assert.equal((html.match(/class=['"]waiting-setting-group['"]/g)||[]).length,3);
+ assert.equal((html.match(/class=['"]waiting-setting-group['"]/g)||[]).length,4);
  assert.match(html,/<fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">/);
  assert.match(html,/<legend id="incident-reconnect-label">가상 404·접속 끊김<\/legend>/);
- for(const name of ['waitingCourseYN','waitingEntryYN','incident-RECONNECT']){
-  const quote=name==='incident-RECONNECT'?'"':"'";
+ for(const name of ['waitingCourseYN','waitingEntryYN','incident-RECONNECT','incident-CAPACITY']){
+  const quote=name.startsWith('incident-')?'"':"'";
   assert.ok(html.includes('name='+quote+name+quote+' value='+quote+'yes'+quote),name+' 예');
   assert.ok(html.includes('name='+quote+name+quote+' value='+quote+'no'+quote),name+' 아니오');
  }
