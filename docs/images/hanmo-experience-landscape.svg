@@ -12,13 +12,13 @@
 <rect x="0" y="0" width="1440" height="800" rx="0" fill="url(#grid)" stroke="none" stroke-width="1"/>
 <path d="M64 48h5v35h-5z" fill="#F6CC7B"/>
 <text x="89" y="73" fill="#A8C9D7" font-size="20" font-weight="750" letter-spacing="3">HANMO   /   EXPERIENCE</text>
-<text x="66" y="139" fill="#F5FAFE" font-size="53" font-weight="800" >신청하는 순간은 실전처럼.</text>
-<text x="66" y="201" fill="#F4CB79" font-size="48" font-weight="760" >신청하기 전의 선택은 더 분명하게.</text>
+<text x="66" y="139" fill="#F5FAFE" font-size="53" font-weight="800" >수강신청은 연습하고,</text>
+<text x="66" y="201" fill="#F4CB79" font-size="48" font-weight="760" >다음 학기는 미리 준비하고.</text>
 <rect x="62" y="257" width="643" height="440" rx="24" fill="url(#left)" stroke="#48768D" stroke-width="1.5"/>
 <rect x="735" y="257" width="643" height="440" rx="24" fill="url(#right)" stroke="#487083" stroke-width="1.5"/>
 <rect x="88" y="285" width="212" height="38" rx="18" fill="#183D50" stroke="#4F8598" stroke-width="1"/>
 <text x="194" y="311" fill="#B9DCE7" font-size="18" font-weight="730" text-anchor="middle" letter-spacing="1">PRACTICE · ACTIVE</text>
-<text x="90" y="365" fill="#FFFFFF" font-size="32" font-weight="800" >원작의 모의신청 흐름 유지</text>
+<text x="90" y="365" fill="#FFFFFF" font-size="32" font-weight="800" >수강신청 전, 한 번 더 연습</text>
 <rect x="90" y="394" width="183" height="97" rx="14" fill="#061E2D" stroke="#477188" stroke-width="1"/>
 <text x="108" y="435" fill="#F4CD7E" font-size="30" font-weight="800" >BASIC</text>
 <text x="108" y="470" fill="#C7E0ED" font-size="20" font-weight="500" >전체 과정</text>
@@ -36,7 +36,7 @@
 <text x="92" y="663" fill="#BCD6E3" font-size="20" font-weight="510" >강의 신청 대기 기본 예 · 페이지 접속 대기 기본 아니오</text>
 <rect x="765" y="285" width="225" height="38" rx="18" fill="#123949" stroke="#41778A" stroke-width="1"/>
 <text x="878" y="311" fill="#ACDCE5" font-size="18" font-weight="730" text-anchor="middle" letter-spacing="1">ACADEMICS · PREVIEW</text>
-<text x="771" y="365" fill="#FFFFFF" font-size="32" font-weight="800" >학업 정보는 근거부터</text>
+<text x="771" y="365" fill="#FFFFFF" font-size="32" font-weight="800" >다음 학기 준비를 한곳에</text>
 <rect x="776" y="389" width="565" height="70" rx="13" fill="#102D40" stroke="#315A72" stroke-width="1"/>
 <rect x="794" y="407" width="31" height="31" rx="10" fill="#163E51" stroke="#4C91A4" stroke-width="1"/>
 <path d="M803 422h13m-13 7h13" stroke="#8AD0D8" stroke-width="2" stroke-linecap="round"/>
