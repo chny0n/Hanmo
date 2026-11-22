@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "Current conservative PC UI and original registration paths; changes need explicit approval and full visual/legacy QA.",
+  "purpose": "Current conservative PC UI; user explicitly approved #113-#116 navigation/degree/limited capacity changes. New UI edits still require approval and regression evidence.",
   "files": [
     {
       "path": "css/academic-progress.css",
@@ -17,7 +17,7 @@
     },
     {
       "path": "css/hanmo-components.css",
-      "sha": "6f4b3cf5e27dbd7f434a35aecc0af7aeb3b4aee7"
+      "sha": "617f6f722682e0bb01e76ca263d23c41e90628e8"
     },
     {
       "path": "css/hanmo-flat.css",
@@ -72,24 +72,36 @@
       "sha": "d0f4e1f009d2dee1bb43641919066c1679f7589d"
     },
     {
+      "path": "html/academic-calendar.html",
+      "sha": "6e2deded9de95e8240a4668fb8764eb714b62b19"
+    },
+    {
+      "path": "html/academic-faq.html",
+      "sha": "8324abbcb576a3df77883f17009ecb47a45003fa"
+    },
+    {
       "path": "html/academic-progress.html",
-      "sha": "c5de09b434b7520052b1523d4501e106fdf606f2"
+      "sha": "fb35c87d89b4eb74c2fbedf5e2b76432ee02d157"
+    },
+    {
+      "path": "html/academic-support.html",
+      "sha": "32a731b4b43ab59fd11f9ad24bda1b8353677245"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "72a20cb75b93d618a91624668b3bc072daac88bf"
+      "sha": "ceaa7fffe4fcf88a011bb08ce37324ba02ff3b27"
     },
     {
       "path": "html/catalog.html",
-      "sha": "cd36d7aee9a7bec995b574725b450f795a9447f9"
+      "sha": "6a883fa0aca563731e78ce3e4fe2addca8654d4d"
     },
     {
       "path": "html/developer.html",
-      "sha": "8dbb8a088a24844ae641076472b75015f027fce7"
+      "sha": "ef037fb70adfb8c624959c4bae64ecd328773d3d"
     },
     {
       "path": "html/forecast.html",
-      "sha": "e4eaf6d57881bd25d9eb2303947f6073fd25a7cd"
+      "sha": "7782d3250413751c77c79f6e4a77830c85d9d870"
     },
     {
       "path": "html/incident-404.html",
@@ -101,7 +113,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "27eff06d28866aeb74d5e087a06d409c2f540690"
+      "sha": "9e3cb2ffd4a15b225d275a60060a5b96d1d2572d"
     },
     {
       "path": "html/practice.html",
@@ -109,7 +121,7 @@
     },
     {
       "path": "html/result.html",
-      "sha": "b0fb71046501b446d1647ee41904898cbcc57c8a"
+      "sha": "1fed0cd8dd6cf473c8d82b42d4c6ddc53cd46a6b"
     },
     {
       "path": "html/selectZone.html",
@@ -117,7 +129,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "d67a12259769dca6cf31bad5c52e80f6e6475629"
+      "sha": "edd8c5c557fbffb667395bdbb057063f5365d35f"
     },
     {
       "path": "img/background.svg",
@@ -165,11 +177,23 @@
     },
     {
       "path": "index.html",
-      "sha": "4b155e494413a6d3eff5c2380ba1475bda302dfe"
+      "sha": "dfe4334f403f300b45ab2cf788077065fbf71a3e"
+    },
+    {
+      "path": "js/academic-calendar.js",
+      "sha": "196c41afae75d40d4809139a8f9d790ed13d2489"
     },
     {
       "path": "js/academic-data-source.js",
       "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
+    },
+    {
+      "path": "js/academic-faq.js",
+      "sha": "77f00ba85abb27c3f64d04af60a97a2d19fe9ce6"
+    },
+    {
+      "path": "js/academic-support.js",
+      "sha": "07c9647575a812b904bd603bf48a6eccb4ef2e24"
     },
     {
       "path": "js/capacity-settings.js",
@@ -217,7 +241,7 @@
     },
     {
       "path": "js/student-catalog.js",
-      "sha": "caab269772b788d14e495893fc8b56d8be6a4e57"
+      "sha": "b4c324680fb4e4b7bea774568991c73976c42c54"
     },
     {
       "path": "js/student-notices.js",
@@ -225,11 +249,11 @@
     },
     {
       "path": "js/student-preferences.js",
-      "sha": "7057dcbea2ec19af025c54f4bf34855783f43a24"
+      "sha": "01d0ad75467f17d41d82f56d20a10eded9d53b35"
     },
     {
       "path": "js/student-profile-bar.js",
-      "sha": "179a4a65bc68f75921b79c1b2d334584974e0892"
+      "sha": "8ffc0795e15d564df1dcb6f815186fd821a228df"
     },
     {
       "path": "js/student-progress.js",

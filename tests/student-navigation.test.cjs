@@ -16,7 +16,7 @@ test('public student pages live under html and never request pasted HTML or JSON
 });
 test('index contains only academic links and no duplicate simulation entry',()=>{
  const src=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
- for(const name of student)assert.ok(src.includes('./html/'+name+'.html'),name);
+ for(const name of student.filter(name=>name!=='forecast'))assert.ok(src.includes('./html/'+name+'.html'),name);
  assert.doesNotMatch(src,/<a[^>]+href="\.\/html\/vsugang\.html"/,'home must not link to legacy mock registration');
  assert.doesNotMatch(src,/scenario-settings|scenario-workshop|돌발상황 연습/,'no standalone incident link on home');
  assert.ok(!src.includes('scenario-workshop.html'), 'dead standalone page link');
@@ -133,7 +133,8 @@ test('home restores the original mock registration layout without the academic-e
  const bar=home.match(/<nav class="hanmo-topbar"[\s\S]*?<\/nav>/)?.[0];
  assert.ok(bar);
  const allowed=['./index.html','./html/academic-timeline.html',
-   './html/forecast.html','./html/catalog.html','./html/academic-progress.html','./html/planner.html'];
+   './html/catalog.html','./html/academic-progress.html','./html/academic-calendar.html',
+   './html/academic-faq.html','./html/academic-support.html','./html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
  assert.match(home,/onclick="location\.href='\.\/html\/vsugang\.html'"/);
  const homeScript=fs.readFileSync(path.join(ROOT,'js/index.js'),'utf8');
