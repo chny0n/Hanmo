@@ -18,7 +18,7 @@
 
 | 핵심 가치 | 학생에게 주는 경험 | 구현 단계·검증 경계 |
 |---|---|---|
-| **① 선택형 돌발상황 연습** | BASIC 수강신청 진입 순간의 **가상 404**와 Chrome 새로고침·뒤로가기 복구 | **2차 · `html/vsugang.html`/JavaScript**: `RECONNECT` 예/아니오 한 가지, 기본 OFF. 과거 LAST_VALID·대체과목 검색·충돌 기능은 제외. 원본 `practice.html`·`selectZone.html` 및 SELECT 대기/키보드 동작을 그대로 보존해 검증합니다. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) |
+| **① 선택형 돌발상황 연습** | BASIC 수강신청 전환 시의 **가상 404**와 Chrome 새로고침 복구 | **2차 · `html/vsugang.html`/JavaScript**: `RECONNECT` 예/아니오 한 가지, 기본 OFF. 과거 LAST_VALID·대체과목 검색·충돌 기능은 제외. 원본 `practice.html`·`selectZone.html` 및 SELECT 대기/키보드 동작을 그대로 보존해 검증합니다. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) |
 | **② 강의 개설 전망** | 학기별 개설 근거와 향후 수강계획 A/B/C를 준비 | 과거 HUFS One AI에서 이식한 전망 코어도 JS/JSDoc으로 전환. **새 전망 기능은 JS/JSDoc**, 미검수 개설 이력을 공식 확정으로 표시하지 않음. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) |
 | **③ 학사행사·공지 시기 전망** | 졸업·전공 신청 등 학사행사 반복 관측을 통한 대략적 준비 시기 안내 | **새 기능과 기존 이식 코어 모두 JS/JSDoc으로 통일**. 예상 구간은 공식 확정 신청기간·개인 마감과 분리. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) · [#14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) |
 
@@ -90,7 +90,7 @@ index.html — 기존 한모 홈(학기 제목, NOTICE, 이용 시간, 비공식
   ├─ RECONNECT : 가상 404 예/아니오 1개, 기본 아니오 (LAST_VALID·타이머 제거)
   ├─ js/scenario-settings.js · js/hanmoSys.js · html/incident-404.html · js/incident-404.js
   ├─ ON: BASIC practice.html → selectZone.html 진입 시 정적 404 예시 페이지로 1회 이동
-  │       왼쪽 모의신청 메뉴는 비활성, Chrome 새로고침/뒤로가기만 복구
+  │       왼쪽 모의신청 메뉴는 비활성, Chrome 새로고침으로만 복구 안내
   └─ OFF 및 TIME/SELECT: 기존 html/practice.html → html/selectZone.html → html/result.html
        기존 보호 파일/신청·대기·시계 동작은 손대지 않음; PC-only 정책 유지
 
@@ -136,7 +136,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | **내정보** | 기존 '학업 플래너'를 `내정보`로 표시. 캠퍼스/주전공/이중전공 **또는** 부전공/입학년도 저장·삭제. 선택하지 않은 부전공·이중전공은 상단에서 숨김. `YYYY학번`은 입력한 입학년도일 뿐 실제 학번/로그인 상태가 아님 | `html/planner.html`, `js/student-preferences.js` |
 | **학업 페이지** | 학사 공지·강의 전망·강의 검색·학점 정리·내정보는 **원본 한모의 남색 계열**, **사이드바 금지**, 대형 둥근 카드/외곽 테두리 및 페이지 소개·중복 메뉴 카드 없음. 표·폼과 의미 있는 내용은 유지 | `html/academic-timeline.html`, `html/forecast.html`, `html/catalog.html`, `html/academic-progress.html`, `css/hanmo-flat.css` |
 | **모의신청 모드** | BASIC 오른쪽 아래 **돌발상황** 블록은 선택 기능이므로 설정 유무와 무관하게 **남색**을 유지하며 **404 한 가지(RECONNECT, 기본 OFF)**만 선택합니다. 필수 SETTING의 미설정 경고만 붉은색. TIME/SELECT는 기존 경로를 사용합니다. | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang.js`, `js/scenario-settings.js` |
-| **합성 연습** | 실제 BASIC practice→selectZone 전환 시 1회 정적 가상 404 페이지. 왼쪽 메뉴는 비활성 시각 요소로만 유지하고 Chrome 실제 새로고침/뒤로가기로 정상 selectZone 복구; 화면 안의 복구 버튼은 없음. 실제 학교 네트워크 오류/신청 결과와 비연동, OFF는 원본 진입 | `js/scenario-settings.js`, `js/hanmoSys.js`, `html/incident-404.html`, `js/incident-404.js`, `css/incident-404.css` |
+| **합성 연습** | 실제 BASIC practice→selectZone 전환 시 1회 정적 가상 404 페이지. 왼쪽 메뉴는 비활성 시각 요소로만 유지하고 Chrome 실제 새로고침으로 정상 selectZone 복구; 브라우저 뒤로가기는 지원·안내하지 않음. 화면 안의 복구 버튼은 없음. 실제 학교 네트워크 오류/신청 결과와 비연동, OFF는 원본 진입 | `js/scenario-settings.js`, `js/hanmoSys.js`, `html/incident-404.html`, `js/incident-404.js`, `css/incident-404.css` |
 | **원본·접근 제한** | `practice.html`, `selectZone.html` 및 해당 기존 JS/CSS와 결과/대기열의 핵심 동작 변경 금지. **PC 전용 정책(`js/pc-only.js`)** 유지. 원본 운영 도메인/CNAME은 포크 QA와 별개 | `html/practice.html`, `html/selectZone.html`, `js/pc-only.js` |
 
 **동결의 의미(2026-11-21):** 현행 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 `index.html`, `html/*.html`, `css/*.css`, 최상위 `js/*.js`, `img/*` UI 파일의 blob SHA를 [화면 기준 목록](../scripts/baselines/ui-freeze.json)에서 관리합니다. 임의 재디자인·메뉴 변경·새 UI 자산은 차단하며 보안·접근성·치명적 오류·권리 문제 등 예외는 별도 승인/검증과 기준선 수정이 필요합니다. 화면 동결은 #71 Windows 실기기 검증이 완료됐다는 뜻이 아닙니다.
@@ -264,7 +264,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 | 파일 | 책임 |
 |---|---|
-| `html/vsugang.html`, `js/vsugang.js` | 모드 선택, 필수 SETTING(경고색), 선택형 돌발상황(남색), 저장된 과목 수와 기본 연습 경로 |
+| `html/vsugang.html`, `js/vsugang.js` | 모드 선택, 필수 SETTING(경고색), 선택형 돌발상황(남색) 및 설명 'BASIC MODE의 돌발 상황을 연습해요.', 저장된 과목 수와 기본 연습 경로 |
 | `js/scenario-settings.js` | BASIC/RECONNECT만 세션별 기본 OFF로 선택; 실제 원본 `goPractice(1)` 호출 전 1회 토큰을 등록 |
 | `js/hanmoSys.js` | 원본 practice·selectZone에 이미 포함된 공통 스크립트에서 방문 순서를 확인. 정상 practice 방문 뒤의 selectZone에서만 `incident-404.html`로 별도 브라우저 이동 |
 | `html/incident-404.html`, `css/incident-404.css`, `js/incident-404.js` | 새 합성 404 화면. 원본처럼 보이는 왼쪽 사이드바는 `inert`·disabled·포커스 제외로 완전히 비활성; 오른쪽 표·버튼 등 원본 콘텐츠 제거. 페이지 내부 복구 버튼 없음 |
@@ -278,7 +278,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 - **발생 시점:** BASIC 모드에서 옵션 ON → 원본 `practice.html` 실행 → 기존 시작 대기/원본 `selectZone.html` 진입 → 새 정적 `incident-404.html`로 **1회 이동**. 선택만으로 즉시 404를 띄우거나 0~6초 타이머로 중간에 보여주지 않습니다. 실제 HTTP 응답은 정적 페이지 **200**이며, 학교 시스템·실제 네트워크 오류가 아닌 UI 모의 훈련입니다.
 - **화면:** 수강신청 좌측 바는 원본과 유사한 시각 상태로만 보여 주고, `inert`/모든 버튼 disabled/키보드 포커스 제외로 클릭·Enter·Tab 활성화를 차단합니다. 오른쪽 정상 신청표·탐색·신청/삭제 버튼·기존 타이머는 모두 **숨긴 새로운 페이지**로, 가상 404 메시지와 브라우저 복구 안내만 남깁니다.
-- **복구:** 페이지 내 버튼 없음. **Chrome 실제 새로고침(F5/브라우저 UI)**이 감지되면 토큰을 소비하고 정상 `selectZone.html`로 `location.replace`합니다. **Chrome 뒤로가기**는 브라우저 기록의 정상 `selectZone.html`을 보여 주고 토큰을 소비하여 무한 404 루프를 방지합니다. 뒤로/앞으로 캐시 재방문도 유효성 검사를 수행합니다. `practice` 진입은 기존 `location.replace` 계약을 유지합니다.
+- **복구:** 페이지 내 버튼 없음. **지원하는 복구 안내는 Chrome 실제 새로고침(F5/브라우저 UI)뿐**이며, 감지 시 토큰을 소비하고 정상 `selectZone.html`로 `location.replace`합니다. 오류 화면에는 **'브라우저의 새로고침을 사용하세요.'**라고만 표시합니다. 브라우저 뒤로가기는 기록·캐시 상태에 따라 동작이 달라 **지원하거나 복구 방법으로 안내하지 않습니다**. 기존 뒤로/앞으로 캐시 상태 소비는 무한 오류 재진입 방어로만 유지합니다. `practice` 진입은 기존 `location.replace` 계약을 유지합니다.
 - **신뢰 경계:** `sessionStorage`의 일회성 BASIC 토큰(선택·원본 practice 진입·전환 확인)은 다른 모드·직접 URL·만료/변조 상태에서 거부합니다. 초기 전환 30분, 오류 화면 새로고침 복구 유효성 5분을 상한으로 하되, 유효하지 않은 직접 오류 화면 접속은 정상 `selectZone`으로 복구합니다. 새 방문의 옵션은 항상 OFF입니다. 브라우저 저장소가 차단되면 가상 오류 주입을 포기하고 원본 연습으로 안전하게 진행합니다.
 - **진입 버튼 버그:** `index.html`의 연습 버튼은 시간 제한 안내 중에도 표시·모드 선택 화면까지 이동할 수 있습니다. 기존 모의신청 실제 연습의 09:58~10:10 제한은 그대로이며, 이를 404 또는 메뉴 선택 기능으로 우회하지 않습니다.
 
@@ -481,7 +481,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | **3차 실연동** | 승인된 운영 책임자가 Supabase 실구축·정본 검수·갱신·보안·장애 대체·전체 브라우저 연동 및 인수 완료 |
 | **4차 최종 인수** | 3차 실제 Supabase 인수/안정화 이후, 조기 이관한 JS의 잔여 TS 0개·동등성·정적/브라우저/보안·원본 모드 QA 통과를 확인 |
 
-**현재 구현 상태(2026-11-21):** [#94](https://github.com/ot4562-glitch/Hanmo_develop/pull/94)는 과거 합성 대체과목 검색·미사용 워크숍을 제거했습니다. **현행 2차 목표는 [main 대상 수정 PR #106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)의 단일 404 전환·브라우저 복구입니다. 기존 [#105](https://github.com/ot4562-glitch/Hanmo_develop/pull/105)는 이미 main에 병합된 #104의 작업 브랜치에만 병합됐으므로, main 및 공개 사이트에 LAST_VALID가 그대로 남아 있습니다. #106을 main에 독립 승인·병합하기 전에는 기능 제거 완료로 표시하지 않습니다.** [#95](https://github.com/ot4562-glitch/Hanmo_develop/pull/95)는 오래된 공지 JSON·가상 강좌·개설 예시를 제거하고 미연결/자료 없음/오류 UI를 연결했습니다. [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97)·[#98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98)·[#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99)는 **순수 NLP 코어만** 병합했으며 실제 학사자료·학생 검색 화면에는 미연결입니다. SELECT 대기번호/Enter 연타 실기기 QA(#71), 학교 자료 권리(#27), Supabase 운영 인수(#64–#67)는 미완료입니다. 병합은 운영 배포 승인이 아닙니다.
+**현재 구현 상태(2026-11-21):** [#94](https://github.com/ot4562-glitch/Hanmo_develop/pull/94)는 과거 합성 대체과목 검색·미사용 워크숍을 제거했습니다. **[#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)이 main에 병합되어 LAST_VALID 제거 및 단일 404 전환 코드가 반영됐습니다.** 이전 [#105](https://github.com/ot4562-glitch/Hanmo_develop/pull/105)는 #104 작업 브랜치에만 병합돼 main 반영이 누락됐고, #106으로 바로잡았습니다. 404 사용자 안내·검증은 실제 Chrome 새로고침만 지원하며 브라우저 뒤로가기는 지원하지 않습니다. [#95](https://github.com/ot4562-glitch/Hanmo_develop/pull/95)는 오래된 공지 JSON·가상 강좌·개설 예시를 제거하고 미연결/자료 없음/오류 UI를 연결했습니다. [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97)·[#98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98)·[#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99)는 **순수 NLP 코어만** 병합했으며 실제 학사자료·학생 검색 화면에는 미연결입니다. SELECT 대기번호/Enter 연타 실기기 QA(#71), 학교 자료 권리(#27), Supabase 운영 인수(#64–#67)는 미완료입니다. 병합은 운영 배포 승인이 아닙니다.
 
 ## 10. 미결 설계와 별도 실행 작업
 
@@ -494,7 +494,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 - **[#27 · HMD-021 — 학교 회신에 따른 학사자료 이용 허용 범위·대체 정책](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)**: 사용자가 학교의 회신을 공유하면 공지·FAQ 문단, 강의 이력·시간표, 학칙·졸업요건 각각의 **링크/인용·요약/구조화 저장·재배포/자동 수집** 허용·제한·불허를 기록합니다. 회신이 없거나 불명확한 항목은 `UNKNOWN`으로 남기고 **수집하지 않는 대체 정책**을 확정하면 설계 종료입니다. 실제 자료 다운로드·검수·정확도 시험을 기다리지 않습니다.
 
 - **기능 범위 검토 — 학점 정리(`html/academic-progress.html`, `js/student-progress.js`, A/B/C 학기별 계획):** **선택적 기능·제거 검토 중(미결정)**. 현재 페이지와 계산 기능은 그대로 둡니다. 핵심 목표(공지·개설 근거·모의수강신청) 및 자원 우선순위가 더 중요하면 학점 정리 UI를 감축하거나 제거할 수 있습니다. **여유가 있을 때만** 개인 학점·이수 계산을 추가 개발합니다. 제거를 결정하더라도 공용 학업 코어·다른 학기별 계획·상단 메뉴·저장 계약의 의존성을 먼저 조사하고, 필요한 코드/테스트·네비게이션 변경과 복구 SHA를 승인받아 진행합니다. 공식 졸업 자격 자동 판정은 이 기능의 출시 전제나 구현 완료 항목이 아닙니다.
-- **확정된 범위 조정 — 대체과목 검색·시간 충돌:** **현행 2차 개발에서 제외**하고 기존 합성 후보 검색·번호 충돌 구현 및 미사용 워크숍 모듈까지 제거합니다. 마지막 과목 신청 실패는 제거하고, **practice→selectZone 전환 시점의 가상 404 및 실제 브라우저 뒤로/새로고침 복구만** 유지합니다. 실제 분반·시간표 자료의 이용권(#27)과 검수(#41·#42), 원본 SELECT 대기번호/Enter 동작 실기기 QA(#71)를 확보한 이후에만 **별도 승인으로** 재검토합니다. 이 코드 제거는 운영 배포 승인이나 실제 대체과목 자료 확보를 의미하지 않습니다. [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
+- **확정된 범위 조정 — 대체과목 검색·시간 충돌:** **현행 2차 개발에서 제외**하고 기존 합성 후보 검색·번호 충돌 구현 및 미사용 워크숍 모듈까지 제거합니다. 마지막 과목 신청 실패는 제거하고, **practice→selectZone 전환 시점의 가상 404와 실제 브라우저 새로고침 복구만** 사용자 지원 범위로 유지합니다. 실제 분반·시간표 자료의 이용권(#27)과 검수(#41·#42), 원본 SELECT 대기번호/Enter 동작 실기기 QA(#71)를 확보한 이후에만 **별도 승인으로** 재검토합니다. 이 코드 제거는 운영 배포 승인이나 실제 대체과목 자료 확보를 의미하지 않습니다. [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
 - **현재 구현 원칙:** 1·2차 기본 흐름·기존 UI와 테스트를 보존하고, 가상 신청 실패 확인·재접속·학사공지·개설 전망·근거 검증에 개발 역량을 집중합니다. 보류 기능에 신규 UI·실자료 연결·공개 완료 판정을 배정하지 않습니다. `학점 정리`의 유지/숨김/제거는 별도 사용자 판단 후 진행합니다.
 
 ### 10.2 설계 종료 이후의 실행 책임
