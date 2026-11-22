@@ -141,12 +141,12 @@
   <form class="settingPanel" method="dialog">
     <h2 id="scenario-settings-title">BASIC 모드 돌발상황</h2>
     <div class="incident-option-group">
-      <div id="incident-reconnect-label">가상 404·접속 끊김</div>
-      <fieldset aria-labelledby="incident-reconnect-label">
+      <fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">
+        <legend id="incident-reconnect-label">가상 404·접속 끊김</legend>
         <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"> <span>예</span></label>
         <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked> <span>아니오</span></label>
+        <small id="incident-reconnect-description">BASIC에서 수강신청 화면으로 이동할 때 1회 가상 404가 표시됩니다.</small>
       </fieldset>
-      <small>BASIC에서 수강신청 화면으로 이동할 때 1회 가상 404가 표시됩니다.</small>
     </div>
     <div class="incident-option-actions">
       <button class="settingButton" type="submit" value="cancel">취소</button>

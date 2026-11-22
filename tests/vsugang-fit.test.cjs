@@ -109,3 +109,34 @@ test('설정 유효성 변경은 선택형 돌발상황 타일 색상을 바꾸�
   assert.equal(x.parts.setting.style.background,'#120000');
   assert.equal(x.incident.style.background,undefined);
 });
+
+test('모드 타일은 원본의 어두운 명암을 유지하며 금색 광택을 추가하지 않는다',()=>{
+ const original=fs.readFileSync(path.join(__dirname,'../css/vsugang.css'),'utf8');
+ const fit=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
+ assert.match(original,/opacity:\s*0\.8/);
+ assert.doesNotMatch(fit,/\.grid\s*\{\s*opacity:\s*\.96/);
+ assert.match(fit,/border-color:\s*#203747/);
+ assert.match(fit,/background-color:\s*#091b29/);
+ assert.match(fit,/box-shadow:\s*none/);
+ assert.doesNotMatch(fit,/border-color:\s*rgba\(244,\s*199,\s*108,\s*\.64\)/);
+ assert.doesNotMatch(fit,/inset 0 1px 0 rgba\(255,\s*255,\s*255,\s*\.055\)/);
+});
+
+test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 스타일을 사용한다',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
+ const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
+ assert.equal((html.match(/class=['"]waiting-setting-group['"]/g)||[]).length,3);
+ assert.match(html,/<fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">/);
+ assert.match(html,/<legend id="incident-reconnect-label">가상 404·접속 끊김<\/legend>/);
+ for(const name of ['waitingCourseYN','waitingEntryYN','incident-RECONNECT']){
+  const quote=name==='incident-RECONNECT'?'"':"'";
+  assert.ok(html.includes('name='+quote+name+quote+' value='+quote+'yes'+quote),name+' 예');
+  assert.ok(html.includes('name='+quote+name+quote+' value='+quote+'no'+quote),name+' 아니오');
+ }
+ assert.match(html,/name='waitingCourseYN' value='yes' checked/);
+ assert.match(html,/name='waitingEntryYN' value='no' checked/);
+ assert.match(html,/name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked/);
+ assert.match(css,/\.settingPanel \.waiting-setting-group label:has\(input:checked\)/);
+ assert.match(css,/\.settingPanel \.waiting-setting-group input\[type="radio"\]/);
+ assert.match(css,/prefers-reduced-motion:\s*reduce/);
+});
