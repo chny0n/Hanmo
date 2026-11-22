@@ -27,6 +27,8 @@ test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인�
 
 test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',async({page})=>{
   await page.clock.install({time:safeDate});
+  // 원작의 확인·완료 대화상자를 실제 브라우저에서 수락해야 신청이 진행된다.
+  page.on('dialog',dialog=>{void dialog.accept();});
   await setPracticeOptions(page);
   await page.locator('.basic-mode-tile').click();
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
