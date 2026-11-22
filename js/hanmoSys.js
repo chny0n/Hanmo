@@ -72,4 +72,12 @@ function setSemester(){
 }
 
 setSemester();
-if(!restrictHanmo())routeHanmoIncident();
+if(!restrictHanmo()){
+  routeHanmoIncident();
+  // Chrome의 뒤로가기 캐시 복귀에서는 원본 스크립트가 재실행되지 않을 수 있습니다.
+  if(currentHanmoPage()==='selectZone.html'&&typeof window==='object'){
+    window.addEventListener?.('pageshow',event=>{
+      if(event.persisted)routeHanmoIncident();
+    });
+  }
+}
