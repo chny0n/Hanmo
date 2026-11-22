@@ -34,11 +34,11 @@ function check(){
     $PHONECONTAINER.style.display='flex';
     $ADFIT.style.display='none';
   }
-  // 기존 모의수강신청의 이용 제한 시간(09:58~10:10)을 유지한다.
+  // 제한 시간 안내는 유지하되 선택 화면으로 가는 버튼은 항상 표시합니다.
+  // 실제 모의신청 진입 제한은 하위 연습 화면에서 유지합니다.
   if((nowTime.getHours()===9&&nowTime.getMinutes()>=58)
     ||(nowTime.getHours()===10&&nowTime.getMinutes()<=10)){
-    $SUGANGBUTTON.classList.add('noDisplay');
-    $SUGANGBUTTON.classList.remove('display');
+    // 버튼 대신 상태 안내만 변경합니다.
     $GANEUNG.classList.remove('thisTime');
     $JEHAN.classList.add('thisTime');
   }
