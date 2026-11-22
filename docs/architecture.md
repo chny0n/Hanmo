@@ -147,7 +147,7 @@ TypeScript 소스 0개를 유지; 4차는 실제 데이터·권리·PC/보안 �
 
 ### 3.3 UI 보존 기준선 · 변경 통제 (2026-11-20)
 
-**결정:** 현행 UI/UX 개발은 여기서 멈추고 **동작·배치·페이지 경로·시각적 특징을 보존**합니다. 기준선은 `main` 커밋 [`8766810`](https://github.com/ot4562-glitch/Hanmo_develop/commit/8766810d2e60d5ba11b9bb67eef5b90b67d17472) (GitHub Pages QA 배포 [run #44685445840](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44685445840) 성공)입니다. **이 문서 개정은 UI 파일을 바꾸지 않으며**, 문서 커밋 이후에도 동일한 UI 파일/테스트를 기준으로 삼습니다.
+**결정:** 기존 한모의 UI/UX를 기본으로 **동작·배치·페이지 경로·시각적 특징을 보존**하되, 사용자가 승인한 404 화면·복구 안내·대기시간 설정·선택 상태 저장 등 후속 변경은 현행 UI의 일부로 인정합니다. 커밋 [`8766810`](https://github.com/ot4562-glitch/Hanmo_develop/commit/8766810d2e60d5ba11b9bb67eef5b90b67d17472)은 **2026-11-20 당시 기준**, QA Pages [run #44685445840](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44685445840)은 **당시 배포 성공 이력**입니다. 현재 파일별 기준선은 [UI freeze 목록](../scripts/baselines/ui-freeze.json)이 우선하며, 문서 정리는 UI 소스를 수정하지 않습니다.
 
 | 화면·영역 | 현재 보존할 모습/계약 | 주요 위치 |
 |---|---|---|
@@ -159,7 +159,7 @@ TypeScript 소스 0개를 유지; 4차는 실제 데이터·권리·PC/보안 �
 | **합성 연습** | 실제 BASIC practice→selectZone 전환 시 1회 정적 가상 404 페이지. 왼쪽 메뉴는 비활성 시각 요소로만 유지하고 Chrome 실제 새로고침으로 정상 selectZone 복구; 브라우저 뒤로가기는 지원·안내하지 않음. 화면 안의 복구 버튼은 없음. 실제 학교 네트워크 오류/신청 결과와 비연동, OFF는 원본 진입 | `js/scenario-settings.js`, `js/hanmoSys.js`, `html/incident-404.html`, `js/incident-404.js`, `css/incident-404.css` |
 | **원본·접근 제한** | `practice.html`, `selectZone.html` 및 해당 기존 JS/CSS와 결과/대기열의 핵심 동작 변경 금지. **PC 전용 정책(`js/pc-only.js`)** 유지. 원본 운영 도메인/CNAME은 포크 QA와 별개 | `html/practice.html`, `html/selectZone.html`, `js/pc-only.js` |
 
-**동결의 의미(2026-11-21):** 현행 `main` SHA [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 `index.html`, `html/*.html`, `css/*.css`, 최상위 `js/*.js`, `img/*` UI 파일의 blob SHA를 [화면 기준 목록](../scripts/baselines/ui-freeze.json)에서 관리합니다. 임의 재디자인·메뉴 변경·새 UI 자산은 차단하며 보안·접근성·치명적 오류·권리 문제 등 예외는 별도 승인/검증과 기준선 수정이 필요합니다. 화면 동결은 #71 Windows 실기기 검증이 완료됐다는 뜻이 아닙니다.
+**동결의 의미(현재):** 커밋 [`da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)은 **최초 동결 당시의 역사적 기준**입니다. 그 뒤 `main`에 병합된 사용자 승인 변경까지 포함한 `index.html`, `html/*.html`, `css/*.css`, 최상위 `js/*.js`, `img/*`의 현행 파일별 blob SHA는 [화면 기준 목록](../scripts/baselines/ui-freeze.json)에서 관리합니다. 임의 재디자인·메뉴 변경·새 UI 자산은 차단하며 예외는 사용자 승인/검증과 기준선 수정이 필요합니다. 화면 동결만으로 #71 Windows 실기기 검증이 완료된 것은 아닙니다.
 
 **검증·복원:** `npm run check:legacy`, `npm run check`, `npm run smoke`, 합성 돌발상황·홈 뷰포트/상단 메뉴·내정보 보존 테스트, `dist/`의 정적 자산/PC-only 검사, Windows Chrome/Edge에서 1280×720·1920×1080 및 고배율/키보드 확인을 사용합니다. 문제가 생기면 **기준선의 UI 관련 파일만** 복원하고 이미 검증된 다른 코어·자료 변경을 통째로 되돌리지 않습니다. 문서만 수정할 때는 현재 UI와 원본 코드 SHA·테스트 계약이 그대로인지 확인합니다.
 
@@ -501,7 +501,7 @@ TypeScript 소스 0개를 유지; 4차는 실제 데이터·권리·PC/보안 �
 | 단계 | 통과 조건 |
 |---|---|
 | **1차** | §1.2의 필수 흐름이 검수된 정적 스냅샷으로 동작하고 타입 검사·브라우저 QA·개설 전망 재현 평가 통과. FAQ 공개 범위는 §4.6 평가를 별도 통과. **§3.3 UI 기준선과 원본 수강신청 화면 보호** |
-| **2차** | 원개발자 승인 후 JavaScript·HTML로 기존 시나리오 확장, 실패/재접속 회귀 테스트 통과. 미선택 시 기본 동작 불변 |
+| **2차** | 합성 BASIC 가상 404 한 가지·Chrome 새로고침 복구, 강의 신청/페이지 접속 대기 설정, 같은 탭 선택 복원과 원본 BASIC/TIME/SELECT 회귀 통과. **LAST_VALID는 제외**하며 실기기/원개발자 승인 별도 |
 | **3차 설계 인계** | 우리 팀의 DB·수집·API·보안·운영·전환 설계와 인수 기준 준비 |
 | **3차 실연동** | 승인된 운영 책임자가 Supabase 실구축·정본 검수·갱신·보안·장애 대체·전체 브라우저 연동 및 인수 완료 |
 | **4차 최종 인수** | 3차 실제 Supabase 인수/안정화 이후, 조기 이관한 JS의 잔여 TS 0개·동등성·정적/브라우저/보안·원본 모드 QA 통과를 확인 |
