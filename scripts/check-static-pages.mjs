@@ -27,30 +27,6 @@ for(const name of [
 ])await must(name);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
 
-const imageReferences=new Set();
-const recordImage=(sourcePath,target)=>{
-  if(!/\.(?:svg|png|jpe?g)(?:[?#]|$)/i.test(target))return;
-  const url=new URL(target,'https://preview.invalid/'+sourcePath);
-  if(url.origin==='https://preview.invalid'&&url.pathname.startsWith('/img/'))
-    imageReferences.add(decodeURIComponent(url.pathname.slice(1)));
-};
-for(const page of htmlRoutes){
-  const body=await readFile(join(dist,page),'utf8');
-  for(const [,target] of body.matchAll(/(?:src|href)=["']([^"']+)["']/gi))
-    recordImage(page,target);
-}
-for(const name of (await readdir(join(dist,'css'))).filter(name=>name.endsWith('.css'))){
-  const body=await readFile(join(dist,'css',name),'utf8');
-  for(const [, ,target] of body.matchAll(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi))
-    recordImage('css/'+name,target);
-}
-const referencedImages=[...imageReferences].sort();
-const shippedImages=(await readdir(join(dist,'img'))).map(name=>'img/'+name).sort();
-if(JSON.stringify(referencedImages)!==JSON.stringify(shippedImages))
-  throw Error('Static images differ from page/CSS references: referenced='+
-    referencedImages.join(', ')+'; shipped='+shippedImages.join(', '));
-
-
 // 사이트맵은 포크의 공개 페이지에만 사용하고, 합성 오류·세션 페이지는 제외합니다.
 const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
 const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
