@@ -142,3 +142,23 @@ test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 �
  assert.match(css,/\.settingPanel \.waiting-setting-group input\[type="radio"\]/);
  assert.match(css,/prefers-reduced-motion:\s*reduce/);
 });
+
+test('BASIC은 돌발상황 버튼과 겹치지 않는 역 ㄱ자 시각·클릭 영역을 사용한다',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
+ const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
+ assert.match(html,/class='basic-mode-tile' style='grid-area: b'/);
+ assert.match(css,/\.grid > \.basic-mode-tile\s*\{\s*clip-path:\s*polygon\(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%\)/);
+ assert.match(css,/#incident-options\s*\{\s*grid-area:2 \/ 2 \/ 3 \/ 3/);
+ assert.match(css,/\.basic-mode-tile:focus-visible/);
+});
+
+test('SETTING과 돌발상황이 같은 은은한 호버를 사용하고 상태 배경은 유지한다',()=>{
+ const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
+ const source=fs.readFileSync(path.join(__dirname,'../js/vsugang.js'),'utf8');
+ assert.match(css,/\.grid > :is\(\.setting, #incident-options\):hover\s*\{[^}]*border-color:\s*#4c6b7b;[^}]*box-shadow:\s*inset 0 0 22px/);
+ assert.match(css,/\.grid > #incident-options:hover\s*\{[^}]*background-color:\s*#0b2433/);
+ assert.match(css,/prefers-reduced-motion:[^)]*reduce[^}]*\.grid > :is\(\.setting, #incident-options\)/s);
+ assert.match(source,/setting\.style\.background=background/);
+ assert.match(source,/isSettedValue\?'#001203':'#120000'/);
+ assert.doesNotMatch(css,/\.grid\s*\{\s*opacity:\s*\.96/);
+});

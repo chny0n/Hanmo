@@ -10,7 +10,11 @@ body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
 body.hanmo-vsugang .grid{margin-top:0;--vsugang-narrow-areas:"b b" "b b" "s t" "set t"}
 body.hanmo-vsugang .grid > :is(.setting,#incident-options){border:1px solid #000912;background:#06111c;transition:0.3s}
 body.hanmo-vsugang .grid:has(:hover) > :is(.setting,#incident-options):not(:hover){background:#000a13}
-/* BASIC의 오른쪽 아래 칸을 독립 버튼으로 덮는다. */
+/* BASIC의 오른쪽 아래를 실제로 비워 돌발상황 버튼과 겹치지 않게 한다. */
+body.hanmo-vsugang .grid > .basic-mode-tile {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%);
+}
+/* BASIC의 비운 모서리에 돌발상황 버튼을 별도의 조작 영역으로 배치한다. */
 body.hanmo-vsugang #incident-options{
   grid-area:2 / 2 / 3 / 3;z-index:1;display:flex;flex-direction:column;align-items:flex-start;
   padding:0;color:inherit;text-align:left;cursor:pointer;
@@ -95,6 +99,22 @@ body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {
   background-color: #091b29;
   box-shadow: none;
 }
+/* 두 보조 타일은 남색 음영으로 반응한다. SETTING의 빨강·초록 상태 배경은 보존한다. */
+body.hanmo-vsugang .grid > :is(.setting, #incident-options) {
+  transition: background-color .26s ease-out, border-color .26s ease-out,
+              box-shadow .26s ease-out;
+}
+body.hanmo-vsugang .grid > :is(.setting, #incident-options):hover {
+  border-color: #4c6b7b;
+  box-shadow: inset 0 0 22px rgba(93, 139, 165, .16);
+}
+body.hanmo-vsugang .grid > #incident-options:hover {
+  background-color: #0b2433;
+}
+/* 잘린 BASIC도 키보드 포커스를 구별할 수 있게 내부 윤곽을 유지한다. */
+body.hanmo-vsugang .grid > .basic-mode-tile:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--hm-gold, #f4c76c);
+}
 body.hanmo-vsugang .grid > :is(div[role="button"], button):focus-visible {
   outline: 3px solid var(--hm-gold, #f4c76c);
   outline-offset: -4px;
@@ -129,6 +149,7 @@ body.hanmo-vsugang #scenario-settings[open] .settingPanel {
 }
 @media (prefers-reduced-motion: reduce) {
   body.hanmo-vsugang .grid > :is(div, button),
+  body.hanmo-vsugang .grid > :is(.setting, #incident-options),
   .settingPanel .waiting-setting-group label { transition: none; }
   body.hanmo-vsugang .settingSection .settingPanel,
   body.hanmo-vsugang #scenario-settings[open] .settingPanel { animation: none; }
