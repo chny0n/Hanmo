@@ -29,7 +29,7 @@
 
 수강신청을 앞두고 학생들이 하는 고민은 신청 버튼을 누르는 순간에만 머물지 않습니다. **어떤 강의를 담을지, 내게 해당하는 공지는 무엇인지, 다음 학기를 어떻게 채울지.** 익숙한 연습 화면에서 시작해 이런 질문들을 이어서 살펴볼 수 있다면 어떨까요?
 
-**한모(Hanmo)**는 [dlacked/Hanmo](https://github.com/dlacked/Hanmo)의 **BASIC · TIME · SELECT 모의수강신청**을 토대로, 학사 공지·강의 검색·개설 전망·학점 정리까지 이어지는 학생용 공간을 만들어 갑니다.
+**한모(Hanmo)**는 [dlacked/Hanmo](https://github.com/dlacked/Hanmo)의 **BASIC · TIME · SELECT 모의수강신청**을 토대로, 학사 공지·강의 검색(개설 전망)·졸업 준비·학사 달력·FAQ·공식 상담까지 이어지는 학생용 공간을 만들어 갑니다.
 
 **현재 사용할 수 있는 기능은 BASIC/TIME/SELECT 모의연습, BASIC의 선택형 가상 404·가상 정원 마감, 내정보·학점 직접 입력과 로컬 저장, 졸업 준비 탭, 학사 달력·FAQ·공식 상담 경로 탐색**입니다. 강의 검색에는 개설 전망이 통합되어 있습니다. **학교의 강의·공지·학칙 원문은 아직 승인·연결되지 않았으므로 공식 학사 판정이나 마감 안내를 제공하지 않습니다.**
 
@@ -37,7 +37,7 @@
 
 ## 수강신청은 연습하고, 다음 학기는 미리 준비하고.
 
-![한모의 모의수강신청 3개 모드와 새 가상 404 훈련, 연결 대기 중인 학사공지·강의검색·개설전망을 나란히 보여 주는 전체 너비의 구성도](docs/images/hanmo-experience-landscape.svg)
+![BASIC·TIME·SELECT와 기본 OFF인 가상 404·정원 마감 훈련, 학사공지·강의 검색/전망 및 졸업 준비 화면을 비교한 구성도](docs/images/hanmo-experience-landscape.svg)
 
 <sub>왼쪽은 실제로 연습할 수 있는 모의수강신청, 오른쪽은 학업 준비를 위한 확장 화면입니다. 학사 공지·강의 데이터는 아직 연결 준비 중입니다.</sub>
 
@@ -71,25 +71,28 @@
 ### BASIC 돌발상황, 한눈에 보기
 
 <p align="center">
-  <img src="docs/images/hanmo-basic-flow-compact.svg" width="780" alt="BASIC 연습에서 가상 404를 선택한 경우 1회 오류 화면이 나타나고, 새로고침으로 복구한 다음 접속 대기 설정에 따라 기존 신청을 계속하는 간결한 흐름도">
+  <img src="docs/images/hanmo-basic-flow-compact.svg" width="780" alt="BASIC에서 가상 404(RECONNECT)를 선택하면 새로고침으로 복구하고, 별개로 CAPACITY를 켜면 한 과목의 가상 정원 마감과 합성 후보 검색이 적용되는 흐름도. 둘 다 기본 OFF">
 </p>
 
-<sub>RECONNECT와 CAPACITY는 각각 **기본 OFF**입니다. 이 도식은 가상 404 경로만 나타냅니다. CAPACITY는 BASIC의 합성 한 과목과 연습용 후보만 다루며 실제 학교 서버와 무관합니다.</sub>
+<sub>RECONNECT와 CAPACITY는 **서로 독립된 옵션이며 모두 기본 OFF**입니다. 404는 실제 브라우저 새로고침으로 복구하고, CAPACITY는 BASIC의 합성 한 과목과 연습용 후보만 다룹니다. 실제 학교 서버·강의 정원과 무관합니다.</sub>
 
 <details>
 <summary>분기 조건 상세 보기 · Mermaid flowchart</summary>
 
 ```mermaid
 flowchart LR
-    A["BASIC 연습"] --> B{"가상 404 ON?"}
+    A["BASIC 연습"] --> B{"RECONNECT ON?"}
     B -- "아니오" --> D["정상 신청 화면"]
     B -- "예" --> C["가상 404 · 1회"]
-    C -- "새로고침" --> D
-    D --> E["접속 대기 ON이면 적용"]
-    E --> F["기존 신청 계속"]
+    C -- "실제 새로고침" --> D
+    D --> E["접속 대기 ON이면 실행"]
+    E --> G{"CAPACITY ON?"}
+    G -- "예" --> H["가상 정원 마감 1과목 · 합성 후보 Search"]
+    G -- "아니오" --> F["기존 신청 계속"]
+    H --> F
 ```
 
-브라우저 뒤로가기는 404 복구 방법으로 지원하지 않습니다. 이 화면은 실제 학교 서버 오류가 아닌 연습용 가상 상황입니다.
+브라우저 뒤로가기는 404 복구 방법으로 지원하지 않습니다. 두 옵션은 모두 합성 연습 기능이며 실제 학교 장애·정원·신청 결과와 연결되지 않습니다.
 
 </details>
 
