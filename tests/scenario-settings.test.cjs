@@ -16,7 +16,7 @@ function node(attrs={}){
   };
 }
 
-function harness({valid=true,storageDenied=false}={}){
+function harness({valid=true,storageDenied=false,stored=new Map()}={}){
   const dialogs={};
   const options=node();
   const dialog=node();
@@ -24,7 +24,6 @@ function harness({valid=true,storageDenied=false}={}){
   dialogs['scenario-settings']=dialog;
   const yes=node({'data-scenario-toggle':'RECONNECT'});
   const no=node({'data-scenario-off':'RECONNECT'});
-  const stored=new Map();
   const navigation=[];
   const host={
     Date:{now:()=>100000000},
@@ -79,10 +78,12 @@ test('돌발상황 설정은 필수 SETTING과 독립적으로 저장 및 취소
   assert.deepEqual(h.app.getEnabled(),[]);
   choose(h,true);
   assert.deepEqual(h.app.getEnabled(),['RECONNECT']);
+  assert.equal(h.stored.get(ui.SELECTION_KEY),'yes');
   h.options.fire('click');
   assert.equal(h.yes.checked,true);
   choose(h,false);
   assert.deepEqual(h.app.getEnabled(),[]);
+  assert.equal(h.stored.get(ui.SELECTION_KEY),'no');
 });
 
 test('BASIC에서 404를 활성화하면 원본 practice에 먼저 들어가고 타이머는 시작하지 않는다',()=>{
@@ -98,14 +99,62 @@ test('BASIC에서 404를 활성화하면 원본 practice에 먼저 들어가고 
 test('TIME/SELECT, 미설정 및 저장소 오류는 가상 404를 주입하지 않는다',()=>{
   const h=harness();choose(h,true);
   h.host.goPractice(2);
-  assert.equal(h.stored.size,0);
+  assert.equal(h.stored.get(ui.SELECTION_KEY),'yes');
+  assert.equal(h.stored.has(ui.TRANSITION_KEY),false);
   h.host.goPractice(3);
-  assert.equal(h.stored.size,0);
+  assert.equal(h.stored.has(ui.TRANSITION_KEY),false);
   const bad=harness({valid:false});choose(bad,true);bad.host.goPractice(1);
-  assert.equal(bad.stored.size,0);
+  assert.equal(bad.stored.has(ui.TRANSITION_KEY),false);
   const denied=harness({storageDenied:true});choose(denied,true);
   assert.doesNotThrow(()=>denied.host.goPractice(1));
   assert.deepEqual(denied.navigation,[1]);
+});
+
+test('같은 탭에서 메뉴로 돌아오거나 새로고침해도 예/아니오 선택이 유지된다',()=>{
+  const stored=new Map();
+  const first=harness({stored});
+  assert.equal(first.no.checked,true);
+  choose(first,true);
+  assert.equal(stored.get(ui.SELECTION_KEY),'yes');
+
+  // 페이지를 떠났다가 동일한 탭의 메뉴에 다시 들어옵니다.
+  const again=harness({stored});
+  assert.deepEqual(again.app.getEnabled(),['RECONNECT']);
+  assert.equal(again.yes.checked,true);
+  again.options.fire('click');
+  again.yes.checked=false;
+  again.no.checked=true;
+  again.dialog.fire('submit',{submitter:{value:'cancel'}});
+  assert.equal(stored.get(ui.SELECTION_KEY),'yes');
+
+  choose(again,false);
+  const reloaded=harness({stored});
+  assert.deepEqual(reloaded.app.getEnabled(),[]);
+  assert.equal(reloaded.no.checked,true);
+  assert.equal(stored.get(ui.SELECTION_KEY),'no');
+});
+
+test('저장된 예를 복원한 뒤 다시 BASIC에 들어가면 404 토큰을 한 번만 등록한다',()=>{
+  const stored=new Map([[ui.SELECTION_KEY,'yes']]);
+  const h=harness({stored});
+  assert.deepEqual(h.app.getEnabled(),['RECONNECT']);
+  h.host.goPractice(1);
+  assert.equal(JSON.parse(stored.get(ui.TRANSITION_KEY)).phase,'armed');
+  h.host.goPractice(3);
+  assert.equal(stored.get(ui.SELECTION_KEY),'yes');
+  assert.equal(stored.has(ui.TRANSITION_KEY),false);
+});
+
+test('새 탭·변조된 저장값·저장소 접근 거부는 기본 OFF로 안전하게 시작한다',()=>{
+  const fresh=harness();
+  assert.deepEqual(fresh.app.getEnabled(),[]);
+  const malformed=harness({stored:new Map([[ui.SELECTION_KEY,'unexpected']])});
+  assert.deepEqual(malformed.app.getEnabled(),[]);
+  const denied=harness({storageDenied:true});
+  assert.deepEqual(denied.app.getEnabled(),[]);
+  assert.doesNotThrow(()=>choose(denied,true));
+  assert.doesNotThrow(()=>denied.host.goPractice(1));
+  assert.equal(denied.navigation.at(-1),1);
 });
 
 test('LAST_VALID·메뉴 내부 404·가짜 시간제 지연 구현을 배포하지 않는다',()=>{

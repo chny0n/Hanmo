@@ -4,6 +4,7 @@
   const PRESETS=Object.freeze(['RECONNECT']);
   const BASIC_MODE=1;
   const TRANSITION_KEY='hanmo.synthetic404.transition.v3';
+  const SELECTION_KEY='hanmo.synthetic404.selection.v1';
   const TRANSITION_VERSION=3;
 
   function selected(items){
@@ -20,7 +21,10 @@
       typeof host.hasValidPracticeSettings!=='function')return null;
 
     const originalGoPractice=host.goPractice;
+    // 첫 방문은 OFF, 같은 탭에서는 이전에 저장한 선택을 복원합니다.
     let enabled=false;
+    try{enabled=host.sessionStorage?.getItem(SELECTION_KEY)==='yes';}
+    catch(_error){/* 저장소를 사용할 수 없는 경우 안전한 기본값 OFF를 유지합니다. */}
 
     function syncChecks(){
       yes.checked=enabled;
@@ -54,6 +58,8 @@
     dialog.addEventListener('submit',event=>{
       if(event.submitter?.value!=='save')return;
       enabled=Boolean(yes.checked);
+      try{host.sessionStorage?.setItem(SELECTION_KEY,enabled?'yes':'no');}
+      catch(_error){/* 저장 거부 시 이 페이지에서만 설정을 유지합니다. */}
       syncChecks();
     });
     yes.addEventListener('change',()=>{
@@ -68,7 +74,7 @@
     return Object.freeze({getEnabled:()=>enabled?['RECONNECT']:[]});
   }
 
-  const api=Object.freeze({PRESETS,selected,mount,TRANSITION_KEY});
+  const api=Object.freeze({PRESETS,selected,mount,TRANSITION_KEY,SELECTION_KEY});
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{
     root.HanmoScenarioSettings=api;
