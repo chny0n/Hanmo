@@ -1,134 +1,132 @@
 <div align="center">
-  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo_color.png" width="84" alt="한모 로고"></a>
 
-  <h1>Hanmo Develop</h1>
-  <p><strong>수강신청 연습에서, 다음 학기의 준비까지.</strong><br>HUFS · 한국외국어대학교 학생을 위한 비공식 모의수강신청 · 학업 도우미 개발 프로젝트</p>
+  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo_color.png" width="76" alt="한모 로고"></a>
+
+  <h1>한모 · Hanmo Develop</h1>
+
+  <p><strong>수강신청은 미리 연습하고,<br>학업의 다음 선택은 더 분명하게.</strong></p>
+
+  <p>원작 한모의 모의수강신청 경험을 지키면서<br>공지의 근거, 강의 개설 정보, 나의 학업 준비를 하나의 흐름으로 잇는<br><strong>한국외국어대학교 학생을 위한 비공식 PC 웹 프로젝트</strong>입니다.</p>
 
   <p>
-    <a href="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml"><img alt="Academic CI" src="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
-    <a href="LICENSE"><img alt="GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F4C76C?labelColor=00131F"></a>
-    <img alt="PC 전용" src="https://img.shields.io/badge/platform-PC%20web-467C96?labelColor=00131F">
-    <img alt="비공식 개발 프로젝트" src="https://img.shields.io/badge/status-development-567D6F?labelColor=00131F">
+    <a href="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml"><img alt="코드 검사" src="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
+    <a href="LICENSE"><img alt="GPL-3.0 라이선스" src="https://img.shields.io/badge/license-GPL--3.0-F4C76C?labelColor=00131F"></a>
+    <img alt="PC 웹 전용" src="https://img.shields.io/badge/platform-PC%20Web-467C96?labelColor=00131F">
+    <img alt="비공식 학생 프로젝트" src="https://img.shields.io/badge/project-unofficial-567D6F?labelColor=00131F">
   </p>
 
-  <p><a href="#-프로젝트-소개">소개</a> · <a href="#-미리보기">미리보기</a> · <a href="#-기능-현황">기능 현황</a> · <a href="#-로컬-실행">시작하기</a> · <a href="#site-flow">전체 구조</a> · <a href="docs/architecture.md">설계</a> · <a href="https://github.com/ot4562-glitch/Hanmo_develop/issues">이슈</a></p>
+  <p>
+    <a href="https://ot4562-glitch.github.io/Hanmo_develop/">포크 웹 미리보기</a> ·
+    <a href="#학생이-마주하는-세-가지-질문">프로젝트 소개</a> ·
+    <a href="#원작에서-이어받고-새로-더한-것">원작과의 차이</a> ·
+    <a href="#학사종합지원센터와-함께-확인하고-싶은-것">학교 검토 사항</a> ·
+    <a href="#개발자에게">개발 안내</a>
+  </p>
+
 </div>
 
-![HUFS 한모 개발 프로젝트 배너 — 수강신청 연습에서 다음 학기의 준비까지](docs/images/hanmo-hero-hufs.svg)
+![한모 개발 프로젝트: 모의수강신청과 근거 중심 학업 정보 안내를 표현한 배너](docs/images/hanmo-hero-hufs.svg)
 
-## ✦ 프로젝트 소개
+<p align="center"><sub>설명용 일러스트 · 실제 브라우저 화면 캡처가 아닙니다. 한모는 학교가 제작·운영하는 공식 서비스가 아닙니다.</sub></p>
 
-**한모(Hanmo)**는 [원작 한모](https://github.com/dlacked/Hanmo)의 **BASIC · TIME · SELECT 모의수강신청**을 바탕으로, 학생이 학사 공지를 찾아보고 다음 학기를 준비하는 경험까지 확장하는 프로젝트입니다.
+---
 
-**학교가 운영하는 공식 서비스가 아닙니다.** 학교 계정 로그인, 실제 수강신청, 공식 성적·졸업사정과 연동하지 않습니다. 학생용 웹은 **PC 전용**이며, 현재 구현 화면과 검증·운영이 완료된 기능은 서로 구분합니다.
+## 학생이 마주하는 세 가지 질문
+
+> **“이 공지는 내게도 해당될까?”**  
+> **“듣고 싶은 강의는 다음 학기에도 열릴까?”**  
+> **“수강신청 도중 예상치 못한 화면이 나오면 어떻게 해야 할까?”**
+
+한모가 향하는 곳은 단순한 정보 모음이 아닙니다. 학생이 **무엇을 확인했고, 무엇이 아직 불확실하며, 다음에 무엇을 해야 하는지** 이해할 수 있는 학업 준비 경험입니다.
+
+수강신청 연습은 지금 사용할 수 있습니다. 학사공지·강의 검색·개설 전망은 학생용 화면과 계산·검증 기반을 갖추고 있지만, **학교에서 이용이 허용되고 독립적으로 검수된 실제 학사자료를 연결하기 전까지 결과를 확정해 보여주지 않습니다.**
 
 <table>
   <tr>
-    <td width="33%"><strong>01 · PRACTICE</strong><br><br>세 가지 모의수강신청 모드로 신청 흐름과 타이밍을 연습합니다.</td>
-    <td width="33%"><strong>02 · DISCOVER</strong><br><br>검수된 공지·강좌가 연결되면 검색하며, 현재는 연결 상태를 안내합니다.</td>
-    <td width="33%"><strong>03 · PREPARE</strong><br><br>강의 개설 근거와 학점 계획을 검토하되, 확인되지 않은 자료는 추정으로 단정하지 않습니다.</td>
+    <td width="33%" valign="top">
+      <strong>01 / PRACTICE</strong><br><br>
+      <strong>실전처럼 연습하기</strong><br>
+      BASIC · TIME · SELECT의 신청 흐름과 타이밍을 익히고, 선택형 가상 접속 장애에도 대응해 봅니다.<br><br>
+      <sub>기존 연습 유지 + 선택형 훈련 확장</sub>
+    </td>
+    <td width="33%" valign="top">
+      <strong>02 / UNDERSTAND</strong><br><br>
+      <strong>근거를 확인하기</strong><br>
+      공지·강의 정보는 출처, 적용 대상, 정정·취소 여부를 함께 다루도록 설계합니다.<br><br>
+      <sub>학생 화면 구현 · 승인 자료 연결 전</sub>
+    </td>
+    <td width="33%" valign="top">
+      <strong>03 / PREPARE</strong><br><br>
+      <strong>다음 학기 준비하기</strong><br>
+      캠퍼스·전공·입학년도와 강의 개설 관측을 바탕으로 계획을 세우는 방향으로 확장합니다.<br><br>
+      <sub>로컬 내정보 및 계산 코어 · 실자료 검증 필요</sub>
+    </td>
   </tr>
 </table>
 
-## ◈ 미리보기
+## 원작에서 이어받고, 새로 더한 것
 
-[![한모 현재 기능 미리보기: 학사 공지·강의 전망 연결 대기, BASIC TIME SELECT 연습 모드](docs/images/hanmo-feature-preview.svg)](https://github.com/ot4562-glitch/Hanmo_develop/tree/main/html)
+이 저장소는 **[dlacked/Hanmo](https://github.com/dlacked/Hanmo)**를 기반으로 합니다. 원작의 가치는 **실제 수강신청에 앞서 손과 눈에 익히는 연습 경험**에 있습니다. 확장은 그 경험을 대체하는 대신, 그 옆에 새로운 선택지를 더하는 방식으로 진행합니다.
 
-> **미리보기 안내:** 위 이미지는 `main` 브랜치의 현재 기능·화면 구성을 바탕으로 다시 제작한 **설명용 시각화**이며 실제 브라우저 화면 캡처가 아닙니다. 공지의 전공별 적용 대상, 공식 강의 개설 원장, 최신 강좌·교수 데이터는 검수·연결 전입니다. [실제 화면 소스 보기](html/) · [QA 배포 워크플로](.github/workflows/deploy-pages.yml)
-
-### 아키텍쳐 참고
-
-<sub>작은 미리보기입니다. 클릭하면 원본 SVG로 확대됩니다.</sub>
-
-<table><tr>
-<td align="center" width="25%"><a href="docs/images/hanmo-01-project-overview.svg"><img src="docs/images/hanmo-01-project-overview.svg" alt="01 · 개요" width="190"></a><br><sub>01 · 개요</sub></td>
-<td align="center" width="25%"><a href="docs/images/hanmo-02-page-map.svg"><img src="docs/images/hanmo-02-page-map.svg" alt="02 · 페이지" width="190"></a><br><sub>02 · 페이지</sub></td>
-<td align="center" width="25%"><a href="docs/images/hanmo-03-data-flow.svg"><img src="docs/images/hanmo-03-data-flow.svg" alt="03 · 데이터" width="190"></a><br><sub>03 · 데이터</sub></td>
-<td align="center" width="25%"><a href="docs/images/hanmo-04-roadmap.svg"><img src="docs/images/hanmo-04-roadmap.svg" alt="04 · 로드맵" width="190"></a><br><sub>04 · 로드맵</sub></td>
-</tr></table>
-
-[**아키텍쳐 참고 설명서 (SVG 4장 + 검토 사항)**](docs/academic-support-center-brief.md) · [아키텍처 기준 문서](docs/architecture.md)
-
-> 학교 학사자료와 Supabase는 **아직 실연동 전**입니다. 공식 서비스가 아닙니다.
-
-## ◇ 기능 현황
-
-| 영역 | 현재 확인할 수 있는 것 | 범위 · 주의사항 |
+| 구분 | 원작에서 이어받은 것 | Hanmo Develop에서 더한 것 |
 | :--- | :--- | :--- |
-| **모의수강신청** | BASIC / TIME / SELECT 기본 연습 | 원작의 기존 흐름 유지 |
-| **가상 접속 대기** | SETTING에서 강의 신청과 수강신청 페이지 접속 대기를 독립 선택 | 기본값: 강의 신청 **예** · 페이지 접속 **아니오**. 404가 켜진 경우 새로고침으로 복구한 뒤 페이지 접속 대기 적용 |
-| **돌발상황 연습** | BASIC의 **practice → selectZone 진입 시 1회 가상 404** · 실제 브라우저 새로고침으로 복구(뒤로가기는 미지원) | RECONNECT 한 가지, 기본 OFF · 마지막 과목 신청 실패 기능 제거 · 실제 학교 장애와 무관 |
-| **내정보** | 캠퍼스 · 전공 · 입학년도 선택 | **이 브라우저에만 저장**, 학교 계정과 미연동 |
-| **학사 공지** | 승인 자료 연결 대기 · 미연결/빈 목록/오류 안내 | 과거 참고 공지 JSON 제거 · 학생 대상과 마감은 원문 확인 |
-| **강의·교수 검색** | 승인된 공개 강좌만 검색 · 빈 목록/연결 오류 표시 | 가상 강좌 삭제 · 실자료 승인 전까지 결과 없음 |
-| **강의 개설 전망** | 학수번호·학기 입력과 연결·검수 상태 안내 | 합성 개설 이력 삭제 · 근거 확보 전 UNKNOWN |
-| **학점 정리** | 직접 입력한 학점 합산 및 학기별 A/B/C 계획 비교 | 공식 이수 판정·졸업 가능 여부 아님 · 비필수 기능 |
+| **모의수강신청** | BASIC · TIME · SELECT, 과목 수 설정, 신청·대기·시간 측정의 기본 흐름 | 기존 화면 밖에서 선택형 돌발상황·접속 대기 조건 확장 |
+| **돌발상황** | 익숙한 모의신청 조작과 화면 구성 | BASIC에서 신청 페이지로 넘어갈 때 **가상 404를 한 번 표시**하고 브라우저 **새로고침으로 복구**하는 연습 |
+| **대기시간 설정** | 기존 강의 신청 대기 흐름 | **강의 신청 대기(기본 예)**와 **수강신청 페이지 접속 대기(기본 아니오)**를 독립 설정. 404가 발생하면 새로고침 복구 **이후** 접속 대기를 적용 |
+| **개인화** | 연습에 필요한 자체 설정 | 캠퍼스·전공·입학년도 등 **내정보를 브라우저에 저장**, 간단한 학점 정리 화면 제공 |
+| **학업 정보** | 수강신청 연습에 집중 | **학사공지·강의 검색·개설 전망** 화면 및 근거·판본·보류 상태를 다루는 JavaScript 코어와 테스트 |
+| **검증** | 원작의 PC 전용 이용 조건 | 원본 화면 보호 검사, 시나리오 회귀, 학업 계산·검색 코어 테스트 및 정적 사이트 빌드 검사 |
 
-**핵심 원칙:** 확인된 사실과 가상 시연을 분리하고, 공지·학칙의 근거와 적용 대상을 확인할 수 없는 경우 **‘확인 필요’**로 남깁니다. 한국어 학사 FAQ, 개설·행사 시기 전망과 졸업 요건 계산 코어는 검증 상태에 따라 별도 확장합니다.
-**NLP 코어 진행:** [근거 인덱스 #97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97) · [검색 평가 #98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98) · [공지 후보 추출 #99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99) 병합. **학생 화면·실제 승인 자료와는 미연결**입니다.
+**원작에 대한 변경 경계:** `html/practice.html`과 `html/selectZone.html`의 원본 화면·핵심 신청 동작은 직접 수정하지 않았습니다. 가상 404는 `js/scenario-settings.js`·`js/hanmoSys.js` 등 별도 연결 지점에서 처리합니다. 기존 SELECT 대기번호, Enter 키 안내, 시간 측정과 결과 저장은 보존 대상이며 **실제 Windows 브라우저 최종 회귀 검증은 별도로 남아 있습니다.**
 
-**UI 동결 · 신규 언어 정책:** 2026-11-21부터 [UI 기준 SHA `da30a875`](https://github.com/ot4562-glitch/Hanmo_develop/commit/da30a87510f1cdac282600fa4e914da2585a6031)의 원본 스타일을 유지합니다. **모든 학업 기능·테스트의 유지보수 원본은 JavaScript/JSDoc**으로 통일합니다. 기존 TS 전체를 제거한 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)가 병합 이후 학업 소스와 테스트를 JavaScript로 유지합니다. 다만 Windows 실기기 QA와 실운영 인수는 별도입니다. [아키텍처 §3.3·§8](docs/architecture.md)
+### 돌발상황 연습은 이렇게 동작합니다
 
-**2차 회귀:** [#84](https://github.com/ot4562-glitch/Hanmo_develop/pull/84) 원본 모드 OFF 동등성 · [#85](https://github.com/ot4562-glitch/Hanmo_develop/pull/85) 가상/실강좌 ID 격리 테스트 통과(모두 Node 기반). 실제 SELECT 키보드 QA는 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71)에서 별도 진행.
-
-<a id="site-flow"></a>
-
-## ✧ 전체 구조 · 페이지와 데이터 연결
-
-**실선은 현재 페이지 이동·데이터 경로, 점선은 3차 Supabase 연동 목표**입니다. 복잡한 검색 알고리즘 대신 사용자가 어디로 이동하고 자료가 어디에서 들어오는지만 나타냈습니다.
-
-```mermaid
-flowchart TB
-    subgraph P["페이지 이동 · 현재"]
-        direction TB
-        H["홈 · index.html"] --> NAV["공통 상단 메뉴"]
-        NAV --> N["학사 공지"]
-        NAV --> F["강의 전망"]
-        NAV --> C["강의 검색"]
-        NAV --> G["학점 정리"]
-        NAV --> I["내정보"]
-        H --> M["모의수강신청 메뉴 · BASIC / TIME / SELECT"]
-        M --> PR["연습 · practice.html"]
-        PR --> SZ["과목 선택·신청 · selectZone.html"]
-        SZ -. "BASIC 돌발상황 ON" .-> ERR["가상 404 · 좌측 메뉴 비활성"]
-        ERR -. "Chrome 새로고침" .-> SZ
-        SZ --> R["결과 · result.html"]
-    end
-
-    subgraph D["데이터 입력·공급"]
-        direction TB
-        J["공개 자료 설정 · 기본 비활성"] --> E["미연결 · 자료 없음 · 오류 안내"]
-        E --> N
-        E --> F
-        E --> C
-        U["학생 직접 입력"] --> I
-        I --> LS["브라우저 로컬 저장"]
-        U --> G
-        S["사용 허가된 학사자료"] -.-> V["정규화·독립 검수·승인"]
-        V -.-> DB["3차 예정 · Supabase"]
-        DB -.-> API["승인 자료 읽기 전용 API"]
-        API -.-> N
-        API -.-> F
-        API -.-> C
-    end
-
-    classDef page fill:#0d3042,stroke:#467c96,color:#eff6fc
-    classDef data fill:#173b35,stroke:#78ad9e,color:#eff6fc
-    classDef planned fill:#3c321e,stroke:#f4c76c,color:#f4c76c
-    class H,NAV,N,F,C,G,I,M,PR,SZ,R,ERR page
-    class J,E,U,LS data
-    class S,V,DB,API planned
+```text
+BASIC 모드 선택
+    ↓  돌발상황 ‘예’인 경우
+기존 연습 페이지 → 수강신청 페이지 진입
+    ↓
+가상의 404 화면 (1회)
+    ↓  실제 브라우저 새로고침
+정상 수강신청 페이지
+    ↓  ‘페이지 접속 대기’가 예이면 대기시간 적용
+기존 모의수강신청 계속
 ```
 
-> **현재:** 오래된 공지 참고 목록과 가상 강좌·개설 이력은 제거했습니다. `data/academic-source-config.json`은 기본 비활성이고 화면은 **미연결 / 승인 자료 없음 / 오류·유효성 문제**를 구분해 안내합니다. **3차 연동 목표:** 학교의 자료 이용 허가와 독립 검수·승인이 끝난 Supabase의 승인 공개판본만 읽습니다. 연결 실패 시 승인되지 않은 과거 데이터를 자동 재사용하지 않습니다. 학생 성적·개인 계획은 서버에 전송하지 않습니다.
+돌발상황의 **첫 설정은 아니오**이며, 같은 탭에서 한 번 선택한 예·아니오는 다른 페이지에 다녀와도 유지됩니다. 브라우저 **뒤로가기는 복구 방법으로 지원하지 않습니다.** 이 화면은 실제 HTTP 오류나 한국외대 서버 장애가 아니라 **학습용 가상 상황**입니다.
 
-**검색용 사이트맵:** [sitemap.xml](sitemap.xml)은 **GitHub Pages 포크 QA 주소**의 공개 안내 페이지 8개만 포함합니다. `incident-404.html`과 `practice.html`·`selectZone.html`·`result.html` 등 세션 흐름 페이지는 검색 대상에서 제외하며, 이는 원본 운영 도메인의 사이트맵이 아닙니다.
+## 지금 볼 수 있는 화면과 아직 필요한 자료
 
-[실제 페이지 파일](html/) · [자료·Supabase 상세 설계](docs/architecture.md) · [3차 설치 패키지 초안 PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)
+| 화면 | 현재 직접 확인 가능한 것 | 아직 확정하지 않는 것 |
+| :--- | :--- | :--- |
+| [모의수강신청](html/vsugang.html) | 세 연습 모드, 돌발상황 선택, 두 대기시간 설정 | 실제 학교 신청·신청 성공 여부 |
+| [내정보](html/planner.html) | 캠퍼스·전공·입학년도 직접 입력 및 로컬 표시 | 학교 학적·본인 인증 |
+| [학사공지](html/academic-timeline.html) | 자료 미연결·빈 결과·오류 등 신뢰 상태 안내 | 개인별 공식 적용 공지·마감일 |
+| [강의 검색](html/catalog.html) | 승인된 공개 자료를 읽을 학생용 검색 화면 | 허가·검수되지 않은 실제 강좌 목록 |
+| [개설 전망](html/forecast.html) | 학수번호·학기 입력 및 자료 부족 판단 | 검증되지 않은 미래 강의 개설 확정 |
+| [학점 정리](html/academic-progress.html) | 직접 입력한 학점 합계와 계획 참고 | 공식 이수구분·졸업 가능 여부 |
 
-## ◌ 로컬 실행
+> **현재 학교 학사자료는 연결돼 있지 않습니다.** 공개 데이터 설정은 기본 비활성이고, 실제 Supabase 프로젝트나 학교 계정·성적 시스템과 연동하지 않습니다. 자료가 없을 때는 없는 대로 알립니다. **미관측을 미개설로, 예상 구간을 공식 신청기간으로 표시하지 않습니다.**
 
-Node.js 22 환경에서 프로젝트 루트를 기준으로 실행합니다.
+## 학사종합지원센터와 함께 확인하고 싶은 것
+
+한모는 학교를 대신해 학사 판단을 내리려는 서비스가 아닙니다. **학생이 공식 원문을 더 정확하게 찾아보고, 자기 상황에 맞는 정보를 스스로 확인하도록 돕는 것**이 목표입니다.
+
+실제 학사정보를 연결하기 전에 다음 기준에 대한 학교의 의견을 구하고 싶습니다.
+
+1. **자료를 어디까지 활용할 수 있을까요?** 학사공지·강의/분반·학사일정·학칙의 **원문 링크, 일부 인용, 요약·구조화, 재배포, 정기 수집**은 각각 어디까지 허용되는지 확인하고 싶습니다.
+2. **정정과 취소를 어떻게 전달해야 할까요?** 공지의 변경·철회, 전공/입학년도별 적용 조건, 학생 접수 마감과 행정 처리 마감을 혼동하지 않도록 검증 기준을 마련하고 싶습니다.
+3. **학생이 공식 안내와 혼동하지 않으려면 무엇이 중요할까요?** 출처·확인 시각·불확실성 표시, 공식 상담 경로 안내, 오류 제보와 정정 요청의 연결 방식을 검토받고 싶습니다.
+
+답변받지 못했거나 사용이 허용되지 않은 자료는 **수집·재게시하지 않고 공식 페이지 링크와 ‘확인 필요’ 안내로 대체**합니다. 학교의 검토는 이 프로젝트에 대한 공식 인증·보증이나 공동 운영을 뜻하지 않습니다.
+
+[학사종합지원센터 참고용 소개](docs/academic-support-center-brief.md) · [자료 연결 및 권리·검수 기준](docs/student-data-source-handoff.md)
+
+---
+
+## 개발자에게
+
+**구조는 단순하게, 신뢰 경계는 명확하게.** 학생용 화면은 정적 HTML/CSS, 학업 코어와 테스트는 **JavaScript + JSDoc**입니다. 실제 학교 자료는 별도 사용권·독립 검수·운영 인수 없이 배포에 포함하지 않습니다.
 
 ```bash
 git clone https://github.com/ot4562-glitch/Hanmo_develop.git
@@ -137,33 +135,37 @@ npm install --ignore-scripts --no-audit --no-fund
 npm run check
 ```
 
-`npm run check`는 JavaScript 구문·한국어 주석·UI 동결 검사, 학업 타입·코어 검사, 모의수강신청 회귀, 정적 빌드와 페이지 검증을 실행합니다. 타입 검사만 실행하려면 `npm run check:types`, 원본 모의신청·PC 제한·돌발상황만 검증하려면 `npm run check:legacy`를 사용합니다. 브라우저에서 확인할 때는 로컬 HTTP 서버로 `dist/`를 제공하세요.
+`npm run check`는 JS/JSDoc 타입·구문, 단위 테스트, 원본 모드·가상 404·대기 설정 회귀, UI 보호와 정적 빌드를 검사합니다. 원본 모의신청 관련 검사만 실행하려면 `npm run check:legacy`, 정적 배포용 파일을 만들려면 `npm run build`를 사용합니다. 빌드 결과는 `dist/`이며 로컬에서는 **정적 HTTP 서버**로 확인합니다.
 
 <details>
-<summary><strong>디렉터리와 개발 단계 보기</strong></summary>
+<summary><strong>코드 지도와 협업 규칙 펼쳐보기</strong></summary>
 
 | 경로 | 역할 |
 | :--- | :--- |
-| `html/` · `css/` | 학생용 정적 화면과 한모 디자인 |
-| `js/academic/` | JavaScript/JSDoc 학업 계산 코어·계약·테스트 |
-| `js/` | 기존 모의신청 JavaScript와 화면 로직 |
-| `data/` | 공개 자료 연결 설정 · 기본 비활성, 테스트 학사자료 없음 |
-| `tests/` · `scripts/` | 회귀 테스트, 빌드 및 검증 도구 |
-| `docs/architecture.md` | **현행 제품·기술 설계의 기준 문서** |
+| `index.html` · `html/` · `css/` | 원작 연습 입구 및 확장된 학생용 PC 화면 |
+| `html/practice.html` · `html/selectZone.html` | 원작 연습의 보호·비교 기준 |
+| `js/vsugang.js` · `js/scenario-settings.js` · `js/hanmoSys.js` | 모드·대기 설정, 가상 404 선택과 페이지 이동 처리 |
+| `js/academic/` | 학업·개설 전망·공지·FAQ의 JS/JSDoc 코어·계약·테스트 |
+| `js/academic-data-source.js` · `data/academic-source-config.json` | 공개 학사자료 판본 상태 구분과 비활성 기본 연결 설정 |
+| `tests/` · `scripts/` | 회귀·보호 기준선·언어 정책·정적 배포 검사 |
+| `docs/architecture.md` | **현행 설계의 기준 문서** |
 
-**개발 4단계:** ① JavaScript/JSDoc + 정적 HTML/CSS 학업 플랫폼 → ② 원개발자 협의 후 기존 JS 모의신청 시나리오 확장 → ③ 승인 책임자가 운영하는 Supabase 실연동·검증 → ④ JavaScript 전환 동등성·보안·전체 PC 브라우저 검증과 최종 인수. 단계와 승인 조건은 [아키텍처](docs/architecture.md)에서 관리합니다.
+원작 모의신청의 화면·조작, 학생 자료의 브라우저 로컬 경계, 실제 학교 서비스와의 비연동을 유지합니다. 기능 변경은 검증 가능한 범위에서 리뷰받고, 실기기 QA·학교 자료 승인·운영 배포 인수는 코드 병합과 별도로 판정합니다.
+
+[아키텍처](docs/architecture.md) · [기여·에이전트 작업 규칙](AGENTS.md) · [열린 작업과 제안](https://github.com/ot4562-glitch/Hanmo_develop/issues)
 
 </details>
 
 ---
 
 <div align="center">
-  <p><strong>공식 학사정보는 반드시 한국외국어대학교의 원문 공지로 다시 확인하세요.</strong></p>
-  <p>
-    <a href="docs/architecture.md">Architecture</a> ·
-    <a href="agent.md">Contribution Guide</a> ·
-    <a href="https://github.com/ot4562-glitch/Hanmo_develop/issues">Issues</a> ·
-    <a href="LICENSE">GPL-3.0 License</a>
-  </p>
-  <sub>Based on <a href="https://github.com/dlacked/Hanmo">dlacked/Hanmo</a> · Unofficial HUFS student project · Not affiliated with HUFS</sub>
+
+  <p><strong>연습은 한모에서, 학사 결정은 확인된 학교 원문과 함께.</strong></p>
+
+  <p>Based on <a href="https://github.com/dlacked/Hanmo">dlacked/Hanmo</a> ·
+    <a href="LICENSE">GNU GPL v3.0</a> ·
+    <a href="https://github.com/ot4562-glitch/Hanmo_develop/issues">의견과 오류 제보</a></p>
+
+  <sub>한국외국어대학교의 공식 서비스가 아닌 독립적인 학생 개발 프로젝트입니다.<br>실제 수강신청·학교 계정 로그인·공식 성적 또는 졸업사정을 제공하지 않습니다.</sub>
+
 </div>
