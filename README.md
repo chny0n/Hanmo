@@ -18,7 +18,7 @@
     <a href="#changes">추가된 기능</a> ·
     <a href="#flow">연습 흐름도</a> ·
     <a href="#next">학기 준비</a> ·
-    <a href="#develop">실행 및 기술</a>
+    <a href="#site-flow">전체 구조</a>
   </p>
 
 </div>
@@ -113,38 +113,58 @@ flowchart LR
 
 <sub>**안내:** 학사 데이터 설정은 현재 비활성 상태이며 학교 공식 서비스와 연동하지 않습니다. 학사 일정·신청 자격 등 중요한 판단은 [한국외국어대학교 공식 홈페이지](https://www.hufs.ac.kr/)와 원문 공지를 확인해 주세요. 자료 이용·검수·운영 기준은 [아키텍처](docs/architecture.md)에서 확인할 수 있습니다.</sub>
 
-<a id="develop"></a>
+<a id="site-flow"></a>
 
-## 프로젝트 살펴보기
+## 전체 구조 · 화면과 데이터의 연결
 
-한모는 정적 **HTML/CSS + JavaScript/JSDoc** 기반의 PC 웹입니다. 모의수강신청 로직을 유지하면서 학업 화면과 검색·계산 코어를 분리해 확장할 수 있게 구성했습니다. 학교 계정 로그인·공식 성적 원장 연동은 포함하지 않습니다.
+모의수강신청에서 시작해 **공지·강의·학점 정리 화면으로 이어지는 한모의 구성**입니다. 실선은 현재 페이지·데이터 경로, 점선은 선택형 돌발상황 또는 **학교 자료 이용·검수 승인 후 연결할 흐름**을 뜻합니다.
 
-```bash
-git clone https://github.com/ot4562-glitch/Hanmo_develop.git
-cd Hanmo_develop
-npm install --ignore-scripts --no-audit --no-fund
-npm run check
+```mermaid
+flowchart TB
+    subgraph P["페이지 이동 · 현재"]
+        direction TB
+        H["홈 · index.html"] --> NAV["공통 상단 메뉴"]
+        NAV --> N["학사 공지"]
+        NAV --> F["강의 전망"]
+        NAV --> C["강의 검색"]
+        NAV --> G["학점 정리"]
+        NAV --> I["내정보"]
+        H --> M["모의수강신청 메뉴 · BASIC / TIME / SELECT"]
+        M --> PR["연습 · practice.html"]
+        PR --> SZ["과목 선택·신청 · selectZone.html"]
+        PR -. "BASIC 돌발상황 ON" .-> ERR["가상 404 · 1회"]
+        ERR -. "브라우저 새로고침" .-> SZ
+        SZ --> R["결과 · result.html"]
+    end
+
+    subgraph D["데이터 입력·공급"]
+        direction TB
+        J["공개 자료 설정 · 기본 비활성"] --> E["미연결 · 자료 없음 · 오류 안내"]
+        E --> N
+        E --> F
+        E --> C
+        U["학생 직접 입력"] --> I
+        I --> LS["브라우저 로컬 저장"]
+        U --> G
+        S["사용 허가된 학사자료"] -.-> V["정규화·독립 검수·승인"]
+        V -.-> DB["향후 승인 데이터 저장소"]
+        DB -.-> API["승인 자료 읽기 API"]
+        API -.-> N
+        API -.-> F
+        API -.-> C
+    end
+
+    classDef page fill:#0d3042,stroke:#467c96,color:#eff6fc
+    classDef data fill:#173b35,stroke:#78ad9e,color:#eff6fc
+    classDef planned fill:#3c321e,stroke:#f4c76c,color:#f4c76c
+    class H,NAV,N,F,C,G,I,M,PR,SZ,R,ERR page
+    class J,E,U,LS data
+    class S,V,DB,API planned
 ```
 
-<sub>Node.js 22 기준. <code>npm run check</code>는 소스·타입 검사, 단위/모의신청 회귀, 정적 사이트 빌드와 스모크 검사를 실행합니다. <code>npm run check:legacy</code>는 원본 모의신청 관련 회귀 검사입니다. 학생용 빌드 결과는 <code>dist/</code>에서 로컬 HTTP 서버로 확인할 수 있습니다.</sub>
+<sub>학사공지·강의 검색·개설 전망은 화면이 준비된 상태이며, 학교의 실제 공개 학사자료와 저장소는 아직 연결하지 않았습니다. 관련 구현 범위와 검증 조건은 [아키텍처 문서](docs/architecture.md)에 정리되어 있습니다.</sub>
 
-<details>
-<summary><strong>주요 코드 경로와 협업 기준</strong></summary>
-
-| 경로 | 역할 |
-| :--- | :--- |
-| <code>html/practice.html</code> · <code>html/selectZone.html</code> | 원작 모의신청의 보호된 동작 기준 |
-| <code>js/vsugang.js</code> · <code>js/scenario-settings.js</code> · <code>js/hanmoSys.js</code> | 모드·대기 설정과 가상 404 전환 처리 |
-| <code>js/academic/</code> | 학업 계산, 개설 전망, 공지·FAQ/근거 검색 코어와 테스트 |
-| <code>js/academic-data-source.js</code> · <code>data/</code> | 학생용 데이터 상태 구분 및 비활성 기본 설정 |
-| <code>tests/</code> · <code>scripts/</code> | 회귀 테스트·보호 기준선·정적 사이트 검증 |
-| <code>docs/architecture.md</code> | 현재 유효한 설계·구현 범위·미완료 인수 조건의 정본 |
-
-학생용 검증과 실제 운영 인수는 구별합니다. 원작 파일·공식 데이터·라이선스 경계를 바꾸는 작업은 별도 검토와 승인이 필요합니다.
-
-</details>
-
-**[아키텍처](docs/architecture.md)** · **[기여 및 작업 규칙](AGENTS.md)** · **[개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues)** · **[GPL-3.0 라이선스](LICENSE)**
+[설계 문서](docs/architecture.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 
 ---
 
