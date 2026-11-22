@@ -8,7 +8,10 @@ function readPracticeReport(){
   const preselected=localStorage.getItem('psubjectValue');
   const mode=Number(localStorage.getItem('practiceSetter'));
   const requested=mode===2?0:Number(localStorage.getItem('subjectValue'));
-  const waiting=localStorage.getItem('waitingValue')??'no';
+  // 기존 신청 대기 키와 신규 접속 대기 키를 함께 반영합니다.
+  const courseWaiting=localStorage.getItem('waitingValue')??'no';
+  const entryWaiting=localStorage.getItem('waitingEntryValue')??'no';
+  const waiting=courseWaiting==='yes'||entryWaiting==='yes'?'yes':'no';
   const timeSeconds=Number(localStorage.getItem('TIMEtime')).toFixed(3);
   const selected=Number(localStorage.getItem('SELECTtime'));
   const waited=waiting==='yes'?Number(localStorage.getItem('SELECTWaitTime')):0;
