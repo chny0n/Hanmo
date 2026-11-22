@@ -14,8 +14,15 @@ await copyFile(join(root,'index.html'),join(dist,'index.html'));
 // 포크 미리보기의 공개 URL 목록을 정적 배포 산출물에도 포함합니다.
 await copyFile(join(root,'sitemap.xml'),join(dist,'sitemap.xml'));
 const academicSource=join(root,'js','academic');
-for(const directory of ['css','js','html','img'])
+for(const directory of ['css','js','html'])
   await cp(join(root,directory),join(dist,directory),{recursive:true,filter:source=>source!==academicSource});
+const publicImages=[
+  'background.svg','delete.png','developer.jpg','hanmo_color.png',
+  'hanmo_white.svg','register.png','watermark.png',
+];
+await mkdir(join(dist,'img'),{recursive:true});
+for(const name of publicImages)
+  await copyFile(join(root,'img',name),join(dist,'img',name));
 await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(root,'data','academic-source-config.json'),
   join(dist,'data','academic-source-config.json'));
