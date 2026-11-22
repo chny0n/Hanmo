@@ -62,8 +62,9 @@ test('BASIC 정원 마감 ON에서 첫 register를 제거하고 합성 대체과
   await page.locator('input[name="course-mode"][value="MAJOR"]').check();
   await expect(page.locator('.table')).toBeHidden();
   await page.locator('button.search').click();
-  await expect(page.locator('button.register')).toHaveCount(6);
-  await page.locator('button.register').first().click();
+  // 원본 관심강좌 행은 숨긴 채 보존하므로 표시 중인 합성 대체과목만 집계한다.
+  await expect(page.locator('[data-synthetic-alternative="true"] button.register')).toHaveCount(6);
+  await page.locator('[data-synthetic-alternative="true"] button.register').first().click();
   await expect(page).toHaveURL(/\/html\/result\.html$/);
   await expect(page.locator('.result p span')).toContainText('초');
 });
