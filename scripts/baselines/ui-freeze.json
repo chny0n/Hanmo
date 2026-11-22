@@ -237,7 +237,7 @@
     },
     {
       "path": "js/selectZone.js",
-      "sha": "10849e9136613a5a934b2a7223c23e4e8ce7dbb9"
+      "sha": "057b374fa62b9d0f2cf6238605669622f743efea"
     },
     {
       "path": "js/student-catalog.js",
@@ -249,11 +249,11 @@
     },
     {
       "path": "js/student-preferences.js",
-      "sha": "01d0ad75467f17d41d82f56d20a10eded9d53b35"
+      "sha": "5bd23b712dfb08d80603e9e72fa3c5e124e4a8e6"
     },
     {
       "path": "js/student-profile-bar.js",
-      "sha": "8ffc0795e15d564df1dcb6f815186fd821a228df"
+      "sha": "70ac52364d854b85422a711238f16752fc546bac"
     },
     {
       "path": "js/student-progress.js",

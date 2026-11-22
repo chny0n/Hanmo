@@ -29,9 +29,9 @@ const capacityEnabled=practiceValue===1&&typeof sessionStorage==='object'&&
   sessionStorage.getItem(CAPACITY_KEY)==='yes';
 let capacityTriggered=false;
 let courseMode='INTEREST';
-let count=0; // Number of courses currently registered (can decrease on delete).
-let cnt=0;   // Display row count; separate from overall target count.
-let totalWaitedMs=0; // Excluded from SELECT result time.
+let count=0; // 현재 신청한 과목 수이며 삭제 시 감소한다.
+let cnt=0;   // 화면 표시 행 수이며 신청 목표와 분리해 관리한다.
+let totalWaitedMs=0; // 결과의 SELECT 소요시간에서 제외하는 합성 대기시간이다.
 const selectStartedAt=new Date();
 
 document.addEventListener('click',event=>{

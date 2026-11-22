@@ -1,4 +1,4 @@
-/* Self-reported profile. Only this browser's localStorage is used; no auth/network. */
+/* 학교 로그인과 연결하지 않고 본인이 입력한 프로필을 브라우저에만 저장한다. */
 (function(){
  'use strict';
  const form=document.getElementById('planner-profile');
@@ -75,7 +75,7 @@
    }catch{message.textContent='이 브라우저에 저장할 수 없습니다. 다른 메뉴는 그대로 이용할 수 있습니다.';}
  });
  clear.addEventListener('click',()=>{
-   try{localStorage.removeItem(key);}catch{/* private browsing */}
+   try{localStorage.removeItem(key);}catch{/* 브라우저 저장이 거부되더라도 화면 초기화는 유지한다. */}
    form.reset();
    second.value='';
    syncSecond();
