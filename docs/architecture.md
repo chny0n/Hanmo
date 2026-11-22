@@ -3,6 +3,24 @@
 > 현재 유효한 제품 및 기술 설계입니다. 실제로 구현된 기능과 앞으로 구현할 목표를 구별합니다.  
 > **이 문서는 변경 이력이나 회의록이 아닙니다.** 설계가 바뀌면 이전 안을 남기지 않고 현재 안으로 수정합니다.
 
+### 현행 구현 상태 · 2026-11-22 (main 기준)
+
+**판정 원칙:** `main`의 실행 코드·설정 및 테스트가 확인되면 **구현**, 실제 사용자 환경과 권리·운영 승인이 별도로 확인돼야 **서비스 인수**로 분류합니다. 열린 PR의 코드는 `main` 구현으로 계산하지 않습니다. 아래 표의 완료 상태는 설계 확정·코어 구현·자동검사·실자료 검수·브라우저 QA·운영 승인을 서로 대체하지 않습니다.
+
+| 영역 | 현재 `main`에서 확인되는 것 | 미충족 조건 / 다음 게이트 |
+|---|---|---|
+| **학생용 PC 페이지·내정보** | 홈·학사공지·개설 전망·강의 검색·학점 정리·내정보 및 모의신청 메뉴가 정적 경로로 존재. 내정보는 사용자 입력을 로컬 저장. `html/`, `js/student-*.js` | 학교 공식 계정·성적·졸업사정과 무관. 실제 학사자료 연결 전 학생 학업 판단 제공 금지. [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39)·[#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) |
+| **학업·전망·NLP 코어** | `js/academic/`의 JS/JSDoc 계산·근거 인덱스·검색 평가·공지 후보 추출·전망 코어와 합성 테스트 존재. [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97)·[#98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98)·[#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99) | 학교 허가 원문, 사람 검수 골드셋, 동일 승인 스냅샷, 학생 검색 UI 연계 및 실측 없음. [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)·[#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40)·[#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) |
+| **학생 데이터 읽기** | `js/academic-data-source.js`가 `NOT_CONNECTED/EMPTY/OFFLINE/INVALID/READY`를 구분. `data/academic-source-config.json`은 **`mode: disabled`**. [#95](https://github.com/ot4562-glitch/Hanmo_develop/pull/95)에서 과거 참고 공지·합성 강좌 제거 | 승인 공개 데이터 0건, 실제 Supabase 접속·수집·인수 없음. 비어 있는 화면을 미개설·마감 없음으로 단정 금지. [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) |
+| **모의수강신청·돌발상황** | BASIC/TIME/SELECT 연습, BASIC 전환 시 선택형 합성 404 **한 가지**; Chrome 새로고침 복구만 안내. `RECONNECT`는 새 탭 기본 OFF·같은 탭 재방문/새로고침에서 선택 유지. 마지막 과목 실패(`LAST_VALID`)는 제거. [#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)·[#108](https://github.com/ot4562-glitch/Hanmo_develop/pull/108)·[#110](https://github.com/ot4562-glitch/Hanmo_develop/pull/110) | Windows Chrome/Edge 실기기에서 원본 대기번호·Enter 반복·주소/키보드·404 복구 확인이 남음. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50)·[#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) |
+| **모의 대기 옵션** | 필수 SETTING에 **강의 신청 대기 기본 예**(`waitingValue`)와 **수강신청 페이지 접속 대기 기본 아니오**(`waitingEntryValue`)를 독립 저장. 404와 접속 대기 모두 예일 때 **404 새로고침 복구 뒤**에 페이지 접속 대기 시작. [#109](https://github.com/ot4562-glitch/Hanmo_develop/pull/109) | 기능 단위 Node 회귀는 있으나 실제 PC 브라우저 동작/원본 불변성 인수는 별도. [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) |
+| **JavaScript 전환** | [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102) 병합: `.ts/.tsx/.mts/.cts` 소스 0개, `jsconfig.json`의 `checkJs: true`, 신규 TS 차단·한국어 주석·UI 동결 CI 구성 | 코드 전환 **완료**, 이전 구현과의 전 범위 동등성·실기기/보안·3차 운영 인수를 뜻하지 않음. [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68)·[#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69)·[#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101) |
+| **Supabase 3차** | **Draft PR [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 `main` 미병합**. 분리된 PostgreSQL 16 CI에서 Node 14/14, SQL 보안 점검 20/20, 철회·출처 변경 회귀 통과([실행](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44982079826)); 저장소에 SQL 초안만 존재 | 실 Supabase 프로젝트 설치/REST·RLS·권한/경합/백업/실데이터 인수 없음. 학교 권리 미확인, 유료화 금지, 자동 90일 정리·분반 압축·경량 API 미구현. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)–[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
+| **공개·브라우저 품질** | 포크의 Pages QA 빌드/사이트맵 8개 공용 URL은 [#107](https://github.com/ot4562-glitch/Hanmo_develop/pull/107)에서 반영. `dist`에 원본 도메인 `CNAME`을 포함하지 않음 | QA Pages와 원본 운영 도메인은 별도. 공개 라이선스/학교 권리·NVDA·Windows 브라우저·실운영 승인은 완료되지 않음. [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72)·[#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
+
+**단일 정본과 실행 목록:** 이 문서에는 **현재 정책·설계·미완료 인수 조건**만 둡니다. [문서/이슈 상태 색인](pending-issues.md)은 현재 열린 실행 이슈를 연결하고, 개별 작업의 테스트 로그·진행 이력은 GitHub Issues와 PR에 남깁니다. [학업 코어 안내](academic-core.md)·[SQL/데이터 인계](student-data-source-handoff.md)·[수명주기 운영 체크리스트](academic-data-lifecycle-operations.md)는 여기의 상태와 충돌할 수 없습니다. **배포·학교 공식 서비스·수강신청 실서버·로그인/학적은 이 프로젝트가 제공하지 않습니다.**
+
+
 ## 1. 프로젝트 목표
 
 한모를 **수강신청할 때만 방문하는 모의연습 사이트**에서 **입학 후 수강계획부터 졸업까지 지속적으로 이용하는 비공식 학업 플랫폼**으로 확장합니다.
@@ -18,8 +36,8 @@
 
 | 핵심 가치 | 학생에게 주는 경험 | 구현 단계·검증 경계 |
 |---|---|---|
-| **① 선택형 돌발상황 연습** | BASIC 수강신청 전환 시의 **가상 404**와 Chrome 새로고침 복구 | **2차 · `html/vsugang.html`/JavaScript**: `RECONNECT` 예/아니오 한 가지, 기본 OFF. 과거 LAST_VALID·대체과목 검색·충돌 기능은 제외. 원본 `practice.html`·`selectZone.html` 및 SELECT 대기/키보드 동작을 그대로 보존해 검증합니다. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) |
-| **② 강의 개설 전망** | 학기별 개설 근거와 향후 수강계획 A/B/C를 준비 | 과거 HUFS One AI에서 이식한 전망 코어도 JS/JSDoc으로 전환. **새 전망 기능은 JS/JSDoc**, 미검수 개설 이력을 공식 확정으로 표시하지 않음. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) |
+| **① 선택형 돌발상황 연습** | BASIC 수강신청 전환 시의 **가상 404**와 Chrome 새로고침 복구 | **2차 · `html/vsugang.html`/JavaScript**: `RECONNECT` 한 가지, 신규 탭 기본 OFF·같은 탭 저장 선택 유지, 404 뒤 Chrome 새로고침 복구 전용. 신청·페이지 접속 대기는 각각 기본 예/아니오. LAST_VALID·대체과목/충돌 기능 제외. 원본 `practice.html`·`selectZone.html` 및 SELECT 대기/키보드 동작을 그대로 보존해 검증합니다. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) |
+| **② 강의 개설 전망** | 학기별 개설 근거와 향후 수강계획 A/B/C를 준비 | 과거 HUFS One AI에서 이식한 전망 코어도 **JS/JSDoc으로 전환 완료**. **새 전망 기능도 JS/JSDoc**, 미검수 개설 이력을 공식 확정으로 표시하지 않음. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) |
 | **③ 학사행사·공지 시기 전망** | 졸업·전공 신청 등 학사행사 반복 관측을 통한 대략적 준비 시기 안내 | **새 기능과 기존 이식 코어 모두 JS/JSDoc으로 통일**. 예상 구간은 공식 확정 신청기간·개인 마감과 분리. [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) · [#14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) |
 
 **대외 안내의 사실성 계약 (#38):** 외부 소개에는 “내 전공 공지를 찾고, 다음 학기 수강신청을 미리 준비하는 곳”을 설명 문구 후보로 사용하되, **현행 홈·학업 페이지에 별도 대형 홍보 카드나 반복 소개 문구를 다시 넣지 않습니다**. 세 차별점은 **현재 제공 / 합성 시연 / 예정 / 검수 자료 필요** 중 한 상태를 기능별로 명시하고, 과거 개설 횟수는 미래 확률로, 행사 예상 구간은 공식 접수일로, 가상 복구 훈련은 실제 학교 네트워크 장애로 표현하지 않습니다. 외부 비교표는 기능·확인일·공식 링크·실제로 확인한 사용 흐름이 있는 경우에만 작성하고 “최초/유일/무조건 성공” 표현은 객관적 증거 전까지 금지합니다. 학생 사용성 과제는 (A) 확정/전망/검수 필요를 구별하는가, (B) 근거를 실제로 열어보는가, (C) 실패 후 상태 확인·재접속을 판단하는가로 나누어 성공률과 오해 사례를 기록합니다. 경쟁 기능 미확인은 ‘없음’이 아닌 ‘확인 안 됨’으로 둡니다.
@@ -58,9 +76,9 @@
 | 단계 | 유지보수 소스·화면 기술 | 목표와 책임 범위 | 기존 한모·Supabase |
 |---|---|---|---|
 | **1차 — 독립 학업 플랫폼** | **정적 HTML/CSS + JavaScript/JSDoc 전용** | 학사공지·전망·학업 코어와 테스트를 JS로 통일하고 이전 동작과 비교 | **현행 PC 웹 UI 동결**, 원본 모의신청·PC-only 보호 |
-| **2차 — 기존 모의신청 시나리오** | JavaScript + `html/vsugang.html`의 설정·합성 연습, 원본 모방 페이지 별도 보호 | **BASIC 진입 시의 404·브라우저 복구(`RECONNECT`)만** 기본 OFF로 선택. LAST_VALID·가상 타이머·대체과목/충돌 코드는 제외 | BASIC/TIME/SELECT 진입·SELECT 대기번호·Enter 반복 안내·키보드·타이머·결과 계약 보호, 운영 반영은 §6.1 적용 |
-| **3차 — Supabase 연계·제품 안정화** | 신규 데이터 어댑터는 **JavaScript**, DB는 SQL/RLS | TypeScript 소스 없이 JavaScript로, 승인·읽기/철회·복구 기능을 구축 | 임창용 님 운영·자료 권리·실환경 인수 게이트 |
-| **4차 — JavaScript 소스 통합 검증** | **JavaScript + JSDoc/`checkJs`** 중심 | JavaScript 전용 소스의 구문·런타임·브라우저 전체 회귀와 운영 인수 | **코드 언어 통일은 3차와 독립**, 4차 **최종 제품 인수는 3차 실연동 후** |
+| **2차 — 기존 모의신청 시나리오** | JavaScript + `html/vsugang.html`의 설정·합성 연습, 원본 모방 페이지 별도 보호 | **BASIC practice→selectZone 전환의 404(`RECONNECT`) 한 가지**, 기본 OFF·같은 탭 저장 유지·새로고침 복구. 강의 신청 대기 기본 예, 페이지 접속 대기 기본 아니오. LAST_VALID·가상 타이머·대체과목/충돌 코드는 제외 | BASIC/TIME/SELECT 진입·SELECT 대기번호·Enter 반복 안내·키보드·타이머·결과 계약 보호, 운영 반영은 §6.1 적용 |
+| **3차 — Supabase 연계·제품 안정화** | 신규 데이터 어댑터는 **JavaScript**, DB는 SQL/RLS | 새 소스는 JavaScript, DB는 SQL. Draft #93은 PostgreSQL CI 검증만 완료, 실제 승인 데이터의 읽기·철회·복구 연동은 미완료 | 임창용 님 운영·자료 권리·실환경 인수 게이트 |
+| **4차 — JavaScript 소스 통합 검증** | **JavaScript + JSDoc/`checkJs`** 중심 | JS/JSDoc 소스 이전은 완료; 이전 결과 동등성·PC 브라우저·보안/운영의 최종 인수가 목표 | **코드 언어 통일은 3차와 독립**, 4차 **최종 제품 인수는 3차 실연동 후** |
 
 우리 팀은 **1·2차의 실제 구현과 검증**에 집중합니다. 원개발자가 모방 페이지를 원사이트와 비교해 **직접 제작**했고, `selectZone` 변경은 프로젝트 범위 안에서 진행해도 된다고 사용자에게 답변한 것으로 전달받았습니다. 이는 보호된 학교 서버 소스를 확보했다는 뜻이 아니며, 해당 허락만으로 기본 SELECT 대기열·확인창 동작을 파괴해도 된다는 뜻은 아닙니다(§5.3). **Supabase 사용 또한 원개발자가 허용한다고 답변한 것으로 사용자에게서 확인했습니다.** 실제 Supabase Free($0) 프로젝트의 소유·관리 책임은 **임창용 님**으로 유지하고, 계정·접근 권한·비밀키·실연동 승인과 학교 학사자료 사용권은 별도입니다. 3차 설계 인계만으로 실연동 완료나 **4차 최종 제품 인수**를 선언하지 않습니다. [운영 책임 #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29)
 
@@ -87,18 +105,20 @@ index.html — 기존 한모 홈(학기 제목, NOTICE, 이용 시간, 비공식
 /js/academic/ — JavaScript/JSDoc 전용 코어·계약·테스트
 
 /html/vsugang.html — 기존 BASIC/TIME/SELECT 메뉴 + SETTING
-  ├─ RECONNECT : 가상 404 예/아니오 1개, 기본 아니오 (LAST_VALID·타이머 제거)
+  ├─ RECONNECT : 가상 404 예/아니오 1개, 새 탭 기본 OFF·같은 탭 선택 저장
+  ├─ SETTING : 강의 신청 대기 예(기본) / 수강신청 페이지 접속 대기 아니오(기본)
   ├─ js/scenario-settings.js · js/hanmoSys.js · html/incident-404.html · js/incident-404.js
   ├─ ON: BASIC practice.html → selectZone.html 진입 시 정적 404 예시 페이지로 1회 이동
   │       왼쪽 모의신청 메뉴는 비활성, Chrome 새로고침으로만 복구 안내
+  │       접속 대기 ON이면 새로고침 후 정상 신청 화면에서 대기창 시작
   └─ OFF 및 TIME/SELECT: 기존 html/practice.html → html/selectZone.html → html/result.html
        기존 보호 파일/신청·대기·시계 동작은 손대지 않음; PC-only 정책 유지
 
-[3차: 향후 Supabase 설계·인계 → 승인된 운영 책임자의 실제 구축·연계]
+[3차: Draft PR #93 SQL/격리 PostgreSQL CI 통과, 본 DB/학생 화면 연동은 미구축]
 허가된 학사 자료 → 독립 검수·판본 관리 → DB/API → 학생용 읽기 전용 어댑터
 
-[4차: Supabase 운영 인수 후 JS 통합 완료·전체 제품 검증]
-TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
+[4차: JS/JSDoc 소스 전환 완료, Supabase 운영 인수 후 전체 제품 검증]
+TypeScript 소스 0개를 유지; 4차는 실제 데이터·권리·PC/보안 동등성 최종 인수
 2차 기존 HTML/JavaScript 및 학교 시스템과의 비연동 경계 보존
 ```
 
@@ -106,7 +126,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 - **정적 우선:** 새로운 학업 계산·NLP·검색·학생용 데이터 연계 로직은 **JavaScript + JSDoc**가 원본입니다. 기존 HUFS One AI 선별 이식 소스와 신규 로직도 JavaScript/JSDoc으로 통일하고 TypeScript 파일은 새로 추가하지 않습니다. 빌드 출력물이 아니라 유지보수 원본을 JS로 바꾸고, Zod/예외/출처·저장 계약과 원본 동작을 비교합니다. React 의존 화면이나 외부 DB 필수화를 도입하지 않습니다.
 - **2차 언어 경계:** 기존 시뮬레이터의 시나리오는 **JavaScript·기존 HTML/CSS로 직접 구현**합니다. React나 TypeScript 개발환경을 기존 페이지의 필수 의존성으로 도입하지 않습니다. 1차 코어와 연동이 필요하면 빌드된 JavaScript 공개 어댑터 및 명시적 입력/출력 계약을 사용하며, 학생 이수 원장이나 외부 DB 원본을 시뮬레이터에 결합하지 않습니다.
-- **3·4차 전환 경계:** 기존 TS→JS/JSDoc 이전은 **3차 실연동과 독립적으로** 수행합니다. 순수 함수·공통 계약·예측/NLP·학업 코어·앱/뷰·테스트·빌드를 JavaScript로 통일하고 이전 결과·예외·자료 상태를 비교합니다. 3차의 새 코드 역시 JS로 작성하고, 4차에서 **잔여 TS 0개·전체 정적/브라우저·보안·Supabase 인수**를 최종 확인합니다. SQL/RLS·운영 도구의 언어는 기술상 적절한 형식을 유지합니다.
+- **3·4차 전환 경계:** 기존 TS→JS/JSDoc 이전은 **3차 실연동과 독립적으로 완료**했습니다. 순수 함수·공통 계약·예측/NLP·학업 코어·앱/뷰·테스트를 JS로 통일했으며, 이전 결과·예외·자료 상태의 전체 동등성은 추가 검증 대상으로 남습니다. 3차의 새 코드 역시 JS로 작성하고, 4차에서 **잔여 TS 0개·전체 정적/브라우저·보안·Supabase 인수**를 최종 확인합니다. SQL/RLS·운영 도구의 언어는 기술상 적절한 형식을 유지합니다.
 - **단일 진실의 출처:** 공식 확인을 주장하는 자료는 운영 검수된 릴리스 자산과 그 판본·해시에서만 채택합니다. 형식 검증에 통과한 사용자 파일은 비공식 자료입니다. 학교 자료를 자동 갱신하지 못하는 경우 마지막 검수시각을 표시합니다.
 - **학생 정보:** 현재 `html/planner.html`(`내정보`)에서는 캠퍼스·주전공·입학년도(화면 표시는 `YYYY학번`)가 필수이고 이중전공 또는 부전공은 선택 입력입니다. `js/student-preferences.js`가 로컬 브라우저에 저장하고 `js/student-profile-bar.js`가 상단 우측 요약을 구성합니다. 이 값은 **사용자가 적은 정보**이며 학교 계정 로그인·학적 확인·고유 학번 인증이 아닙니다. 개별 성적/이수/학적 파일은 사용자가 로컬에서 불러와 관리하며 원격 전송·공개 Git 기록·서버 기본 동기화가 없습니다. 브라우저 데이터 삭제·내보내기·공유 PC 주의를 제공합니다.
 - **재사용 자산:** `js/academic/`에는 선별한 브라우저용 학업 계산 코어·테스트만 둡니다. 예전 원본 235개가 포함된 `legacy-academic/` 보존 트리와 React·Fastify·PostgreSQL·비학업 원본은 **현재 PR #1~#5의 새 커밋 계보와 배포 번들에서 제외**했습니다. 필요 참조는 소스 원저작자·권리 범위를 확인한 별도 자료에서만 하며 포크에 다시 무더기 복사하지 않습니다.
@@ -486,11 +506,11 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | **3차 실연동** | 승인된 운영 책임자가 Supabase 실구축·정본 검수·갱신·보안·장애 대체·전체 브라우저 연동 및 인수 완료 |
 | **4차 최종 인수** | 3차 실제 Supabase 인수/안정화 이후, 조기 이관한 JS의 잔여 TS 0개·동등성·정적/브라우저/보안·원본 모드 QA 통과를 확인 |
 
-**현재 구현 상태(2026-11-21):** [#94](https://github.com/ot4562-glitch/Hanmo_develop/pull/94)는 과거 합성 대체과목 검색·미사용 워크숍을 제거했습니다. **[#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)이 main에 병합되어 LAST_VALID 제거 및 단일 404 전환 코드가 반영됐습니다.** 이전 [#105](https://github.com/ot4562-glitch/Hanmo_develop/pull/105)는 #104 작업 브랜치에만 병합돼 main 반영이 누락됐고, #106으로 바로잡았습니다. 404 사용자 안내·검증은 실제 Chrome 새로고침만 지원하며 브라우저 뒤로가기는 지원하지 않습니다. [#95](https://github.com/ot4562-glitch/Hanmo_develop/pull/95)는 오래된 공지 JSON·가상 강좌·개설 예시를 제거하고 미연결/자료 없음/오류 UI를 연결했습니다. [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97)·[#98](https://github.com/ot4562-glitch/Hanmo_develop/pull/98)·[#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99)는 **순수 NLP 코어만** 병합했으며 실제 학사자료·학생 검색 화면에는 미연결입니다. SELECT 대기번호/Enter 연타 실기기 QA(#71), 학교 자료 권리(#27), Supabase 운영 인수(#64–#67)는 미완료입니다. 병합은 운영 배포 승인이 아닙니다.
+**현재 구현 상태(2026-11-22, 상단 상태표가 우선):** 1·2차 학생 페이지와 합성 모의신청 코드는 `main`에 있으며, [#94](https://github.com/ot4562-glitch/Hanmo_develop/pull/94)·[#95](https://github.com/ot4562-glitch/Hanmo_develop/pull/95)에서 미사용 합성 데이터/검색 데모를 제거했습니다. [#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)·[#108](https://github.com/ot4562-glitch/Hanmo_develop/pull/108)·[#109](https://github.com/ot4562-glitch/Hanmo_develop/pull/109)·[#110](https://github.com/ot4562-glitch/Hanmo_develop/pull/110)은 단일 404 전환/복구·안내, 독립 대기시간 설정, 돌발상황 재방문 선택 복원을 반영했습니다. [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97)–[#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99)의 NLP/공지/평가 코어는 합성 수준이며 실제 학교 원문·학생 화면 인수는 미완료입니다. [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)으로 JS/JSDoc 소스 전환은 끝났으나 PC·데이터 검증은 미완료. **[#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 Draft·미병합**, 격리 PostgreSQL CI 통과와 실제 Supabase 미구축/미승인을 구별합니다. 전체 인수 조건은 이 장의 표와 §10.2를 따릅니다.
 
 ## 10. 미결 설계와 별도 실행 작업
 
-기존 HMD 설계 추적에서 **학교 자료 이용 범위 #27**이 아직 미결입니다. `학점 정리`의 존치·축소도 미결입니다. **실제 대체과목 검색·시간 충돌 기능은 후속 보류**이며 해당 합성 데모는 #94에서 제거했습니다. [#84](https://github.com/ot4562-glitch/Hanmo_develop/pull/84)는 현행 기본 OFF 동작 회귀로 재작성·병합, [#85](https://github.com/ot4562-glitch/Hanmo_develop/pull/85)는 **실강좌 ID 매핑 구현을 폐기하고 가상 자료 격리 회귀 테스트만** 병합했습니다. 자동 CI는 통과했으나 실제 SELECT 대기번호/Enter 연타 Windows 브라우저 QA(#71)는 여전히 미완료입니다. [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93) Supabase 설치는 **권리 확인일 철회 처리·읽기/쓰기 역할 검증을 보강한 Draft**로, 실제 DB 인수 전 미병합입니다.
+기존 HMD 설계 추적에서 **학교 자료 이용 범위 #27**이 아직 미결입니다. `학점 정리`의 존치·축소도 미결입니다. **실제 대체과목 검색·시간 충돌 기능은 후속 보류**이며 해당 합성 데모는 #94에서 제거했습니다. [#84](https://github.com/ot4562-glitch/Hanmo_develop/pull/84)는 현행 기본 OFF 동작 회귀로 재작성·병합, [#85](https://github.com/ot4562-glitch/Hanmo_develop/pull/85)는 **실강좌 ID 매핑 구현을 폐기하고 가상 자료 격리 회귀 테스트만** 병합했습니다. 자동 CI는 통과했으나 실제 SELECT 대기번호/Enter 연타 Windows 브라우저 QA(#71)는 여전히 미완료입니다. [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93) Supabase 설치 초안은 **철회 스냅샷 복원/재발행 차단·검수 후 출처 연결 변경 차단·관리 함수 권한 검사**를 포함해 격리 PostgreSQL 16 CI 검증을 통과했으나, **Draft·main 미병합·실제 Supabase 미설치**입니다.
 
 **데이터 보존 정책(§7.1.1)은 확정**하되, 미구현인 3개 학년도 분반 압축·일반 공지 90일 정리·권리/참조 검증 및 경량 스냅샷 API는 #64–#67에서 설계 준수·실검증을 완료해야 합니다. 학교 권리 회신 #27은 여전히 미결이며 보존 기간 확정이 수집 허가를 대신하지 않습니다.
 
@@ -500,7 +520,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 - **기능 범위 검토 — 학점 정리(`html/academic-progress.html`, `js/student-progress.js`, A/B/C 학기별 계획):** **선택적 기능·제거 검토 중(미결정)**. 현재 페이지와 계산 기능은 그대로 둡니다. 핵심 목표(공지·개설 근거·모의수강신청) 및 자원 우선순위가 더 중요하면 학점 정리 UI를 감축하거나 제거할 수 있습니다. **여유가 있을 때만** 개인 학점·이수 계산을 추가 개발합니다. 제거를 결정하더라도 공용 학업 코어·다른 학기별 계획·상단 메뉴·저장 계약의 의존성을 먼저 조사하고, 필요한 코드/테스트·네비게이션 변경과 복구 SHA를 승인받아 진행합니다. 공식 졸업 자격 자동 판정은 이 기능의 출시 전제나 구현 완료 항목이 아닙니다.
 - **확정된 범위 조정 — 대체과목 검색·시간 충돌:** **현행 2차 개발에서 제외**하고 기존 합성 후보 검색·번호 충돌 구현 및 미사용 워크숍 모듈까지 제거합니다. 마지막 과목 신청 실패는 제거하고, **practice→selectZone 전환 시점의 가상 404와 실제 브라우저 새로고침 복구만** 사용자 지원 범위로 유지합니다. 실제 분반·시간표 자료의 이용권(#27)과 검수(#41·#42), 원본 SELECT 대기번호/Enter 동작 실기기 QA(#71)를 확보한 이후에만 **별도 승인으로** 재검토합니다. 이 코드 제거는 운영 배포 승인이나 실제 대체과목 자료 확보를 의미하지 않습니다. [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49) · [#62](https://github.com/ot4562-glitch/Hanmo_develop/issues/62)
-- **현재 구현 원칙:** 1·2차 기본 흐름·기존 UI와 테스트를 보존하고, 가상 신청 실패 확인·재접속·학사공지·개설 전망·근거 검증에 개발 역량을 집중합니다. 보류 기능에 신규 UI·실자료 연결·공개 완료 판정을 배정하지 않습니다. `학점 정리`의 유지/숨김/제거는 별도 사용자 판단 후 진행합니다.
+- **현재 구현 원칙:** 1·2차 기본 흐름·기존 UI와 테스트를 보존하고, **단일 가상 404 복구·독립 모의 대기**, 학사공지·개설 전망·근거 검증에 개발 역량을 집중합니다. 보류 기능에 신규 UI·실자료 연결·공개 완료 판정을 배정하지 않습니다. `학점 정리`의 유지/숨김/제거는 별도 사용자 판단 후 진행합니다.
 
 ### 10.2 설계 종료 이후의 실행 책임
 
@@ -513,7 +533,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | PC 전용 지원·접근성 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72), [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39), [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | Windows PC Chrome/Edge·키보드·NVDA, 비지원 기기 안내 |
 | 자료 이용 조건 준수·라이선스 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73), [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41), [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) | 학교 회신 이후 실제 자료·배포 후보에서 제한 위반 없음 |
 | 3차 Supabase Free 실연동/보안/인수 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64), [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65), [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66), [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | 물리 DB·RLS·스냅샷·무료 용량·장애 복원·운영 인수 실증 |
-| 조기 TS→JS 이관·4차 최종 검증 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) | 이관 코드는 즉시 착수; 4차 제품 최종 승인에는 3차 실운영 인수 필요 |
+| 조기 TS→JS 이관·4차 최종 검증 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) | JS/JSDoc 코드 이관은 완료; 남은 동등성·PC/보안·실운영 인수와 4차 제품 최종 승인은 별도 |
 | 소개 문구·비교 근거·학생 오해 | [#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) | 제품 상태 표기·비교 출처·학생 시연의 실제 검증 |
 
 **이슈 운영 규칙:** [agent.md](https://github.com/ot4562-glitch/Hanmo_develop/blob/main/agent.md)의 제목·차수·P0/P1/P2·담당자·선행 조건·검증 가능한 완료 기준을 따릅니다. `[설계]`는 사용자/팀의 설계 결정과 아키텍처 반영까지만 추적하고, `[구현]`/ `[검증]`은 별도의 실행 결과가 확인된 때 닫습니다. 새 실데이터나 실환경이 들어왔다는 이유만으로 닫힌 설계 이슈를 재개하지 않고, **실제 설계 선택의 변경이 필요한 때**에만 정책을 수정합니다.
