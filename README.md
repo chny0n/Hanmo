@@ -37,8 +37,6 @@
 
 ![BASIC·TIME·SELECT와 기본 OFF인 가상 404·정원 마감 훈련, 학사공지·강의 검색/전망 및 졸업 준비 화면을 비교한 구성도](docs/images/hanmo-experience-landscape.svg)
 
-<sub>왼쪽은 실제로 연습할 수 있는 모의수강신청, 오른쪽은 학업 준비를 위한 확장 화면입니다. 학사 공지·강의 데이터는 아직 연결 준비 중입니다.</sub>
-
 ### 학생이 한모에서 이어갈 경험
 
 | 궁금한 순간 | 한모에서 이어지는 경험 |
@@ -109,8 +107,6 @@ flowchart LR
 | **학사 FAQ** · [열기](html/academic-faq.html) | 질문·주제 탐색과 공식 확인 경로 | 검수 근거형 답변 미연결 |
 | **공식 상담** · [열기](html/academic-support.html) | 공개 상담 부서·주제별 안내 링크 | 최신성·학생 적용 별도 확인 필요 |
 
-<sub>**안내:** 학사 데이터 설정은 현재 비활성 상태이며 학교 공식 서비스와 연동하지 않습니다. 학사 일정·신청 자격 등 중요한 판단은 [한국외국어대학교 공식 홈페이지](https://www.hufs.ac.kr/)와 원문 공지를 확인해 주세요. 자료 이용·검수·운영 기준은 [아키텍처](docs/architecture.md)에서 확인할 수 있습니다.</sub>
-
 <a id="site-flow"></a>
 
 ## 전체 구조 · 화면과 데이터의 연결
@@ -164,8 +160,6 @@ flowchart TB
     class J,E,U,LS data
     class S,V,DB,API planned
 ```
-
-<sub>학사공지·강의 검색(개설 전망 통합)·졸업 준비·학사 달력·FAQ·공식 상담은 탐색 화면이 준비되어 있지만, 학교의 승인 학사자료와 Supabase 실서비스는 아직 연결하지 않았습니다. 구현 범위와 검증 조건은 [아키텍처 문서](docs/architecture.md)에 정리되어 있습니다.</sub>
 
 [설계 문서](docs/architecture.md) · [문서 안내](docs/README.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 
