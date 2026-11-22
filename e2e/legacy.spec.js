@@ -22,7 +22,8 @@ test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인�
   await tile.focus();
   await expect(tile).toBeFocused();
   await expect(tile).toHaveCSS('clip-path',/polygon/);
-  await tile.hover();
+  // 역 ㄱ자 타일의 가운데는 돌발상황 클릭 영역이므로 왼쪽 위를 검사한다.
+  await tile.hover({position:{x:60,y:60}});
   await expect.poll(()=>tile.evaluate(element=>
     Number(getComputedStyle(element,'::before').opacity))).toBeGreaterThan(0.5);
 });
@@ -32,7 +33,7 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
   // 원작의 확인·완료 대화상자를 실제 브라우저에서 수락해야 신청이 진행된다.
   page.on('dialog',dialog=>{void dialog.accept();});
   await setPracticeOptions(page);
-  await page.locator('.basic-mode-tile').click();
+  await page.locator('.basic-mode-tile').click({position:{x:60,y:60}});
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
   await page.clock.fastForward(11_000);
   await page.locator('.sugang').click();
@@ -50,7 +51,7 @@ test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 �
   await expect(page.locator('#scenario-settings')).toBeVisible();
   await page.locator('[data-scenario-toggle="RECONNECT"]').check();
   await page.locator('#scenario-settings button[value="save"]').click();
-  await page.locator('.basic-mode-tile').click();
+  await page.locator('.basic-mode-tile').click({position:{x:60,y:60}});
   await page.clock.fastForward(11_000);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/incident-404\.html$/);
