@@ -35,7 +35,7 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
   await setPracticeOptions(page);
   await page.locator('.basic-mode-tile').click({position:{x:60,y:60}});
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
-  await page.clock.fastForward(11_000);
+  await page.clock.runFor(11_000);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
   await expect(page.locator('button.register')).toHaveCount(3);
@@ -52,7 +52,7 @@ test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 �
   await page.locator('[data-scenario-toggle="RECONNECT"]').check();
   await page.locator('#scenario-settings button[value="save"]').click();
   await page.locator('.basic-mode-tile').click({position:{x:60,y:60}});
-  await page.clock.fastForward(11_000);
+  await page.clock.runFor(11_000);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/incident-404\.html$/);
   await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
