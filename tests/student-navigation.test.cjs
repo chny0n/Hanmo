@@ -228,3 +228,20 @@ test('academic pages have no repeated marketing introduction or rounded section 
  for(const name of ['practice.html','selectZone.html'])
   assert.ok(fs.existsSync(path.join(ROOT,'html',name)));
 });
+
+test('승인된 화면 정돈은 모드 타일 접근성과 제한된 시각 효과를 유지한다',()=>{
+ const menu=fs.readFileSync(path.join(ROOT,'html','vsugang.html'),'utf8');
+ for(const mode of [1,2,3]){
+   assert.match(menu,new RegExp("onclick='goPractice\\("+mode+"\\)'[^>]*role='button' tabindex='0'"));
+   assert.match(menu,new RegExp("onkeydown='[^']*goPractice\\("+mode+"\\)"));
+ }
+ assert.match(menu,/연습 전 과목 수를 설정해 주세요/);
+ const modes=fs.readFileSync(path.join(ROOT,'css','vsugang-fit.css'),'utf8');
+ assert.match(modes,/backdrop-filter:\s*blur\(7px\)/);
+ assert.match(modes,/prefers-reduced-motion:\s*reduce/);
+ const home=fs.readFileSync(path.join(ROOT,'css','home-fit.css'),'utf8');
+ assert.match(home,/body\.hanmo-home \.button\.display/);
+ const common=fs.readFileSync(path.join(ROOT,'css','hanmo-components.css'),'utf8');
+ assert.match(common,/#planner-go-notices/);
+ assert.match(common,/scroll-behavior:\s*smooth/);
+});

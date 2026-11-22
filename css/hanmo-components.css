@@ -1,4 +1,4 @@
-/* Shared original Hanmo visual language. Scoped to new pages + top navigation; never restyle original school-form internals. */
+/* 원작의 남색과 금색을 유지하며 학업 화면과 공통 탐색에만 적용한다. */
 .hanmo-ui{font-family:var(--hm-font);color:var(--hm-white);min-height:100vh}
 .hanmo-ui *{box-sizing:border-box}
 .hanmo-ui a{color:#e4f0f9;text-underline-offset:3px}
@@ -77,7 +77,7 @@ a.hanmo-card:hover{background:#112c3d;border-color:#72a7c5;transform:translateY(
 @media(prefers-reduced-motion:reduce){a.hanmo-card,.hanmo-progress-fill{transition:none}}
 
 
-/* One profile-driven top navigation: branding on the left, editable information on the right. */
+/* 학교 로고와 브라우저 내 학생 정보를 구분해서 배치한다. */
 .hanmo-topbar{flex-wrap:wrap;column-gap:24px;row-gap:5px}
 .hanmo-topbar nav,.hanmo-topbar .hanmo-nav-inline{flex:1 1 780px;min-width:0;gap:5px 10px;justify-content:flex-end;flex-wrap:wrap}
 .hanmo-topbar nav a,.hanmo-topbar .hanmo-nav-inline a{border-radius:0}
@@ -94,4 +94,51 @@ a.hanmo-card:hover{background:#112c3d;border-color:#72a7c5;transform:translateY(
 @media(max-width:950px){
   .hanmo-topbar nav,.hanmo-topbar .hanmo-nav-inline{flex-basis:100%;justify-content:flex-end}
   .hanmo-topbar .hanmo-profile-summary{max-width:100%}
+}
+
+/* Open Props와 같은 토큰 방식으로 짧고 일관된 전환 곡선을 공유한다. */
+:root {
+  --hm-ease-soft: cubic-bezier(.22, 1, .36, 1);
+}
+.hanmo-topbar {
+  background: rgba(0, 17, 27, .89);
+  -webkit-backdrop-filter: blur(9px) saturate(112%);
+  backdrop-filter: blur(9px) saturate(112%);
+  box-shadow: 0 1px 0 rgba(151, 195, 214, .08),
+              0 8px 24px rgba(0, 0, 0, .10);
+}
+.hanmo-topbar nav a,
+.hanmo-topbar .hanmo-nav-inline a {
+  transition: background-color .18s var(--hm-ease-soft),
+              color .18s ease-out;
+}
+body.hanmo-ui .hanmo-schoolmark :is(h1, h2) {
+  letter-spacing: -.025em;
+}
+/* 내정보의 저장만 주 동작으로 강조하고 공지 이동은 보조 조작으로 표시한다. */
+body.hanmo-ui #planner-go-notices {
+  background: transparent;
+  border: 1px solid rgba(145, 180, 201, .55);
+  color: var(--hm-white) !important;
+  box-shadow: none;
+}
+body.hanmo-ui #planner-go-notices:hover {
+  background: rgba(39, 73, 95, .48);
+  border-color: rgba(244, 199, 108, .65);
+}
+html:has(body.hanmo-ui) {
+  scroll-behavior: smooth;
+  scroll-padding-top: 18px;
+}
+body.hanmo-ui .hanmo-main > .hanmo-schoolmark {
+  animation: hanmo-heading-appear .24s var(--hm-ease-soft) both;
+}
+@keyframes hanmo-heading-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(body.hanmo-ui) { scroll-behavior: auto; }
+  body.hanmo-ui .hanmo-main > .hanmo-schoolmark { animation: none; }
+  .hanmo-topbar nav a, .hanmo-topbar .hanmo-nav-inline a { transition: none; }
 }

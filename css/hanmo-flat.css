@@ -42,3 +42,19 @@ body.hanmo-flat-legacy .info .card{background:transparent;border:0;border-radius
     border-left:0;border-top:1px solid #385367;padding-left:0
   }
 }
+
+/* 평면 레이아웃을 유지하되 구분선과 제목 간격의 시각적 밀도만 정돈한다. */
+body.hanmo-ui .hanmo-card + .hanmo-card {
+  border-top-color: rgba(131, 174, 194, .32);
+}
+body.hanmo-ui .hanmo-card-grid.two > .hanmo-card:nth-child(2) {
+  border-left-color: rgba(131, 174, 194, .32);
+}
+body.hanmo-ui .hanmo-card :is(h2, h3) {
+  letter-spacing: -.018em;
+}
+@media (max-width: 830px) {
+  body.hanmo-ui .hanmo-card-grid.two > .hanmo-card:nth-child(2) {
+    border-top-color: rgba(131, 174, 194, .32);
+  }
+}

@@ -100,7 +100,7 @@
 				</section>
 				<section class='container'>
 					<div class='grid'>
-						<div style='grid-area: b' onclick='goPractice(1)'>
+						<div style='grid-area: b' onclick='goPractice(1)' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();goPractice(1)}' role='button' tabindex='0' aria-label='BASIC MODE · 수강신청 전 과정 연습'>
 							<h2>
 								BASIC MODE
 							</h2>
@@ -112,7 +112,7 @@
 							<span class="mode-tile-title" id="incident-options-title">돌발상황</span>
 							<span class="mode-tile-description" id="incident-options-description">BASIC MODE의 돌발 상황을 연습해요.</span>
 						</button>
-						<div style='grid-area: t' onclick='goPractice(2)'>
+						<div style='grid-area: t' onclick='goPractice(2)' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();goPractice(2)}' role='button' tabindex='0' aria-label='TIME MODE · 시작 시간 연습'>
 							<h2>
 								TIME MODE
 							</h2>
@@ -120,7 +120,7 @@
 								수강신청 시작 시간에 맞춰 버튼을 신속하게 누를 수 있도록 연습할 수 있어요.
 							</p>
 						</div>
-						<div style='grid-area: s' onclick='goPractice(3)'>
+						<div style='grid-area: s' onclick='goPractice(3)' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();goPractice(3)}' role='button' tabindex='0' aria-label='SELECT MODE · 과목 선택 연습'>
 							<h2>
 								SELECT<br>MODE
 							</h2>
@@ -132,7 +132,7 @@
 							<h2>
 								SETTING
 							</h2>
-							<p class='printValue'>설정 값을 확인해주세요.</p>
+							<p class='printValue'>연습 전 과목 수를 설정해 주세요.</p>
 						</div>
 					</div>
 				</section>
