@@ -58,7 +58,7 @@
 
 설정을 켜지 않으면 기존 연습으로 진행합니다. **가상 404와 페이지 접속 대기가 둘 다 켜진 경우**, 404가 먼저 표시되고 **새로고침으로 복구한 뒤** 대기시간이 적용됩니다.
 
-~~~mermaid
+```mermaid
 flowchart TB
     A["BASIC 모드 · 기존 연습 시작"] --> B{"가상 404를 선택했나요?"}
     B -- "아니오" --> D["정상 신청 페이지"]
@@ -76,7 +76,7 @@ flowchart TB
     class A,D,F,G,H original
     class B,E choice
     class C incident
-~~~
+```
 
 <sub>이 흐름은 **BASIC의 예시**입니다. 가상 404는 TIME/SELECT에 주입되지 않으며, 브라우저 **뒤로가기는 복구 방법으로 지원하지 않습니다.** 404 화면은 실제 HTTP 404 응답이 아닌 모의 훈련용 정적 페이지입니다.</sub>
 
@@ -111,12 +111,12 @@ flowchart TB
 
 한모는 정적 **HTML/CSS + JavaScript/JSDoc** 중심으로 구성됩니다. 학교 계정 로그인이나 성적 원장의 서버 전송을 전제로 하지 않으며, 학업 계산·공지 후보 추출·근거 검색 코어의 자동 검증과 **실제 학교 자료를 이용한 검증**을 별개로 취급합니다.
 
-~~~bash
+```bash
 git clone https://github.com/ot4562-glitch/Hanmo_develop.git
 cd Hanmo_develop
 npm install --ignore-scripts --no-audit --no-fund
 npm run check
-~~~
+```
 
 <sub>Node.js 22 기준. <code>npm run check</code>는 소스·타입 검사, 단위/모의신청 회귀, 정적 사이트 빌드와 스모크 검사를 실행합니다. <code>npm run check:legacy</code>는 원본 모의신청 관련 회귀 검사입니다. 학생용 빌드 결과는 <code>dist/</code>에서 로컬 HTTP 서버로 확인할 수 있습니다.</sub>
 
