@@ -149,3 +149,39 @@ body.hanmo-ui .progress-main .progress-form button:is(:hover, :focus-visible)::b
   body.hanmo-ui .progress-main .progress-form button,
   body.hanmo-ui .progress-main .progress-form button::before { transition: none; }
 }
+
+
+/* 신규 졸업 준비는 간단한 학점 요약을 먼저 보여주고 기존 원장은 접어 보존한다. */
+.hanmo-main.progress-main{padding-block:22px;gap:18px}
+.progress-page-heading{grid-template-columns:1fr;justify-items:center;gap:10px;text-align:center}
+.progress-page-heading .hanmo-schoolmark{grid-column:1;grid-row:1}
+.progress-page-heading p{grid-column:1;grid-row:2}
+.progress-page-heading a{grid-column:1;grid-row:3;justify-self:center}
+.degree-preparation{display:grid;gap:18px}
+.degree-context-panel,.degree-credit-row,.degree-requirement{padding:15px 0;border-bottom:1px solid #35536b}
+.degree-context-panel h2{margin-bottom:12px}
+.degree-context-panel p{color:#bfd5e4;margin:0 0 10px}
+.degree-context-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.degree-context-grid label{display:grid;gap:4px;color:#eff6fa;font-weight:650}
+.degree-context-grid :is(input,select),.degree-credit-input-grid input{width:100%;min-height:39px;border:1px solid #6d889d;background:#0f2b3d;color:#f3f7fa;padding:7px;box-sizing:border-box}
+.degree-context-grid label[hidden]{display:none}
+.degree-tabs{display:flex;gap:6px;border-bottom:1px solid #44677d}
+.degree-tabs button{padding:10px 28px;border:1px solid #587a90;background:#142f40;color:#e8f1f6;font-weight:750;cursor:pointer}
+.degree-tabs button[aria-selected="true"]{background:#f4c76c;color:#092032;border-color:#f4c76c}
+.degree-credit-input-grid{display:grid;grid-template-columns:minmax(110px,1fr) repeat(2,minmax(90px,1fr));gap:8px 14px;align-items:center;max-width:880px;margin:12px 0}
+.degree-credit-input-grid>span{color:#d6e8f2;font-weight:750}
+.degree-credit-input-grid>label{font-weight:700}
+.degree-credit-row{display:grid;gap:3px}
+.degree-credit-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px}
+.degree-credit-row .hanmo-progress-track{height:8px;margin:4px 0}
+.degree-warnings{color:#f4cb91}
+.degree-warnings p{margin:6px 0}
+.degree-requirement h3{font-size:16px;margin:0 0 6px}
+.degree-requirement p{margin:0 0 5px;color:#f4cb91}
+.degree-requirement a{color:#d8e9f8}
+.degree-advanced{padding:16px 0;border-top:1px solid #587184}
+.degree-advanced>summary{cursor:pointer;font-weight:750;color:#f4c76c}
+.degree-advanced-body{display:grid;gap:16px;margin-top:15px}
+#degree-requirements-panel[hidden],#degree-credits-panel[hidden]{display:none}
+@media(max-width:860px){.degree-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.degree-context-grid{grid-template-columns:1fr}.degree-credit-input-grid{gap:5px;grid-template-columns:minmax(80px,1fr) repeat(2,minmax(68px,1fr))}}

@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "css/academic-progress.css",
-      "sha": "c34999729cfecac7737fa8315de1513ae88b1479"
+      "sha": "b88fa7f3fe978ff36f1ae921d22d5e90a27f41b6"
     },
     {
       "path": "css/developer.css",
@@ -73,7 +73,7 @@
     },
     {
       "path": "html/academic-progress.html",
-      "sha": "73cc906843b7ad8fe50e75401ff726eaf5466fc1"
+      "sha": "c5de09b434b7520052b1523d4501e106fdf606f2"
     },
     {
       "path": "html/academic-timeline.html",
