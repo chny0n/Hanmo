@@ -20,7 +20,8 @@
       parts.push((kind==='MINOR'?'부전공 ':'이중전공 ')+secondary.trim().slice(0,100));
     }
     const year=value.cohort;
-    parts.push(Number.isSafeInteger(year)&&year>=2010&&year<=2100?year+'학번':'학번 미설정');
+   const maxCohort=Number(new Intl.DateTimeFormat('en',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()))+1;
+    parts.push(Number.isSafeInteger(year)&&year>=2010&&year<=maxCohort?year+'학번':'학번 미설정');
     return parts.join(' · ');
   }
   function update(){
