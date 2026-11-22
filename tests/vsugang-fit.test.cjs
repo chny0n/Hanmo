@@ -56,3 +56,56 @@ test('resize and ad height remeasure fit and preserve navigation offset',()=>{
  x.events.pageshow();x.flush();
  assert.equal(x.cls.has('vsugang-compact-scroll'),true);
 });
+
+const menuSource=fs.readFileSync(path.join(__dirname,'../js/vsugang.js'),'utf8');
+const menuStyles=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
+
+function menuSettingHarness(){
+  const stored=new Map();
+  const parts={
+    printValue:{innerText:'',style:{}},
+    setting:{style:{}},
+    settingSection:{style:{}},
+    psugangVal:{value:''},
+    vsugangVal:{value:''}
+  };
+  const incident={style:{}};
+  const document={
+    getElementsByClassName(name){return parts[name]?[parts[name]]:[];},
+    querySelector(selector){
+      if(selector==='#incident-options')return incident;
+      if(selector==='input[name="waitingYN"]:checked')return {value:'no'};
+      return null;
+    }
+  };
+  const localStorage={
+    getItem(key){return stored.get(key)??null;},
+    setItem(key,value){stored.set(key,String(value));},
+    removeItem(key){stored.delete(key);}
+  };
+  const context={document,localStorage,alert(){},location:{href:''}};
+  vm.runInNewContext(menuSource,context,{filename:'vsugang.js'});
+  return {stored,parts,incident,context};
+}
+
+test('필수 설정 미완료일 때 SETTING만 붉고 선택형 돌발상황은 남색 기본값을 유지한다',()=>{
+  const x=menuSettingHarness();
+  assert.equal(x.parts.setting.style.background,'#120000');
+  assert.equal(x.incident.style.background,undefined);
+  assert.match(menuStyles,
+    /body\.hanmo-vsugang \.grid > :is\(\.setting,#incident-options\)\{[^}]*background:#06111c/);
+});
+
+test('설정 유효성 변경은 선택형 돌발상황 타일 색상을 바꾸지 않는다',()=>{
+  const x=menuSettingHarness();
+  x.stored.set('psubjectValue','5');
+  x.stored.set('subjectValue','2');
+  x.stored.set('waitingValue','no');
+  x.context.setValue();
+  assert.equal(x.parts.setting.style.background,'#001203');
+  assert.equal(x.incident.style.background,undefined);
+  x.stored.delete('waitingValue');
+  x.context.setValue();
+  assert.equal(x.parts.setting.style.background,'#120000');
+  assert.equal(x.incident.style.background,undefined);
+});
