@@ -23,6 +23,12 @@ const waitingCloseBtn=document.querySelector('.waitingCloseBtn');
 const noObject={};
 const rc=Array(Math.max(0,targetCount)).fill(false);
 const processingRegistrations=new Set();
+const closedCourses=new Set();
+const CAPACITY_KEY='hanmo.syntheticCapacity.active.v1';
+const capacityEnabled=practiceValue===1&&typeof sessionStorage==='object'&&
+  sessionStorage.getItem(CAPACITY_KEY)==='yes';
+let capacityTriggered=false;
+let courseMode='INTEREST';
 let count=0; // Number of courses currently registered (can decrease on delete).
 let cnt=0;   // Display row count; separate from overall target count.
 let totalWaitedMs=0; // Excluded from SELECT result time.
@@ -47,6 +53,84 @@ function renderPracticeCourses(){
       +'<td>월 1 2 3 ( )</td><td>0 / 100</td>'
       +'<td><input type="checkbox"></td><td></td></tr>');
   }
+}
+
+/** 라디오만 누르면 조회조건만 전환하고 Search 전에는 표를 표시하지 않는다. */
+function bindCourseModes(){
+  const nav=document.getElementById?.('course-mode-nav');
+  if(!nav||typeof nav.querySelector!=='function')return;
+  const hint=document.getElementById('course-search-prompt');
+  const generalWarning=document.getElementById('course-general-warning');
+  const sync=()=>{
+    const radio=nav.querySelector('input[name="course-mode"]:checked');
+    courseMode=['MAJOR','GENERAL','FOUNDATION'].includes(radio?.value)?radio.value:'INTEREST';
+    nav.dataset.mode=courseMode;
+    for(const extra of nav.querySelectorAll('.menu-extra')){
+      extra.hidden=extra.dataset.courseFilter!==courseMode;
+    }
+    if(generalWarning)generalWarning.hidden=courseMode!=='GENERAL';
+    if(hint)hint.hidden=false;
+    subjectTable.style.display='none';
+  };
+  nav.addEventListener('change',event=>{
+    if(event.target?.matches?.('input[name="course-mode"]'))sync();
+  });
+  sync();
+}
+
+/** 대체 과목은 학사 DB가 아닌 연습 전용 합성 값만 사용한다. */
+function renderCourseMode(){
+  if(typeof subjectTable.querySelectorAll!=='function')return;
+  for(const row of subjectTable.querySelectorAll('[data-synthetic-alternative]'))row.remove();
+  for(const row of subjectTable.querySelectorAll('[id^="subject"]')){
+    row.hidden=courseMode!=='INTEREST';
+  }
+  if(courseMode==='INTEREST')return;
+  const modes={MAJOR:{name:'전공',offset:0},GENERAL:{name:'교양',offset:6},
+    FOUNDATION:{name:'기초',offset:12}};
+  const mode=modes[courseMode];
+  if(!mode)return;
+  for(let i=1;i<=6;i++){
+    const courseId=preselectedCount+mode.offset+i;
+    const tr=document.createElement('tr');
+    tr.id='subject'+courseId;
+    tr.dataset.syntheticAlternative='true';
+    const values=[String(i),'',mode.name,'H00000000','','가상 '+mode.name+' 대체과목 '+i,
+      '1','1','가상 연습 교수','월 1 2 3 ( )','0 / 100','',''];
+    for(const [index,value] of values.entries()){
+      const td=document.createElement('td');
+      if(index===1){
+        const button=document.createElement('button');
+        button.className='register';
+        button.type='button';
+        button.setAttribute('onclick','registerClick('+courseId+')');
+        button.tabIndex=-1;
+        button.setAttribute('aria-label','가상 '+mode.name+' 대체과목 '+i+' 신청');
+        td.append(button);
+      }else if(index===11){
+        const checkbox=document.createElement('input');
+        checkbox.type='checkbox';td.append(checkbox);
+      }else td.textContent=value;
+      tr.append(td);
+    }
+    subjectTable.append(tr);
+  }
+}
+
+/** 마감된 과목의 register.png를 없애고 대체 검색을 안내한다. */
+function markCourseFull(courseId){
+  closedCourses.add(courseId);
+  const row=document.getElementById?.('subject'+courseId);
+  const button=row?.querySelector?.('button.register');
+  if(button){
+    const label=document.createElement('span');
+    label.className='course-capacity-label';
+    label.textContent='정원 마감';
+    button.replaceWith(label);
+    if(row.cells?.[10])row.cells[10].textContent='100 / 100';
+  }
+  const hint=document.getElementById?.('course-capacity-hint');
+  if(hint)hint.hidden=false;
 }
 
 function formatWaitTime(milliseconds){
@@ -111,13 +195,12 @@ function waitingFunc(){
 
 /** HTML 검색 버튼이 호출하는 기존 인라인 진입점을 유지한다. */
 async function pyoDisplay(){
-  if(subjectTable.style.display==='none')return;
-  if(waitingValue==='yes'){
-    if(await waitingFunc())subjectTable.style.display='table';
-  }else{
-    showWaiting(false);
-    subjectTable.style.display='table';
-  }
+  if(waitingValue==='yes'&&!await waitingFunc())return;
+  if(waitingValue!=='yes')showWaiting(false);
+  renderCourseMode();
+  subjectTable.style.display='table';
+  const hint=document.getElementById?.('course-search-prompt');
+  if(hint)hint.hidden=true;
 }
 
 /** 신청 내역의 값과 열 순서는 기존 13열 테이블 계약을 따른다. */
@@ -162,6 +245,13 @@ function saveSugang(courseId){
     alert('201 : 이미 신청된 교과목을 신청하였습니다.\n 다시확인하시고 신청해 주십시오.');
     return;
   }
+  if(capacityEnabled&&!capacityTriggered){
+    capacityTriggered=true;
+    markCourseFull(courseId);
+    alert('정원 초과(가상). 신청 버튼이 사라졌습니다. 전공·교양·기초를 선택해 대체 과목을 검색하세요.');
+    return;
+  }
+  if(closedCourses.has(courseId))return;
   alert('수강신청이 저장완료되었습니다.');
   rc[courseId-1]=true;
   count++;
@@ -171,7 +261,7 @@ function saveSugang(courseId){
 
 /** 인라인 HTML에서 호출된다. 대기열이 진행 중일 때 중복 신청을 막는다. */
 function registerClick(courseId){
-  if(processingRegistrations.has(courseId))return;
+  if(closedCourses.has(courseId)||processingRegistrations.has(courseId))return;
   if(!confirm('한국외국어대학교 모의수강신청'+courseId+'과목을 수강신청 하시겠습니까?'))return;
 
   processingRegistrations.add(courseId);
@@ -218,3 +308,4 @@ function deleteDone(position){
 
 practiceMode.innerText=practiceValue===1?'연습 모드: BASIC MODE':'연습 모드: SELECT MODE';
 renderPracticeCourses();
+bindCourseModes();
