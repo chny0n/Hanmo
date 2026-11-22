@@ -164,7 +164,11 @@ flowchart TB
 
 <sub>학사공지·강의 검색·개설 전망은 화면이 준비된 상태이며, 학교의 실제 공개 학사자료와 저장소는 아직 연결하지 않았습니다. 관련 구현 범위와 검증 조건은 [아키텍처 문서](docs/architecture.md)에 정리되어 있습니다.</sub>
 
-[설계 문서](docs/architecture.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
+### 개발 및 자동 검증
+
+Node.js 22 환경에서 `npm ci`로 잠금 파일의 의존성을 설치한 뒤 `npm run check`로 학업 계산·원본 회귀·정적 페이지 검사를 수행합니다. 브라우저 테스트는 `npx playwright install chromium` 후 `npm run test:e2e`로 실행합니다. Chromium 자동 검사는 Windows Chrome/Edge·NVDA 실기기 인수를 대신하지 않습니다([#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72)).
+
+[설계 문서](docs/architecture.md) · [문서 안내](docs/README.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 
 ---
 

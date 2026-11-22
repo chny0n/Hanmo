@@ -24,6 +24,8 @@ function element(tag='div') {
     },
     attributes:{},htmls:[],focusCount:0,
     appendChild(child){this.childNodes.push(child);return child;},
+    append(...children){this.childNodes.push(...children);},
+    prepend(...children){this.childNodes.unshift(...children);},
     insertAdjacentHTML(where,html){this.htmls.push({where,html});this.innerHTML+=html;},
     setAttribute(k,v){this.attributes[k]=String(v);},
     deleteRow(index){this.childNodes.splice(index,1);},
@@ -244,16 +246,27 @@ test('report subtracts waiting seconds from SELECT seconds',()=>{
   const h=createHarness({practiceSetter:1,psubjectValue:3,subjectValue:2,
     waitingValue:'yes',TIMEtime:'3.25',SELECTtime:'15.5',SELECTWaitTime:'2.5'});
   h.load('result.js');
-  assert.match(h.get('time').innerHTML,/13\.000/);
-  assert.match(h.get('result').innerHTML,/16\.250/);
-  assert.match(h.get('time').innerHTML,/접속 대기 시간은/);
+  assert.match(h.get('time').children[2].children[0].textContent,/13\.000/);
+  assert.match(h.get('result').children[0].children[0].textContent,/16\.250/);
+  assert.match(h.get('time').children[3].textContent,/접속 대기 시간은/);
 });
 test('TIME-only report remains TIME-only even with a stored SELECT amount',()=>{
   const h=createHarness({practiceSetter:2,psubjectValue:3,subjectValue:2,
     waitingValue:'no',TIMEtime:'8.75',SELECTtime:'7',SELECTWaitTime:'0'});
   h.load('result.js');
-  assert.match(h.get('result').innerHTML,/8\.750/);
-  assert.match(h.get('time').innerHTML,/TIME 부분/);
+  assert.match(h.get('result').children[0].children[0].textContent,/8\.750/);
+  assert.match(h.get('time').children[1].textContent,/TIME 부분/);
+});
+test('tampered practice count is never interpreted as HTML on the report page',()=>{
+  const h=createHarness({practiceSetter:1,psubjectValue:'<img src=x onerror=alert(1)>',
+    subjectValue:1,waitingValue:'no',TIMEtime:'1.25',SELECTtime:'2'});
+  h.load('result.js');
+  assert.equal(h.get('time').htmls.length,0);
+  assert.equal(h.get('result').htmls.length,0);
+  assert.equal(h.get('time').children[0].textContent.includes('<img'),false);
+  assert.match(h.get('time').children[0].textContent,/연습한 과목 수 0개/);
+  assert.equal(h.get('time').children[3].className,'caption');
+  assert.equal(h.get('time').children[2].children[0].tagName,'SPAN');
 });
 
 test('registered row keeps 13 columns and safe display text',()=>{

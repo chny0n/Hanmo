@@ -211,13 +211,17 @@ test('접속 대기만 예여도 결과 시간에서 접속 대기 초를 제외
       ['waitingValue','no'],['waitingEntryValue',entryWaiting],
       ['TIMEtime','4'],['SELECTtime','20'],['SELECTWaitTime','7']
     ]);
-    const elements={'.time':{html:''},'.result':{html:''}};
-    for(const el of Object.values(elements)){
-      el.insertAdjacentHTML=(_where,html)=>{el.html+=html;};
-    }
-    vm.runInNewContext(resultSource,{document:{querySelector:q=>elements[q]},localStorage},
-      {filename:'result.js'});
-    return {time:elements['.time'].html,result:elements['.result'].html};
+    // 실제 DOM의 텍스트 출력을 모방하고 HTML 문자열 삽입은 허용하지 않는다.
+    const element=()=>({textContent:'',children:[],
+      append(...children){this.children.push(...children);},
+      prepend(...children){this.children.unshift(...children);}
+    });
+    const elements={'.time':element(),'.result':element()};
+    vm.runInNewContext(resultSource,{
+      document:{querySelector:q=>elements[q],createElement:element},localStorage
+    },{filename:'result.js'});
+    const text=node=>node.textContent+node.children.map(text).join('');
+    return {time:text(elements['.time']),result:text(elements['.result'])};
   }
   const enabled=report('yes');
   assert.match(enabled.time,/접속 대기 여부 YES/);
