@@ -56,12 +56,40 @@ function routeHanmoIncident(){
         ...entry,phase:'error',errorAt:Date.now()
       }));
       location.assign('./incident-404.html');
+      return true;
     }catch(_error){
       try{session.removeItem(HANMO_404_TRANSITION_KEY);}catch(_ignored){}
     }
   }else if(entry.phase==='error'){
     // 브라우저 뒤로가기로 복귀한 selectZone에서는 재주입하지 않습니다.
     try{session.removeItem(HANMO_404_TRANSITION_KEY);}catch(_error){}
+  }
+}
+
+/** 404 분기를 통과하여 실제 신청 화면에 도착한 뒤에만 가상 접속 대기를 시작합니다. */
+function startHanmoEntryWaiting(){
+  if(currentHanmoPage()!=='selectZone.html')return;
+  const mode=localStorage.getItem('practiceSetter');
+  if(mode!=='1'&&mode!=='3')return;
+  if(localStorage.getItem('waitingEntryValue')!=='yes')return;
+  // selectZone.js가 이미 로드한 대기창만 재사용하며 원본 신청 함수는 변경하지 않습니다.
+  if(typeof waitingFunc!=='function'||typeof document.querySelector!=='function')return;
+
+  // 접속 대기가 진행 중인 동안 검색·신청·왼쪽 메뉴가 대기열을 우회하지 못하게 합니다.
+  const selectors=['.navigation','.menu','.table','.vsugangedTable'];
+  const controls=selectors.map(selector=>document.querySelector(selector)).filter(Boolean);
+  const previous=controls.map(element=>Boolean(element.inert));
+  controls.forEach(element=>{element.inert=true;});
+
+  const restore=()=>controls.forEach((element,index)=>{element.inert=previous[index];});
+  try{
+    Promise.resolve(waitingFunc()).then(completed=>{
+      restore();
+      // 접속 대기 취소는 진입 취소로 처리합니다. 신청 버튼 대기 취소 동작은 그대로 둡니다.
+      if(!completed)location.replace('./practice.html');
+    },restore);
+  }catch(_error){
+    restore();
   }
 }
 
@@ -73,7 +101,8 @@ function setSemester(){
 
 setSemester();
 if(!restrictHanmo()){
-  routeHanmoIncident();
+  const interceptedBy404=routeHanmoIncident();
+  if(!interceptedBy404)startHanmoEntryWaiting();
   // Chrome의 뒤로가기 캐시 복귀에서는 원본 스크립트가 재실행되지 않을 수 있습니다.
   if(currentHanmoPage()==='selectZone.html'&&typeof window==='object'){
     window.addEventListener?.('pageshow',event=>{
