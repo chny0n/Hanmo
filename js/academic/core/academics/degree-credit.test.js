@@ -2,6 +2,10 @@
 import {describe,it,expect} from 'vitest';
 import {calculateDegreeCredits,cohortBand,graduationGuidance} from './degree-credit.js';
 
+/** @param {Record<import('./degree-credit.js').CreditArea,string|number|null>} earned
+ * @param {Record<import('./degree-credit.js').CreditArea,string|number|null>} targets
+ * @param {import('./degree-credit.js').DegreeKind} [kind]
+ */
 const values=(earned,targets,kind='DOUBLE')=>({earned,targets,kind});
 describe('자가 입력 졸업 준비 계산',()=>{
  it('학번 구간을 2024·2025로 정확히 구분한다',()=>{

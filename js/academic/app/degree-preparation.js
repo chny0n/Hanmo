@@ -145,7 +145,7 @@ function chooseTab(name){
   for(const tab of document.querySelectorAll('[data-degree-tab]')){
     const selected=tab.getAttribute('data-degree-tab')===name;
     tab.setAttribute('aria-selected',selected?'true':'false');
-    tab.tabIndex=selected?0:-1;
+    if(tab instanceof HTMLElement)tab.tabIndex=selected?0:-1;
   }
   get('degree-credits-panel').hidden=name!=='credits';
   get('degree-requirements-panel').hidden=name!=='requirements';
