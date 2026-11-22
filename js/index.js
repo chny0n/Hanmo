@@ -1,7 +1,6 @@
 // 홈 화면은 알림과 이용 가능 상태만 다룬다. BASIC/TIME/SELECT의 실제 연습 로직은 각 연습 페이지에 있다.
 // 모든 시각은 사용자 브라우저의 로컬 시간을 기준으로 한다.
 const $NOTICELIST=document.getElementsByClassName('noticeList')[0];
-const $SUGANGBUTTON=document.getElementsByClassName('button')[0];
 const $GANEUNG=document.getElementsByClassName('ganeung')[0];
 const $JEHAN=document.getElementsByClassName('jehan')[0];
 const $ADFIT=document.getElementsByClassName('adfit')[0];
