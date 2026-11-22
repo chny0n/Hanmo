@@ -29,7 +29,7 @@ test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인�
 });
 
 test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',async({page})=>{
-  await page.clock.install({time:safeDate});
+  await page.clock.setFixedTime(safeDate);
   // 원작의 확인·완료 대화상자를 실제 브라우저에서 수락해야 신청이 진행된다.
   page.on('dialog',dialog=>{void dialog.accept();});
   await setPracticeOptions(page);
@@ -37,7 +37,8 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
   await page.waitForLoadState('load');
   await expect(page.locator('.practiceMode')).toContainText('BASIC MODE');
-  await page.clock.runFor(11_000);
+  // 원작의 10초 진입 제한은 실제 브라우저 시간으로 통과한다.
+  await page.waitForTimeout(10_250);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
   await expect(page.locator('button.register')).toHaveCount(3);
@@ -47,7 +48,7 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
 });
 
 test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 복구를 요구하지 않는다',async({page})=>{
-  await page.clock.install({time:safeDate});
+  await page.clock.setFixedTime(safeDate);
   await setPracticeOptions(page);
   await page.locator('#incident-options').click();
   await expect(page.locator('#scenario-settings')).toBeVisible();
@@ -57,7 +58,8 @@ test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 �
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
   await page.waitForLoadState('load');
   await expect(page.locator('.practiceMode')).toContainText('BASIC MODE');
-  await page.clock.runFor(11_000);
+  // 새로고침 탐지와 원작 진입 시간은 가상 타이머로 우회하지 않는다.
+  await page.waitForTimeout(10_250);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/incident-404\.html$/);
   await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
