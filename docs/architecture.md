@@ -1,7 +1,6 @@
 # Hanmo Develop — 아키텍처
 
-> 현재 유효한 제품 및 기술 설계입니다. 실제로 구현된 기능과 앞으로 구현할 목표를 구별합니다.  
-> **이 문서는 변경 이력이나 회의록이 아닙니다.** 설계가 바뀌면 이전 안을 남기지 않고 현재 안으로 수정합니다.
+> 현재 제품·기술 설계입니다. 실행 중인 코드, 미구현 기능, 학교 자료·운영 인수 조건을 구분합니다. 과거 결정은 GitHub Issue와 커밋에서 확인합니다.
 
 ### 현행 구현 상태 · 2026-11-23 (main 기준)
 
@@ -527,7 +526,7 @@ BASIC 오른쪽 아래 **돌발상황**은 `RECONNECT`(1회 가상 404)와 `CAPA
 | **3차 실연동** | 승인된 운영 책임자가 Supabase 실구축·정본 검수·갱신·보안·장애 대체·전체 브라우저 연동 및 인수 완료 |
 | **4차 최종 인수** | 3차 실제 Supabase 인수/안정화 이후, 조기 이관한 JS의 잔여 TS 0개·동등성·정적/브라우저/보안·원본 모드 QA 통과를 확인 |
 
-**현재 구현 상태(2026-11-23, 상단 상태표가 우선):** 1·2차 학생 페이지와 합성 모의신청 코드는 `main`에 있으며, [#94](https://github.com/ot4562-glitch/Hanmo_develop/pull/94)·[#95](https://github.com/ot4562-glitch/Hanmo_develop/pull/95)에서 미사용 합성 데이터/검색 데모를 제거했습니다. [#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)·[#108](https://github.com/ot4562-glitch/Hanmo_develop/pull/108)·[#109](https://github.com/ot4562-glitch/Hanmo_develop/pull/109)·[#110](https://github.com/ot4562-glitch/Hanmo_develop/pull/110)은 단일 404 전환/복구·안내, 독립 대기시간 설정, 돌발상황 재방문 선택 복원을 반영했습니다. [#97](https://github.com/ot4562-glitch/Hanmo_develop/pull/97)–[#99](https://github.com/ot4562-glitch/Hanmo_develop/pull/99)의 NLP/공지/평가 코어는 합성 수준이며 실제 학교 원문·학생 화면 인수는 미완료입니다. [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)으로 JS/JSDoc 소스 전환은 끝났으나 PC·데이터 검증은 미완료. [#122](https://github.com/ot4562-glitch/Hanmo_develop/pull/122) 및 후속 `main` UI 수정으로 **졸업 준비 탭·강의 검색 전망 통합·학사 달력/FAQ/공식 상담 경로·BASIC 합성 CAPACITY**를 반영했고, `main` [`31cbfb6`](https://github.com/ot4562-glitch/Hanmo_develop/commit/31cbfb6e8a7af4b7efe8f64c9ff512d5ade21fae)의 저장소 검사·Chromium 기능 QA CI가 성공했습니다. 실기기·공식 자료 인수는 별개입니다. **[#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117) 통합 검색과 [#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119) 중요공지 코어는 `main` 병합**, [#118](https://github.com/ot4562-glitch/Hanmo_develop/pull/118) FAQ·[#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120) 행사 백테스트·[#121](https://github.com/ot4562-glitch/Hanmo_develop/pull/121) 학칙 대조는 **수정 요청으로 미병합**입니다. 해당 합성 코어의 병합도 실제 학생 화면·승인 근거 인수를 뜻하지 않습니다. **[#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 Draft·미병합**, 격리 PostgreSQL CI 통과와 실제 Supabase 미구축/미승인을 구별합니다. 전체 인수 조건은 이 장의 표와 §10.2를 따릅니다.
+**현재 판정:** 1·2차 학생 화면, BASIC RECONNECT·CAPACITY와 독립 대기 설정, JS/JSDoc 전환은 `main`에 구현됐습니다. [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117)의 통합 검색과 [#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119)의 중요공지 분류 코어도 병합됐습니다. [#118](https://github.com/ot4562-glitch/Hanmo_develop/pull/118)·[#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120)·[#121](https://github.com/ot4562-glitch/Hanmo_develop/pull/121)은 정확성 수정 대기 중입니다. [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 Supabase SQL Draft이며 미병합입니다. 학교 자료 승인·실DB·Windows 실기기 QA는 **상단 현행 구현 상태표와 §10.2에 적힌 대로 미완료**입니다.
 
 ## 10. 미결 설계와 별도 실행 작업
 
