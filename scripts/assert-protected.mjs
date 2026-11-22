@@ -8,7 +8,7 @@ const changed=execFileSync('git',['diff','--name-only','--no-renames','origin/ma
 const protectedFiles=new Set(['html/practice.html','js/practice.js','css/vsugang.css']);
 const offenders=changed.filter(path=>protectedFiles.has(path));
 if(offenders.length)throw Error('Protected HUFS imitation changed:\n'+offenders.join('\n'));
-const allowed=p=>p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-faq.js','js/academic-support.js','js/incident-options.js','js/incident-404.js','js/hanmoSys.js','js/index.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
+const allowed=p=>p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmoSys.js','js/index.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('css/')||p.startsWith('html/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
