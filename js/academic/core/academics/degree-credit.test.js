@@ -1,3 +1,4 @@
+// @ts-check
 import {describe,it,expect} from 'vitest';
 import {calculateDegreeCredits,cohortBand,graduationGuidance} from './degree-credit.js';
 
