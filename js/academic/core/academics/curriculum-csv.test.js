@@ -20,6 +20,14 @@ describe('parseLocalCurriculumCsv',()=>{
     const result=parseLocalCurriculumCsv(HEAD+'\n'+line('가상 강의','3')+'\n'+line('다른 가상 강의','2'));
     expect(result.courses.map(r=>r.verification)).toEqual(['NEEDS_REVIEW','NEEDS_REVIEW']);
   });
+  it('keeps every row held after three distinct records share a course identity',()=>{
+    const data=HEAD+'\n'+line('첫 강의')+'\n'+line('둘째 강의')+'\n'+line('셋째 강의')+'\n'+line('셋째 강의');
+    const result=parseLocalCurriculumCsv(data);
+    expect(result.courses.map(row=>row.verification)).toEqual([
+      'NEEDS_REVIEW','NEEDS_REVIEW','NEEDS_REVIEW',
+    ]);
+    expect(result.duplicateRows).toBe(1);
+  });
   it('rejects formula cells or a swapped column header',()=>{
     expect(()=>parseLocalCurriculumCsv(HEAD+'\n'+line('=HYPERLINK("x")'))).toThrow();
     expect(()=>parseLocalCurriculumCsv('courseName,courseCode,credits,category,major,semester,campus,cohort\n'+line())).toThrow();
