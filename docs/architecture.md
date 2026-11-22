@@ -135,7 +135,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 | **공통 상단 바** | 왼쪽 **한모 브랜드 클릭→홈**; 독립된 '홈'·'기존/기본 모의수강신청' 링크 없음. 학사 공지→강의 전망→강의 검색→학점 정리→자체 입력 프로필 요약→**내정보(가장 오른쪽)** 순서 | `css/hanmo-components.css`, `js/student-profile-bar.js` |
 | **내정보** | 기존 '학업 플래너'를 `내정보`로 표시. 캠퍼스/주전공/이중전공 **또는** 부전공/입학년도 저장·삭제. 선택하지 않은 부전공·이중전공은 상단에서 숨김. `YYYY학번`은 입력한 입학년도일 뿐 실제 학번/로그인 상태가 아님 | `html/planner.html`, `js/student-preferences.js` |
 | **학업 페이지** | 학사 공지·강의 전망·강의 검색·학점 정리·내정보는 **원본 한모의 남색 계열**, **사이드바 금지**, 대형 둥근 카드/외곽 테두리 및 페이지 소개·중복 메뉴 카드 없음. 표·폼과 의미 있는 내용은 유지 | `html/academic-timeline.html`, `html/forecast.html`, `html/catalog.html`, `html/academic-progress.html`, `css/hanmo-flat.css` |
-| **모의신청 모드** | BASIC 오른쪽 아래 **돌발상황** 블록은 선택 기능이므로 설정 유무와 무관하게 **남색**을 유지하며 **404 한 가지(RECONNECT, 기본 OFF)**만 선택합니다. 필수 SETTING의 미설정 경고만 붉은색. TIME/SELECT는 기존 경로를 사용합니다. | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang.js`, `js/scenario-settings.js` |
+| **모의신청 모드** | BASIC 오른쪽 아래 **돌발상황** 블록은 선택 기능이므로 설정 유무와 무관하게 **남색**을 유지하며 **404 한 가지(RECONNECT, 기본 OFF)**만 선택합니다. 필수 SETTING의 미설정 경고만 붉은색. SETTING의 접속 대기는 **강의 신청(기본 예)**·**수강신청 페이지 접속(기본 아니오)** 두 독립 예/아니오 설정이며 TIME/SELECT 진입 경로는 유지합니다. | `html/vsugang.html`, `css/vsugang-fit.css`, `js/vsugang.js`, `js/scenario-settings.js` |
 | **합성 연습** | 실제 BASIC practice→selectZone 전환 시 1회 정적 가상 404 페이지. 왼쪽 메뉴는 비활성 시각 요소로만 유지하고 Chrome 실제 새로고침으로 정상 selectZone 복구; 브라우저 뒤로가기는 지원·안내하지 않음. 화면 안의 복구 버튼은 없음. 실제 학교 네트워크 오류/신청 결과와 비연동, OFF는 원본 진입 | `js/scenario-settings.js`, `js/hanmoSys.js`, `html/incident-404.html`, `js/incident-404.js`, `css/incident-404.css` |
 | **원본·접근 제한** | `practice.html`, `selectZone.html` 및 해당 기존 JS/CSS와 결과/대기열의 핵심 동작 변경 금지. **PC 전용 정책(`js/pc-only.js`)** 유지. 원본 운영 도메인/CNAME은 포크 QA와 별개 | `html/practice.html`, `html/selectZone.html`, `js/pc-only.js` |
 
@@ -262,12 +262,17 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 `html/vsugang.html`의 BASIC 오른쪽 아래 **돌발상황** 블록에는 **가상 404·접속 끊김(`RECONNECT`) 예/아니오 한 쌍만** 둡니다. 기본값은 OFF이며 LAST_VALID(마지막 과목 신청 실패), 무작위 0~6초 타이머, 메뉴 내부 가상 신청 화면, 대체과목/시간 충돌 데모는 제거합니다. 옵션을 켜도 먼저 **기존 BASIC `practice.html`**에 들어가며, 필수 SETTING과 기존 10초 연습 진입 게이트를 통과한 이후 **`selectZone.html`로 이동할 때**만 1회 합성 404가 발생합니다. OFF·TIME·SELECT는 기존 경로를 변경하지 않습니다.
 
+**접속 대기 시간 세부 설정 (사용자 결정, PR #109):** 필수 SETTING의 기존 단일 접속 대기 예/아니오를 **'강의 신청에 적용할까요?' (예/아니오, 기본 예)**와 **'수강신청 페이지 접속 시에 적용할까요?' (예/아니오, 기본 아니오)**로 분리합니다. 설정 UI에는 구현 파일 이름·괄호를 노출하지 않습니다. 두 값은 독립적으로 저장·복원합니다. 기존 브라우저 저장 키 `waitingValue`는 강의 신청/기존 검색 대기 설정용으로 그대로 유지하여 이전 사용자 선택을 마이그레이션 없이 읽고, 신규 `waitingEntryValue`는 페이지 접속 대기 설정이며 이전 설정값이 없으면 아니오로 취급합니다. 페이지 접속 대기는 신청 페이지에 들어가는 BASIC·SELECT에서만 기존 합성 대기창 `waitingFunc()`를 재사용합니다. 대기 중 왼쪽 메뉴·검색·신청을 비활성화하고, 대기 취소 시 연습 화면으로 돌아가며 완료 후 정상적으로 사용할 수 있습니다. 시간 측정에서 두 대기 유형에 걸린 합성 대기 초를 제외합니다.
+
+**404와의 우선순위:** RECONNECT=예 및 페이지 접속 대기=예인 BASIC에서는 정상 `practice` → `selectZone` 이동 시 **404를 먼저 표시하고 접속 대기를 실행하지 않습니다**. 사용자가 실제 브라우저 새로고침으로 404에서 정상 신청 화면으로 복구한 후, **그때 접속 대기가 시작됩니다**. 선택값이 아니오이면 접속 대기가 없으며, 404 UI 안내는 이전 결정대로 새로고침만 지원합니다. `practice.html`·`selectZone.html` 및 기존 신청/대기열 핵심 JS/CSS는 직접 바꾸지 않고 `js/hanmoSys.js`의 공통 진입점에서 합성 대기를 연결합니다. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50) · [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71)
+
 | 파일 | 책임 |
 |---|---|
-| `html/vsugang.html`, `js/vsugang.js` | 모드 선택, 필수 SETTING(경고색), 선택형 돌발상황(남색) 및 설명 'BASIC MODE의 돌발 상황을 연습해요.', 저장된 과목 수와 기본 연습 경로 |
+| `html/vsugang.html`, `js/vsugang.js` | 모드 선택, 필수 SETTING(경고색), 선택형 돌발상황(남색) 및 설명 'BASIC MODE의 돌발 상황을 연습해요.', 신청/페이지 접속 대기 독립 선택(기본 예/아니오), 기존 키 보존, 저장된 과목 수와 기본 연습 경로 |
 | `js/scenario-settings.js` | BASIC/RECONNECT만 세션별 기본 OFF로 선택; 실제 원본 `goPractice(1)` 호출 전 1회 토큰을 등록 |
-| `js/hanmoSys.js` | 원본 practice·selectZone에 이미 포함된 공통 스크립트에서 방문 순서를 확인. 정상 practice 방문 뒤의 selectZone에서만 `incident-404.html`로 별도 브라우저 이동 |
+| `js/hanmoSys.js` | 원본 practice·selectZone의 공통 스크립트에서 방문 순서를 확인. BASIC 404 발생 시에는 대기를 시작하지 않고 별도 가상 오류 페이지로 전환하며, 정상 selectZone 진입(404 새로고침 복구 포함) 후 독립 페이지 접속 대기를 1회 실행 |
 | `html/incident-404.html`, `css/incident-404.css`, `js/incident-404.js` | 새 합성 404 화면. 원본처럼 보이는 왼쪽 사이드바는 `inert`·disabled·포커스 제외로 완전히 비활성; 오른쪽 표·버튼 등 원본 콘텐츠 제거. 페이지 내부 복구 버튼 없음 |
+| `js/result.js` | 두 대기 옵션 중 하나라도 활성화됐다면 실제 발생한 합성 대기 시간을 SELECT 측정값에서 제외하고 기존 결과 키·표시 구조는 보존 |
 | 원본 `practice.html`, `selectZone.html` 및 연결 핵심 JS/CSS | **변경 금지**: 대기/10초 진입/신청/결과·Enter·SELECT 안내 흐름을 보호 |
 
 ### 5.1 제거된 과목 실패와 기본 연습 보호
@@ -286,7 +291,7 @@ TypeScript 소스는 제거하며, 4차는 JavaScript/JSDoc 전체 최종 인수
 
 ### 5.3 시나리오 런타임 계약·회귀 기준 (#19·#20·#21·#22·#37)
 
-- `practiceSetter=1/2/3`은 BASIC/TIME/SELECT입니다. 원본 경로에서는 관심강좌와 신청 과목 수, 대기 여부, 시간 측정, 신청·취소, 결과 저장 계약을 보존합니다.
+- `practiceSetter=1/2/3`은 BASIC/TIME/SELECT입니다. 원본 경로에서는 관심강좌와 신청 과목 수, 시간 측정, 신청·취소, 결과 저장 계약을 보존합니다. 접속 대기는 `waitingValue`=강의 신청(기본 예)와 `waitingEntryValue`=신청 페이지 접속(기본 아니오)으로 분리하되 기존 저장 키를 유지하며, 404+접속 대기는 **404 새로고침 복구 후** 적용합니다. 두 값이 모두 아니오이면 가상 대기창을 띄우지 않습니다.
 - `npm run check:legacy`는 PC 제한, 원본 모드, 돌발상황 등 모의신청 회귀를 실행합니다. `npm run check`는 이를 포함해 전체를 확인하며 PR 검사와 Pages 배포에서 공통으로 사용합니다.
 - Windows Chrome·Edge에서는 화면 및 키보드 진입과 함께 원본 SELECT의 대기 번호, Enter 반복 확인창, 신청·취소를 별도로 확인합니다. Node 테스트 결과와 실기기 확인 결과는 구분해 기록합니다. [#19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) · [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71)
 
