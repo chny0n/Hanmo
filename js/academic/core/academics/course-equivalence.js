@@ -77,12 +77,26 @@ export function applySameCourseRules(attempts,rules) {
     if (attempt.term !== undefined) termKey(attempt.term);
   }
 
-  // 학수번호별로 이를 이전 과목으로 참조하는 규칙을 수집한다.
-  /** @type {Map<string,SameCourseRule[]>} */
+  // 동일 학수번호가 여러 이수 기록에 등장해도 규칙 비교와 정렬은 한 번만 수행한다.
+  /** @type {Map<string,{ruleIds:string[],target:string,ambiguous:boolean,approved:SameCourseRule|null}>} */
   const byFrom = new Map();
   for (const rule of rules) {
-    for (const from of rule.fromCourseIds) byFrom.set(from, [...(byFrom.get(from) ?? []), rule]);
+    for (const from of rule.fromCourseIds) {
+      const entry = byFrom.get(from);
+      if (!entry) {
+        byFrom.set(from, {
+          ruleIds:[rule.id],target:rule.toCourseId,ambiguous:false,
+          approved:rule.state === 'APPROVED' ? rule : null,
+        });
+        continue;
+      }
+      entry.ruleIds.push(rule.id);
+      if (entry.target !== rule.toCourseId) entry.ambiguous = true;
+      if (rule.state === 'APPROVED' && (!entry.approved || rule.id < entry.approved.id))
+        entry.approved = rule;
+    }
   }
+  for (const entry of byFrom.values()) entry.ruleIds.sort();
 
   /** @type {AppliedSameCourse[]} */
   const applied = [];
@@ -91,21 +105,17 @@ export function applySameCourseRules(attempts,rules) {
   const out = attempts.map(attempt => {
     /** @type {SameCourseLedgerAttempt} */
     const copy = {...attempt, areaIds:[...attempt.areaIds]};
-    const named = byFrom.get(attempt.canonicalCourseId);
-    if (!named) return copy;
-    const approved = named.filter(r => r.state === 'APPROVED');
-    // 승인 여부와 관계없이 같은 이전 과목에 서로 다른 목표를 지정하면 모호한 규칙으로 처리한다.
-    const targets = new Set(named.map(r => r.toCourseId));
-    const ruleIds = named.map(r => r.id).sort();
-    if (targets.size > 1) {
-      held.push({attemptToken:attempt.attemptToken, courseId:attempt.canonicalCourseId, ruleIds, reason:'AMBIGUOUS'});
+    const match = byFrom.get(attempt.canonicalCourseId);
+    if (!match) return copy;
+    if (match.ambiguous) {
+      held.push({attemptToken:attempt.attemptToken, courseId:attempt.canonicalCourseId, ruleIds:[...match.ruleIds], reason:'AMBIGUOUS'});
       return copy;
     }
-    if (approved.length === 0) {
-      held.push({attemptToken:attempt.attemptToken, courseId:attempt.canonicalCourseId, ruleIds, reason:'RULE_NOT_APPROVED'});
+    if (!match.approved) {
+      held.push({attemptToken:attempt.attemptToken, courseId:attempt.canonicalCourseId, ruleIds:[...match.ruleIds], reason:'RULE_NOT_APPROVED'});
       return copy;
     }
-    const rule = [...approved].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
+    const rule = match.approved;
     applied.push({attemptToken:attempt.attemptToken, fromCourseId:attempt.canonicalCourseId, toCourseId:rule.toCourseId, ruleId:rule.id});
     return {...copy, canonicalCourseId:rule.toCourseId};
   });

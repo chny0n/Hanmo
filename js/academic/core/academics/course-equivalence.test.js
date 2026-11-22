@@ -92,6 +92,35 @@ describe('applySameCourseRules', () => {
     expect(out.applied.map(a => a.attemptToken)).toEqual(['SYN-A1', 'SYN-A2']);
   });
 
+  it('selects the smallest approved rule ID once for repeated course attempts', () => {
+    const attempts = Array.from({length:40},(_,i)=>attempt(`SYN-A${i+1}`,'SYN-OLD'));
+    const rules = [
+      rule('SYN-R9',['SYN-OLD'],'SYN-NEW'),
+      rule('SYN-R2',['SYN-OLD'],'SYN-NEW'),
+      rule('SYN-R1',['SYN-OLD'],'SYN-NEW','DRAFT'),
+    ];
+    const out = applySameCourseRules(attempts,rules);
+    expect(out.held).toEqual([]);
+    expect(out.applied).toHaveLength(attempts.length);
+    expect(out.applied.every(entry=>entry.ruleId==='SYN-R2')).toBe(true);
+    expect(out.attempts.every(entry=>entry.canonicalCourseId==='SYN-NEW')).toBe(true);
+    expect(applySameCourseRules(attempts,[...rules].reverse())).toEqual(out);
+  });
+
+  it('keeps separate rule ID lists for attempts held by the same ambiguous rule', () => {
+    const rules = [
+      rule('SYN-R2',['SYN-OLD'],'SYN-NEW','DRAFT'),
+      rule('SYN-R1',['SYN-OLD'],'SYN-OTHER'),
+    ];
+    const out = applySameCourseRules(
+      [attempt('SYN-A1','SYN-OLD'),attempt('SYN-A2','SYN-OLD')],rules);
+    expect(out.held.map(row=>row.ruleIds)).toEqual([
+      ['SYN-R1','SYN-R2'],['SYN-R1','SYN-R2'],
+    ]);
+    out.held[0].ruleIds.push('SYN-EXTRA');
+    expect(out.held[1].ruleIds).toEqual(['SYN-R1','SYN-R2']);
+  });
+
   it('refuses chains, cycles and malformed rules', () => {
     const a = [attempt('SYN-A1', 'SYN-OLD')];
     expect(() => applySameCourseRules(a, [rule('SYN-R1', ['SYN-A'], 'SYN-B'), rule('SYN-R2', ['SYN-B'], 'SYN-C')])).toThrow(/composed rule/);
