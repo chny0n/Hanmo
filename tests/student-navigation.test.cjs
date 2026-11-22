@@ -245,3 +245,23 @@ test('승인된 화면 정돈은 모드 타일 접근성과 제한된 시각 효
  assert.match(common,/#planner-go-notices/);
  assert.match(common,/scroll-behavior:\s*smooth/);
 });
+
+test('홈·모드·학업·개발자 조작에만 느린 글로우를 적용한다',()=>{
+ const mode=fs.readFileSync(path.join(ROOT,'css/vsugang-fit.css'),'utf8');
+ const home=fs.readFileSync(path.join(ROOT,'css/home-fit.css'),'utf8');
+ const common=fs.readFileSync(path.join(ROOT,'css/hanmo-components.css'),'utf8');
+ const credit=fs.readFileSync(path.join(ROOT,'css/academic-progress.css'),'utf8');
+ for(const css of [mode,home,common,credit]){
+   assert.ok(css.includes('radial-gradient'));
+   assert.ok(css.includes('transition: opacity 1.08s'));
+   assert.ok(css.includes('prefers-reduced-motion'));
+ }
+ assert.ok(common.includes('--hm-glow-ease'));
+ assert.ok(home.includes('body.hanmo-home .button::before'));
+ assert.ok(common.includes('body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a)::before'));
+ assert.ok(common.includes('body.hanmo-flat-legacy .container > .button::before'));
+ assert.ok(credit.includes('.progress-main .progress-form button::before'));
+ assert.ok(mode.includes('.grid > .basic-mode-tile'));
+ assert.ok(common.includes('.hanmo-topbar .hanmo-nav-inline a::before'));
+ assert.ok(!credit.includes('.progress-main table::before'));
+});

@@ -99,6 +99,7 @@ a.hanmo-card:hover{background:#112c3d;border-color:#72a7c5;transform:translateY(
 /* Open Props와 같은 토큰 방식으로 짧고 일관된 전환 곡선을 공유한다. */
 :root {
   --hm-ease-soft: cubic-bezier(.22, 1, .36, 1);
+  --hm-glow-ease: cubic-bezier(.45, 0, .55, 1);
 }
 .hanmo-topbar {
   background: rgba(0, 17, 27, .89);
@@ -109,8 +110,8 @@ a.hanmo-card:hover{background:#112c3d;border-color:#72a7c5;transform:translateY(
 }
 .hanmo-topbar nav a,
 .hanmo-topbar .hanmo-nav-inline a {
-  transition: background-color .18s var(--hm-ease-soft),
-              color .18s ease-out;
+  transition: background-color .78s var(--hm-glow-ease),
+              color .48s ease-out;
 }
 body.hanmo-ui .hanmo-schoolmark :is(h1, h2) {
   letter-spacing: -.025em;
@@ -141,4 +142,73 @@ body.hanmo-ui .hanmo-main > .hanmo-schoolmark {
   html:has(body.hanmo-ui) { scroll-behavior: auto; }
   body.hanmo-ui .hanmo-main > .hanmo-schoolmark { animation: none; }
   .hanmo-topbar nav a, .hanmo-topbar .hanmo-nav-inline a { transition: none; }
+}
+
+/* 정보 표와 단순 카드 대신 실제 조작 버튼·메뉴에만 부드러운 빛을 더한다. */
+.hanmo-topbar .hanmo-nav-inline a,
+body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a),
+body.hanmo-flat-legacy .container > .button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a),
+body.hanmo-flat-legacy .container > .button {
+  transition: background-color .78s var(--hm-glow-ease),
+              border-color .78s var(--hm-glow-ease);
+}
+.hanmo-topbar .hanmo-nav-inline a::before,
+body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a)::before,
+body.hanmo-flat-legacy .container > .button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 92% 96% at 50% 47%,
+              rgba(255, 237, 185, .17), rgba(242, 203, 128, .055) 49%, transparent 85%);
+  box-shadow: inset 0 0 0 1px rgba(255, 238, 189, .12);
+  opacity: 0;
+  transition: opacity 1.08s var(--hm-glow-ease);
+}
+.hanmo-topbar .hanmo-nav-inline a::before,
+body.hanmo-ui :is(.hanmo-btn.secondary, .hanmo-practice-links a, #planner-go-notices)::before,
+body.hanmo-flat-legacy .container > .button::before {
+  background: radial-gradient(ellipse 92% 96% at 50% 47%,
+              rgba(112, 177, 207, .17), rgba(73, 137, 172, .06) 50%, transparent 85%);
+  box-shadow: inset 0 0 0 1px rgba(126, 184, 209, .17);
+}
+.hanmo-topbar .hanmo-nav-inline a:is(:hover, :focus-visible)::before,
+body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a):is(:hover, :focus-visible)::before,
+body.hanmo-flat-legacy .container > .button:hover::before {
+  opacity: .8;
+  transition-duration: .78s;
+}
+body.hanmo-ui .hanmo-btn:not(.secondary):not(#planner-go-notices):hover {
+  background: #f5cb76;
+}
+body.hanmo-ui .hanmo-btn.secondary:hover { background: #173447; }
+body.hanmo-ui #planner-go-notices:hover {
+  background: rgba(39, 73, 95, .25);
+  border-color: rgba(145, 180, 201, .65);
+}
+body.hanmo-flat-legacy .container > .button:hover { opacity: 1; }
+body.hanmo-ui .hanmo-field :is(input, select):not(:disabled) {
+  transition: border-color .78s var(--hm-glow-ease),
+              box-shadow .92s var(--hm-glow-ease);
+}
+body.hanmo-ui .hanmo-field :is(input, select):not(:disabled):focus-visible {
+  border-color: #819eae;
+  box-shadow: 0 0 0 3px rgba(126, 184, 209, .055),
+              0 0 20px rgba(93, 159, 190, .09);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hanmo-topbar .hanmo-nav-inline a::before,
+  body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a),
+  body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a)::before,
+  body.hanmo-ui .hanmo-field :is(input, select):not(:disabled),
+  body.hanmo-flat-legacy .container > .button,
+  body.hanmo-flat-legacy .container > .button::before {
+    transition: none;
+  }
 }

@@ -119,28 +119,46 @@ body.hanmo-home .f-dirt-up {
   body.hanmo-home .buttonContainer { margin-top: 8px; }
 }
 
-/* 홈의 원래 버튼 크기와 위치를 유지하면서 주 동작에만 금색을 사용한다. */
+/* 홈 버튼의 배치를 유지하면서 금빛과 남색빛이 천천히 번졌다 사라지게 한다. */
 body.hanmo-home .button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   box-shadow: inset 0 0 0 1px rgba(148, 176, 193, .16);
-  transition: background-color .18s var(--hm-ease-soft, ease-out),
-              color .18s ease-out, box-shadow .18s ease-out,
-              opacity .18s ease-out, filter .18s ease-out;
+  transition: background-color .78s var(--hm-glow-ease, ease-in-out),
+              box-shadow .92s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-home .button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 88% 100% at 50% 46%,
+              rgba(255, 240, 193, .20), rgba(252, 225, 151, .07) 50%, transparent 85%);
+  box-shadow: inset 0 0 0 1px rgba(255, 246, 216, .13);
+  opacity: 0;
+  transition: opacity 1.08s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-home .button.anotherB::before {
+  background: radial-gradient(ellipse 90% 100% at 50% 46%,
+              rgba(119, 183, 211, .18), rgba(87, 146, 180, .07) 52%, transparent 85%);
+  box-shadow: inset 0 0 0 1px rgba(126, 184, 209, .20);
+}
+body.hanmo-home .button:hover::before {
+  opacity: .83;
+  transition-duration: .78s;
 }
 body.hanmo-home .button.display {
   background: var(--hm-gold, #f4c76c);
   color: #091825;
-  box-shadow: inset 0 0 0 1px rgba(255, 238, 189, .35);
+  box-shadow: inset 0 0 0 1px rgba(255, 238, 189, .29);
 }
-body.hanmo-home .button.display:hover {
-  background: #f8d388;
-  box-shadow: inset 0 0 0 1px rgba(255, 244, 208, .55);
-}
-body.hanmo-home .button.anotherB:hover {
-  background: #0d2838;
-  box-shadow: inset 0 0 0 1px rgba(244, 199, 108, .45);
-}
+body.hanmo-home .button.display:hover { background: #f5cb75; }
+body.hanmo-home .button.anotherB:hover { background: #0a2130; }
 body.hanmo-home .button:hover { opacity: 1; }
-body.hanmo-home .button:active { filter: brightness(.95); }
+body.hanmo-home .button:active { filter: brightness(.97); }
 @media (prefers-reduced-motion: reduce) {
-  body.hanmo-home .button { transition: none; }
+  body.hanmo-home .button,
+  body.hanmo-home .button::before { transition: none; }
 }

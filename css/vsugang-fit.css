@@ -9,7 +9,7 @@ body.hanmo-vsugang .titleContainer{top:0;margin:0}
 body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
 body.hanmo-vsugang .grid{margin-top:0;--vsugang-narrow-areas:"b b" "b b" "s t" "set t"}
 body.hanmo-vsugang .grid > :is(.setting,#incident-options){border:1px solid #000912;background:#06111c;transition:0.3s}
-body.hanmo-vsugang .grid:has(:hover) > :is(.setting,#incident-options):not(:hover){background:#000a13}
+/* 주변 칸을 갑자기 어둡게 하지 않고 선택한 칸의 빛만 천천히 밝힌다. */
 /* BASIC의 오른쪽 아래를 실제로 비워 돌발상황 버튼과 겹치지 않게 한다. */
 body.hanmo-vsugang .grid > .basic-mode-tile {
   clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%);
@@ -90,27 +90,42 @@ body.hanmo-vsugang.vsugang-compact-scroll .grid :is(p,.mode-tile-description){di
 body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-up{display:none}
 
 
-/* 원본의 차분한 남색 명암 반응을 유지하고 반짝이는 테두리는 사용하지 않는다. */
+/* 다섯 칸을 같은 느린 빛 효과로 묶는다. 역 ㄱ자 모서리는 부모에서 잘린다. */
+body.hanmo-vsugang .grid:has(:hover) > div:not(.setting):not(:hover) {
+  background-color: #06111c;
+}
 body.hanmo-vsugang .grid > :is(div, button) {
-  transition: background-color .26s ease-out, border-color .26s ease-out,
-              box-shadow .26s ease-out;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: background-color .78s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-vsugang .grid > :is(div, button)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 92% 86% at 50% 48%,
+              rgba(111, 179, 209, .17) 0%,
+              rgba(84, 150, 183, .075) 48%,
+              transparent 84%);
+  box-shadow: inset 0 0 0 1px rgba(128, 179, 204, .22),
+              inset 0 0 27px rgba(96, 156, 183, .12);
+  opacity: 0;
+  transition: opacity 1.08s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-vsugang .grid > :is(div, button) > :is(h2, p, span) {
+  position: relative;
+  z-index: 1;
+}
+body.hanmo-vsugang .grid > :is(div, button):is(:hover, :focus-visible)::before {
+  opacity: .88;
+  transition-duration: .78s;
 }
 body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {
-  border-color: #4c6b7b;
-  background-color: #091b29;
-  box-shadow: inset 0 0 22px rgba(93, 139, 165, .16);
-}
-/* 모든 타일의 테두리와 안쪽 음영을 동일하게 하고 SETTING의 상태 배경은 보존한다. */
-body.hanmo-vsugang .grid > :is(.setting, #incident-options) {
-  transition: background-color .26s ease-out, border-color .26s ease-out,
-              box-shadow .26s ease-out;
-}
-body.hanmo-vsugang .grid > :is(.setting, #incident-options):hover {
-  border-color: #4c6b7b;
-  box-shadow: inset 0 0 22px rgba(93, 139, 165, .16);
-}
-body.hanmo-vsugang .grid > #incident-options:hover {
-  background-color: #0b2433;
+  background-color: #071a27;
 }
 /* 잘린 BASIC도 키보드 포커스를 구별할 수 있게 내부 윤곽을 유지한다. */
 body.hanmo-vsugang .grid > .basic-mode-tile:focus-visible {
@@ -150,7 +165,7 @@ body.hanmo-vsugang #scenario-settings[open] .settingPanel {
 }
 @media (prefers-reduced-motion: reduce) {
   body.hanmo-vsugang .grid > :is(div, button),
-  body.hanmo-vsugang .grid > :is(.setting, #incident-options),
+  body.hanmo-vsugang .grid > :is(div, button)::before,
   .settingPanel .waiting-setting-group label { transition: none; }
   body.hanmo-vsugang .settingSection .settingPanel,
   body.hanmo-vsugang #scenario-settings[open] .settingPanel { animation: none; }

@@ -116,3 +116,36 @@ body.hanmo-ui .progress-main .plan-row{display:flex;justify-content:space-betwee
   .progress-main th,.progress-main td{padding-inline:4px}
   #scenario-comparison thead th{white-space:normal}
 }
+
+/* 학점 입력 버튼만 느린 빛을 사용하며 기록 표와 계산 결과는 평면으로 둔다. */
+body.hanmo-ui .progress-main .progress-form button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: background-color .78s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-ui .progress-main .progress-form button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 92% 96% at 50% 48%,
+              rgba(115, 180, 209, .17), rgba(82, 147, 177, .06) 50%, transparent 85%);
+  box-shadow: inset 0 0 0 1px rgba(128, 185, 205, .16);
+  opacity: 0;
+  transition: opacity 1.08s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-ui .progress-main .credit-form button[type="submit"]::before {
+  background: radial-gradient(ellipse 92% 96% at 50% 48%,
+              rgba(255, 240, 197, .18), rgba(246, 208, 143, .06) 50%, transparent 85%);
+  box-shadow: inset 0 0 0 1px rgba(255, 239, 191, .13);
+}
+body.hanmo-ui .progress-main .progress-form button:is(:hover, :focus-visible)::before {
+  opacity: .78;
+  transition-duration: .78s;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.hanmo-ui .progress-main .progress-form button,
+  body.hanmo-ui .progress-main .progress-form button::before { transition: none; }
+}

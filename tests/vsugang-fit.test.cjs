@@ -110,21 +110,17 @@ test('설정 유효성 변경은 선택형 돌발상황 타일 색상을 바꾸�
   assert.equal(x.incident.style.background,undefined);
 });
 
-test('모드 타일은 원본의 어두운 명암을 유지하며 금색 광택을 추가하지 않는다',()=>{
- const original=fs.readFileSync(path.join(__dirname,'../css/vsugang.css'),'utf8');
+test('모드 타일은 기존 명암에 느린 방사형 글로우를 적용한다',()=>{
+ const base=fs.readFileSync(path.join(__dirname,'../css/vsugang.css'),'utf8');
  const fit=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
- assert.match(original,/opacity:\s*0\.8/);
- assert.doesNotMatch(fit,/\.grid\s*\{\s*opacity:\s*\.96/);
- assert.match(fit,/background-color:\s*#091b29/);
- assert.doesNotMatch(fit,/border-color:\s*rgba\(244,\s*199,\s*108,\s*\.64\)/);
- const primaryHover=fit.split('body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {')[1]?.split('}')[0]??'';
- const secondaryHover=fit.split('body.hanmo-vsugang .grid > :is(.setting, #incident-options):hover {')[1]?.split('}')[0]??'';
- for(const rule of [primaryHover,secondaryHover]){
-   assert.match(rule,/border-color:\s*#4c6b7b/);
-   assert.match(rule,/box-shadow:\s*inset 0 0 22px rgba\(93,\s*139,\s*165,\s*\.16\)/);
-   assert.doesNotMatch(rule,/inset\s+0\s+1px\s+0/);
- }
- assert.match(fit,/box-shadow \.26s ease-out/);
+ assert.ok(base.includes('opacity: 0.8'));
+ assert.ok(fit.includes('.grid > :is(div, button)::before {'));
+ assert.ok(fit.includes('radial-gradient(ellipse 92% 86%'));
+ assert.ok(fit.includes('transition: opacity 1.08s'));
+ assert.ok(fit.includes('transition-duration: .78s'));
+ assert.ok(fit.includes('pointer-events: none'));
+ assert.ok(fit.includes('.grid:has(:hover) > div:not(.setting):not(:hover)'));
+ assert.ok(!fit.includes('border-color: rgba(244, 199, 108, .64)'));
 });
 
 test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 스타일을 사용한다',()=>{
@@ -155,28 +151,21 @@ test('BASIC은 돌발상황 버튼과 겹치지 않는 역 ㄱ자 시각·클릭
  assert.match(css,/\.basic-mode-tile:focus-visible/);
 });
 
-test('SETTING과 돌발상황이 같은 은은한 호버를 사용하고 상태 배경은 유지한다',()=>{
+test('SETTING과 돌발상황은 상태색을 유지하면서 동일한 글로우를 사용한다',()=>{
  const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
  const source=fs.readFileSync(path.join(__dirname,'../js/vsugang.js'),'utf8');
- assert.match(css,/\.grid > :is\(\.setting, #incident-options\):hover\s*\{[^}]*border-color:\s*#4c6b7b;[^}]*box-shadow:\s*inset 0 0 22px/);
- assert.match(css,/\.grid > #incident-options:hover\s*\{[^}]*background-color:\s*#0b2433/);
- assert.match(css,/prefers-reduced-motion:[^)]*reduce[^}]*\.grid > :is\(\.setting, #incident-options\)/s);
- assert.match(source,/setting\.style\.background=background/);
- assert.match(source,/isSettedValue\?'#001203':'#120000'/);
- assert.doesNotMatch(css,/\.grid\s*\{\s*opacity:\s*\.96/);
+ assert.ok(css.includes('.grid > :is(div, button):is(:hover, :focus-visible)::before'));
+ assert.ok(css.includes('body.hanmo-vsugang #incident-options{'));
+ assert.ok(css.includes('.grid > :is(div, button)::before,'));
+ assert.ok(source.includes('setting.style.background=background'));
+ assert.ok(source.includes("isSettedValue?'#001203':'#120000'"));
 });
 
-test('BASIC·TIME·SELECT도 SETTING·돌발상황과 같은 얕은 테두리·음영을 받는다',()=>{
+test('다섯 타일은 같은 부드러운 빛을 사용하고 BASIC의 역 ㄱ자 형태를 유지한다',()=>{
  const fit=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
  const html=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
- const primary=fit.split('body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {')[1]?.split('}')[0]??'';
- const secondary=fit.split('body.hanmo-vsugang .grid > :is(.setting, #incident-options):hover {')[1]?.split('}')[0]??'';
- for(const property of ['border-color: #4c6b7b','box-shadow: inset 0 0 22px rgba(93, 139, 165, .16)']){
-   assert.ok(primary.includes(property),property+' 주 모드');
-   assert.ok(secondary.includes(property),property+' 보조 타일');
- }
- for(const mode of [1,2,3])assert.match(html,new RegExp("onclick='goPractice\\("+mode+"\\)'"));
- assert.match(fit,/\.grid > \.basic-mode-tile\s*\{\s*clip-path:\s*polygon/);
- const valid=fs.readFileSync(path.join(__dirname,'../js/vsugang.js'),'utf8');
- assert.match(valid,/setting\.style\.background=background/);
+ assert.ok(fit.includes('.grid > :is(div, button)::before'));
+ assert.ok(fit.includes('.grid > :is(div, button) > :is(h2, p, span)'));
+ assert.ok(fit.includes('clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%)'));
+ for(const mode of [1,2,3])assert.ok(html.includes("onclick='goPractice("+mode+")'"));
 });
