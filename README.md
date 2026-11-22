@@ -56,7 +56,7 @@
 | 영역 | 현재 확인할 수 있는 것 | 범위 · 주의사항 |
 | :--- | :--- | :--- |
 | **모의수강신청** | BASIC / TIME / SELECT 기본 연습 | 원작의 기존 흐름 유지 |
-| **돌발상황 연습** | BASIC 모드의 **돌발상황** 블록에서 가상 신청 실패와 404 후 복귀를 선택 | 두 옵션 모두 기본 OFF · 실제 학교 장애·신청 결과와 무관 |
+| **돌발상황 연습** | BASIC의 **practice → selectZone 진입 시 1회 가상 404** · 실제 브라우저 새로고침으로 복구(뒤로가기는 미지원) | RECONNECT 한 가지, 기본 OFF · 마지막 과목 신청 실패 기능 제거 · 실제 학교 장애와 무관 |
 | **내정보** | 캠퍼스 · 전공 · 입학년도 선택 | **이 브라우저에만 저장**, 학교 계정과 미연동 |
 | **학사 공지** | 승인 자료 연결 대기 · 미연결/빈 목록/오류 안내 | 과거 참고 공지 JSON 제거 · 학생 대상과 마감은 원문 확인 |
 | **강의·교수 검색** | 승인된 공개 강좌만 검색 · 빈 목록/연결 오류 표시 | 가상 강좌 삭제 · 실자료 승인 전까지 결과 없음 |
@@ -89,6 +89,8 @@ flowchart TB
         H --> M["모의수강신청 메뉴 · BASIC / TIME / SELECT"]
         M --> PR["연습 · practice.html"]
         PR --> SZ["과목 선택·신청 · selectZone.html"]
+        SZ -. "BASIC 돌발상황 ON" .-> ERR["가상 404 · 좌측 메뉴 비활성"]
+        ERR -. "Chrome 새로고침" .-> SZ
         SZ --> R["결과 · result.html"]
     end
 
@@ -112,12 +114,14 @@ flowchart TB
     classDef page fill:#0d3042,stroke:#467c96,color:#eff6fc
     classDef data fill:#173b35,stroke:#78ad9e,color:#eff6fc
     classDef planned fill:#3c321e,stroke:#f4c76c,color:#f4c76c
-    class H,NAV,N,F,C,G,I,M,PR,SZ,R page
+    class H,NAV,N,F,C,G,I,M,PR,SZ,R,ERR page
     class J,E,U,LS data
     class S,V,DB,API planned
 ```
 
 > **현재:** 오래된 공지 참고 목록과 가상 강좌·개설 이력은 제거했습니다. `data/academic-source-config.json`은 기본 비활성이고 화면은 **미연결 / 승인 자료 없음 / 오류·유효성 문제**를 구분해 안내합니다. **3차 연동 목표:** 학교의 자료 이용 허가와 독립 검수·승인이 끝난 Supabase의 승인 공개판본만 읽습니다. 연결 실패 시 승인되지 않은 과거 데이터를 자동 재사용하지 않습니다. 학생 성적·개인 계획은 서버에 전송하지 않습니다.
+
+**검색용 사이트맵:** [sitemap.xml](sitemap.xml)은 **GitHub Pages 포크 QA 주소**의 공개 안내 페이지 8개만 포함합니다. `incident-404.html`과 `practice.html`·`selectZone.html`·`result.html` 등 세션 흐름 페이지는 검색 대상에서 제외하며, 이는 원본 운영 도메인의 사이트맵이 아닙니다.
 
 [실제 페이지 파일](html/) · [자료·Supabase 상세 설계](docs/architecture.md) · [3차 설치 패키지 초안 PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)
 

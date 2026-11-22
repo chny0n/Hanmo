@@ -11,7 +11,7 @@ const allowed=p=>p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('css/')||p.startsWith('html/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
- '.gitignore','README.md','AGENTS.md','agent.md'].includes(p);
+ '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml'].includes(p);
 const unexpected=changed.filter(p=>!allowed(p));
 if(unexpected.length)throw Error('Unexpected files:\n'+unexpected.join('\n'));
 console.log('Original HUFS registration imitation preserved; '+changed.length+' scoped changes.');

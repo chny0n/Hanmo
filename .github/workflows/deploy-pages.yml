@@ -9,6 +9,7 @@ on:
       - 'package.json'
       - 'jsconfig.json'
       - 'index.html'
+      - 'sitemap.xml'
       - 'tests/**'
       - 'html/**'
       - 'js/**'

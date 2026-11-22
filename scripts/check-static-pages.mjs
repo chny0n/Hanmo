@@ -22,10 +22,34 @@ for(const name of [
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
-  'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js',
+  'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,
 ])await must(name);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
+
+// 사이트맵은 포크의 공개 페이지에만 사용하고, 합성 오류·세션 페이지는 제외합니다.
+const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
+const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
+const publicRoutes=[
+  '', 'html/vsugang.html','html/academic-timeline.html',
+  'html/forecast.html','html/catalog.html','html/academic-progress.html',
+  'html/planner.html','html/developer.html'
+];
+const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
+const expectedLocations=publicRoutes.map(route=>sitemapBase+route);
+if(!sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')||
+   !sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')||
+   !sitemap.trimEnd().endsWith('</urlset>')||
+   sitemapLocations.length!==expectedLocations.length||
+   sitemapLocations.some((value,index)=>value!==expectedLocations[index]))
+  throw Error('Sitemap public routes or QA base URL are out of sync');
+if(/vsugangpractice\.com|incident-404\.html|(?:practice|selectZone|result|pc-only)\.html|<lastmod>2024/.test(sitemap))
+  throw Error('Sitemap leaked original domain, synthetic error or session-only routes');
+for(const route of publicRoutes){
+  if(!await exists(join(dist,route||'index.html')))
+    throw Error('Sitemap refers to a missing public page: '+route);
+}
+
 if(await exists(join(dist,'data/academic-notices-reference.json')))
   throw Error('Unapproved historical notice feed leaked into public preview');
 if((await readdir(dist)).includes('degree-rescue'))throw Error('Academic student pages must not live under /degree-rescue/');

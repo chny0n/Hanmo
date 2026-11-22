@@ -11,6 +11,8 @@ for(const bundle of bundles)
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 await copyFile(join(root,'index.html'),join(dist,'index.html'));
+// 포크 미리보기의 공개 URL 목록을 정적 배포 산출물에도 포함합니다.
+await copyFile(join(root,'sitemap.xml'),join(dist,'sitemap.xml'));
 const academicSource=join(root,'js','academic');
 for(const directory of ['css','js','html','img'])
   await cp(join(root,directory),join(dist,directory),{recursive:true,filter:source=>source!==academicSource});
@@ -22,7 +24,7 @@ for(const bundle of bundles)
 for(const name of [
  'index.html','html/planner.html','html/forecast.html','html/catalog.html',
  'html/academic-timeline.html','html/academic-progress.html',
- 'html/vsugang.html','js/student-forecast.js','js/student-entry.js','js/academic-progress.js','data/academic-source-config.json',
+ 'html/vsugang.html','sitemap.xml','js/student-forecast.js','js/student-entry.js','js/academic-progress.js','data/academic-source-config.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into QA artifact');
 const rootEntries=await readdir(dist);
