@@ -68,6 +68,12 @@ function createHarness(seed={}) {
     createTextNode:(value)=>({textContent:String(value)}),
     addEventListener(){},
   };
+  const sessionMap=new Map(seed.capacityActive?[['hanmo.syntheticCapacity.active.v1',seed.capacityActive]]:[]);
+  const sessionStorage={
+    getItem:k=>sessionMap.get(k)??null,
+    setItem:(k,v)=>{sessionMap.set(k,String(v));},
+    removeItem:k=>sessionMap.delete(k)
+  };
   const localStorage={
     getItem:k=>map.has(k)?map.get(k):null,
     setItem:(k,v)=>{map.set(k,String(v));},
@@ -75,7 +81,7 @@ function createHarness(seed={}) {
   };
   const location={href:'/',replace(v){events.navigations.push(v);}};
   const sandbox={
-    document:doc,localStorage,location,Date:Clock,
+    document:doc,localStorage,sessionStorage,location,Date:Clock,
     navigator:{userAgent:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/157'},
     alert:x=>events.alert.push(x),
     confirm:x=>{events.confirm.push(x);return true;},
@@ -164,6 +170,28 @@ test('SELECT starts with expected synthetic rows and global inline click handler
   assert.equal(typeof h.expr('deleteDone'),'function');
   assert.equal(typeof h.expr('pyoDisplay'),'function');
   assert.match(h.get('practiceMode').innerText,/BASIC/);
+});
+test('CAPACITY 선택형 정원 마감은 BASIC 첫 과목만 마감하고 다른 과목은 신청할 수 있다',()=>{
+  const h=createHarness({practiceSetter:1,psubjectValue:3,subjectValue:2,
+    waitingValue:'no',capacityActive:'yes'});
+  h.load('selectZone.js');
+  h.expr('registerClick(1)');
+  assert.equal(h.expr('closedCourses.has(1)'),true);
+  assert.equal(h.expr('count'),0);
+  h.expr('registerClick(1)');
+  assert.equal(h.expr('count'),0);
+  h.expr('registerClick(2)');
+  assert.equal(h.expr('count'),1);
+  assert.match(h.events.alert[0],/정원 초과/);
+});
+test('원본 모의신청 선택 UI에는 네 라디오와 각 Search 전 조건이 있다',()=>{
+  const html=fs.readFileSync(path.join(ROOT,'html/selectZone.html'),'utf8');
+  for(const option of ['INTEREST','MAJOR','GENERAL','FOUNDATION'])
+    assert.match(html,new RegExp('name="course-mode" value="'+option+'"'));
+  for(const filter of ['MAJOR','GENERAL','FOUNDATION'])
+    assert.match(html,new RegExp('data-course-filter="'+filter+'" hidden'));
+  assert.match(html,/course-general-warning/);
+  assert.match(html,/course-search-prompt/);
 });
 test('successful registration stores one synthetic course and prevents duplicates',()=>{
   const h=createHarness({practiceSetter:1,psubjectValue:3,subjectValue:2,waitingValue:'no'});
@@ -309,8 +337,8 @@ test('each actual HTML page loads classic scripts in order without global collis
     // 공통 상단 메뉴와 함께 원본 공지·기기 확인·학기 표시를 유지한다.
     assert.equal(originalScripts.length,page==='index.html'?2:3,page+' original script count');
     if(page==='html/vsugang.html')assert.deepEqual(scripts.slice(3),[
-      'scenario-settings.js',
-    ],'isolated synthetic scripts must load only after original settings/gnb/hanmoSys');
+      'scenario-settings.js','capacity-settings.js',
+    ],'선택형 합성 스크립트는 기존 신청 설정 이후 순서대로 로드한다');
     const h=createHarness({deviceInfo:'true',practiceSetter:1,psubjectValue:2,
       subjectValue:2,waitingValue:'no',TIMEtime:'1',SELECTtime:'1',SELECTWaitTime:'0'});
     h.now('2026-11-19T10:11:00+09:00');

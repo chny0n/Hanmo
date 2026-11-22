@@ -117,7 +117,7 @@ for(const page of studentPages){
   if(/<a href="\.\.\/index\.html">홈<\/a>/.test(body))
     throw Error('Redundant home menu entry: '+page);
 }
-for(const path of studentPages){
+for(const path of studentPages.filter(path=>path!=='html/forecast.html')){
   if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
 }
 if(root.includes('<a href="./html/vsugang.html"')||/기존 모의신청|기본 모의신청/.test(root))

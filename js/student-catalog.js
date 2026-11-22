@@ -7,6 +7,8 @@
  const results=document.getElementById('catalog-results');
  const status=document.getElementById('catalog-status');
  const retry=document.getElementById('catalog-retry');
+ const term=document.getElementById('catalog-target-term');
+ const outlook=document.getElementById('catalog-outlook-notice');
  const adapter=window.HanmoAcademicData;
  let offerings=[],state='LOADING',meta=null,loading=false;
  const messages={
@@ -20,6 +22,7 @@
    const el=document.createElement(tag);el.textContent=message;
    if(cls)el.className=cls;return el;
  };
+ /** 공개 승인된 동일 학수번호 묶음의 확인된 분반만 표시한다. */
  function render(){
    results.replaceChildren();
    if(state!=='READY')return;
@@ -28,31 +31,56 @@
      (campus.value==='ALL'||campus.value===item.campus)&&
      (!q||item.courseId.toLocaleLowerCase('ko').includes(q)||
        item.title.toLocaleLowerCase('ko').includes(q)));
-   status.textContent='검수된 공개 강좌 '+matches.length+'건 / '+offerings.length+
-     '건 · 출처 검수일 '+meta.sourceCheckedAt.slice(0,10)+
-     ' · 실제 개설은 학교 원문 확인';
+   status.textContent='검수된 공개 강좌 '+matches.length+'개 분반 / '+offerings.length+
+     '개 분반 · 출처 검수일 '+meta.sourceCheckedAt.slice(0,10)+
+     ' · 실제 학사일정·신청 자격은 학교 원문 확인';
    if(!matches.length){
      results.append(text('p','검색 결과 없음','hanmo-empty'));
      return;
    }
+   const groups=new Map();
    for(const item of matches){
+     const key=item.courseId+'::'+item.campus;
+     if(!groups.has(key))groups.set(key,[]);
+     groups.get(key).push(item);
+   }
+   const target=term?.value||'';
+   for(const rows of groups.values()){
+     const first=rows[0];
      const card=text('article','','hanmo-item');
-     card.append(text('h3',item.title));
-     const campusName=item.campus==='SEOUL'?'서울':'글로벌';
-     card.append(text('p',item.courseId+' · '+item.term+' · '+campusName+'캠퍼스'+
-       (item.credits===null?' · 학점 미기재':' · '+item.credits+'학점')+
-       (item.instructor?' · '+item.instructor:'')));
-     const link=text('a','학교 공식 강좌 정보 확인 →');
-     link.href=item.sourceUrl;link.target='_blank';link.rel='noopener noreferrer';
+     card.append(text('h3',first.courseId+' · '+first.title));
+     const campusName=first.campus==='SEOUL'?'서울':'글로벌';
+     card.append(text('p',campusName+'캠퍼스 · 검수된 자료 '+rows.length+'개 분반'));
+     const byTerm=new Map();
+     for(const item of rows){
+       if(!byTerm.has(item.term))byTerm.set(item.term,[]);
+       byTerm.get(item.term).push(item);
+     }
+     for(const [academicTerm,termRows] of [...byTerm].sort((a,b)=>b[0].localeCompare(a[0]))){
+       const teachers=[...new Set(termRows.map(x=>x.instructor).filter(Boolean))].join(' / ');
+       card.append(text('p',academicTerm+' 공개 승인 개설 자료 · '+termRows.length+
+         '개 분반'+(teachers?' · '+teachers:'')));
+     }
+     const inTerm=byTerm.get(target);
+     const assessment=inTerm?
+       target+' 공개 승인 자료에 개설 기록 '+inTerm.length+'개 분반이 있습니다. 학교 원문 확인 필요.':
+       target+' 전망(보장 아님): 검수된 동일과목 판본·전체학기 관측 범위가 없어 판단 보류(UNKNOWN). 누락 학기를 미개설로 간주하지 않습니다.';
+     const note=text('p',assessment,'hanmo-status');
+     card.append(note);
+     const link=text('a','학교 공식 강좌 정보 확인');
+     link.href=first.sourceUrl;link.target='_blank';link.rel='noopener noreferrer';
      card.append(link);results.append(card);
    }
  }
+
  function show(value){
    state=value.status==='READY'&&!value.offerings.length?'EMPTY':value.status;
    offerings=state==='READY'?value.offerings:[];
    meta=value.meta;
    query.disabled=state!=='READY';
    campus.disabled=state!=='READY';
+   if(term)term.disabled=state!=='READY';
+   if(outlook)outlook.textContent=state==='READY'? '같은 계절 과거 관측을 검수한 경우에만 전망할 수 있습니다. 현재 확인되지 않은 학기는 UNKNOWN으로 표시합니다.':'학교가 승인한 강좌 자료 미연결. 검색·필터·개설 전망은 비활성화되어 있습니다.';
    if(state!=='READY')status.textContent=messages[state]||messages.INVALID;
    render();
  }
@@ -67,6 +95,17 @@
  }
  query.addEventListener('input',render);
  campus.addEventListener('change',render);
+ if(term){
+   const d=new Date();
+   const year=Number(new Intl.DateTimeFormat('en',{timeZone:'Asia/Seoul',year:'numeric'}).format(d));
+   term.replaceChildren();
+   for(const y of [year,year+1])for(const semester of [1,2]){
+     const option=new Option(y+'-'+semester,y+'-'+semester);
+     term.append(option);
+   }
+   term.value=(year+1)+'-1';
+   term.addEventListener('change',render);
+ }
  retry.addEventListener('click',()=>{void refresh();});
  void refresh();
 })();

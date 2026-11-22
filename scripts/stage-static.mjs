@@ -4,7 +4,7 @@ import {resolve,join} from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const build=join(root,'.build');
-const bundles=['student-forecast.js','student-entry.js','academic-progress.js'];
+const bundles=['student-forecast.js','student-entry.js','academic-progress.js','degree-preparation.js'];
 const exists=async p=>{try{return(await stat(p)).isFile()}catch{return false}};
 for(const bundle of bundles)
   if(!await exists(join(build,bundle)))throw Error('Missing generated academic JS bundle: '+bundle);

@@ -21,7 +21,11 @@
    summary.append(text('strong','취득 '+earned+'학점 · 남은 '+left+'학점'));
    summary.append(text('p','수강 중 '+going+'학점 · 예정 '+planned+'학점'));
    bar.style.width=Math.min(100,Math.max(0,earned/target*100))+'%';
-   status.textContent='목표 달성률 '+Math.round(Math.min(100,earned/target*100))+'%';
+   const warnings=[];
+   if(earned>target)warnings.push('취득 학점이 목표보다 '+(earned-target)+'학점 많습니다.');
+   if(earned+going+planned>target)warnings.push('취득·수강 중·예정 합계가 목표를 초과합니다. 중복 합산 여부를 확인해 주세요.');
+   status.textContent='목표 달성률 '+Math.round(Math.min(100,earned/target*100))+'%'+
+     (warnings.length?' · '+warnings.join(' '):'');
  });
  form.addEventListener('reset',()=>{
    summary.textContent='—';

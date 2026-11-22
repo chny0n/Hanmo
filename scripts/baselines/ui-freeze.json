@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "Current conservative PC UI and original registration paths; changes need explicit approval and full visual/legacy QA.",
+  "purpose": "Current conservative PC UI; user explicitly approved #113-#116 navigation/degree/limited capacity changes. New UI edits still require approval and regression evidence.",
   "files": [
     {
       "path": "css/academic-progress.css",
-      "sha": "c34999729cfecac7737fa8315de1513ae88b1479"
+      "sha": "b88fa7f3fe978ff36f1ae921d22d5e90a27f41b6"
     },
     {
       "path": "css/developer.css",
@@ -17,7 +17,7 @@
     },
     {
       "path": "css/hanmo-components.css",
-      "sha": "6f4b3cf5e27dbd7f434a35aecc0af7aeb3b4aee7"
+      "sha": "617f6f722682e0bb01e76ca263d23c41e90628e8"
     },
     {
       "path": "css/hanmo-flat.css",
@@ -53,7 +53,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "46643e4603bca30e17121440081e4232d1393c52"
+      "sha": "51de382874de29e54a106dad4e757c7835adf351"
     },
     {
       "path": "css/result.css",
@@ -72,24 +72,36 @@
       "sha": "d0f4e1f009d2dee1bb43641919066c1679f7589d"
     },
     {
+      "path": "html/academic-calendar.html",
+      "sha": "6e2deded9de95e8240a4668fb8764eb714b62b19"
+    },
+    {
+      "path": "html/academic-faq.html",
+      "sha": "8324abbcb576a3df77883f17009ecb47a45003fa"
+    },
+    {
       "path": "html/academic-progress.html",
-      "sha": "73cc906843b7ad8fe50e75401ff726eaf5466fc1"
+      "sha": "fb35c87d89b4eb74c2fbedf5e2b76432ee02d157"
+    },
+    {
+      "path": "html/academic-support.html",
+      "sha": "32a731b4b43ab59fd11f9ad24bda1b8353677245"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "72a20cb75b93d618a91624668b3bc072daac88bf"
+      "sha": "ceaa7fffe4fcf88a011bb08ce37324ba02ff3b27"
     },
     {
       "path": "html/catalog.html",
-      "sha": "cd36d7aee9a7bec995b574725b450f795a9447f9"
+      "sha": "6a883fa0aca563731e78ce3e4fe2addca8654d4d"
     },
     {
       "path": "html/developer.html",
-      "sha": "8dbb8a088a24844ae641076472b75015f027fce7"
+      "sha": "ef037fb70adfb8c624959c4bae64ecd328773d3d"
     },
     {
       "path": "html/forecast.html",
-      "sha": "e4eaf6d57881bd25d9eb2303947f6073fd25a7cd"
+      "sha": "7782d3250413751c77c79f6e4a77830c85d9d870"
     },
     {
       "path": "html/incident-404.html",
@@ -101,7 +113,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "27eff06d28866aeb74d5e087a06d409c2f540690"
+      "sha": "9e3cb2ffd4a15b225d275a60060a5b96d1d2572d"
     },
     {
       "path": "html/practice.html",
@@ -109,15 +121,15 @@
     },
     {
       "path": "html/result.html",
-      "sha": "b0fb71046501b446d1647ee41904898cbcc57c8a"
+      "sha": "1fed0cd8dd6cf473c8d82b42d4c6ddc53cd46a6b"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "e5e5f0185615c05a3eb311c7c002c52f1c7b74f6"
+      "sha": "bc4d189735823c8eb09d21da8adc9d3a85fde9b3"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "a13c36f1f35c5f70170f1980d7906a08cb64deca"
+      "sha": "edd8c5c557fbffb667395bdbb057063f5365d35f"
     },
     {
       "path": "img/background.svg",
@@ -165,11 +177,27 @@
     },
     {
       "path": "index.html",
-      "sha": "4b155e494413a6d3eff5c2380ba1475bda302dfe"
+      "sha": "dfe4334f403f300b45ab2cf788077065fbf71a3e"
+    },
+    {
+      "path": "js/academic-calendar.js",
+      "sha": "196c41afae75d40d4809139a8f9d790ed13d2489"
     },
     {
       "path": "js/academic-data-source.js",
       "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
+    },
+    {
+      "path": "js/academic-faq.js",
+      "sha": "77f00ba85abb27c3f64d04af60a97a2d19fe9ce6"
+    },
+    {
+      "path": "js/academic-support.js",
+      "sha": "07c9647575a812b904bd603bf48a6eccb4ef2e24"
+    },
+    {
+      "path": "js/capacity-settings.js",
+      "sha": "cff5ea8d6d71f52082c020fee049bb9a60ad76ad"
     },
     {
       "path": "js/gnb.js",
@@ -209,11 +237,11 @@
     },
     {
       "path": "js/selectZone.js",
-      "sha": "6e9be5ba62bbc900e442045595d9ce5741de2abe"
+      "sha": "057b374fa62b9d0f2cf6238605669622f743efea"
     },
     {
       "path": "js/student-catalog.js",
-      "sha": "caab269772b788d14e495893fc8b56d8be6a4e57"
+      "sha": "b4c324680fb4e4b7bea774568991c73976c42c54"
     },
     {
       "path": "js/student-notices.js",
@@ -221,15 +249,15 @@
     },
     {
       "path": "js/student-preferences.js",
-      "sha": "7057dcbea2ec19af025c54f4bf34855783f43a24"
+      "sha": "5bd23b712dfb08d80603e9e72fa3c5e124e4a8e6"
     },
     {
       "path": "js/student-profile-bar.js",
-      "sha": "179a4a65bc68f75921b79c1b2d334584974e0892"
+      "sha": "70ac52364d854b85422a711238f16752fc546bac"
     },
     {
       "path": "js/student-progress.js",
-      "sha": "06ed9ead7d271157a035a6f54f3a7568fadbd6e9"
+      "sha": "f0c168b615903b835d6560d96d32e84416c0eab0"
     },
     {
       "path": "js/vsugang-fit.js",
