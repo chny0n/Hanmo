@@ -12,6 +12,30 @@ const records = [];
 /** @type {Record<ScenarioId,StudentPlanCourse[]>} */
 const plans = { A: [], B: [], C: [] };
 const SCENARIOS = /** @type {const} */ (['A', 'B', 'C']);
+const RECORDS_KEY='hanmo:student-planner:course-records:v1';
+/** 과목 기록과 계획은 이 브라우저에만 저장하며 다른 기기로 전송하지 않는다. */
+function persistRecords(){
+  try{
+    localStorage.setItem(RECORDS_KEY,JSON.stringify({version:1,records,plans}));
+  }catch{write('record-message','브라우저 저장이 거부됐습니다. 저장소 설정을 확인해 주세요.');}
+}
+function restoreRecords(){
+  try{
+    const raw=localStorage.getItem(RECORDS_KEY);
+    if(!raw||raw.length>65536)return;
+    const v=JSON.parse(raw);
+    if(v?.version!==1||!Array.isArray(v.records)||v.records.length>MAX_COURSES)return;
+    const checked=v.records.map(normalizeStudentCourse);
+    /** @type {Record<ScenarioId,StudentPlanCourse[]>} */
+    const restored={A:[],B:[],C:[]};
+    for(const id of SCENARIOS){
+      if(!Array.isArray(v.plans?.[id])||v.plans[id].length>MAX_COURSES)return;
+      restored[id]=v.plans[id].map(normalizePlanCourse);
+    }
+    records.push(...checked);
+    for(const id of SCENARIOS)plans[id].push(...restored[id]);
+  }catch{/* 저장 데이터가 깨졌으면 기존 빈 원장을 유지한다. */}
+}
 /** @param {string} id @returns {HTMLElement} */
 const get = (id) => {
     const element = document.getElementById(id);
@@ -83,6 +107,7 @@ function renderRecords() {
         button.setAttribute('aria-label', record.courseId + ' 입력 기록 삭제');
         button.addEventListener('click', () => {
             records.splice(index, 1);
+            persistRecords();
             renderAll();
             write('record-message', '기록을 삭제했습니다.');
         });
@@ -127,6 +152,7 @@ function renderPlanRows() {
         button.setAttribute('aria-label', planLabel(id) + ' 계획 ' + item.term + ' ' + item.courseId + ' 삭제');
         button.addEventListener('click', () => {
             plans[id].splice(index, 1);
+            persistRecords();
             renderAll();
             write('plan-message', '과목을 삭제했습니다.');
         });
@@ -171,7 +197,7 @@ function renderAll(asOf = today(), comparisons) {
         addMetric(creditRoot, '취득', first.earnedCreditUnits);
         addMetric(creditRoot, '수강 중', first.inProgressCreditUnits);
         if (first.excludedAttempts.length > 0) {
-            const warning = text('p', '합산 제외·보류 ' + first.excludedAttempts.length + '건');
+            const warning = text('p', '합산 제외·보류 ' + first.excludedAttempts.length + '건 · 학수번호·학기 중복 또는 인정 대기 기록은 학점 합산을 보류합니다. 아래 사유를 확인하세요.');
             warning.className = 'small-note';
             creditRoot.append(warning);
         }
@@ -243,9 +269,10 @@ get('record-form').addEventListener('submit', event => {
         const asOf = today();
         const comparisons = comparePlans(asOf, [...records, row]);
         records.push(row);
+        persistRecords();
         control('record-course', HTMLInputElement).value = '';
         renderAll(asOf, comparisons);
-        write('record-message', '기록을 추가했습니다.');
+        write('record-message', '기록을 추가했습니다. 학수번호가 실제 과목인지 학교 자료로 확인해 주세요.');
     }
     catch (error) {
         write('record-message', error instanceof Error ? error.message : String(error));
@@ -264,6 +291,7 @@ get('plan-form').addEventListener('submit', event => {
         });
         compareProvisionalScenario({ asOf: today(), scenario: id, records, plans: [...plans[id], row] });
         plans[id].push(row);
+        persistRecords();
         control('plan-course', HTMLInputElement).value = '';
         renderAll();
         write('plan-message', '과목을 추가했습니다.');
@@ -276,4 +304,14 @@ get('scenario-choice').addEventListener('change', () => {
     renderAll();
     write('plan-message', '');
 });
+for(const [formId,messageId] of [['record-form','record-message'],['plan-form','plan-message']]){
+  get(formId).addEventListener('invalid',event=>{
+    const t=event.target;
+    const problem=t instanceof HTMLInputElement?
+      t.id.includes('term')?'학기 형식(2025-S/2025-W 포함)':
+      t.id.includes('credits')?'0.5학점 단위':'학수번호':'입력값';
+    write(messageId,problem+'을 확인해 주세요. 해당 형식·범위를 수정해야 저장할 수 있습니다.');
+  },true);
+}
+restoreRecords();
 renderAll();
