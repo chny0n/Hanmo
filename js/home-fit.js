@@ -1,5 +1,5 @@
-/* Home viewport fit. Keep the navigation visible and preserve every classic
- * announcement and button; scale the centered content only when needed.
+/* 홈 상단 메뉴와 안내·버튼을 유지하면서 화면 높이에 따라 중앙 콘텐츠만 축소한다.
+ * 광고는 별도 하단 공간을 확보해 버튼 위치가 움직이지 않도록 한다.
  */
 (function(){
   'use strict';
