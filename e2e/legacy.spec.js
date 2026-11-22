@@ -42,6 +42,8 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
   await expect(page.locator('button.register')).toHaveCount(3);
+  await page.locator('button.search').click();
+  await expect(page.locator('.table')).toBeVisible();
   await page.locator('button.register').first().click();
   await expect(page).toHaveURL(/\/html\/result\.html$/);
   await expect(page.locator('.result p span')).toContainText('초');
@@ -65,6 +67,16 @@ test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 �
   await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
   await expect(page.locator('.navigation')).toHaveAttribute('inert','');
   await page.reload();
+  // 새로고침 탐색 유형과 저장된 일회성 상태를 실패 로그에 남긴다.
+  const browserState=await page.evaluate(()=>({
+    url:location.href,
+    navigation:performance.getEntriesByType('navigation')[0]?.type,
+    legacyNavigation:performance.navigation?.type,
+    saved:sessionStorage.getItem('hanmo.synthetic404.transition.v3'),
+    api:typeof window.HanmoIncident404,
+    time:Date.now(),
+  }));
+  console.log('404_BROWSER_STATE '+JSON.stringify(browserState));
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
 });
 
