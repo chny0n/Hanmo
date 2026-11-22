@@ -2,7 +2,7 @@
 
 [현행 아키텍처](architecture.md)는 제품·기술 **설계 결정의 유일한 정본**입니다. 이 파일은 설계 이슈의 **ID·연결·상태만 관리**하며 과거 완료 조건·검증 로그·폐기된 결정을 중복 저장하지 않습니다. 구현과 시험 내용은 해당 GitHub 이슈에 기록합니다.
 
-**2026-11-19 정리:** HMD-001~HMD-032 중 **31건의 설계 결정 완료**, **학교 회신에 관한 HMD-021/#27 한 건만 미결**입니다. 설계가 완료된 상태와 실제 기능 구현/실데이터 검수/운영 인수 완료는 전혀 다릅니다.
+**2026-11-22 현행 판정:** HMD-001~HMD-032의 설계 이슈 중 **31건은 종결**, **학교 회신 HMD-021/#27만 미결**입니다. 과거 종결 결정 중 LAST_VALID·복합 돌발상황·TS 이관 계획 등은 **현행 아키텍처에서 이미 대체**됐습니다. 옛 이슈의 '설계 완료'는 해당 과거 결정을 종결했다는 뜻이지 지금도 그 기능을 제공한다는 뜻이 아닙니다. **현재 코드·실자료·운영 인수 판정은 [아키텍처 현황표](architecture.md#현행-구현-상태--2026-11-22-main-기준)가 우선**합니다.
 
 ## 학교 회신 후 남은 설계 종료 방법
 
@@ -32,9 +32,9 @@
 | `HMD-011` | [#17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) | 로컬 데이터 네임스페이스·백업/복원·삭제 계약 확정 | 완료 |
 | `HMD-012` | [#18](https://github.com/ot4562-glitch/Hanmo_develop/issues/18) | 원개발자 승인 범위와 기존 JavaScript 확장 지점을 합의한다 | 완료 |
 | `HMD-013` | [#19](https://github.com/ot4562-glitch/Hanmo_develop/issues/19) | BASIC/TIME/SELECT 원본 동작·회귀 기준 계약 확정 | 완료 |
-| `HMD-014` | [#20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | 마지막 과목 실패·학생 대체 선택 상태 머신 확정 | 완료 |
+| `HMD-014` | [#20](https://github.com/ot4562-glitch/Hanmo_develop/issues/20) | 과거 마지막 과목 실패·대체 선택 결정 → **현행 §5에서 폐기(LAST_VALID 제거)** | 종결·대체됨 |
 | `HMD-015` | [#21](https://github.com/ot4562-glitch/Hanmo_develop/issues/21) | 가상 재접속·결과 불명 상태 머신 확정 | 완료 |
-| `HMD-016` | [#22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | 1·2차 과목 ID·합성 결과 어댑터 계약 확정 | 완료 |
+| `HMD-016` | [#22](https://github.com/ot4562-glitch/Hanmo_develop/issues/22) | 원본/합성 ID 격리 설계; 실제 강좌 매핑·대체 검색은 현재 보류 | 종결·범위 축소 |
 | `HMD-017` | [#23](https://github.com/ot4562-glitch/Hanmo_develop/issues/23) | 개발 미리보기와 GitHub Pages 운영 경로·CNAME 계약을 정한다 | 완료 |
 | `HMD-018` | [#24](https://github.com/ot4562-glitch/Hanmo_develop/issues/24) | 기능 코드 PR 승인·릴리스 체크리스트·롤백 방법을 확정한다 | 완료 |
 | `HMD-019` | [#25](https://github.com/ot4562-glitch/Hanmo_develop/issues/25) | 단계별 CI와 브라우저 E2E 품질 게이트를 정의한다 | 완료 |
@@ -47,10 +47,22 @@
 | `HMD-026` | [#32](https://github.com/ot4562-glitch/Hanmo_develop/issues/32) | Supabase 공개 읽기·RLS·비밀키 권한 모델 확정 | 완료 |
 | `HMD-027` | [#33](https://github.com/ot4562-glitch/Hanmo_develop/issues/33) | 개인 학업자료의 로컬 우선·선택적 동기화/인증 범위를 결정한다 | 완료 |
 | `HMD-028` | [#34](https://github.com/ot4562-glitch/Hanmo_develop/issues/34) | Supabase 3차와 4차 최종 제품 인수 조건(소스 이관은 조기 착수 가능) | 완료 |
-| `HMD-029` | [#35](https://github.com/ot4562-glitch/Hanmo_develop/issues/35) | 1차 TypeScript→JavaScript 소스 전환 대상·순서·의존성 목록을 정의한다 | 완료 |
-| `HMD-030` | [#36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | TypeScript→JavaScript/JSDoc 정적·동등성 검사 계약 확정 | 완료 |
-| `HMD-031` | [#37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) | 위기 대응 기본·복합 시나리오/난이도 평가 설계 확정 | 완료 |
+| `HMD-029` | [#35](https://github.com/ot4562-glitch/Hanmo_develop/issues/35) | TypeScript→JavaScript 이관 계획(현행 이관은 PR #100·#102로 **완료**) | 종결·구현 반영 |
+| `HMD-030` | [#36](https://github.com/ot4562-glitch/Hanmo_develop/issues/36) | JS/JSDoc·checkJs 검사 계약(이관 완료, 실제 브라우저·운영 동등성 QA 잔여) | 종결·검증 계속 |
+| `HMD-031` | [#37](https://github.com/ot4562-glitch/Hanmo_develop/issues/37) | 과거 복합 돌발상황 설계 → **현행 BASIC 404 한 가지로 축소**, 나머지 기능 제외 | 종결·대체됨 |
 | `HMD-032` | [#38](https://github.com/ot4562-glitch/Hanmo_develop/issues/38) | 차별화 메시지·비교·예측 안내 표현 정책 확정 | 완료 |
+
+## 실행 이슈 상태 분류 · 2026-11-22
+
+| 판정 | 대표 이슈 | 현재 증거와 남은 일 |
+|---|---|---|
+| **`main` 구현 반영, 실기기 QA 미완료** | [#49](https://github.com/ot4562-glitch/Hanmo_develop/issues/49)·[#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50)·[#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) | LAST_VALID는 [#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)에서 제거; BASIC 404/새로고침, 대기 옵션 2종, 같은 탭 선택 보존은 [#108](https://github.com/ot4562-glitch/Hanmo_develop/pull/108)·[#109](https://github.com/ot4562-glitch/Hanmo_develop/pull/109)·[#110](https://github.com/ot4562-glitch/Hanmo_develop/pull/110)에서 반영. Windows Chrome/Edge 원본 대기번호·Enter/복구 실기기 인수는 별도 |
+| **JS/JSDoc 이관 코드 완료, 동등성/품질 검증 잔여** | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68)·[#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69)·[#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101) | [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102) 병합으로 TS/TSX/MTS/CTS 소스 0개. 실제 사용자/운영·코드 전후 전 범위 검증은 이관 완료와 다름 |
+| **순수 코어 및 합성 회귀 존재, 실데이터/학생 UI 미연결** | [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40)·[#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42)·[#44](https://github.com/ot4562-glitch/Hanmo_develop/issues/44)·[#46](https://github.com/ot4562-glitch/Hanmo_develop/issues/46)·[#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | 근거 인덱스 #97, 검색 평가 #98, 공지 후보 추출 #99는 병합. 학교 승인 자료·독립 검수/홀드아웃·동일 스냅샷 연결/PC 확인은 아직 없음 |
+| **Supabase Draft/격리 DB 테스트만 완료** | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)·[#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65)·[#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)·[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | [PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 `main` 미병합 Draft. [PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/44982079826) Node 14/14·SQL 20/20 PASS; 실제 Supabase Free 프로젝트 설치/권한/REST·수집·운영 인수 없음 |
+| **권리·접근성·운영 승인/선택 확장 대기** | [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)·[#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72)·[#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73)·[#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74)·[#80](https://github.com/ot4562-glitch/Hanmo_develop/issues/80) | 학교 사용권·실제 QA·대외 표현 검증이 선행. 전면 UI 개편과 대체과목·시간 충돌 기능은 별도 승인 전까지 착수하지 않음 |
+
+**이 표는 이슈를 자동으로 완료/종결 처리하지 않습니다.** 개별 Issue의 체크리스트·실측 증거가 완료되었을 때만 상태를 변경하고, 설계 이슈의 과거 결정을 현재 기능으로 오해하지 않습니다.
 
 ## 실제 구현·데이터 검수·테스트는 별도 이슈
 
@@ -61,7 +73,7 @@
 | 제품 전체 PC 접근성·비지원 기기 안내 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) |
 | 실배포 라이선스·학교 자료 허용 범위 점검 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
 | Supabase Free($0) DB·API·갱신·실환경 인수 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64), [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65), [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66), [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
-| 조기 JavaScript/JSDoc 이관·4차 최종 검증 | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) |
+| **완료된 JS/JSDoc 이관의 동등성 확인·4차 최종 검증** | [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68), [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69), [#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101) |
 | 경쟁 서비스 출처/홍보 오해·학생 사용성 검증 | [#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) |
 
 새 이슈는 [agent.md](../agent.md#github-이슈-작성과-분류)의 **`[설계|구현|검증][차수][P0|P1|P2][담당 영역]`** 제목, 선행조건, 담당자, 검증 가능한 완료 기준을 따릅니다. `Issue labels` 워크플로가 제목에 맞춰 차수/우선순위/유형을 부여합니다.
