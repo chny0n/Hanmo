@@ -119,7 +119,9 @@ test('모드 타일은 원본의 어두운 명암을 유지하며 금색 광택�
  assert.match(fit,/background-color:\s*#091b29/);
  assert.match(fit,/box-shadow:\s*none/);
  assert.doesNotMatch(fit,/border-color:\s*rgba\(244,\s*199,\s*108,\s*\.64\)/);
- assert.doesNotMatch(fit,/inset 0 1px 0 rgba\(255,\s*255,\s*255,\s*\.055\)/);
+ const hover=fit.split('body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {')[1]?.split('}')[0]??'';
+ assert.match(hover,/box-shadow:\s*none/);
+ assert.doesNotMatch(hover,/inset\s+0\s+1px\s+0/);
 });
 
 test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 스타일을 사용한다',()=>{
