@@ -37,6 +37,19 @@ body.hanmo-vsugang .settingPanel{
 .settingPanel>ul li{margin-bottom:12px}
 .settingPanel .textbox{height:37px;color:#f2f5f8;background:#0f2535;border:1px solid #66849c;border-radius:7px;padding:5px 10px}
 .settingPanel .settingButton{align-self:flex-end;margin-top:20px;min-height:44px;border:0;flex:none}
+
+/* 두 개의 접속 대기 옵션은 각각 독립적으로 선택할 수 있습니다. */
+.settingPanel .waiting-setting-groups{display:grid;gap:12px;list-style:none}
+.settingPanel .waiting-setting-group{
+  display:flex;flex-wrap:wrap;align-items:center;column-gap:20px;row-gap:9px;
+  min-width:0;margin:0;padding:12px 16px;border:1px solid #57778d;
+  border-radius:8px;background:#0e2535
+}
+.settingPanel .waiting-setting-group legend{padding:0 5px;color:#f0f5fa;font-weight:600}
+.settingPanel .waiting-setting-group label{
+  display:inline-flex;align-items:center;gap:6px;min-height:32px;cursor:pointer
+}
+
 #scenario-settings{width:100%;max-width:none;margin:0;border:0;color:inherit}
 #scenario-settings[open]{display:flex;align-items:center;justify-content:center}
 #scenario-settings::backdrop{background:transparent}
