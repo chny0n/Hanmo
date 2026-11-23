@@ -33,26 +33,27 @@ test('PC 진단은 실행 전 요청이 없고 다운로드 처리량을 측정�
   await page.locator('#readiness-start').click();
   await expect(page.locator('#readiness-result')).toBeVisible({timeout:30000});
   await expect(page.locator('body')).not.toContainText(/p95/i);
-  for(const metric of ['frame','drift','latency']){
-    await expect(page.locator(`#readiness-${metric}-value`)).toContainText(/95% 이상이 \d+\.\dms 이하/);
+  for(const metric of ['frame','drift']){
+    await expect(page.locator(`#readiness-${metric}-value`)).toContainText(/95백분위수 \d+\.\dms/);
   }
   await expect(page.locator('#readiness-speed-value')).toContainText('Mbps');
   await expect(page.locator('#readiness-latency-value')).toContainText('ms');
   await expect(page.locator('#readiness-jitter-value')).toContainText('ms');
-  await expect(page.locator('#readiness-error-value')).toContainText('0/7');
+  await expect(page.locator('#readiness-error-value')).toHaveText('0/7회 실패 · 0회 제외');
   await expect(page.locator('#readiness-share')).toHaveCount(0);
   expect(requests.filter(u=>u.includes('network-probe.txt')).length).toBe(2);
   expect(requests.some(u=>/hufs\.ac\.kr/.test(u))).toBe(false);
 });
 
-test('반응속도 8회 완료 결과가 브라우저에 저장된다',async({page})=>{
+test('클릭과 Space로 반응속도 8회를 완료하면 브라우저에 저장된다',async({page})=>{
   test.setTimeout(65_000);
   await page.goto('/html/reaction-test.html');
   await page.locator('#reaction-start').click();
   for(let i=0;i<8;i++){
     await expect(page.locator('#reaction-target')).toHaveAttribute('data-phase','go',{timeout:5000});
     await page.waitForTimeout(120);
-    await page.locator('#reaction-target').click();
+    if(i%2===0)await page.locator('#reaction-target').click();
+    else await page.keyboard.press('Space');
   }
   await expect(page.locator('#reaction-result')).toBeVisible();
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('hanmo.reaction.profile.v1')));
@@ -60,10 +61,63 @@ test('반응속도 8회 완료 결과가 브라우저에 저장된다',async({pa
   expect(saved.medianMs).toBeGreaterThanOrEqual(80);
 });
 
+test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 표시한다',async({page})=>{
+  await page.route('**/data/network-probe.txt?*',route=>route.abort());
+  await page.goto('/html/readiness.html');
+  await page.locator('#readiness-start').click();
+  await expect(page.locator('#readiness-result')).toBeVisible();
+  await expect(page.locator('#readiness-frame-value')).toContainText('fps 관측');
+  await expect(page.locator('#readiness-speed-value')).toHaveText('미측정');
+  await expect(page.locator('#readiness-error-value')).toContainText('2/7회 실패');
+});
+
+test('긴 작업이 미지원이면 다른 PC 진단 결과를 계속 표시한다',async({page})=>{
+  await page.addInitScript(()=>Object.defineProperty(PerformanceObserver,'supportedEntryTypes',{value:[]}));
+  await page.goto('/html/readiness.html');
+  await page.locator('#readiness-network').uncheck();
+  await page.locator('#readiness-start').click();
+  await expect(page.locator('#readiness-task-value')).toHaveText('지원되지 않음');
+  await expect(page.locator('#readiness-frame-value')).toContainText('fps 관측');
+  await expect(page.locator('#readiness-latency-value')).toHaveText('미측정');
+});
+
+test('신호 전 입력과 탭 숨김은 반응 표본을 저장하지 않는다',async({page})=>{
+  await page.goto('/html/reaction-test.html');
+  await page.locator('#reaction-start').click();
+  await page.keyboard.press('Space');
+  await expect(page.locator('#reaction-status')).toContainText('너무 빨리');
+  await page.locator('#reaction-start').click();
+  await page.evaluate(()=>{
+    Object.defineProperty(document,'hidden',{value:true});
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect(page.locator('#reaction-status')).toContainText('탭이 숨겨져');
+  await expect(page.locator('#reaction-count')).toHaveText('0 / 8');
+  expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
+});
+
+test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=>{
+  await page.addInitScript(()=>{
+    Math.random=()=>0;
+    Storage.prototype.setItem=()=>{throw new Error('브라우저 저장 차단');};
+  });
+  await page.goto('/html/reaction-test.html');
+  await page.locator('#reaction-start').click();
+  for(let i=0;i<8;i++){
+    await expect(page.locator('#reaction-target')).toHaveAttribute('data-phase','go');
+    await page.waitForTimeout(120);
+    await page.keyboard.press('Space');
+  }
+  await expect(page.locator('#reaction-report')).toBeVisible();
+  await expect(page.locator('#reaction-status')).toContainText('저장하지 못해');
+  await expect(page.locator('#reaction-result a')).toBeHidden();
+  expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
+});
+
 test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시간으로 실행된다',async({page})=>{
   await seedProfile(page);
   await page.goto('/html/strategy-lab.html');
-  await expect(page.locator('body')).not.toContainText('가상');
+  await expect(page.locator('#strategy-input')).not.toContainText('가상');
   await expect(page.locator('#strategy-reaction')).toContainText('250ms');
   await expect(page.locator('#strategy-clock')).toContainText('시');
   await expect(page.locator('#strategy-courses tr')).toHaveCount(3);
@@ -77,10 +131,23 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-share')).toHaveCount(0);
   await page.locator('#strategy-run').click();
   await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
-  await expect(page.locator('#strategy-result')).not.toContainText('가상');
-  await expect(page.locator('#strategy-recommendation')).toContainText('신청 순서는');
-  await expect(page.locator('#strategy-recommendation')).toContainText('모든 과목 성공 확률은');
+  await expect(page.locator('#strategy-recommendation')).toContainText('추천 신청 순서');
+  await expect(page.locator('#strategy-recommendation')).toContainText('모형에서 전체 성공 추정');
+  await expect(page.locator('#strategy-setup')).toContainText(/25%.*\d+\.\d%~\d+\.\d%.*실험 시드/);
   await expect(page.locator('#strategy-input')).toBeHidden();
+});
+
+test('전략 실험은 다른 탭의 반응 프로필 등록과 삭제를 반영한다',async({page,context})=>{
+  await page.goto('/html/strategy-lab.html');
+  const measurement=await context.newPage();
+  await measurement.goto('/html/reaction-test.html');
+  await measurement.evaluate(p=>{
+    localStorage.setItem('hanmo.reaction.profile.v1',JSON.stringify({...p,measuredAt:Date.now()}));
+  },profile);
+  const summary=page.locator('#strategy-reaction');
+  await expect(summary).toContainText('250ms');
+  await measurement.evaluate(()=>localStorage.removeItem('hanmo.reaction.profile.v1'));
+  await expect(summary).toContainText('측정 결과 없음');
 });
 
 test('반응속도 기록이 없으면 결과를 임의 생성하지 않는다',async({page})=>{

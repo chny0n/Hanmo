@@ -38,7 +38,7 @@
       <div class="lab-check-grid">
         <p><strong>화면 안정성</strong><span>화면 갱신 간격·끊김·긴 작업</span></p>
         <p><strong>브라우저 부하</strong><span>타이머 지연·논리 코어·메모리 대략값</span></p>
-        <p><strong>인터넷 상태</strong><span>같은 출처 RTT·지터·다운로드 처리량</span></p>
+        <p><strong>한모 연결 상태</strong><span>정적 파일 응답·지터·다운로드 처리량</span></p>
         <p><strong>반응 정보</strong><span>별도 반응속도 테스트 연결</span></p>
       </div>
       <label class="lab-check" for="readiness-network"><input id="readiness-network" type="checkbox" checked>
@@ -58,16 +58,16 @@
         <div><dt>화면 프레임</dt><dd id="readiness-frame-value">—</dd></div>
         <div><dt>긴 작업</dt><dd id="readiness-task-value">—</dd></div>
         <div><dt>타이머 지연</dt><dd id="readiness-drift-value">—</dd></div>
-        <div><dt>연결 응답시간</dt><dd id="readiness-latency-value">—</dd></div>
+        <div><dt>한모 HTTP 응답시간</dt><dd id="readiness-latency-value">—</dd></div>
         <div><dt>연결 지터</dt><dd id="readiness-jitter-value">—</dd></div>
         <div><dt>다운로드 처리량</dt><dd id="readiness-speed-value">—</dd></div>
-        <div><dt>연결 실패</dt><dd id="readiness-error-value">—</dd></div>
+        <div><dt>요청 실패·표본 제외</dt><dd id="readiness-error-value">—</dd></div>
         <div><dt>네트워크 유형 추정</dt><dd id="readiness-connection-value">—</dd></div>
         <div><dt>논리 코어</dt><dd id="readiness-threads-value">—</dd></div>
         <div><dt>기기 메모리 대략값</dt><dd id="readiness-memory-value">—</dd></div>
         <div><dt>반응속도 테스트</dt><dd id="readiness-reaction-value">—</dd></div>
       </dl>
-      <p class="lab-footnote">정적 CDN 속도는 회선의 공인 측정값이 아니며, 실제 학교 수강신청 서버의 처리속도·성공을 예측하지 않습니다.</p>
+      <p class="lab-footnote">다운로드 처리량은 압축을 반영한 전송 본문 크기를 요청 전체 시간으로 나눈 값입니다. 브라우저 캐시와 전송 확인이 안 된 표본은 제외합니다. 지터는 연속한 응답시간 차이의 중앙값입니다. 한모 관측값은 회선 속도나 학교 서버 성능과 다를 수 있습니다.</p>
       <button id="readiness-back" class="lab-button secondary" type="button">다시 검사하기</button>
     </section>
   </main>

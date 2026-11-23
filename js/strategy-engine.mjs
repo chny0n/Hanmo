@@ -50,20 +50,28 @@ function actionTimes(s,trial){
   return times;
 }
 
-function firstFullSlot(s,trial,courseIndex,times){
-  const {capacity,rivals}=s.courses[courseIndex];
-  if(capacity>rivals)return times.length;
-  const arrivals=new Float64Array(rivals);
-  const rate=syntheticRate(courseIndex);
-  for(let k=0;k<rivals;k++)arrivals[k]=-Math.log(1-random01(s.seed,trial,courseIndex,k))/rate;
+const logFactorials=[0];
+for(let i=1;i<=200;i++)logFactorials.push(logFactorials[i-1]+Math.log(i));
 
-  for(let slot=0;slot<times.length;slot++){
-    let earlier=0;
-    for(let k=0;k<rivals;k++){
-      if(arrivals[k]<=times[slot]&&++earlier===capacity)return slot;
-    }
+// 평균에서 바깥쪽으로 향하는 꼬리를 합산해 극단적인 도착률에서도 오차를 줄입니다.
+function binomialTail(n,k,p,q){
+  const logChoose=logFactorials[n]-logFactorials[k]-logFactorials[n-k];
+  let term=Math.exp(logChoose+k*Math.log(p)+(n-k)*Math.log(q));
+  let sum=term;
+  for(let i=k;i>0;i--){
+    term*=i/(n-i+1)*(q/p);
+    sum+=term;
+    if(term<=sum*Number.EPSILON)break;
   }
-  return times.length;
+  return Math.min(1,sum);
+}
+
+function seatProbability({capacity,rivals},rate,time){
+  if(capacity>rivals)return 1;
+  const arrived=-Math.expm1(-rate*time);
+  const pending=Math.exp(-rate*time);
+  if(capacity<=rivals*arrived)return binomialTail(rivals,capacity-1,arrived,pending);
+  return 1-binomialTail(rivals,rivals-capacity,pending,arrived);
 }
 /** 비트마스크 DP로 8개 과목의 기대 가중 점수를 최대화합니다. */
 export function bestOrder(weights,probability){
@@ -89,39 +97,41 @@ export function bestOrder(weights,probability){
   }
   return order.reverse();
 }
-/** 반환되는 확률은 입력·임의 도착률로 만든 가상 실험의 빈도입니다. */
+/** 표본마다 행동시간을 뽑고, 그 시간에 자리가 남을 확률을 이항분포로 계산합니다. */
 export function simulate(raw){
   const s=validateScenario(raw),n=s.courses.length;
   const success=Array.from({length:n},()=>new Float64Array(n));
-  // 한 과목이 가득 찬 뒤의 모든 신청 위치는 실패합니다. 추천 순서도 이 값을 재사용합니다.
-  const fullSlots=new Uint8Array(s.trials*n);
+  const rates=s.courses.map((_,index)=>syntheticRate(index));
+  const timings=[];
   for(let trial=0;trial<s.trials;trial++){
     const times=actionTimes(s,trial);
+    timings.push(times);
     for(let j=0;j<n;j++){
-      const fullSlot=firstFullSlot(s,trial,j,times);
-      fullSlots[trial*n+j]=fullSlot;
-      for(let slot=0;slot<fullSlot;slot++)success[j][slot]++;
+      for(let slot=0;slot<n;slot++){
+        success[j][slot]+=seatProbability(s.courses[j],rates[j],times[slot]);
+      }
     }
   }
   const probability=success.map(row=>Array.from(row,v=>v/s.trials));
   const weights=s.courses.map(c=>n-c.rank+1);
   const order=bestOrder(weights,probability);
-  let allSucceeded=0,totalWeighted=0;
   const sum=weights.reduce((a,b)=>a+b,0);
-  for(let trial=0;trial<s.trials;trial++){
-    let earned=0,all=true;
-    for(let slot=0;slot<n;slot++){
-      const j=order[slot];
-      const ok=slot<fullSlots[trial*n+j];
-      if(ok)earned+=weights[j];else all=false;
+  const meanScore=order.reduce((score,j,slot)=>score+weights[j]*probability[j][slot],0)*100/sum;
+  const rateFactors=[0.75,1,1.25];
+  const allRates=rateFactors.map(factor=>{
+    let total=0;
+    // 같은 시도의 행동시간을 공유하므로 시도별 결합 확률을 구한 뒤 평균을 냅니다.
+    for(const times of timings){
+      total+=order.reduce((joint,j,slot)=>
+        joint*seatProbability(s.courses[j],rates[j]*factor,times[slot]),1);
     }
-    if(all)allSucceeded++;
-    totalWeighted+=100*earned/sum;
-  }
+    return total*100/s.trials;
+  });
   return {
     seed:s.seed,trials:s.trials,order:order.map(index=>s.courses[index].name),
     ranks:order.map(index=>s.courses[index].rank),
-    allRate:100*allSucceeded/s.trials,meanScore:totalWeighted/s.trials,
+    allRate:allRates[1],meanScore,
+    sensitivity:{faster:allRates[2],slower:allRates[0]},
     model:'SYNTHETIC_ONLY',
   };
 }
