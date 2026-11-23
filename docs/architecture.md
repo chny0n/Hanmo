@@ -107,6 +107,8 @@
 
 `index.html` / `html/*.html` / `css/*.css` / `js/*.js|*.mjs`의 정적 PC 웹. Node.js 22에서 `npm ci`, `npm run check`, `npx playwright install chromium`, `npm run test:e2e`로 개발/검증합니다. `scripts/stage-static.mjs`이 웹 자산과 번들, 비공식 메타를 `dist/`로 만듭니다. GitHub Pages는 정적 미리보기이며 학교 공식 서비스/실 DB가 아닙니다.
 
+공개 QA의 `dist/data/`에는 비활성 연결 설정과 검증된 합성 네트워크 파일만 둡니다. 빌드에 포함된 외부 패키지의 라이선스와 저장소 `LICENSE`는 정적 산출물에 포함합니다. Pages는 배포 직전에 원격 `main`과 후보 SHA의 일치를 확인합니다. 구판 파일이나 외부 캐시 철회는 [운영 런북](public-data-operating-decision.md)에 따릅니다.
+
 - **연습 원본 보호:** `practice.html`·`selectZone.html`/연결 JS의 BASIC/TIME/SELECT 상태·기본 SETTING·키보드/Enter·시간 측정을 보호하고, `scripts/baselines/ui-freeze.json`과 관련 CI로 승인 변경만 허용.
 - **독립 실험:** `js/readiness.mjs`, `js/reaction-page.mjs`, `js/reaction-profile.mjs`, `js/strategy-page.mjs`, `js/strategy-worker.mjs`, `js/strategy-engine.mjs`. 실제 학교 데이터 어댑터로 가상 입력을 보내지 않습니다.
 - **학사 정보/검색:** `js/academic-data-source.js`(허용 상태 표시), `js/student-notices.js`, `js/academic-unified.js`, `js/academic-calendar.js`(빌드 결과), `js/student-catalog.js`. 학사 코어는 `js/academic/core/`·`contracts/`에 남아 있으나 학생 공개 사용 여부와 구분합니다.
@@ -170,6 +172,7 @@ Draft [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 SQL·Post
 
 - **로컬/CI:** Node 22 `npm ci` → `npm run check` → Chromium Playwright. 기본 연습, 5개 기능 페이지의 제목·`i`·한모 구분선 좌표, 탭 전환·결과 PNG 버튼 제거, 전략 경계(300 허용/301 거부), 반응 프로필·Worker/정적 빌드·문서 링크를 검증합니다.
 - **실기기 미완료:** Windows Chrome/Edge, 60·120Hz, 키보드·NVDA·200% 확대, 한 화면 조작·측정 중 탭 전환/오류, 학교 자료 OFF·비공식 고지·원작 회귀 #71·#72·#134. CI 성공을 이 단계 완료로 간주하지 않습니다.
+- **설치 브라우저 자동 검증:** PowerShell에서 `$env:HANMO_BROWSER_CHANNEL='chrome'` 또는 `'msedge'`를 설정한 뒤 `npm run test:e2e`와 `npx playwright test --config tests/playwright-feature.config.mjs`를 실행합니다. 이 결과에는 브라우저 버전과 검사한 SHA를 기록합니다. NVDA·물리 입력·브라우저 실제 확대율은 별도 인수에서 확인합니다.
 - **정책·라이선스/인계:** 공식 로고/오인·학교 자료 라이선스·GPL-3.0/출처를 감사[#73]. JS/JSDoc 이관 자체는 완료됐으나 전체 기능의 동등성/운영 인수[#101]는 미완료. 원작자 `dlacked`에게 최종 인계[#125]하여 명시적 수락을 받기 전 제품 완성 선언 금지.
 - **SVG:** `docs/images/hanmo-01~04`, `hanmo-hero-hufs.svg`, `hanmo-experience-landscape.svg`, `hanmo-feature-preview.svg`, `hanmo-trust-flow.svg`는 현재 5페이지·합성/자료 OFF·4단계 인수 상태에 맞춰 갱신. 이미 정확한 BASIC 합성 분기 그림은 원래 버전 유지.
 

@@ -683,6 +683,16 @@ test('홈 NOTICE는 원본 한모의 두 문구를 5초마다 세로 순환한�
   expect(await list.evaluate(element=>element.style.bottom)).toBe('77px');
   await page.clock.fastForward(5100);
   expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
+  await list.hover();
+  await page.clock.fastForward(5100);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
+  await page.mouse.move(0,0);
+  await items.nth(0).locator('a').focus();
+  await page.clock.fastForward(5100);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
+  await items.nth(0).locator('a').blur();
+  await page.clock.fastForward(5100);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('77px');
 });
 
 test('통합 학사 정보와 강의 검색에서 불필요한 학교 홈페이지 링크를 숨긴다',async({page})=>{

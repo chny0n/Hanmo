@@ -73,6 +73,58 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
   await expect(page.locator('.result p span')).toContainText('초');
 });
 
+test('TIME은 입장 시각 전에는 막고 이후에는 TIME 결과만 저장한다',async({page})=>{
+  await page.clock.install({time:safeDate});
+  const dialogs=[];
+  page.on('dialog',dialog=>{dialogs.push(dialog.message());void dialog.accept();});
+  await setPracticeOptions(page);
+  await page.getByRole('button',{name:/TIME MODE/}).press('Enter');
+  await expect(page.locator('.practiceMode')).toContainText('TIME MODE');
+  await page.locator('.sugang').click();
+  expect(dialogs).toEqual(['수강신청 기간이 아닙니다.']);
+  await expect(page).toHaveURL(/\/html\/practice\.html$/);
+  await page.clock.runFor(10_500);
+  await page.locator('.sugang').click();
+  await expect(page).toHaveURL(/\/html\/result\.html$/);
+  await expect(page.locator('.time')).toContainText('SELECT 부분 소요 시간0.000초');
+  expect(await page.evaluate(()=>Number(localStorage.getItem('TIMEtime')))).toBeGreaterThan(0);
+});
+
+test('SELECT의 대기 취소 뒤 같은 과목을 Enter로 다시 신청할 수 있다',async({page})=>{
+  await page.clock.install({time:safeDate});
+  await page.addInitScript(()=>{Math.random=()=>0.25;});
+  const confirmation=[];
+  page.on('dialog',dialog=>{
+    if(dialog.type()==='confirm')confirmation.push(dialog.message());
+    void dialog.accept();
+  });
+  await setPracticeOptions(page);
+  await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+  await page.locator('input[name="waitingCourseYN"][value="yes"]').check();
+  await page.locator('.settingSection .settingButton').click();
+  await page.getByRole('button',{name:/SELECT MODE/}).press('Enter');
+  await expect(page.locator('.practiceMode')).toContainText('SELECT MODE');
+  await page.locator('.sugang').press('Enter');
+  await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
+
+  await page.locator('button.search').click();
+  await expect(page.locator('.waitingCount')).toHaveText('501');
+  await page.clock.runFor(4000);
+  const register=page.locator('button.register').first();
+  await register.click();
+  await expect(page.locator('.waitingCloseBtn')).toBeVisible();
+  await page.locator('.waitingCloseBtn').click();
+  await expect(register).toBeFocused();
+  await expect(page.locator('.done tr')).toHaveCount(0);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.waitingCloseBtn')).toBeVisible();
+  expect(confirmation).toEqual(Array(2).fill('모의수강신청 과목1을 수강신청 하시겠습니까?'));
+  await page.clock.runFor(4000);
+  await expect(page).toHaveURL(/\/html\/result\.html$/);
+  await expect(page.locator('.time')).toContainText('TIME 부분 소요 시간0.000초');
+  expect(await page.evaluate(()=>Number(localStorage.getItem('SELECTWaitTime')))).toBeGreaterThanOrEqual(7);
+});
+
 test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 복구를 요구하지 않는다',async({page})=>{
   await useAllowedPracticeHour(page);
   await setPracticeOptions(page);

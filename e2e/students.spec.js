@@ -26,6 +26,28 @@ test('내정보 입력·저장은 이 브라우저에만 남고 공지 화면으
   await expect(page.locator('.hanmo-profile-summary')).toContainText('경제학전공');
 });
 
+test('학사자료 OFF에서 공지·달력과 강의 검색은 외부 자료를 요청하지 않는다',async({page,baseURL})=>{
+  const offOrigin=[];
+  const origin=new URL(baseURL).origin;
+  await page.route('**/*',route=>{
+    const url=route.request().url();
+    if(new URL(url).origin===origin)return route.continue();
+    offOrigin.push(url);
+    return route.abort();
+  });
+  await page.goto('/index.html');
+  await page.getByRole('link',{name:'학사 정보'}).click();
+  await expect(page.locator('#notice-status')).toContainText('공지 자료 연결 전');
+  await expect(page.locator('#notice-query')).toBeDisabled();
+  await page.getByRole('tab',{name:'학사 달력'}).click();
+  await expect(page.getByRole('link',{name:/학교 학사일정 원문/})).toHaveAttribute('href',/^https:\/\/academic\.hufs\.ac\.kr\//);
+  await page.goto('/html/forecast.html');
+  await expect(page).toHaveURL(/\/html\/catalog\.html$/);
+  await expect(page.locator('#catalog-status')).toContainText('강의 자료 연결 전');
+  await expect(page.locator('#catalog-query')).toBeDisabled();
+  expect(offOrigin).toEqual([]);
+});
+
 test('작은 PC 창에서도 기기 판별 때문에 모바일 안내로 이동하지 않는다',async({page})=>{
   await page.setViewportSize({width:640,height:360});
   await page.goto('/html/planner.html');
