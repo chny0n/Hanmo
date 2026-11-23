@@ -68,8 +68,49 @@ async function visit(page,path){
 
 /** @param {import('@playwright/test').Page} page @param {import('@playwright/test').TestInfo} info @param {string} name */
 async function capture(page,info,name){
+  // 캡처가 레이아웃에 미친 변화와 실제 화면의 잘림을 구분할 수 있도록 전후 수치를 기록한다.
+  const geometry=()=>page.evaluate(()=>{
+    const describe=element=>{
+      if(!element)return null;
+      const rect=element.getBoundingClientRect();
+      const style=getComputedStyle(element);
+      return {
+        tag:element.tagName,id:element.id,className:element.className,
+        rect:{x:rect.x,y:rect.y,top:rect.top,right:rect.right,bottom:rect.bottom,
+          left:rect.left,width:rect.width,height:rect.height},
+        scrollHeight:element.scrollHeight,clientHeight:element.clientHeight,
+        scrollWidth:element.scrollWidth,clientWidth:element.clientWidth,
+        visible:element.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}),
+        display:style.display,visibility:style.visibility,position:style.position,
+        opacity:style.opacity,overflowX:style.overflowX,overflowY:style.overflowY,
+        height:style.height,minHeight:style.minHeight,maxHeight:style.maxHeight,
+        flex:style.flex,boxSizing:style.boxSizing,transform:style.transform,
+      };
+    };
+    return {
+      window:{innerWidth,innerHeight,scrollX,scrollY,
+        visualViewportHeight:window.visualViewport?.height??null},
+      document:describe(document.documentElement),body:describe(document.body),
+      main:describe(document.querySelector('main')),
+      footer:describe(document.querySelector('body > .hanmo-policy-footer')),
+      title:describe(document.querySelector('main h1')),
+      titleContainer:describe(document.querySelector('main .titleContainer')),
+    };
+  });
+  const before=await geometry();
   await info.attach(name,{body:await page.screenshot({fullPage:true,animations:'disabled',caret:'hide'}),
     contentType:'image/png'});
+  const after=await geometry();
+  let viewportCapture=null;
+  if(['calendar-after-1440x900','planner-after-1440x900','developer-after-1440x900'].includes(name)){
+    const viewportBefore=await geometry();
+    await info.attach(name+'-viewport',{body:await page.screenshot({fullPage:false,animations:'disabled',caret:'hide'}),
+      contentType:'image/png'});
+    viewportCapture={before:viewportBefore,after:await geometry()};
+  }
+  await info.attach(name+'-geometry.json',{
+    body:Buffer.from(JSON.stringify({before,after,viewportCapture},null,2)),contentType:'application/json',
+  });
 }
 
 /** @param {import('@playwright/test').Page} page @param {import('@playwright/test').TestInfo} info @param {string} name */
@@ -232,12 +273,16 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
     await expect(month).toHaveText('2026년 11월');
     await expect(status).toContainText('학교 일정 연결 전');
     await expect(calendar.locator('[role="cell"][data-date]')).toHaveCount(30);
+    await expect(calendar.locator('.hanmo-calendar-date').first()).toHaveCSS('padding-left','10px');
+    // FullCalendar의 월간 일정 항목이 생기지 않아 빈 날짜를 실제 학사 일정처럼 꾸미지 않는다.
+    await expect(calendar.getByRole('listitem')).toHaveCount(0);
     await expect(calendar.locator('[role="cell"] a')).toHaveCount(0);
     await captureState(page,info,'calendar-navigation-returned-today');
   });
 
-  for(const viewport of [{width:1280,height:720},{width:1920,height:1080},{width:960,height:540}]){
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900},{width:1920,height:1080},{width:960,height:540}]){
     test(viewport.width+'×'+viewport.height+'에서 가로 넘침과 핵심 콘텐츠 잘림이 없다',async({page})=>{
+      // 960×540은 1920×1080의 200% 확대에 해당하는 레이아웃 폭이며 실기기 확대 검수와 구분한다.
       test.setTimeout(90_000);
       await page.setViewportSize(viewport);
       for(const [name,path] of routes.filter(([name])=>!['practice','selectzone','forecast'].includes(name))){

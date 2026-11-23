@@ -73,13 +73,13 @@ body.hanmo-ui.hanmo-refined .hanmo-main > .hanmo-schoolmark {
   letter-spacing: -.025em;
   font-weight: 700;
 }
-body.hanmo-ui.hanmo-refined .hanmo-main > :is(.hanmo-search-controls, .hanmo-support-search) {
+body.hanmo-ui.hanmo-refined > main.hanmo-main > :is(.hanmo-search-controls, .hanmo-support-search) {
   width: 100%;
   max-width: none;
   padding: 24px 0;
   border-top: 1px solid var(--hm-line);
 }
-body.hanmo-ui.hanmo-refined .hanmo-main > :is(.hanmo-section-title, .hanmo-list, .hanmo-actions, #notice-status) {
+body.hanmo-ui.hanmo-refined > main.hanmo-main > :is(.hanmo-section-title, .hanmo-list, .hanmo-actions, #notice-status) {
   width: 100%;
   max-width: none;
   padding-inline: 0;
@@ -126,6 +126,8 @@ body.hanmo-ui.hanmo-refined .hanmo-item { padding: 20px 0; }
 
 /* 제목 옆 장식은 유지하고 조작의 빛 효과만 제거합니다. */
 .hanmo-refined :is(.hanmo-btn, .button, .hanmo-nav-inline a)::before,
+body.hanmo-refined.hanmo-ui .hanmo-btn::before,
+body.hanmo-refined.hanmo-flat-legacy .container > .button::before,
 body.hanmo-vsugang.hanmo-refined .grid > :is(div, button)::before { content: none; }
 .hanmo-refined .hm-icon {
   display: inline-block;
@@ -166,14 +168,12 @@ body.hanmo-support-page.hanmo-refined #support-result-text { font-size: 15px; wo
 }
 .hanmo-refined #calendar-view button { min-height: 40px; min-width: 40px; padding: 7px 12px; }
 .hanmo-refined #calendar-view [role="heading"][aria-level="2"] { font-size: 22px; }
-.hanmo-refined #calendar-view [role="columnheader"] { padding-block: 9px; font-weight: 600; }
+.hanmo-refined #calendar-view .hanmo-calendar-weekday { padding: 8px 10px; font-weight: 600; }
+.hanmo-refined #calendar-view .hanmo-calendar-date { padding: 8px 10px; }
 .hanmo-refined #calendar-view [role="row"][aria-label^="주 "] { flex-basis: clamp(60px, 8vh, 86px) !important; }
 .hanmo-refined #calendar-view [role="cell"][data-date] {
-  padding: 8px 10px;
-  border-right: 1px solid #294457;
-  border-bottom: 1px solid #294457;
+  box-shadow: inset -1px -1px 0 #294457;
 }
-.hanmo-refined #calendar-view [role="cell"][data-date]:last-child { border-right: 0; }
 .hanmo-refined .academic-calendar-footer { min-height: 44px; padding: 8px 0; }
 .hanmo-refined .academic-calendar-footer a { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; }
 
@@ -266,7 +266,7 @@ body.hanmo-pc-only-layout.hanmo-refined main { word-break: keep-all; overflow-wr
   body.hanmo-ui.hanmo-refined > main.hanmo-main { padding: 20px 16px 28px; }
   body.hanmo-developer.hanmo-refined .container { grid-template-columns: 1fr; }
   .hanmo-refined .hanmo-topbar .hanmo-profile-summary { max-width: 100%; }
-  .hanmo-refined #calendar-view [role="cell"][data-date] { padding: 6px; }
+  .hanmo-refined #calendar-view .hanmo-calendar-date { padding: 6px; }
   body.hanmo-home.hanmo-refined .mainNotice span { display: block; margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {

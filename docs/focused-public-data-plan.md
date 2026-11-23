@@ -28,7 +28,7 @@
 
 **직원 이메일과 대면 설명은 모두 학교 기관의 확정된 공식 입장이 아닙니다.** 내부 개발·운영 기준은 정했지만 학교의 포괄 승인이나 영구 사용권을 얻은 것으로 표현하지 않습니다. 향후 범위 확대·축소가 가능하며 `scopePolicyVersion`과 근거·검수·철회 기록을 연결합니다. 새 근거가 없으면 현행 명시 금지와 수집 제한을 유지합니다.
 
-현재는 `data/academic-source-config.json`의 **`mode: disabled`**, 실제 학교 크롤러·공개 데이터·Supabase 연결 없음 상태입니다. 공지 화면은 제한적인 제목 검색을 제공하고 달력은 FullCalendar의 빈 일정으로 동작합니다. 이 문서의 예산·보존·비교·자동 차단은 **구현할 계약**입니다.
+현재는 `data/academic-source-config.json`의 **`mode: disabled`**, 실제 학교 크롤러·공개 데이터·Supabase 연결 없음 상태입니다. 공지 화면에는 제목 검색 코드가 있으나 자료 미연결로 비활성화되어 있고, 달력은 FullCalendar의 빈 일정으로 동작합니다. 이 문서의 예산·보존·비교·자동 차단은 **구현할 계약**입니다.
 
 연결 전에는 `js/academic-data-source.js`의 구형 `instructor`·`payload.faq` 계약을 폐기하고, 허용 필드만 받는 **DTO v2**를 설계해야 합니다. `docs/references/hufs-academic-source-candidates.json`의 과거 규정·시간표 후보는 이번 기능의 승인된 출처 목록이 아닙니다.
 
