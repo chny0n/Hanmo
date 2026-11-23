@@ -371,7 +371,10 @@ test('학교 문의처는 검색어 추천만 제공하고 미검증 연락처 �
  assert.doesNotMatch(html,/<select\b|(?:tel|mailto):/);
  assert.doesNotMatch(html,/문의 주제로 검색하기|확인되지 않은 연락처 대신 검색어를 추천합니다/);
  assert.match(html,/class="hanmo-card hanmo-support-search" aria-label="문의 검색과 추천 검색어"/);
- assert.doesNotMatch(js,/02-2173|031-330|@hufs\.ac\.kr|\bfetch\s*\(/);
+ assert.doesNotMatch(js,/02-2173|031-330|@hufs\.ac\.kr/);
+ // 원문·연락처 서버 호출은 여전히 금지하며 검수된 정적 추천어 파일만 읽습니다.
+ assert.match(js,/fetch\('\.\.\/data\/support-topic-suggestions\.json'/);
+ assert.doesNotMatch(js,/fetch\(\s*['"]https?:\/\//);
  assert.match(js,/'한국외국어대학교 '\+value/);
  for(const p of ['index.html',...student.map(name=>'html/'+name+'.html'),
   'html/vsugang.html','html/developer.html','html/result.html']){

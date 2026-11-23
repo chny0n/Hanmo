@@ -373,3 +373,17 @@ test.describe('같은 날짜와 합성 상태의 전체 경로 전후 화면',()
     });
   }
 });
+
+test('학업 화면의 기능 안내와 문의처의 버튼 없는 검색을 유지한다',async({page})=>{
+  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support']){
+    await page.goto('/html/'+slug+'.html');
+    const info=page.locator('.hanmo-title-help-button');
+    await expect(info).toHaveCount(1);
+    await info.focus();
+    await expect(page.locator('.hanmo-title-help-tip')).toBeVisible();
+  }
+  await page.goto('/html/academic-support.html');
+  await expect(page.locator('#support-submit')).toHaveCount(0);
+  await page.getByRole('button',{name:'계절학기 문의'}).click();
+  await expect(page.locator('#support-result-link')).toHaveAttribute('href',/google.com\/search/);
+});
