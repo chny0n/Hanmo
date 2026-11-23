@@ -54,10 +54,11 @@ npm run check
 
 | 항목 | 인계에 첨부할 증거 |
 |---|---|
-| 소스 | 검증 당시 `main`은 `512f2985a06e0dc2787e837764ae24bfa339fdb9`였습니다. 검토 중인 구현·철회 훈련은 [Draft PR #135](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)의 [`0b35651`](https://github.com/ot4562-glitch/Hanmo_develop/commit/0b356518bc8d703a51e13a0bd99bb3be904f754c)입니다. 최종 인계 시 승인된 `main` SHA와 실제 배포 SHA를 별도로 기록합니다. |
-| 빌드와 QA | `0b35651`의 [저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45184324689/job/137725861171)와 [브라우저 QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45184324716/job/137725862270)가 통과했습니다. 인계용 빌드는 `dist/`와 생성 SHA를 함께 보관합니다. CI의 `hanmo-root-static-preview` 보관 기간은 3일입니다. |
-| Windows 접근성 | [PR 검증 기록](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)에 설치된 Chrome·Edge 자동 E2E, 실제 브라우저 200% 확대, NVDA 2026.3.1의 26개 낭독 결과가 있습니다. NVDA 기준은 `75c5e41`이며 수동 물리 입력 인수는 남아 있습니다. |
-| 정적 철회 | [철회 런북](public-data-operating-decision.md#5-긴급-철회-런북--언제든-내리기는-검증해야-함)의 로컬 훈련에서 합성 구판 URL이 재빌드 후 404로 바뀌고 활성 설정 복원은 거부됐습니다. 운영 CDN·API·DB의 철회 및 복구 확인은 남아 있습니다. |
+| 소스 | 2026-11-24에 [Draft PR #135](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)의 [`d90d5d5`](https://github.com/ot4562-glitch/Hanmo_develop/commit/d90d5d544be452b309fda4fb413513be98022e77)를 검증했습니다. 당시 비교 기준 `main`은 `512f2985a06e0dc2787e837764ae24bfa339fdb9`입니다. 최종 인계 시 승인된 `main` SHA와 실제 배포 SHA를 기록합니다. |
+| 빌드와 QA | `d90d5d5`의 [저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45269797707/job/138026253576)와 [브라우저 QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45269797742/job/138026252855)가 통과했습니다. `hanmo-root-static-preview` 보관 기간은 3일입니다. 인계할 `dist/`와 생성 SHA, 파일별 SHA-256을 함께 보관합니다. |
+| Windows 접근성 | [PR 검증 기록](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)에 Chrome·Edge 자동 E2E, 실제 브라우저 200% 확대, NVDA 2026.3.1의 26개 낭독 결과가 있습니다. 확대 시험은 `6ad1494`와 `49cad16`, NVDA 시험은 `75c5e41`을 기준으로 했습니다. 물리 키보드 인수는 남아 있습니다. |
+| 정적 철회 | [철회 런북](public-data-operating-decision.md#5-긴급-철회-런북--언제든-내리기는-검증해야-함)의 로컬 훈련에서 재빌드 후 합성 구판 URL은 404였고, 활성 설정 복원은 거부됐습니다. `d90d5d5`의 Chrome·Edge 시험에서는 새로고침과 재시도 후 철회 판본이 표시되지 않았습니다. [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에서 운영 CDN·API·DB의 철회와 복구를 확인해야 합니다. |
+| 알려진 오류 | 내정보의 ‘학번’ 오안내와 삭제 실패 시 완료 안내를 [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69)에 재현 절차와 함께 기록했습니다. 보호 파일 수정 승인 후 다시 검증합니다. |
 | 출처와 권리 | 프로젝트 [README](../README.md), [LICENSE](../LICENSE), `dist/THIRD-PARTY-NOTICES.txt`, `dist/img/lucide/LICENSE`를 전달 자료에 연결합니다. 변경 이미지 두 개의 최종 출처·권리 판단과 기존 분석·채팅 외부 요청의 출시 판단은 [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73)에서 기록합니다. |
 
 Node.js 22에서 아래 명령을 실행합니다. `check`가 정적 빌드와 철회 스모크 테스트를 포함합니다. Windows 설치 브라우저를 지정하는 방법은 [아키텍처 §9](architecture.md#9-품질-검증보호전달)에 있습니다.
