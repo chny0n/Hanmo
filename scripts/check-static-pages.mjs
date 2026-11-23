@@ -20,7 +20,7 @@ for(const name of [
   'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
-  'js/academic-support.js','css/academic-support.css','img/hanmo_color.png',
+  'js/academic-support.js','css/academic-support.css','img/hanmo_purple.png','img/favicon-purple.svg',
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',

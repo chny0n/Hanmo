@@ -415,19 +415,49 @@ test('검색형 학교 문의처는 선택식 연락처 목록 없이 추천 검
   expect(text).not.toMatch(/02-2173-|031-330-|@hufs\.ac\.kr/);
 });
 
-test('대표 favicon은 기존 한모 700x700 사진을 사용하며 합성 SVG를 쓰지 않는다',async({page})=>{
- const response=await page.request.get('/img/hanmo_color.png');
- expect(response.ok()).toBe(true);
- const png=await response.body();
+test('보라색 원본 favicon은 투명 정사각형 중앙에 550:218 비율을 유지한다',async({page})=>{
+ const raw=(await page.request.get('/img/hanmo_purple.png'));
+ const icon=(await page.request.get('/img/favicon-purple.svg'));
+ expect(raw.ok()).toBe(true);
+ expect(icon.ok()).toBe(true);
+ const png=await raw.body(),svg=await icon.text();
  expect(png.toString('ascii',1,4)).toBe('PNG');
- expect(png.readUInt32BE(16)).toBe(700);
- expect(png.readUInt32BE(20)).toBe(700);
+ expect(png.readUInt32BE(16)).toBe(550);
+ expect(png.readUInt32BE(20)).toBe(218);
+ expect(png.readUInt8(25)).toBe(6);
+ expect(svg).toContain('viewBox="0 0 550 550"');
+ expect(svg).toContain('x="0" y="166" width="550" height="218"');
+ expect(svg).toContain('data:image/png;base64,'+png.toString('base64'));
+ expect(svg).not.toMatch(/<(?:rect|path|circle|polygon)\b/);
+ await page.goto('/index.html');
+ const rendered=await page.evaluate(async()=>{
+  const img=new Image();
+  img.src='/img/favicon-purple.svg';
+  await img.decode();
+  const canvas=document.createElement('canvas');
+  canvas.width=canvas.height=128;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(img,0,0,128,128);
+  const px=ctx.getImageData(0,0,128,128).data;
+  let visible=0;
+  for(let i=3;i<px.length;i+=4)if(px[i]>16)visible++;
+  return {w:img.naturalWidth,h:img.naturalHeight,
+   cornerAlpha:px[3],topAlpha:px[(10*128+64)*4+3],
+   bottomAlpha:px[(118*128+64)*4+3],visible};
+ });
+ expect(rendered.w).toBe(rendered.h);
+ expect(rendered.cornerAlpha).toBe(0);
+ expect(rendered.topAlpha).toBe(0);
+ expect(rendered.bottomAlpha).toBe(0);
+ expect(rendered.visible).toBeGreaterThan(1500);
  for(const path of ['/index.html','/html/practice.html','/html/vsugang.html',
   '/html/selectZone.html','/html/developer.html','/html/result.html',
   '/html/academic-timeline.html','/html/catalog.html','/html/academic-calendar.html',
   '/html/academic-support.html','/html/planner.html','/html/incident-404.html','/html/pc-only.html']){
   await page.goto(path);
-  await expect(page.locator('link[rel="icon"],link[rel="shortcut icon"]')).toHaveAttribute('href',/hanmo_color\.png$/);
+  const href=page.locator('link[rel="icon"]');
+  await expect(href).toHaveAttribute('href',/favicon-purple\.svg$/);
+  await expect(href).toHaveAttribute('type','image/svg+xml');
  }
 });
 
@@ -569,4 +599,47 @@ test('가상 404 연습 세션의 오류 설명은 적색으로 표시한다',as
  const red=await page.evaluate(()=>[...document.querySelector('.hanmo-404-area').children]
   .map(x=>getComputedStyle(x).color));
  expect(red).toEqual(['rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)']);
+});
+
+test('학교 문의처는 불필요한 소개 문구 없이 바로 검색할 수 있다',async({page})=>{
+ await page.goto('/html/academic-support.html');
+ await expect(page.getByText('문의 주제로 검색하기')).toHaveCount(0);
+ await expect(page.getByText('확인되지 않은 연락처 대신 검색어를 추천합니다.')).toHaveCount(0);
+ await expect(page.locator('#support-search-title')).toHaveCount(0);
+ await expect(page.locator('.hanmo-support-search')).toHaveAttribute('aria-label','문의 검색과 추천 검색어');
+ await expect(page.locator('#support-query')).toBeVisible();
+ await expect(page.locator('#support-suggestions button')).toHaveCount(10);
+});
+
+test('개발자 소개는 세 Contributor의 입학연도를 정확히 표시한다',async({page})=>{
+ await page.goto('/html/developer.html');
+ const entries=await page.locator('.hanmo-contributor-list li').allInnerTexts();
+ expect(entries[1]).toContain("경제학전공 '24");
+ expect(entries[2]).toContain("ELLT '23");
+ expect(entries[3]).toContain("아랍어과 '23");
+});
+
+test('강의검색·학사공지 본문 폭은 문의처와 1440·1980 PC에서 같다',async({page})=>{
+ for(const width of [1440,1980]){
+  await page.setViewportSize({width,height:1080});
+  const sizes=[];
+  for(const path of ['/html/academic-support.html','/html/catalog.html','/html/academic-timeline.html']){
+   await page.goto(path);
+   const geometry=await page.evaluate(()=>{
+    const main=document.querySelector('main.hanmo-main');
+    const panel=document.querySelector('.hanmo-support-search,.hanmo-search-controls');
+    const m=main.getBoundingClientRect(),p=panel.getBoundingClientRect();
+    return {mainWidth:m.width,panelWidth:p.width,panelLeft:p.left,
+     viewport:window.innerWidth,overflow:document.documentElement.scrollWidth};
+   });
+   expect(geometry.mainWidth,path+' main width').toBeGreaterThanOrEqual(width-1);
+   expect(geometry.panelWidth,path+' panel width').toBeGreaterThan(width===1980?1600:1250);
+   expect(geometry.overflow,path+' horizontal scroll').toBeLessThanOrEqual(width+1);
+   sizes.push(geometry);
+  }
+  for(const x of sizes.slice(1)){
+   expect(Math.abs(x.panelWidth-sizes[0].panelWidth),width+' content width').toBeLessThanOrEqual(2);
+   expect(Math.abs(x.panelLeft-sizes[0].panelLeft),width+' content left').toBeLessThanOrEqual(2);
+  }
+ }
 });

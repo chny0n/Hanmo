@@ -379,6 +379,8 @@ test('학교 문의처는 검색어 추천만 제공하고 미검증 연락처 �
   assert.ok(html.includes('id="'+id+'"'),id);
  }
  assert.doesNotMatch(html,/<select\b|(?:tel|mailto):/);
+ assert.doesNotMatch(html,/문의 주제로 검색하기|확인되지 않은 연락처 대신 검색어를 추천합니다/);
+ assert.match(html,/class="hanmo-card hanmo-support-search" aria-label="문의 검색과 추천 검색어"/);
  assert.doesNotMatch(js,/02-2173|031-330|@hufs\.ac\.kr|\bfetch\s*\(/);
  assert.match(js,/'한국외국어대학교 '\+value/);
  for(const p of ['index.html',...student.map(name=>'html/'+name+'.html'),
@@ -393,23 +395,28 @@ test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정
  assert.ok(body);
  const names=[...body.matchAll(/<li><strong>([^<]+)<\/strong>/g)].map(x=>x[1]);
  assert.deepEqual(names,['ZetBe','심민성','이의상','김채윤']);
- for(const affiliation of ['한국외국어대학교 컴퓨터전자시스템공학부','한국외국어대학교 경제학전공','한국외국어대학교 ELLT','한국외국어대학교 아랍어과']){
+ for(const affiliation of ['한국외국어대학교 컴퓨터전자시스템공학부',"한국외국어대학교 경제학전공 '24","한국외국어대학교 ELLT '23","한국외국어대학교 아랍어과 '23"]){
   assert.ok(body.includes(affiliation),affiliation);
  }
  assert.ok(html.includes('class="hanmo-policy-footer"'));
 });
 
-test('기존 정사각형 한모 사진이 모든 화면의 favicon이다',()=>{
- const asset=fs.readFileSync(path.join(ROOT,'img/hanmo_color.png'));
- assert.equal(asset.toString('ascii',1,4),'PNG');
- assert.equal(asset.readUInt32BE(16),700);
- assert.equal(asset.readUInt32BE(20),700);
- assert.equal(fs.existsSync(path.join(ROOT,'img/favicon.svg')),false);
+test('보라 원본을 투명 정사각형 안에 비율대로 넣은 favicon을 전체 화면에서 사용한다',()=>{
+ const purple=fs.readFileSync(path.join(ROOT,'img/hanmo_purple.png'));
+ const svg=fs.readFileSync(path.join(ROOT,'img/favicon-purple.svg'),'utf8');
+ assert.equal(purple.toString('ascii',1,4),'PNG');
+ assert.equal(purple.readUInt32BE(16),550);
+ assert.equal(purple.readUInt32BE(20),218);
+ assert.equal(purple.readUInt8(25),6);
+ assert.match(svg,/viewBox="0 0 550 550"/);
+ assert.match(svg,/x="0" y="166" width="550" height="218"/);
+ assert.ok(svg.includes('data:image/png;base64,'+purple.toString('base64')));
+ assert.doesNotMatch(svg,/<rect\b|<path\b/);
  for(const page of ['index.html',...student.map(name=>'html/'+name+'.html'),
   'html/practice.html','html/vsugang.html','html/developer.html','html/result.html',
   'html/selectZone.html','html/incident-404.html','html/pc-only.html']){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
-  assert.match(html,/hanmo_color\.png/,page);
-  assert.doesNotMatch(html,/favicon\.svg/,page);
+  assert.match(html,/favicon-purple\.svg/,page);
+  assert.doesNotMatch(html,/rel="icon"[^>]*hanmo_color\\.png/,page);
  }
 });

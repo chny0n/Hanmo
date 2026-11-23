@@ -11,18 +11,10 @@ body.hanmo-support-page .hanmo-support-search {
   padding: 26px 30px;
   border-top: 1px solid #385367;
 }
-body.hanmo-support-page .hanmo-support-search > h3,
-body.hanmo-support-page .hanmo-support-intro,
 body.hanmo-support-page .hanmo-support-search > .hanmo-status,
 body.hanmo-support-page .hanmo-support-result,
 body.hanmo-support-page .hanmo-support-caution,
 body.hanmo-support-page .hanmo-support-home-link { grid-column: 1 / -1; }
-body.hanmo-support-page .hanmo-support-search > h3 {
-  margin: 0; font-size: 21px; color: #f6f7fa;
-}
-body.hanmo-support-page .hanmo-support-intro {
-  margin: -6px 0 4px; color: #c3d7e4; line-height: 1.65;
-}
 body.hanmo-support-page .hanmo-support-search #support-search-form {
   display: flex; flex-direction: column; justify-content: flex-start; gap: 14px;
   min-width: 0; margin: 0;

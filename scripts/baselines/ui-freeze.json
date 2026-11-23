@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 UI 파일별 SHA. 2026-11-23 긴급수정: 원본 700×700 한모 사진 favicon 복구, 기존 모의수강신청 색상·워터마크 복원, 검색 전후 표 고정, 기여자 전공·구글 검색·가상 404 색상 수정. 원본 신청 로직 보호.",
+  "purpose": "2026-11-23 긴급 UI 보정: 최신 550×218 보라 원본을 투명 정사각형 SVG favicon에 원비율로 중앙 배치; 문의처 군더더기 삭제; Contributor 입학년도; 학사 공지·강의 검색 본문 폭을 문의처와 동일하게 조정. 모의수강신청 로직 불변.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -9,7 +9,7 @@
     },
     {
       "path": "css/academic-support.css",
-      "sha": "4971c6a6f2c1e3c0c8ecb20159fa777841e482c7"
+      "sha": "7d2798ec0c7367fcd1fe83f1990856e5f9d8ec80"
     },
     {
       "path": "css/developer.css",
@@ -25,7 +25,7 @@
     },
     {
       "path": "css/hanmo-flat.css",
-      "sha": "600c17d6f5a11d12731cc97aebb3575fc9dadb92"
+      "sha": "861a4063e40ae43e50e5eb28f194aebf316749f6"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -85,55 +85,55 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "0a06a325d99dd832dc768d3dece69c72cc000992"
+      "sha": "d26dab3bc3d3fc1ba1af74ab71fd4d0e80b52722"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "da3e30a985f252dbeb2eb342fb073a186d72d0b1"
+      "sha": "fb9c58fb6b17c6b11f7483be8ba8cdcba4d04aa6"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "122ce830393ab80b7fe5269dc2dc3ef4db935c0c"
+      "sha": "0b5f0c6007108dc22140e43e225a3fcbbd128d29"
     },
     {
       "path": "html/catalog.html",
-      "sha": "51611f4eaa37d931275111ded33c289ab890b6b0"
+      "sha": "6ecb67baaf00349c7ae4403a8b0b058439ccddc7"
     },
     {
       "path": "html/developer.html",
-      "sha": "24bf0baff9ee461512db36798f6f1101c399beee"
+      "sha": "d460e36ed516f0aef05997dfca0b72f53734d839"
     },
     {
       "path": "html/forecast.html",
-      "sha": "a7823cf6b9f26bec6014bdec4fb3d80530180323"
+      "sha": "af0578f1a2ac7297e130f19697e4ed443f700d19"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "9934057cdafc86b438474996e4c267450b968689"
+      "sha": "0d9837982d528694b2b465e543759f199a714eda"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "799465c77dea68de282aacb55ab96843e87da7df"
+      "sha": "60e84b4d752357d314a307ef363544dc13013bd3"
     },
     {
       "path": "html/planner.html",
-      "sha": "2b1a44782b537f31e6ee558d6469306dbfc6241c"
+      "sha": "ded5721552921a5a9beadae8af48abd07485def9"
     },
     {
       "path": "html/practice.html",
-      "sha": "4f5d04e8ad1dc9d456d5ff2aaffe7133d4b31d18"
+      "sha": "d1e5dea37b110ca7002c95629463ab577f090023"
     },
     {
       "path": "html/result.html",
-      "sha": "85e9f5f8dbcb953d16540c46a92aadaf33f4a963"
+      "sha": "23419ae02b7227589200eb4f30e5bc83ea273ac9"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "4429fdaf1e1931fa4fa84d98ab287c6e61a3ff5f"
+      "sha": "9c3497be93620f3fba62168d209ee3a7b3c07b60"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "247fd9f4cbb85c521d2ca74ae6c7ad0e7253ae55"
+      "sha": "d16d8106186194f696c096127685a2bc13a0503d"
     },
     {
       "path": "img/background.svg",
@@ -156,8 +156,16 @@
       "sha": "c5c65390cfe101bb8ce6fab39152800493c65838"
     },
     {
+      "path": "img/favicon-purple.svg",
+      "sha": "8b5c097a6bb8d2a76d8e1bac46d730ffd4919f7f"
+    },
+    {
       "path": "img/hanmo_color.png",
       "sha": "baeb2dba7e23393844da368d51e6deb4b791fcb7"
+    },
+    {
+      "path": "img/hanmo_purple.png",
+      "sha": "3c7c89224e277953f624750c26d4e03ec6ffd9b6"
     },
     {
       "path": "img/hanmo_white.svg",
@@ -177,7 +185,7 @@
     },
     {
       "path": "index.html",
-      "sha": "71bf3ab4b7bd2aa164b566b5615304d86f4c2074"
+      "sha": "9044e3297052efd7484a6141f4c23cb276dd527f"
     },
     {
       "path": "js/academic-data-source.js",
