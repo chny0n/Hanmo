@@ -232,3 +232,21 @@ body.hanmo-ui .hanmo-field :is(input, select):not(:disabled):focus-visible {
   .hanmo-topbar .hanmo-profile-summary{min-width:0;max-width:340px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
+
+/* 학사 공지·강의 검색은 같은 제목·필터·결과 간격을 공유합니다. */
+body.hanmo-search-page .hanmo-main > .hanmo-schoolmark { margin: 12px 0 16px; }
+body.hanmo-search-page .hanmo-search-controls { margin: 0; padding: 18px 0; }
+body.hanmo-search-page .hanmo-search-controls .hanmo-search-form { margin: 0; }
+body.hanmo-search-page .hanmo-search-controls .hanmo-filter {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 18px; align-items: end;
+}
+body.hanmo-search-page .hanmo-search-controls .hanmo-form { gap: 0; }
+body.hanmo-search-page .hanmo-search-controls .hanmo-fields {
+  grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px;
+}
+body.hanmo-search-page .hanmo-section-title { margin: 22px 0 14px; }
+body.hanmo-search-page .hanmo-search-controls .hanmo-field { min-width: 0; }
+@media (max-width: 830px) {
+  body.hanmo-search-page .hanmo-search-controls :is(.hanmo-filter,.hanmo-fields) { grid-template-columns: 1fr; }
+}

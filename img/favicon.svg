@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="한모">
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#061521" stroke="#D8B46D" stroke-width="3"/>
+  <path d="M13 17H33M18 23H28" fill="none" stroke="#F5F7FA" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="23" cy="38" r="9" fill="none" stroke="#F5F7FA" stroke-width="4"/>
+  <rect x="39" y="27" width="13" height="22" rx="1" fill="none" stroke="#F5F7FA" stroke-width="4"/>
+</svg>

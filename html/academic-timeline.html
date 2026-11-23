@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="공개 학사공지 원문 링크 안내 · 비공식">
   <title>학사 공지 | 한모</title>
-  <link rel="icon" href="../img/hanmo_color.png">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="../img/favicon.svg">
   <link rel="stylesheet" href="../css/student-ui.css">
   <script src="../js/academic-data-source.js" defer></script>
   <script src="../js/student-notices.js" defer></script>
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
   <link rel="stylesheet" href="../css/hanmo-title-divider.css">
 </head>
-<body class="hanmo-ui">
+<body class="hanmo-ui hanmo-search-page">
   <a class="hanmo-skip" href="#main">본문으로 이동</a>
   <header class="hanmo-topbar">
   <a class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"><img src="../img/hanmo_white.svg" width="29" height="24" alt="">한모</a>
@@ -23,6 +23,7 @@
     <a href="./academic-timeline.html" aria-current="page">학사 공지</a>
     <a href="./catalog.html">강의 검색</a>
     <a href="./academic-calendar.html">학사 달력</a>
+    <a href="./academic-support.html">학교 문의처</a>
     <span class="hanmo-profile-summary" data-profile-summary role="status" aria-live="polite" aria-label="브라우저에 저장한 내정보, 학교 로그인 아님">내정보 미설정</span>
     <a class="hanmo-me-link" href="./planner.html">내정보</a>
   </nav>
@@ -35,8 +36,8 @@
     
   </div>
 <p class="hanmo-status" id="notice-context" role="status" aria-live="polite"></p>
-<section class="hanmo-card" aria-label="공개 공지 필터">
-  <form id="notice-filter" class="hanmo-form">
+<section class="hanmo-card hanmo-search-controls" aria-label="공개 공지 필터">
+  <form id="notice-filter" class="hanmo-form hanmo-search-form">
     <div class="hanmo-fields">
       <label class="hanmo-field" for="notice-query">검색어<input id="notice-query" type="search" placeholder="예: 이중전공, 졸업시험, 수강신청" autocomplete="off"></label>
       <label class="hanmo-field" for="notice-type">분야<select id="notice-type"><option value="ALL">전체 공지</option><option value="MAJOR">전공·이중전공</option><option value="COURSE">수강·강의</option><option value="GRAD">졸업·성적</option><option value="OTHER">기타 학사</option></select></label>
