@@ -7,6 +7,19 @@ test.beforeEach(async({page})=>{
     ?route.continue():route.abort());
 });
 
+test('정보처 서면 이후 금지된 페이지와 메뉴가 보이지 않고 비공식 고지가 남는다',async({page})=>{
+ await page.goto('/index.html');
+ await expect(page.locator('.hanmo-topbar a[href*="academic-progress"]')).toHaveCount(0);
+ await expect(page.locator('.hanmo-topbar a[href*="academic-faq"]')).toHaveCount(0);
+ await expect(page.locator('.mainNotice')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
+ for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support','planner']){
+  await page.goto('/html/'+slug+'.html');
+  await expect(page.locator('.hanmo-policy-note')).toContainText('정확한 정보는 학교 원문');
+  await expect(page.locator('.hanmo-markline')).toHaveCount(0);
+  await expect(page.locator('.hanmo-topbar')).toBeVisible();
+ }
+});
+
 test('관심강좌·전공·교양·기초 선택은 Search 전 메뉴만 바꾸고 네 화면을 캡처한다',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('deviceInfo','true');
@@ -132,112 +145,6 @@ test('BASIC 정원 마감 ON에서 임의의 한 register를 제거하고 합성
   await expect(page.locator('.result p span')).toContainText('초');
 });
 
-test('내정보로 졸업 준비를 구성하고 학점 및 여름 계절학기 기록을 저장한다',async({page})=>{
-  await page.goto('/html/planner.html');
-  await page.locator('#planner-campus').selectOption('SEOUL');
-  await page.locator('#planner-major').fill('경제학전공');
-  await page.locator('#planner-secondary-kind').selectOption('DOUBLE');
-  await page.locator('#planner-double').fill('영어학전공');
-  await page.locator('#planner-cohort').fill('2024');
-  await page.locator('#planner-profile button[type="submit"]').click();
-  await expect(page.locator('#planner-message')).toContainText('저장');
-  await page.goto('/html/academic-progress.html');
-  await expect(page.locator('#degree-context-summary'))
-    .toHaveText(/2024학번 · 서울캠퍼스 · 이중전공 · 경제학전공 · 영어학전공/);
-  await expect(page.locator('#degree-advanced')).toHaveCount(0);
-  await expect(page.locator('#record-form')).toHaveCount(0);
-  await page.locator('#degree-earned-general').fill('28');
-  await page.locator('#degree-target-general').fill('34');
-  await page.locator('#degree-earned-total').fill('80');
-  await page.locator('#degree-target-total').fill('134');
-  await page.locator('#degree-credit-form button[type="submit"]').click();
-  await expect(page.locator('#degree-results')).toContainText('6학점 남음');
-  await expect(page.locator('#degree-results')).toContainText('54학점 남음');
-  await page.reload();
-  await expect(page.locator('#degree-earned-general')).toHaveValue('28');
-  await page.locator('[data-degree-tab="requirements"]').click();
-  await expect(page.locator('#degree-guidance')).not.toContainText('확인 필요');
-  await expect(page.locator('#degree-guidance')).toContainText('졸업시험');
-
-});
-
-test('졸업 준비·학사 달력·FAQ가 표준 데스크톱 모니터에 스크롤 없이 보인다',async({page})=>{
-  mkdirSync('e2e-artifacts',{recursive:true});
-  for(const viewport of [{width:1920,height:1080}]){
-    await page.setViewportSize(viewport);
-    for(const slug of ['academic-progress','academic-calendar','academic-faq']){
-      await page.goto('/html/'+slug+'.html');
-      if(slug==='academic-progress'){
-        await expect(page.locator('.degree-credit-results')).toBeVisible();
-        await expect(page.getByRole('link',{name:'학교 공식 안내'})).toHaveCount(0);
-        await page.locator('#degree-earned-general').fill('28');
-        await page.locator('#degree-target-general').fill('34');
-        await page.locator('#degree-earned-total').fill('80');
-        await page.locator('#degree-target-total').fill('134');
-      }else if(slug==='academic-calendar'){
-        await expect(page.locator('#calendar-view [role="table"]')).toBeVisible();
-      }else{
-        await expect(page.locator('#faq-topic-list .hanmo-item')).toHaveCount(4);
-        await expect(page.locator('#faq-search-form button')).toHaveCount(0);
-      }
-      const bounds=await page.evaluate(()=>{
-        const html=document.documentElement;
-        const main=document.getElementById('main');
-        return {height:window.innerHeight,scrollHeight:html.scrollHeight,
-          width:window.innerWidth,scrollWidth:html.scrollWidth,
-          bottom:main?.getBoundingClientRect().bottom??0};
-      });
-      expect(bounds.scrollHeight,'전체 높이 '+slug+' '+viewport.height).toBeLessThanOrEqual(bounds.height+1);
-      expect(bounds.scrollWidth,'전체 너비 '+slug+' '+viewport.width).toBeLessThanOrEqual(bounds.width+1);
-      expect(bounds.bottom,'본문 끝 '+slug+' '+viewport.height).toBeLessThanOrEqual(bounds.height+1);
-      await page.screenshot({path:'e2e-artifacts/fit-'+slug+'-'+viewport.height+'.png',fullPage:false});
-    }
-  }
-});
-
-test('1920x1080 학업 페이지 제목의 ㅎㅁ 문양과 양쪽 선은 학사 공지 위치를 따른다',async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});
-  const paths=['academic-timeline','academic-calendar','academic-faq','academic-progress',
-    'academic-support','catalog','planner'];
-  let reference=null;
-  mkdirSync('e2e-artifacts',{recursive:true});
-  for(const slug of paths){
-    await page.goto('/html/'+slug+'.html');
-    const positions=await page.evaluate(()=>{
-      const rect=element=>{
-        const r=element.getBoundingClientRect();
-        return {left:r.left,top:r.top,width:r.width,height:r.height};
-      };
-      const schoolmark=document.querySelector('.hanmo-schoolmark');
-      if(!schoolmark)return null;
-      const heading=schoolmark.querySelector('h1,h2');
-      const mark=schoolmark.querySelector('.hanmo-markline');
-      const logo=mark?.querySelector('img');
-      const line=mark?.querySelector('span');
-      const bar=document.querySelector('.hanmo-topbar');
-      if(!heading||!mark||!logo||!line||!bar)return null;
-      return {heading:rect(heading),mark:rect(mark),logo:rect(logo),
-        line:rect(line),bar:rect(bar)};
-    });
-    expect(positions,'제목·로고·구분선 누락: '+slug).not.toBeNull();
-    if(reference){
-      const center=rect=>rect.left+rect.width/2;
-      expect(Math.abs(center(positions.heading)-center(reference.heading)),
-        slug+' 제목 중심').toBeLessThanOrEqual(1);
-      for(const axis of ['top','height']){
-        expect(Math.abs(positions.heading[axis]-reference.heading[axis]),
-          slug+' 제목 '+axis).toBeLessThanOrEqual(1);
-      }
-      for(const element of ['mark','logo','line','bar']){
-        for(const axis of ['left','top','width','height']){
-          expect(Math.abs(positions[element][axis]-reference[element][axis]),
-            slug+' '+element+'.'+axis).toBeLessThanOrEqual(1);
-        }
-      }
-    }else reference=positions;
-  }
-});
-
 test('1920x1080 달력은 날짜행이 접히지 않고 모든 날짜가 보인다',async({page})=>{
   await page.setViewportSize({width:1920,height:1080});
   await page.goto('/html/academic-calendar.html');
@@ -272,55 +179,16 @@ test('공식 상담 부서명이 원문 링크이고 상태 설명 문구는 표
   await page.locator('#support-topic').selectOption('SEASONAL');
   await expect(headingLink).toHaveText('글로벌 학사종합지원센터 · 계절학기');
   await expect(page.locator('#support-results a[href^="tel:"]')).toHaveText('031-330-4086');
-  await page.goto('/html/academic-faq.html');
-  await expect(page.locator('#faq-status')).toHaveCount(0);
-  await expect(page.locator('#faq-topic-list .hanmo-item')).toHaveCount(4);
-  await page.goto('/html/academic-progress.html');
-  await expect(page.locator('body')).not.toContainText('자가 입력 · 공식 판정 아님');
 });
-
-test('1920×1080에서 학점 진행 막대는 취득·남은 학점 옆에 수평 정렬된다',async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});
-  await page.goto('/html/academic-progress.html');
-  await page.locator('#degree-earned-general').fill('28');
-  await page.locator('#degree-target-general').fill('34');
-  await page.locator('#degree-earned-total').fill('80');
-  await page.locator('#degree-target-total').fill('134');
-  const geometry=await page.evaluate(()=>{
-    const rect=el=>{const r=el.getBoundingClientRect();return {x:r.left,y:r.top,w:r.width,h:r.height};};
-    return {
-      input:rect(document.getElementById('degree-credit-form')),
-      results:rect(document.querySelector('.degree-credit-results')),
-      rows:[...document.querySelectorAll('.degree-credit-row')].map(row=>({
-        name:rect(row.querySelector('.degree-credit-name')),
-        value:rect(row.querySelector('.degree-credit-values')),
-        track:rect(row.querySelector('.hanmo-progress-track')),
-      })),
-    };
-  });
-  expect(Math.abs(geometry.input.y-geometry.results.y)).toBeLessThanOrEqual(3);
-  expect(geometry.rows).toHaveLength(4); // 단일전공 기본 프로필에서는 이중전공 항목을 제외한다.
-  for(const row of geometry.rows){
-    const midpoint=rect=>rect.y+rect.h/2;
-    expect(Math.abs(midpoint(row.name)-midpoint(row.track))).toBeLessThan(5);
-    expect(Math.abs(midpoint(row.value)-midpoint(row.track))).toBeLessThan(5);
-    expect(row.track.x).toBeGreaterThan(row.value.x+row.value.w);
-    expect(row.track.w).toBeGreaterThan(60);
-  }
-  await expect(page.locator('#degree-results')).toContainText('6학점 남음');
-  await page.screenshot({path:'e2e-artifacts/degree-horizontal-bars-1920.png',fullPage:false});
-});
-
-test('상단 바의 세 학업 도구가 1920×1080에서 바로 보이는 독립 링크다',async({page})=>{
+test('상단 바로 달력과 학교 문의처를 열 수 있다',async({page})=>{
   await page.setViewportSize({width:1920,height:1080});
   const paths=['/index.html','/html/academic-timeline.html','/html/catalog.html',
-    '/html/academic-progress.html','/html/academic-calendar.html','/html/academic-faq.html',
+    '/html/academic-calendar.html',
     '/html/academic-support.html','/html/planner.html','/html/forecast.html',
     '/html/vsugang.html','/html/developer.html','/html/result.html'];
   const links=[
     {name:'학사 달력',end:'/academic-calendar.html'},
-    {name:'학사 FAQ',end:'/academic-faq.html'},
-    {name:'공식 상담',end:'/academic-support.html'}
+    {name:'학교 문의처',end:'/academic-support.html'}
   ];
   for(const path of paths){
     await page.goto(path);
@@ -340,7 +208,7 @@ test('상단 바의 세 학업 도구가 1920×1080에서 바로 보이는 독�
   }
 });
 
-test('학사 달력·FAQ·공식 상담 메뉴와 자료 미연결 강의 검색이 안전하게 작동한다',async({page})=>{
+test('학사 달력·학교 문의처·미연결 강의 전망이 안전하게 작동한다',async({page})=>{
   await page.goto('/index.html');
   await expect(page.locator('.hanmo-tools')).toHaveCount(0);
   await expect(page.getByRole('link',{name:'학사 달력'})).toBeVisible();
@@ -362,16 +230,6 @@ test('학사 달력·FAQ·공식 상담 메뉴와 자료 미연결 강의 검색
   expect(days).toBeLessThanOrEqual(42);
   await expect(page.locator('#calendar-status')).toHaveCount(0);
   await page.screenshot({path:'e2e-artifacts/academic-calendar-month.png',fullPage:false});
-  await page.goto('/html/academic-faq.html');
-  await page.locator('#faq-search-query').fill('계절학기');
-  await expect(page.locator('#faq-topic-list')).not.toContainText('확인 필요');
-  await expect(page.locator('#faq-search-form button[type="submit"]')).toHaveCount(0);
-  await expect(page.locator('#faq-topic-list .hanmo-item')).toHaveCount(1);
-  await expect(page.locator('#faq-topic-list')).toContainText('계절학기');
-  await page.locator('#faq-search-query').fill('없는 질문 123');
-  await expect(page.locator('#faq-topic-list')).toContainText('결과 없음');
-  await page.locator('#faq-search-query').clear();
-  await expect(page.locator('#faq-topic-list .hanmo-item')).toHaveCount(4);
   await page.goto('/html/academic-support.html');
   await page.locator('#support-campus').selectOption('GLOBAL');
   await page.locator('#support-topic').selectOption('SEASONAL');
