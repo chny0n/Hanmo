@@ -100,7 +100,7 @@ test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은
     await expect(page.locator('body > .hanmo-policy-footer strong')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
   }
   await page.goto('/html/catalog.html');
-  await expect(page.locator('.hanmo-schoolmark h2')).toHaveText('강의 개설 전망');
+  await expect(page.locator('.hanmo-schoolmark h2')).toHaveText('강의 검색');
   await expect(page.locator('#catalog-query')).toHaveCount(1);
   await expect(page.locator('#catalog-results')).toHaveCount(1);
   await page.goto('/html/academic-timeline.html');
@@ -113,6 +113,82 @@ test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은
     await page.goto(path);
     await expect(page.locator('.hanmo-title-divider')).toHaveCount(0);
   }
+});
+
+
+test('학사 공지·강의 검색·학교 문의처는 내비게이션 이름과 페이지 표제를 공유한다',async({page})=>{
+ for(const name of ['academic-timeline','catalog','academic-support']){
+  await page.goto('/html/'+name+'.html');
+  const current=page.locator('.hanmo-topbar a[aria-current="page"]');
+  const title=page.locator('.hanmo-schoolmark h2');
+  await expect(current).toHaveCount(1);
+  await expect(title).toHaveCount(1);
+  expect((await current.innerText()).trim()).toBe((await title.innerText()).trim());
+ }
+ await page.goto('/html/catalog.html');
+ await expect(page.locator('label[for="catalog-query"]')).toContainText('비공식 가공 자료 검색');
+ await expect(page.locator('#catalog-query')).toBeDisabled();
+});
+
+test('학업 제목 구분선과 첫 콘텐츠 간격을 동일하게 유지한다',async({page})=>{
+ const gaps=[];
+ for(const name of ['academic-timeline','catalog','academic-support','academic-calendar','planner']){
+  await page.goto('/html/'+name+'.html');
+  const gap=await page.evaluate(()=>{
+    const header=document.querySelector('.hanmo-main > .hanmo-schoolmark');
+    const divider=header?.querySelector('.hanmo-title-divider');
+    let section=header?.nextElementSibling;
+    while(section&&getComputedStyle(section).display==='none')section=section.nextElementSibling;
+    if(!divider||!section)return null;
+    return section.getBoundingClientRect().top-divider.getBoundingClientRect().bottom;
+  });
+  expect(gap,'화면 간격: '+name).not.toBeNull();
+  expect(gap,'화면 간격: '+name).toBeGreaterThanOrEqual(13);
+  expect(gap,'화면 간격: '+name).toBeLessThanOrEqual(18);
+  gaps.push(gap);
+ }
+ expect(Math.max(...gaps)-Math.min(...gaps)).toBeLessThanOrEqual(2);
+});
+
+test('학교 문의처는 선택 주제·캠퍼스별 연락처와 공식 원문을 안전하게 보여준다',async({page})=>{
+ await page.goto('/html/academic-support.html');
+ const title=page.locator('#support-results h3 a');
+ const phone=page.locator('#support-results a[href^="tel:"]');
+ const email=page.locator('#support-results a[href^="mailto:"]');
+ await expect(title).toHaveText('서울 학사종합지원센터');
+ await expect(phone).toHaveText('02-2173-2130');
+ await expect(email).toHaveText('haksa@hufs.ac.kr');
+ await expect(page.locator('#support-directory article')).toHaveCount(3);
+ await expect(page.locator('#support-results')).toContainText('서울캠퍼스 사이버관 105호');
+ await page.locator('#support-topic').selectOption('COURSE');
+ await expect(phone).toHaveText('02-2173-2108');
+ await page.locator('#support-topic').selectOption('SEASONAL');
+ await expect(phone).toHaveText('02-2173-2111');
+ await page.locator('#support-topic').selectOption('CERTIFICATE');
+ await expect(title).toHaveText('서울 원스톱서비스센터');
+ await expect(title).toHaveAttribute('href','https://dep.hufs.ac.kr/onestop/13394/subview.do');
+ await expect(phone).toHaveText('02-2173-2151');
+ await expect(email).toHaveText('onestop@hufs.ac.kr');
+ await page.locator('#support-topic').selectOption('SCHOLARSHIP');
+ await expect(title).toHaveText('서울 장학팀');
+ await expect(phone).toHaveText('02-2173-3342');
+ await page.locator('#support-campus').selectOption('GLOBAL');
+ await page.locator('#support-topic').selectOption('SEASONAL');
+ await expect(title).toHaveText('글로벌 학사종합지원센터 · 계절학기');
+ await expect(phone).toHaveText('031-330-4086');
+ await expect(email).toHaveText('haksay@hufs.ac.kr');
+ await page.locator('#support-topic').selectOption('STUDENT_CARD');
+ await expect(title).toHaveText('글로벌 원스톱서비스센터');
+ await expect(phone).toHaveText('031-330-4634');
+ await expect(page.locator('#support-directory article')).toHaveCount(3);
+ await expect(page.locator('body > .hanmo-policy-footer')).toContainText('공식 서비스가 아니며');
+});
+
+test('개발자 페이지는 네 명의 Contributor를 나란히 표기한다',async({page})=>{
+ await page.goto('/html/developer.html');
+ await expect(page.locator('.hanmo-contributor-list > li')).toHaveCount(4);
+ await expect(page.locator('.hanmo-contributor-list strong')).toHaveText(['ZetBe','심민성','이의상','김채윤']);
+ await expect(page.locator('.hanmo-contributor-list span')).toHaveCount(1);
 });
 
 test('관심강좌·전공·교양·기초 선택은 Search 전 메뉴만 바꾸고 네 화면을 캡처한다',async({page})=>{

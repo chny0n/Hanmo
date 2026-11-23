@@ -36,9 +36,12 @@
 .hanmo-title-divider--sidebar > span {
   padding: 0 10px;
 }
-/* 달력은 구분선이 추가돼도 기존 날짜 행의 높이를 유지합니다. */
-.academic-calendar-main .hanmo-schoolmark {
-  margin-bottom: 14px;
+/* 모든 학업 화면은 제목 장식과 첫 기능 영역의 거리를 동일하게 둡니다. */
+body.hanmo-ui .hanmo-main > .hanmo-schoolmark {
+  margin: 12px 0 16px;
+}
+body.hanmo-ui .hanmo-main > #notice-context:empty {
+  display: none;
 }
 body.hanmo-pc-only-layout .hanmo-title-divider {
   width: min(320px, 100%);

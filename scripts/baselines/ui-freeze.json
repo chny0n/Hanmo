@@ -1,15 +1,19 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 사용자 요청에 따라 상단 바 한모 옆 설명·강의검색의 자료 확인 전·학사공지의 중복 제목을 제거하고, practice/selectZone의 제목 장식만 예외적으로 제외. 비공식 서비스 최하단 고지·모의신청 동작은 유지.",
+  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 메뉴명·페이지 표제 일치, 학업 화면 공통 구분선 아래 여백 정렬, 공식 부서 연락처 안내 확대, Contributor 3명 추가를 사용자 요청에 맞춰 반영. 수집 OFF·학교 비공식 고지·모의신청 동작은 보호.",
   "files": [
     {
       "path": "css/academic-calendar.css",
       "sha": "e79b1e6a46d5469b108f189adbd1a6784dd78d54"
     },
     {
+      "path": "css/academic-support.css",
+      "sha": "0aba1dd1d6059e26d93ed312bf7e97dc822f8824"
+    },
+    {
       "path": "css/developer.css",
-      "sha": "6b21aae0a7f268b1b23b1b75631ff97272d92d73"
+      "sha": "dd3a656979242c8db13f45fdd4b05c449461b94e"
     },
     {
       "path": "css/gnb.css",
@@ -29,7 +33,7 @@
     },
     {
       "path": "css/hanmo-title-divider.css",
-      "sha": "7bf7542cdc3df21a5f12fa16b00cd52058740a24"
+      "sha": "8d685bdda0841c33e6d89d89cdc31d2cff2f272f"
     },
     {
       "path": "css/hanmo-tokens.css",
@@ -85,7 +89,7 @@
     },
     {
       "path": "html/academic-support.html",
-      "sha": "9c4bbb1677aca4946f2539feb1ed1393be57c493"
+      "sha": "9309c6c8f7aa554883739ba97bcc66a714dd0a57"
     },
     {
       "path": "html/academic-timeline.html",
@@ -93,11 +97,11 @@
     },
     {
       "path": "html/catalog.html",
-      "sha": "d1b79a26e112480c0a331ca66fc772e77c5fdd06"
+      "sha": "2abc814555edcf4f6b604c5f46f5867a221f05a3"
     },
     {
       "path": "html/developer.html",
-      "sha": "b9e6ed5ea9ad3e73185d919848d0fb13177a49df"
+      "sha": "2c178ba7bf6282ef7ec1d64252480df19355b77f"
     },
     {
       "path": "html/forecast.html",
@@ -181,7 +185,7 @@
     },
     {
       "path": "js/academic-support.js",
-      "sha": "0ae81b35b85bca404c3a824862d38b48cae0ea0d"
+      "sha": "260c784a1e7094d9eeb17d96cac53bba701653eb"
     },
     {
       "path": "js/capacity-settings.js",

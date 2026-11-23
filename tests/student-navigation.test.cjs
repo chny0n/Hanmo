@@ -303,7 +303,7 @@ test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 
  const css=fs.readFileSync(path.join(ROOT,'css/hanmo-title-divider.css'),'utf8');
  assert.match(css,/height: 10px;/);
  assert.match(css,/hanmo-title-divider--sidebar/);
- assert.match(css,/academic-calendar-main/);
+ assert.match(css,/body\.hanmo-ui \.hanmo-main > \.hanmo-schoolmark/);
 });
 
 
@@ -323,7 +323,7 @@ test('모든 상단 바 브랜드 옆의 불필요한 비공식 문구를 제거
 
 test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검색·결과는 유지한다',()=>{
  const catalog=fs.readFileSync(path.join(ROOT,'html/catalog.html'),'utf8');
- assert.match(catalog,/<h2>강의 개설 전망<\/h2>/);
+ assert.match(catalog,/<h2>강의 검색<\/h2>/);
  assert.doesNotMatch(catalog,/자료 확인 전/);
  for(const id of ['catalog-query','catalog-results','catalog-status'])assert.ok(catalog.includes('id="'+id+'"'));
  const notice=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
@@ -334,4 +334,67 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
   assert.ok(notice.includes('id="'+id+'"'),id);
  }
  assert.ok(notice.includes('class="hanmo-policy-footer"'));
+});
+
+
+test('학사 공지·강의 검색·학교 문의처의 메뉴명과 최상단 표제는 완전히 일치한다',()=>{
+ for(const file of ['academic-timeline','catalog','academic-support']){
+  const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
+  const menu=html.match(/<a href="\.\/[^"]+" aria-current="page">([^<]+)<\/a>/);
+  const h2=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h2>([^<]+)<\/h2>/);
+  assert.ok(menu&&h2,file);
+  assert.equal(menu[1],h2[1],file);
+ }
+ const catalog=fs.readFileSync(path.join(ROOT,'html/catalog.html'),'utf8');
+ assert.ok(catalog.includes('비공식 가공 자료 검색'));
+ assert.ok(catalog.includes('id="catalog-query"'));
+ assert.ok(catalog.includes('disabled'));
+ assert.ok(catalog.includes('본 서비스는 한국외국어대학교의 공식 서비스가 아니며'));
+});
+
+test('학사 페이지 제목 구분선과 첫 구성요소 사이의 여백은 공통 CSS로 통일된다',()=>{
+ const css=fs.readFileSync(path.join(ROOT,'css/hanmo-title-divider.css'),'utf8');
+ assert.match(css,/body\.hanmo-ui \.hanmo-main > \.hanmo-schoolmark\s*\{\s*margin:\s*12px 0 16px/);
+ assert.match(css,/body\.hanmo-ui \.hanmo-main > #notice-context:empty\s*\{\s*display:\s*none/);
+ for(const file of ['academic-timeline','catalog','academic-support','academic-calendar','planner']){
+  const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
+  assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),file);
+  assert.ok(html.includes('class="hanmo-title-divider"'),file);
+ }
+});
+
+test('학교 문의처는 캠퍼스별 공식 출처와 전화·메일·위치를 제공하고 실자료를 수집하지 않는다',()=>{
+ const html=fs.readFileSync(path.join(ROOT,'html/academic-support.html'),'utf8');
+ const js=fs.readFileSync(path.join(ROOT,'js/academic-support.js'),'utf8');
+ const css=fs.readFileSync(path.join(ROOT,'css/academic-support.css'),'utf8');
+ assert.ok(html.includes('href="../css/academic-support.css"'));
+ for(const key of ['support-campus','support-topic','support-results','support-directory']){
+  assert.ok(html.includes('id="'+key+'"'),key);
+ }
+ for(const topic of ['ACADEMIC','COURSE','SEASONAL','STATUS','MAJOR','GRADUATION',
+  'CERTIFICATE','STUDENT_CARD','SCHOLARSHIP','TEACHING']){
+  assert.ok(html.includes('value="'+topic+'"'),topic);
+ }
+ for(const host of ['https://haksa.hufs.ac.kr/haksa/index.do',
+  'https://dep.hufs.ac.kr/onestop/13394/subview.do',
+  'https://dep.hufs.ac.kr/student/12765/subview.do']){
+  assert.ok(js.includes(host),host);
+ }
+ assert.ok(js.includes("document.createElement"));
+ assert.ok(js.includes("document.createTextNode"));
+ assert.ok(js.includes("replaceChildren"));
+ assert.doesNotMatch(js,/\b(?:fetch|XMLHttpRequest|localStorage|sessionStorage)\s*\(/);
+ assert.doesNotMatch(html,/type=["']file["']|<textarea\b/i);
+ assert.ok(css.includes('.hanmo-support-directory'));
+ assert.ok(html.includes('class="hanmo-policy-footer"'));
+});
+
+test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정렬한다',()=>{
+ const html=fs.readFileSync(path.join(ROOT,'html/developer.html'),'utf8');
+ const body=html.match(/<ul class="hanmo-contributor-list">([\s\S]*?)<\/ul>/)?.[1];
+ assert.ok(body);
+ const names=[...body.matchAll(/<li><strong>([^<]+)<\/strong>/g)].map(x=>x[1]);
+ assert.deepEqual(names,['ZetBe','심민성','이의상','김채윤']);
+ assert.ok(body.includes('한국외국어대학교 컴퓨터전자시스템공학부'));
+ assert.ok(html.includes('class="hanmo-policy-footer"'));
 });

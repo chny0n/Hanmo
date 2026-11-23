@@ -52,3 +52,25 @@ hr {
 	background: #06111c;
 	color: #bdbdbd;
 }
+/* 협업자 명단에 제공되지 않은 학교·소속 정보는 표시하지 않습니다. */
+.hanmo-contributors .hanmo-contributor-list {
+  box-sizing: border-box;
+  width: min(450px, calc(100% - 36px));
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.hanmo-contributor-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(193, 213, 226, .24);
+}
+.hanmo-contributor-list li:last-child { border-bottom: 0; }
+.hanmo-contributor-list strong { font-size: 16px; font-weight: 700; color: #f5f7fa; }
+.hanmo-contributor-list span { font-size: 13px; color: #c0d4e0; }
+@media(max-width:700px) {
+  body.hanmo-flat-legacy .info { max-width: calc(100vw - 32px); width: 100%; }
+}

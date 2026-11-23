@@ -118,7 +118,7 @@ html/catalog.html ← html/forecast.html → 강의 검색·전망 화면(승인
 html/academic-progress.html → 2026-11-23 삭제 (졸업 준비/요건 페이지)
 html/academic-calendar.html → 달력 껍데기(확정 자료 없음)
 html/academic-faq.html → 2026-11-23 삭제 (학사 FAQ 페이지)
-html/academic-support.html → 공식 문의처 연결
+html/academic-support.html → 캠퍼스별 공식 문의처 연결(학사종합·원스톱·학생/장학팀 원문/전화/메일/위치, 10개 문의 분야 분류; 학사 FAQ 자체 답변 없음)
 js/academic/ → 합성 검증 코어, 일부 규정·FAQ 로직 존재(학생용 연결 금지)
 data/academic-source-config.json → mode: disabled(유지)
 
