@@ -103,7 +103,7 @@
       </section>
       <section class='f-dirt-down'>
 				<section class='titleContainer'>
-					<h1><span class='title'></span> 한모 · 비공식 모의수강신청</h1>
+					<h1><span class='title'></span> 한모 · 비공식 모의수강신청 서비스</h1>
 					<div class='hanmo'>
 						<hr>
 						<span><img class='hanmo' src='../img/hanmo_white.svg' alt=''></span>
@@ -151,8 +151,9 @@
 			</section>
 <dialog id="scenario-settings" aria-labelledby="scenario-settings-title">
   <form class="settingPanel" method="dialog">
-    <h2 id="scenario-settings-title">BASIC 모드 돌발상황</h2>
-    <div class="incident-option-group">
+    <h2 id="scenario-settings-title" class="settingTitle">BASIC 모드 돌발상황</h2>
+    <p class="settingDesc">BASIC 모드에서 발생할 가상 돌발상황을 선택합니다.</p>
+    <div class="waiting-setting-groups incident-option-group">
       <fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">
         <legend id="incident-reconnect-label">가상 404·접속 끊김</legend>
         <div class="segmented">
@@ -170,8 +171,8 @@
         <small id="incident-capacity-description">BASIC에서 임의의 한 과목이 정원 마감됩니다.</small>
       </fieldset>
     </div>
-    <div class="incident-option-actions">
-      <button class="settingButton" type="submit" value="cancel">취소</button>
+    <div class="incident-option-actions settingActions">
+      <button class="settingCancel" type="submit" value="cancel">취소</button>
       <button class="settingButton" type="submit" value="save">확인</button>
     </div>
   </form>

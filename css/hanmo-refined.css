@@ -247,15 +247,10 @@ body.hanmo-home.hanmo-refined .home-fit-content {
   transform: none;
 }
 body.hanmo-home.hanmo-refined .titleContainer h1 { font-size: clamp(22px, 2.4vw, 30px); }
-body.hanmo-home.hanmo-refined .notice { height: auto; min-height: 40px; padding: 8px 0; background: transparent; }
-body.hanmo-home.hanmo-refined .notice ul { height: auto; margin: 0; padding: 0; position: static; list-style: none; }
-body.hanmo-home.hanmo-refined .notice li { margin: 0; font-size: 13px; }
+/* 원본 NOTICE의 상대 배치·77px 세로 전환은 index.css를 따릅니다. */
+body.hanmo-home.hanmo-refined .notice { background: transparent; }
+body.hanmo-home.hanmo-refined .notice ul { padding: 0; list-style: none; }
 body.hanmo-home.hanmo-refined .notice a { color: #c4d3de; }
-body.hanmo-home.hanmo-refined .notice li:not([hidden]) { animation: hanmo-notice-reveal .2s ease-out both; }
-@keyframes hanmo-notice-reveal {
-  from { opacity: .3; transform: translateY(3px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 body.hanmo-home.hanmo-refined .mainNotice {
   border-block: 1px solid var(--hm-line);
   border-radius: 0;

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 후속 요청: NOTICE 순환 복구, 제목 서비스 문구, 세 화면 학교 홈페이지 링크·문의 생성 버튼 제거, 네 페이지 i 도움말, SETTING·돌발상황 동일한 빛. practice·selectZone 및 공통 의존성 보호.",
+  "purpose": "2026-11-23 사용자 승인 UI 수정: 원본 NOTICE 문구·세로 순환 복원, 학교 문의처 불필요 안내 제거, vsugang 제목 '서비스' 추가, SETTING·돌발상황 팝업 디자인 통일. 기존 BASIC/TIME/SELECT 동작과 비공식 고지 보존.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -33,7 +33,7 @@
     },
     {
       "path": "css/hanmo-refined.css",
-      "sha": "97a3669b2a2309bbaba1ed1ada61c32f047dfa1e"
+      "sha": "f884138ccec2df044487108c18641b347517a661"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -81,7 +81,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "cc986466608283ee79e4b3daf195ff22a9d1290a"
+      "sha": "3f46504acf154698224050b70d3bdeff30ae1c4f"
     },
     {
       "path": "css/vsugang.css",
@@ -93,7 +93,7 @@
     },
     {
       "path": "html/academic-support.html",
-      "sha": "8a59ca1475f09b12387ed0fdd304ab7f1df40f6b"
+      "sha": "cfb4d0c839368fe16204f64b465e2fa5fb48cb79"
     },
     {
       "path": "html/academic-timeline.html",
@@ -137,7 +137,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "4e91ee1dff496c862166271f95588889c42e7220"
+      "sha": "dab40b79a3194137def7f24d9440958ae89dcccc"
     },
     {
       "path": "img/background.svg",
@@ -217,7 +217,7 @@
     },
     {
       "path": "js/academic-support.js",
-      "sha": "1849467b3f2e474a75930a163ddc59eca5dcb7f2"
+      "sha": "d218972faecf27f91e19683ca8a49ec4805cbee2"
     },
     {
       "path": "js/capacity-settings.js",
@@ -241,7 +241,7 @@
     },
     {
       "path": "js/index.js",
-      "sha": "57007060f4dadbdb49a9ddfd291c5ffce1335852"
+      "sha": "7b6c2fb1149797b287860e896099df4ca17a80db"
     },
     {
       "path": "js/pc-only.js",

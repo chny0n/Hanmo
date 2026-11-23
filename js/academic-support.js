@@ -32,7 +32,7 @@
     const value=input.value.trim().replace(/[\u0000-\u001f\u007f]/g,'').slice(0,80);
     if(!value){
       result.hidden=true;
-      feedback.textContent='문의 주제를 입력하거나 예시 검색어를 선택하세요.';
+      feedback.textContent='';
       return;
     }
     const search=new URL('https://www.google.com/search');

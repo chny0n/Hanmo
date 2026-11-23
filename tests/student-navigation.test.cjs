@@ -449,3 +449,14 @@ test('3차 김채윤 담당과 최종 원개발자 인수가 문서에서 일관
  }
  assert.match(fs.readFileSync(path.join(ROOT,'README.md'),'utf8'),/<div align="center">/);
 });
+
+
+test('문의처 불필요 안내를 제거하고 모의수강신청 제목에 서비스를 표시한다',()=>{
+ const support=fs.readFileSync(path.join(ROOT,'html/academic-support.html'),'utf8');
+ const supportScript=fs.readFileSync(path.join(ROOT,'js/academic-support.js'),'utf8');
+ const menu=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+ assert.doesNotMatch(support,/문의 주제를 입력하거나 추천 검색어를 선택하세요|검색어는 한모에 저장하지 않습니다|개인정보는 입력하지 마세요/);
+ assert.doesNotMatch(supportScript,/문의 주제를 입력하거나 예시 검색어를 선택하세요/);
+ assert.match(support,/<p class="hanmo-status" id="support-feedback"[^>]*><\/p>/);
+ assert.match(menu,/한모 · 비공식 모의수강신청 서비스<\/h1>/);
+});
