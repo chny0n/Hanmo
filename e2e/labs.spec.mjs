@@ -127,3 +127,23 @@ test('일반 PC 뷰포트에서 새 페이지와 통합 학사 화면의 문서 
     }
   }
 });
+
+
+test('1280×720에서 최대 8개 과목 입력과 모든 핵심 동작이 가려지지 않는다',async({page})=>{
+  await page.setViewportSize({width:1280,height:720});
+  await seedProfile(page);
+  await page.goto('/html/strategy-lab.html');
+  for(let i=3;i<8;i++)await page.locator('#strategy-add').click();
+  await expect(page.locator('#strategy-courses tr')).toHaveCount(8);
+  const check=async selector=>{
+    const p=await page.locator(selector).evaluate(el=>{
+      const rect=el.getBoundingClientRect(),footer=document.querySelector('body > footer')?.getBoundingClientRect();
+      return {top:rect.top,bottom:rect.bottom,limit:footer?.top??window.innerHeight};
+    });
+    expect(p.top,selector).toBeGreaterThanOrEqual(0);
+    expect(p.bottom,selector).toBeLessThanOrEqual(p.limit+1);
+  };
+  await check('#strategy-courses tr:last-child');
+  await check('#strategy-run');
+  await check('#strategy-status');
+});

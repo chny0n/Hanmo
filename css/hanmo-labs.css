@@ -125,3 +125,18 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1120px,100%);max-wi
  .hanmo-lab .lab-auto-details{padding:4px 0}
  .hanmo-lab .lab-reaction-target{height:clamp(120px,24vh,190px)}
 }
+
+
+/* 낮은 데스크톱에서도 최대 8개 가상 과목의 마지막 행·실행 버튼까지 모두 보이도록 압축합니다. */
+@media(min-width:1100px) and (min-height:680px) and (max-height:820px){
+ .hanmo-strategy .lab-heading{margin-bottom:6px}
+ .hanmo-strategy .lab-panel{padding:6px 0}
+ .hanmo-strategy .lab-section-heading{margin-bottom:3px}
+ .hanmo-strategy .lab-table td{padding:2px 8px}
+ .hanmo-strategy .lab-input-table input{box-sizing:border-box;height:28px;min-height:28px;padding:2px 7px}
+ .hanmo-strategy .lab-table th{padding:4px 8px}
+ .hanmo-strategy .lab-table caption{padding-bottom:2px;font-size:11px}
+ .hanmo-strategy .lab-actions{margin:4px 0}
+ .hanmo-strategy .lab-auto-details{padding:3px 0}
+ .hanmo-strategy .lab-status{margin:4px 0}
+}
