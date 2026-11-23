@@ -59,3 +59,69 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1120px,100%);max-wi
  .hanmo-lab .lab-controls{grid-template-columns:1fr;}
  .hanmo-lab .lab-section-heading{display:block;}
 }
+
+
+/* 세 실험실은 표시 중인 단계만 보여 주어 기본 PC 뷰포트에서 스크롤을 없앱니다. */
+.hanmo-lab .lab-heading{margin-bottom:12px;max-width:none}
+.hanmo-lab .lab-heading h1{font-size:clamp(22px,2.4vw,30px);margin-bottom:4px}
+.hanmo-lab .lab-heading>p:last-child{font-size:13px;line-height:1.55;max-width:none}
+.hanmo-lab .lab-kicker{margin-bottom:5px;font-size:11px}
+.hanmo-lab .lab-panel{margin-bottom:0;padding:12px 0;border-top:1px solid #38566a}
+.hanmo-lab .lab-section-heading{margin-bottom:9px}
+.hanmo-lab .lab-section-heading h2{font-size:18px}
+.hanmo-lab .lab-actions{gap:9px;margin:10px 0}
+.hanmo-lab .lab-button{min-height:36px;padding:7px 13px}
+.hanmo-lab .lab-footnote{font-size:12px;line-height:1.55;margin:10px 0}
+.hanmo-lab .lab-summary{padding:5px 0;margin:4px 0 9px}
+.hanmo-lab .lab-table-scroll{margin-bottom:7px}
+.hanmo-lab .lab-table caption{padding-bottom:5px}
+.hanmo-lab .lab-table th{padding:5px 9px}
+.hanmo-lab .lab-table td{padding:4px 9px}
+.hanmo-lab .lab-input-table{min-width:520px}
+.hanmo-lab .lab-input-table td:nth-child(1){width:38%}
+.hanmo-lab .lab-input-table input[data-field="name"]{min-width:100px;max-width:none}
+.hanmo-lab .lab-input-table input{min-height:32px;max-width:150px;padding:4px 8px}
+.hanmo-lab .lab-text-button{padding:4px}
+.hanmo-lab .lab-auto-details{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;padding:7px 0;border-block:1px solid #284657}
+.hanmo-lab .lab-auto-details p{display:flex;align-items:center;gap:8px;margin:0;color:#c4d3de;font-size:12px}
+.hanmo-lab .lab-auto-details strong{color:#f2f5f8;font-weight:600}
+.hanmo-lab .lab-auto-details a{color:#f4c76c;font-size:12px}
+.hanmo-lab .lab-check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 18px;margin:12px 0}
+.hanmo-lab .lab-check-grid p{margin:0;padding:9px 12px;border:1px solid #38566a;display:flex;justify-content:space-between;gap:14px}
+.hanmo-lab .lab-check-grid strong{font-size:13px}
+.hanmo-lab .lab-check-grid span{color:#c4d3de;font-size:12px;text-align:right}
+.hanmo-lab .lab-check{margin:4px 0;padding:10px 12px}
+.hanmo-lab .lab-check small{font-size:11px}
+.hanmo-lab .lab-status{margin:7px 0;font-size:13px;min-height:22px}
+.hanmo-lab .lab-result-panel{margin-top:0}
+.hanmo-lab .lab-stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 20px}
+.hanmo-lab .lab-stats-grid>div{display:block;padding:9px 0;border-top:1px solid #284657}
+.hanmo-lab .lab-stats-grid dt{font-size:11px}
+.hanmo-lab .lab-stats-grid dd{font-size:13px}
+.hanmo-lab .lab-strategy-answer{max-width:80ch;margin:24px 0;color:#f4d394;font-size:clamp(18px,2.2vw,26px);font-weight:700;line-height:1.7}
+.hanmo-lab .lab-inline-link{display:inline-flex;align-items:center;text-decoration:none}
+.hanmo-lab .lab-reaction-target{display:grid;place-items:center;width:100%;height:clamp(148px,26vh,248px);
+  font:700 clamp(20px,3vw,28px) "Noto Sans KR",system-ui;cursor:pointer;
+  color:#f2f5f8;background:#123d5d;border:1px solid #4d7895;border-radius:5px}
+.hanmo-lab .lab-reaction-target[data-phase="waiting"]{background:#9c552e;color:#fff}
+.hanmo-lab .lab-reaction-target[data-phase="go"]{background:#15805b;color:#fff}
+.hanmo-lab .lab-reaction-target[data-phase="break"]{background:#123d5d}
+.hanmo-lab .lab-reaction-target:disabled{opacity:1;cursor:default}
+.hanmo-lab .lab-reaction-target:focus-visible{outline:3px solid #f4c76c;outline-offset:3px}
+.hanmo-reaction .lab-result-panel{margin-top:10px}
+.hanmo-lab .lab-panel[hidden],.hanmo-lab [hidden]{display:none!important}
+@media(min-width:1100px) and (min-height:680px){
+  body.hanmo-lab.hanmo-refined>.hanmo-main.lab-layout{
+    display:flex;flex-direction:column;justify-content:flex-start;
+    width:min(1184px,100%);padding:18px 28px 10px;max-width:1184px;min-height:0;
+  }
+}
+@media(max-height:740px){
+ .hanmo-lab .lab-heading{margin-bottom:6px}
+ .hanmo-lab .lab-panel{padding:7px 0}
+ .hanmo-lab .lab-check-grid{margin:6px 0;gap:5px 12px}
+ .hanmo-lab .lab-check-grid p{padding:5px 10px}
+ .hanmo-lab .lab-actions{margin:6px 0}
+ .hanmo-lab .lab-auto-details{padding:4px 0}
+ .hanmo-lab .lab-reaction-target{height:clamp(120px,24vh,190px)}
+}

@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 승인: 독립 PC 진단·가상 전략 실험 2개 페이지 및 홈 진입 링크 추가. 기존 BASIC/TIME/SELECT 보호와 2026-11-23 NOTICE·문의처·vsugang 디자인 기준 유지.",
+  "purpose": "2026-11-23 사용자 승인: 기존 BASIC/TIME/SELECT 보호 유지, 반응 테스트·고도 PC 진단·간소 전략·결과 PNG·학사 통합·문의처 삭제·공통 내비게이션·한 화면 레이아웃.",
   "files": [
     {
       "path": "css/academic-calendar.css",
       "sha": "e79b1e6a46d5469b108f189adbd1a6784dd78d54"
     },
     {
-      "path": "css/academic-support.css",
-      "sha": "dc5eb9ac04b134075f79b92918ec9ce2775365ff"
+      "path": "css/academic-unified.css",
+      "sha": "40583f67c4aee03889f71e73763abbfcc88c8ddc"
     },
     {
       "path": "css/developer.css",
@@ -29,7 +29,7 @@
     },
     {
       "path": "css/hanmo-labs.css",
-      "sha": "24e688fafee7cade5c8512f298067804ac1a63db"
+      "sha": "580d005e81b197ee739654396f037395eafbb2a3"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -37,7 +37,7 @@
     },
     {
       "path": "css/hanmo-refined.css",
-      "sha": "f884138ccec2df044487108c18641b347517a661"
+      "sha": "e3aca086fdc2c25c7116363ccaba1ebccdc9fbc7"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -92,28 +92,20 @@
       "sha": "d0f4e1f009d2dee1bb43641919066c1679f7589d"
     },
     {
-      "path": "html/academic-calendar.html",
-      "sha": "05b697268d948f67179f914291c83b1d02a6481b"
-    },
-    {
-      "path": "html/academic-support.html",
-      "sha": "cfb4d0c839368fe16204f64b465e2fa5fb48cb79"
-    },
-    {
       "path": "html/academic-timeline.html",
-      "sha": "6d97f3a61c1babd34e9f669600238fff92eecfe8"
+      "sha": "956dee6022bd5d0e09bb7d34eb95e5d9e6da918f"
     },
     {
       "path": "html/catalog.html",
-      "sha": "989ea913d7bbc175cef555c09e6085ac5fb6b5b6"
+      "sha": "569532eb035e745a4709730e09a01efdc1a00129"
     },
     {
       "path": "html/developer.html",
-      "sha": "135bb54fdded45bc9dedc49ee263b511770f91fc"
+      "sha": "5b0483980c3b8abcea60891e3349b819644b06bd"
     },
     {
       "path": "html/forecast.html",
-      "sha": "af0578f1a2ac7297e130f19697e4ed443f700d19"
+      "sha": "6d63e5ff2f72b08f411bd340aa5b72d98bc73974"
     },
     {
       "path": "html/incident-404.html",
@@ -125,19 +117,23 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "616cb64f4e51868ee587a6469b08f1d211e5decd"
+      "sha": "ccccc39c76949cc952162ec812e25d2484d7a889"
     },
     {
       "path": "html/practice.html",
       "sha": "d1e5dea37b110ca7002c95629463ab577f090023"
     },
     {
+      "path": "html/reaction-test.html",
+      "sha": "17eb79f94afc86a8084609ec6428a6820d652a14"
+    },
+    {
       "path": "html/readiness.html",
-      "sha": "017cfc462c70bc1691d602bc4950b233e88b8590"
+      "sha": "6ef75afaae0e2143eca21ef25d5ccaf3ef3ad75b"
     },
     {
       "path": "html/result.html",
-      "sha": "d8e4874cab63a5ac00f60dc26b1bff5be94bf1ca"
+      "sha": "5bf3c30b2999aa55d26fa05d91ea65c8c8b4ab91"
     },
     {
       "path": "html/selectZone.html",
@@ -145,11 +141,11 @@
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "c71913a477057f1c5f487648a635cd038c702b84"
+      "sha": "af3ef7d84fee377b143eafe0125e1a1d4133368b"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "dab40b79a3194137def7f24d9440958ae89dcccc"
+      "sha": "2923d58920c1475c8d01fc7a5b5ca2ed25f5ab22"
     },
     {
       "path": "img/background.svg",
@@ -221,15 +217,15 @@
     },
     {
       "path": "index.html",
-      "sha": "c7d98a487e1c9795fe3d6cf48212a6656f3b8e74"
+      "sha": "f1123b2a84e2ffc75cafa99f2b28513c1462b7a6"
     },
     {
       "path": "js/academic-data-source.js",
       "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
     },
     {
-      "path": "js/academic-support.js",
-      "sha": "d218972faecf27f91e19683ca8a49ec4805cbee2"
+      "path": "js/academic-unified.js",
+      "sha": "973533ccba4479331d95c307f6ce03fd1a7c24ca"
     },
     {
       "path": "js/capacity-settings.js",
@@ -281,7 +277,7 @@
     },
     {
       "path": "js/student-notices.js",
-      "sha": "0dff69808885c3aa65dd7110f41c5c16d10241d0"
+      "sha": "826e8d1684e4d8ebd46f5a03d87dd8d3d1f603a1"
     },
     {
       "path": "js/student-preferences.js",

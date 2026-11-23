@@ -21,7 +21,7 @@ test('내정보 입력·저장은 이 브라우저에만 남고 공지 화면으
   await page.locator('#planner-cohort').fill('2024');
   await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
   await expect(page.locator('#planner-message')).not.toBeEmpty();
-  await page.getByRole('link',{name:'학사 공지'}).click();
+  await page.getByRole('link',{name:'학사 정보'}).click();
   await expect(page).toHaveURL(/\/html\/academic-timeline\.html$/);
   await expect(page.locator('.hanmo-profile-summary')).toContainText('경제학전공');
 });

@@ -21,12 +21,17 @@ await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(build,'academic-calendar.css'),join(dist,'css','academic-calendar-vendor.css'));
 await copyFile(join(root,'data','academic-source-config.json'),
   join(dist,'data','academic-source-config.json'));
+await copyFile(join(root,'data','network-probe.txt'),
+  join(dist,'data','network-probe.txt'));
 for(const bundle of bundles)
   await copyFile(join(build,bundle),join(dist,'js',bundle));
 for(const name of [
  'index.html','html/planner.html','html/forecast.html','html/catalog.html',
- 'html/readiness.html','html/strategy-lab.html','css/hanmo-labs.css',
+ 'html/readiness.html','html/reaction-test.html','html/strategy-lab.html','css/hanmo-labs.css',
+ 'css/academic-unified.css','js/academic-unified.js',
  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-worker.mjs',
+ 'js/reaction-page.mjs','js/reaction-profile.mjs','js/practice-report-share.mjs',
+ 'data/network-probe.txt',
  'js/strategy-engine.mjs','js/lab-share.mjs',
  'html/academic-timeline.html',
  'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-forecast.js','js/student-entry.js','data/academic-source-config.json',

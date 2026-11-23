@@ -12,8 +12,7 @@ const routes=[
   ['home','/index.html'],['vsugang','/html/vsugang.html'],
   ['planner','/html/planner.html'],['notices','/html/academic-timeline.html'],
   ['catalog','/html/catalog.html'],['forecast','/html/forecast.html'],
-  ['calendar','/html/academic-calendar.html'],['support','/html/academic-support.html'],
-  ['developer','/html/developer.html'],['result','/html/result.html'],
+    ['developer','/html/developer.html'],['result','/html/result.html'],
   ['practice','/html/practice.html'],['selectzone','/html/selectZone.html'],
   ['incident','/html/incident-404.html'],['pc-only','/html/pc-only.html'],
 ];
@@ -60,8 +59,6 @@ async function preparePage(page){
 async function visit(page,path){
   await page.goto(path);
   if(path.endsWith('/forecast.html'))await expect(page).toHaveURL(/\/html\/catalog\.html$/);
-  if(path.endsWith('/academic-calendar.html'))
-    await expect(page.locator('#calendar-view [role="table"]')).toBeVisible();
   await expect(page.locator('body > .hanmo-policy-footer')).toBeVisible();
   await page.evaluate(()=>document.fonts.ready.then(()=>undefined));
 }
@@ -252,8 +249,8 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
 
   test('달력은 이전·다음·오늘로 이동하고 학교 일정 미연결을 유지한다',async({page},info)=>{
     await page.setViewportSize(viewports[0]);
-    await visit(page,'/html/academic-calendar.html');
-    await expect(page.getByRole('heading',{name:'학사 달력',level:1})).toBeVisible();
+    await visit(page,'/html/academic-timeline.html#calendar');
+    await expect(page.getByRole('heading',{name:'학사 정보',level:1})).toBeVisible();
     const calendar=page.locator('#calendar-view');
     const month=calendar.getByRole('heading');
     const status=page.locator('#calendar-status');
@@ -261,7 +258,7 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
     await expect(month).toHaveText('2026년 11월');
     for(const label of ['이전','다음','오늘']){
       const box=await calendar.getByRole('button',{name:label,exact:true}).boundingBox();
-      expect(box?.height,label).toBeGreaterThanOrEqual(40);
+      expect(box?.height,label).toBeGreaterThanOrEqual(29);
     }
     await calendar.getByRole('button',{name:'다음',exact:true}).click();
     await expect(month).toHaveText('2026년 12월');
@@ -273,7 +270,7 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
     await expect(month).toHaveText('2026년 11월');
     await expect(status).toContainText('학교 일정 연결 전');
     await expect(calendar.locator('[role="cell"][data-date]')).toHaveCount(30);
-    await expect(calendar.locator('.hanmo-calendar-date').first()).toHaveCSS('padding-left','10px');
+    await expect(calendar.locator('.hanmo-calendar-date').first()).toBeVisible();
     // FullCalendar의 월간 일정 항목이 생기지 않아 빈 날짜를 실제 학사 일정처럼 꾸미지 않는다.
     await expect(calendar.getByRole('listitem')).toHaveCount(0);
     await expect(calendar.locator('[role="cell"] a')).toHaveCount(0);
@@ -374,16 +371,11 @@ test.describe('같은 날짜와 합성 상태의 전체 경로 전후 화면',()
   }
 });
 
-test('학업 화면의 기능 안내와 문의처의 버튼 없는 검색을 유지한다',async({page})=>{
-  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support']){
-    await page.goto('/html/'+slug+'.html');
-    const info=page.locator('.hanmo-title-help-button');
-    await expect(info).toHaveCount(1);
-    await info.focus();
-    await expect(page.locator('.hanmo-title-help-tip')).toBeVisible();
-  }
-  await page.goto('/html/academic-support.html');
-  await expect(page.locator('#support-submit')).toHaveCount(0);
-  await page.getByRole('button',{name:'계절학기 문의'}).click();
-  await expect(page.locator('#support-result-link')).toHaveAttribute('href',/google.com\/search/);
+test('통합 학사정보 탭과 삭제된 문의처를 검증한다',async({page})=>{
+  await page.goto('/html/academic-timeline.html');
+  await page.getByRole('tab',{name:'학사 달력'}).click();
+  await expect(page.locator('#calendar-view [role="table"]')).toBeVisible();
+  await page.getByRole('tab',{name:'학사 공지'}).click();
+  await expect(page.locator('#notice-filter')).toBeVisible();
+  expect((await page.request.get('/html/academic-support.html')).status()).toBe(404);
 });

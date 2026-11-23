@@ -5,8 +5,8 @@ const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
-  'html/readiness.html','html/strategy-lab.html',
-  'html/catalog.html','html/academic-calendar.html','html/academic-support.html',
+  'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
+  'html/catalog.html',
 ];
 const htmlRoutes=[
   'index.html',...studentPages,
@@ -21,17 +21,19 @@ for(const name of [
   'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
-  'js/academic-support.js','css/academic-support.css','img/hanmo_purple.png','img/favicon-purple.svg',
+  'img/hanmo_purple.png','img/favicon-purple.svg',
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
-  'css/hanmo-labs.css','js/readiness.mjs','js/strategy-page.mjs',
-  'js/strategy-engine.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
+  'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js',
+  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-engine.mjs',
+  'js/strategy-worker.mjs','js/lab-share.mjs','js/reaction-profile.mjs',
+  'js/reaction-page.mjs','js/practice-report-share.mjs','data/network-probe.txt',
   'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,
 ])await must(name);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
-for(const banned of ['html/academic-progress.html','html/academic-faq.html',
+for(const banned of ['html/academic-calendar.html','html/academic-support.html','css/academic-support.css','js/academic-support.js','html/academic-progress.html','html/academic-faq.html',
  'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
  'js/degree-preparation.js','img/hufs_logo.png'])
  if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
@@ -40,9 +42,9 @@ for(const banned of ['html/academic-progress.html','html/academic-faq.html',
 const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
 const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
 const publicRoutes=[
-  '', 'html/vsugang.html','html/readiness.html','html/strategy-lab.html','html/academic-timeline.html',
-  'html/forecast.html','html/catalog.html','html/academic-calendar.html',
-  'html/academic-support.html','html/planner.html','html/developer.html'
+  '', 'html/vsugang.html','html/readiness.html','html/reaction-test.html',
+  'html/strategy-lab.html','html/academic-timeline.html',
+  'html/forecast.html','html/catalog.html','html/planner.html','html/developer.html'
 ];
 const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
 const expectedLocations=publicRoutes.map(route=>sitemapBase+route);
@@ -191,11 +193,12 @@ for(const retired of ['js/incident-options.js','css/scenario-settings.css','js/i
  'js/scenario-lab.js','js/scenario-workshop.js','js/scenario-review.js'])
  if(await exists(join(dist,retired)))throw Error('Removed prototype leaked: '+retired);
 
-const supportHTML=await readFile(join(dist,'html/academic-support.html'),'utf8');
-const supportJS=await readFile(join(dist,'js/academic-support.js'),'utf8');
-if(!supportHTML.includes('id="support-query"')||!supportHTML.includes('id="support-suggestions"')||
-   /<select\b|(?:tel|mailto):|02-2173-|031-330-/.test(supportHTML+supportJS))
-  throw Error('School contacts must remain a local query-suggestion interface without stored directory data');
+const unified=await readFile(join(dist,'html/academic-timeline.html'),'utf8');
+if(!unified.includes('id="academic-calendar-panel"')||!unified.includes('id="notice-list"')||
+   !unified.includes('id="academic-calendar-tab"'))
+  throw Error('Academic notice and calendar must share one tabbed page');
+if(!root.includes('href="./html/reaction-test.html"'))
+  throw Error('Reaction test missing from global navigation');
 for(const page of [root]){
  // 돌발상황은 모드 메뉴에서만 시작한다.
  if(page.includes('scenario-workshop.html')||page.includes('vsugang.html#scenario-settings'))

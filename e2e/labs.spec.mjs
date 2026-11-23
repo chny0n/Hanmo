@@ -1,56 +1,129 @@
 import {test,expect} from '@playwright/test';
 
-test('홈에서 진단실과 전략 실험실로 이동할 수 있다',async({page})=>{
-  await page.goto('/index.html');
-  await expect(page.getByRole('link',{name:'PC 진단'})).toHaveAttribute('href','./html/readiness.html');
-  await expect(page.getByRole('link',{name:'전략 실험'})).toHaveAttribute('href','./html/strategy-lab.html');
-  await page.getByRole('link',{name:'PC 진단'}).click();
-  await expect(page.getByRole('heading',{name:'수강신청 PC 준비도 진단'})).toBeVisible();
-});
+const profile={version:1,medianMs:250,p90Ms:420,variationMs:170,count:8,measuredAt:0};
+const seedProfile=async page=>{
+  await page.addInitScript(p=>{
+    localStorage.setItem('hanmo.reaction.profile.v1',JSON.stringify({...p,measuredAt:Date.now()}));
+  },profile);
+};
 
-test('PC 진단은 기본 상태에서 자동 측정·학교 서버 접근을 하지 않는다',async({page})=>{
-  const schoolRequests=[];
-  page.on('request',request=>{
-    if(/(?:^|[.])hufs[.]ac[.]kr/i.test(new URL(request.url()).hostname))schoolRequests.push(request.url());
-  });
-  await page.goto('/html/readiness.html');
-  await expect(page.locator('#readiness-network')).not.toBeChecked();
-  await expect(page.locator('#readiness-result')).toBeHidden();
-  await expect(page.locator('#readiness-cancel')).toBeHidden();
-  await expect(page.getByRole('button',{name:'진단 시작'})).toBeEnabled();
-  expect(schoolRequests).toEqual([]);
-});
-
-test('PC 진단은 프레임 측정 뒤 사용자 입력 10회를 집계한다',async({page})=>{
-  await page.goto('/html/readiness.html');
-  await page.locator('#readiness-start').click();
-  await expect(page.locator('#readiness-key-panel')).toBeVisible({timeout:15000});
-  await page.locator('#readiness-key-target').focus();
-  for(let index=0;index<10;index++){
-    await page.keyboard.press('Space');
-    await page.waitForTimeout(55);
+test('홈과 각 화면에서 새로운 공통 상단 바를 사용한다',async({page})=>{
+  const pages=['/index.html','/html/vsugang.html','/html/result.html',
+    '/html/readiness.html','/html/reaction-test.html',
+    '/html/strategy-lab.html','/html/academic-timeline.html','/html/catalog.html'];
+  for(const path of pages){
+    await page.goto(path);
+    const links=await page.locator('.hanmo-topbar a').allTextContents();
+    expect(links.map(t=>t.trim()),path).toEqual([
+      '한모','PC 진단','반응속도 테스트','전략 실험','학사 정보','강의 검색','내정보',
+    ]);
+    await expect(page.locator('.hanmo-topbar a[href*="academic-support"]')).toHaveCount(0);
+    await expect(page.locator('.hanmo-topbar a[href*="academic-calendar"]')).toHaveCount(0);
   }
-  await expect(page.locator('#readiness-result')).toBeVisible({timeout:10000});
-  await expect(page.locator('#readiness-frame-value')).toContainText('P95');
-  await expect(page.locator('#readiness-key-value')).toContainText('P95');
-  await expect(page.locator('#readiness-share')).toBeEnabled();
 });
 
-test('전략 실험은 Worker에서 세 전략·5개 조건을 계산한다',async({page})=>{
-  await page.goto('/html/strategy-lab.html');
-  await page.locator('select[name="trials"]').selectOption('100');
-  await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-result')).toBeVisible({timeout:30000});
-  await expect(page.locator('#strategy-results tr')).toHaveCount(3);
-  await expect(page.locator('#strategy-sensitivity li')).toHaveCount(5);
-  await expect(page.locator('#strategy-share')).toBeEnabled();
-  await expect(page.locator('#strategy-details')).toContainText('123456789');
+test('PC 진단은 실행 전 요청이 없고 다운로드 처리량을 측정한다',async({page})=>{
+  const requests=[];
+  page.on('request',request=>requests.push(request.url()));
+  await page.goto('/html/readiness.html');
+  await expect(page.locator('#readiness-result')).toBeHidden();
+  await expect(page.locator('#readiness-network')).toBeChecked();
+  expect(requests.some(u=>u.includes('network-probe.txt'))).toBe(false);
+  await page.locator('#readiness-start').click();
+  await expect(page.locator('#readiness-result')).toBeVisible({timeout:30000});
+  await expect(page.locator('#readiness-speed-value')).toContainText('Mbps');
+  await expect(page.locator('#readiness-latency-value')).toContainText('ms');
+  await expect(page.locator('#readiness-jitter-value')).toContainText('ms');
+  await expect(page.locator('#readiness-error-value')).toContainText('0/7');
+  await expect(page.locator('#readiness-share')).toHaveCount(0);
+  expect(requests.filter(u=>u.includes('network-probe.txt')).length).toBe(2);
+  expect(requests.some(u=>/hufs\.ac\.kr/.test(u))).toBe(false);
 });
 
-test('전략 실험은 직접 입력 순서의 중복을 거부한다',async({page})=>{
+test('반응속도 8회 완료 결과가 브라우저에 저장된다',async({page})=>{
+  test.setTimeout(65_000);
+  await page.goto('/html/reaction-test.html');
+  await page.locator('#reaction-start').click();
+  for(let i=0;i<8;i++){
+    await expect(page.locator('#reaction-target')).toHaveAttribute('data-phase','go',{timeout:5000});
+    await page.waitForTimeout(120);
+    await page.locator('#reaction-target').click();
+  }
+  await expect(page.locator('#reaction-result')).toBeVisible();
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('hanmo.reaction.profile.v1')));
+  expect(saved.count).toBe(8);
+  expect(saved.medianMs).toBeGreaterThanOrEqual(80);
+});
+
+test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시간으로 실행된다',async({page})=>{
+  await seedProfile(page);
   await page.goto('/html/strategy-lab.html');
-  await page.getByRole('spinbutton',{name:'B 직접 선택 순서'}).fill('1');
+  await expect(page.locator('#strategy-reaction')).toContainText('250ms');
+  await expect(page.locator('#strategy-clock')).toContainText('시');
+  await expect(page.locator('#strategy-courses tr')).toHaveCount(3);
+  await expect(page.locator('#strategy-courses input')).toHaveCount(12);
+  await expect(page.locator('#strategy-form input[name="seed"], #strategy-form input[name="startDelay"], #strategy-form input[name="actionInterval"]')).toHaveCount(0);
+  await expect(page.locator('#strategy-share')).toHaveCount(0);
   await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-status')).toContainText('중복');
+  await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
+  await expect(page.locator('#strategy-recommendation')).toContainText('신청 순서는');
+  await expect(page.locator('#strategy-recommendation')).toContainText('모든 과목 성공 확률은');
+  await expect(page.locator('#strategy-input')).toBeHidden();
+});
+
+test('반응속도 기록이 없으면 결과를 임의 생성하지 않는다',async({page})=>{
+  await page.goto('/html/strategy-lab.html');
+  await page.locator('#strategy-run').click();
+  await expect(page.locator('#strategy-status')).toContainText('반응속도 테스트를 먼저');
   await expect(page.locator('#strategy-result')).toBeHidden();
+});
+
+test('학사 공지와 학사 달력은 한 URL의 탭으로 전환된다',async({page})=>{
+  await page.goto('/html/academic-timeline.html');
+  await expect(page.getByRole('tab',{name:'학사 공지'})).toHaveAttribute('aria-selected','true');
+  await page.getByRole('tab',{name:'학사 달력'}).click();
+  await expect(page.locator('#academic-calendar-panel')).toBeVisible();
+  await expect(page.locator('#calendar-view [role="table"]')).toBeVisible();
+  await expect(page.locator('#academic-notice-panel')).toBeHidden();
+  await page.getByRole('tab',{name:'학사 공지'}).click();
+  await expect(page.locator('#academic-notice-panel')).toBeVisible();
+  expect((await page.request.get('/html/academic-support.html')).status()).toBe(404);
+  expect((await page.request.get('/html/academic-calendar.html')).status()).toBe(404);
+});
+
+test('연습 결과에서 모드와 옵션을 포함한 PNG 파일을 저장한다',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('practiceSetter','1');
+    localStorage.setItem('psubjectValue','3');
+    localStorage.setItem('subjectValue','2');
+    localStorage.setItem('waitingValue','yes');
+    localStorage.setItem('waitingEntryValue','no');
+    localStorage.setItem('TIMEtime','1.222');
+    localStorage.setItem('SELECTtime','3.444');
+    localStorage.setItem('SELECTWaitTime','0.100');
+    sessionStorage.setItem('hanmo.synthetic404.selection.v1','yes');
+    sessionStorage.setItem('hanmo.syntheticCapacity.selection.v1','no');
+  });
+  await page.goto('/html/result.html');
+  const download=page.waitForEvent('download');
+  await page.locator('#practice-report-save').click();
+  const file=await download;
+  expect(file.suggestedFilename()).toBe('hanmo-practice-result.png');
+});
+
+test('일반 PC 뷰포트에서 새 페이지와 통합 학사 화면의 문서 스크롤이 없다',async({page})=>{
+  for(const viewport of [{width:1440,height:900},{width:1280,height:720}]){
+    await page.setViewportSize(viewport);
+    for(const route of ['/html/readiness.html','/html/reaction-test.html',
+      '/html/strategy-lab.html','/html/academic-timeline.html']){
+      await page.goto(route);
+      const sizes=await page.evaluate(()=>({
+        document:document.documentElement.scrollHeight,viewport:document.documentElement.clientHeight,
+        main:document.querySelector('main')?.getBoundingClientRect().bottom,
+        footer:document.querySelector('body > footer')?.getBoundingClientRect().top,
+      }));
+      expect(sizes.document,route).toBeLessThanOrEqual(sizes.viewport+2);
+      expect(sizes.main,route).toBeLessThanOrEqual(sizes.footer+1);
+    }
+  }
 });
