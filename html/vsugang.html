@@ -13,14 +13,15 @@
 		<title>한모 - 메뉴</title>
 		<meta charset='UTF-8'>
 		<meta name="description" content="한국외대 재학생을 위한 모의수강신청 사이트">
-		<meta name="keyword" content="한모, 한국외국어대학교 모의수강신청, HUFS, HUFS수강연습, 외대수강연습, HUFS연습, 외대연습, 수강연습, 한국외대, 한국외대 수강신청, 한국외대 수강신청 연습, 수강신청 연습, 한국외국어대학교, 외대, 외대 수강신청, 외대 수강신청 연습, 수강신청, 수강신청 모의연습, 한국외대 수강신청 모의연습, 한국외대 수강신청 연습, 외대 수강신청 모의연습, sugangpractice, vsugangpractice, 한국외국어대학교 수강신청 모의연습">
+		<meta name="keyword" content="한모, HUFS, HUFS수강연습, 외대수강연습, HUFS연습, 외대연습, 수강연습, 한국외대, 한국외대 수강신청, 한국외대 수강신청 연습, 수강신청 연습, 한국외국어대학교, 외대, 외대 수강신청, 외대 수강신청 연습, 수강신청, 수강신청 모의연습, 한국외대 수강신청 모의연습, 한국외대 수강신청 연습, 외대 수강신청 모의연습, sugangpractice, vsugangpractice, 한국외국어대학교 수강신청 모의연습">
         <meta name="viewpo rt" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-		<link href="../img/hanmo_color.png" rel="shortcut icon" type="image/x-icon">
+		<link href="../img/hanmo_color.png" rel="icon" type="image/png">
 		<link href="../css/gnb.css" rel="stylesheet" type="text/css">
 		<link href="../css/vsugang.css" rel="stylesheet" type="text/css">
 		<link href="../css/layout.css" rel="stylesheet" type="text/css">
 		<link href="../css/normalize.css" rel="stylesheet" type="text/css">
 		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+		<link href="../css/disclaimer.css" rel="stylesheet" type="text/css">
 	</head>
     <body>
 		<script>
@@ -30,6 +31,7 @@
             "pluginKey": "a11b52a2-f14b-4ee3-9f5a-5a5c3f5f413d"
             });
         </script>
+		<aside class='disclaimer'>한모는 한국외국어대학교의 공식 서비스가 아닌 비공식 수강신청 연습 사이트예요. 실제 수강신청 일정과 절차는 <a href='https://hufs.ac.kr/' target='_blank' rel='noopener'>학교 공지</a>를 확인해 주세요.</aside>
 		<header>
 			<section class='deviceCheck'>
 				<ul class='deviceCheckList'>
@@ -48,34 +50,43 @@
 		</header>
 		<main>
 			<section class='settingSection'>
-				<div class='settingPanel'>
-					<ul>
-						관심강좌에 담은 과목 개수
-						<li><input class='textbox psugangVal' type='textbox'></li>
-						수강신청할 과목 개수
-						<li><input class='textbox vsugangVal' type='textbox'></li>
-						'접속 대기 시간' 활성화 여부
-						<li>
-							<fieldset>
-								<label>
-									<input type='radio' name='waitingYN' value='yes' checked />
-									<span>예(권장)</span>
-								</label>
-								<label>
-									<input type='radio' name='waitingYN' value='no' class='no' />
-									<span>아니오</span>
-								</label>
-							</fieldset>
-						</li>
-					</ul>
-					<div class='settingButton' onclick='getSettingValue()'>
-						확인
+				<form class='settingPanel' onsubmit='getSettingValue(); return false;'>
+					<h2 class='settingTitle'>연습 설정</h2>
+					<p class='settingDesc'>BASIC MODE와 SELECT MODE에서 사용할 과목 수를 정해 주세요.</p>
+
+					<label class='settingField'>
+						<span class='settingLabel'>관심강좌에 담은 과목 개수</span>
+						<input class='textbox psugangVal' type='number' min='1' max='15' step='1' inputmode='numeric' placeholder='1 ~ 15'>
+					</label>
+
+					<label class='settingField'>
+						<span class='settingLabel'>수강신청할 과목 개수</span>
+						<input class='textbox vsugangVal' type='number' min='1' max='15' step='1' inputmode='numeric' placeholder='관심강좌 개수 이하'>
+					</label>
+
+					<fieldset class='settingField'>
+						<legend class='settingLabel'>'접속 대기 시간' 활성화 여부</legend>
+						<div class='segmented'>
+							<label>
+								<input type='radio' name='waitingYN' value='yes' checked />
+								<span>예 (권장)</span>
+							</label>
+							<label>
+								<input type='radio' name='waitingYN' value='no' class='no' />
+								<span>아니오</span>
+							</label>
+						</div>
+					</fieldset>
+
+					<div class='settingActions'>
+						<button type='button' class='settingCancel' onclick='closeSettingPanel()'>닫기</button>
+						<button type='submit' class='settingButton'>확인</button>
 					</div>
-				</div>
+				</form>
 			</section>
 			<section class='f-dirt-down'>
 				<section class='titleContainer' onclick='location.href="/"'>
-					<h1><span class='title'></span> 한국외국어대학교 모의수강신청</h1>
+					<h1><span class='title'></span> 모의수강신청</h1>
 					<div class='hanmo'>
 						<hr>
 						<span><img class='hanmo' src='../img/hanmo_white.svg'></span>
@@ -115,12 +126,6 @@
 							<p class='printValue'>설정 값을 확인해주세요.</p>
 						</div>
 					</div>
-				</section>
-			</section>
-			<section class='f-dirt-up'>
-				<section class='adfit'>
-					<ins class="kakao_ad_area" style="display:none;" data-ad-unit = "DAN-b3RfXepcKF3cMeyf" data-ad-width = "728" data-ad-height = "90"></ins>
-					<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
 				</section>
 			</section>
 		</main>

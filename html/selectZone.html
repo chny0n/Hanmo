@@ -13,11 +13,12 @@
         <title>한모 - 모의수강신청</title>
         <meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-		<link href="../img/hanmo_color.png" rel="shortcut icon" type="image/x-icon">
+		<link href="../img/hanmo_color.png" rel="icon" type="image/png">
 		<link href="../css/practice.css" rel="stylesheet" type="text/css">
 		<link href="../css/normalize.css" rel="stylesheet" type="text/css">
     	<link href="../css/gnb.css" rel="stylesheet" type="text/css">
 		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    	<link href="../css/disclaimer.css" rel="stylesheet" type="text/css">
     </head>
     <body>
 		<script>
@@ -27,6 +28,7 @@
             "pluginKey": "a11b52a2-f14b-4ee3-9f5a-5a5c3f5f413d"
             });
         </script>
+		<aside class='disclaimer'>한모는 한국외국어대학교의 공식 서비스가 아닌 비공식 수강신청 연습 사이트예요. 실제 수강신청 일정과 절차는 <a href='https://hufs.ac.kr/' target='_blank' rel='noopener'>학교 공지</a>를 확인해 주세요.</aside>
 		<header>
 			<section class='deviceCheck'>
 				<ul class='deviceCheckList'>
@@ -45,12 +47,13 @@
 		</header>
         <div class="half">
 			<section class='waitingArea unvisible'></section>
-            <nav class="navigation"> <!--화면의 왼쪽 메뉴에 해당, HUFS Blue(위)과 HUFS GOLD(아래) 나눔(display: grid)-->
-                <div class="userInfo"> <!--HUFS Blue-->
+            <nav class="navigation"> <!--화면의 왼쪽 메뉴에 해당, 위(userInfo)와 아래(navButton) 나눔-->
+                <div class="userInfo">
                     <h1><span class='title'></span> 모의수강신청</h1>
 					<p class='practiceMode'></p>
+					<p class='practiceBadge'>모의수강신청 중<small>실제 수강신청 시스템이 아니에요</small></p>
                 </div>
-                <div class="navButton"> <!--HUFS GOLD부분-->
+                <div class="navButton">
                     <button onclick="location.href='vsugang.html'">메인 페이지</button>
                     <button class="noticeButton" onclick="location.href='practice.html'">Notice</button>
                     <button id="sugang" onclick="location.href='#'">수강신청 및 수정/삭제</button>
@@ -73,7 +76,7 @@
 					<section class='vsugangTable'>
 						<div class='waiting unvisible'>
 							<img class='waitingLogo' src='../img/hanmo_color.png'/>
-							<h3 class='waitingTitle'>한국외국어대학교 모의수강신청</h3>
+							<h3 class='waitingTitle'>한모</h3>
 							<hr class='waitingDivider' />
 							<p class='waitingLabel'>내 앞의 대기자 수</p>
 							<p class='waitingCount'>0</p>

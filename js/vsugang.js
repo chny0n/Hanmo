@@ -63,4 +63,15 @@ function openSettingPanel() {
 	
 	psugangInput.value = localStorage.getItem('psubjectValue');
 	vsugangInput.value = localStorage.getItem('subjectValue');
+
+	// 이전에 저장한 '접속 대기 시간' 선택값 복원
+	const savedWaiting = localStorage.getItem('waitingValue');
+	const waitingRadio = document.querySelector(`input[name="waitingYN"][value="${savedWaiting}"]`);
+	if (waitingRadio) {
+		waitingRadio.checked = true;
+	}
+}
+
+function closeSettingPanel() {
+	settingSection.style.display = 'none';
 }

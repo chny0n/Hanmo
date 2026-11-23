@@ -28,10 +28,10 @@ for (var i = 1; i <= Number(psubjectValue); i++){
 		<td>연습</td>
 		<td>H00000000</td>
 		<td></td>
-		<td>한국외국어대학교 모의수강신청${i}</td>
+		<td>모의수강신청 과목${i}</td>
 		<td>1</td>
 		<td>1</td>
-		<td>Hankuk University of F.S. Professor ${i}</td>
+		<td>모의수강신청 교수${i}</td>
 		<td>월 1 2 3 ( )</td>
 		<td>0 / 100</td>
 		<td><input type="checkbox"></td>
@@ -140,7 +140,7 @@ function saveSugang(val) {
 	waiting.style.display = 'none';
 	waitingArea.style.display = 'none';
 	if (rc[val-1] === true) {
-		alert('201 : 이미 신청된 교과목을 신청하였습니다.\n 다시확인하시고 신청해 주십시오.')
+		alert('이미 신청된 교과목을 신청하였습니다.\n다시 확인하시고 신청해 주십시오.')
 	} else {
 		alert('수강신청이 저장완료되었습니다.')
 		count++
@@ -157,7 +157,7 @@ const processingRegistrations = new Set(); //대기 중 엔터 등으로 REGISTE
 
 function registerClick(val) {
 	//첫 번째 과목 클릭 시 실행되는 함수
-	var TorF = confirm(`한국외국어대학교 모의수강신청${val}과목을 수강신청 하시겠습니까?`)
+	var TorF = confirm(`모의수강신청 과목${val}을 수강신청 하시겠습니까?`)
 	if (TorF === true) {
 		if (processingRegistrations.has(val)) {
 			return; //이미 처리 중이면 최초 클릭만 적용
@@ -239,10 +239,10 @@ function done(clicked) {
 	text.push(document.createTextNode('연습'))
 	text.push(document.createTextNode(`H00000000`));
 	text.push(document.createTextNode(''))
-	text.push(document.createTextNode(`한국외국어대학교 모의수강신청${clicked}`))
+	text.push(document.createTextNode(`모의수강신청 과목${clicked}`))
 	text.push(document.createTextNode('1'))
 	text.push(document.createTextNode('1'))
-	text.push(document.createTextNode(`Hankuk University of F.S. Professor ${clicked}`))
+	text.push(document.createTextNode(`모의수강신청 교수${clicked}`))
 	text.push(document.createTextNode('월 1 2 3 ( )'))
 	text.push(document.createTextNode('0 / 100'))
 	//input들어갈 곳

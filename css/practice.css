@@ -18,7 +18,7 @@ body {
 .navigation {
 	display: flex;
 	flex-direction: column;
-	background-color: #977955;
+	background-color: #06111c; /* 학교 시스템과 구분되도록 한모 메인 톤 사용 */
 	height: 100%;
 	font-size: 13.4px;
 	letter-spacing: 0px;
@@ -28,9 +28,56 @@ body {
 }
 
 .userInfo {
-	background-color: #002d56;
+	background-color: #1c2d40; /* 메뉴(#06111c)보다 조금 밝은 남색 */
+	color: #ffffff;
 	padding-left: 10px;
 	height: 218px;
+}
+
+/* 실제 수강신청 시스템과 혼동되지 않도록 좌측 상단에 표시하는 연습용 배지 */
+.practiceBadge {
+	display: block;
+	width: fit-content;
+	margin: 8px auto 0;
+	position: relative;
+	left: -5px; /* .userInfo의 padding-left(10px) 보정 → 메뉴 폭 기준 정중앙 */
+	text-align: center;
+	padding: 6px 12px;
+	border: 2px solid #ffd27a;
+	border-radius: 6px;
+	color: #ffd27a;
+	font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Sans-serif;
+	font-size: 20px;
+	font-weight: 900;
+	line-height: 1.3;
+	/* 2초 주기로 테두리형 ↔ 채움형 전환 (하단 안내 바와 같은 주기) */
+	animation: practiceBadgeBlink 2s steps(1, end) infinite;
+}
+
+.practiceBadge small {
+	display: block;
+	font-size: 11px;
+	font-weight: 500;
+	color: #ffffff;
+	animation: practiceBadgeSubBlink 2s steps(1, end) infinite;
+}
+
+@keyframes practiceBadgeBlink {
+	0%   { background: transparent; color: #ffd27a; }
+	50%  { background: #ffd27a; color: #000d18; }
+}
+
+@keyframes practiceBadgeSubBlink {
+	0%   { color: #ffffff; }
+	50%  { color: #000d18; }
+}
+
+/* 움직임 줄이기를 켠 사용자에게는 깜빡임을 끔 */
+@media (prefers-reduced-motion: reduce) {
+	.practiceBadge,
+	.practiceBadge small {
+		animation: none;
+	}
 }
 
 button {
@@ -38,7 +85,7 @@ button {
   height: 35px;
   padding-left: 10px;
   text-align: left;
-  background-color: #977955;
+  background-color: #b8862b;
   color: white;
   border-style: hidden;
   font-family: 굴림;
@@ -47,7 +94,7 @@ button {
 }
 
 button:hover {
-  background-color: #826648;
+  background-color: #9c7124;
 }
 
 .noticeButton {
@@ -66,6 +113,24 @@ button:hover {
 .noticeButton:hover {
   /*좌측 메뉴 Notice버튼 hover*/
   background-color: #5d5d5d;
+}
+
+/* 좌측 메뉴 버튼만 한모 톤으로 변경 (표 안의 버튼 등 다른 button에는 영향 없음) */
+.navButton button {
+  background-color: #06111c;
+  border-bottom: 1px solid #1b2a3a;
+}
+
+.navButton button:hover {
+  background-color: #13263a;
+}
+
+.navButton .noticeButton {
+  background-color: #2a3644;
+}
+
+.navButton .noticeButton:hover {
+  background-color: #364352;
 }
 
 p {
@@ -291,10 +356,8 @@ th {
 }
 
 .waitingLogo {
-	width: 56px;
-	height: 56px;
-	border-radius: 50%;
-	object-fit: cover;
+	width: 44px; /* hanmo_color.png는 가로형(550x218) 로고 */
+	height: auto;
 	margin-bottom: 10px;
 }
 
