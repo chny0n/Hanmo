@@ -93,19 +93,19 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "956dee6022bd5d0e09bb7d34eb95e5d9e6da918f"
+      "sha": "bff21cd7be2db6fed7918185b7d6ca584a47e127"
     },
     {
       "path": "html/catalog.html",
-      "sha": "569532eb035e745a4709730e09a01efdc1a00129"
+      "sha": "3d241b6ea4ec36285d9221b8f64203f824b32953"
     },
     {
       "path": "html/developer.html",
-      "sha": "5b0483980c3b8abcea60891e3349b819644b06bd"
+      "sha": "6b4d2be869effd410a3e8372d2bcc8f930f6fc1b"
     },
     {
       "path": "html/forecast.html",
-      "sha": "6d63e5ff2f72b08f411bd340aa5b72d98bc73974"
+      "sha": "e33bcf4eacfc0e80c76522b5fd167ab821eb2793"
     },
     {
       "path": "html/incident-404.html",
@@ -117,7 +117,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "ccccc39c76949cc952162ec812e25d2484d7a889"
+      "sha": "6019171a88961252bc965ed5840cdd105f23edf6"
     },
     {
       "path": "html/practice.html",
@@ -125,15 +125,15 @@
     },
     {
       "path": "html/reaction-test.html",
-      "sha": "17eb79f94afc86a8084609ec6428a6820d652a14"
+      "sha": "16907dce2c412ea8ff0325b9571d4e8d0f404186"
     },
     {
       "path": "html/readiness.html",
-      "sha": "6ef75afaae0e2143eca21ef25d5ccaf3ef3ad75b"
+      "sha": "ebeea6fc0451f784a53c92f8877630263dcffc3e"
     },
     {
       "path": "html/result.html",
-      "sha": "5bf3c30b2999aa55d26fa05d91ea65c8c8b4ab91"
+      "sha": "320e5f139a283bce3e460f162219b41e16371783"
     },
     {
       "path": "html/selectZone.html",
@@ -141,11 +141,11 @@
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "af3ef7d84fee377b143eafe0125e1a1d4133368b"
+      "sha": "2a6d07ca0d8759b662dae4783ee513455a8739f8"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "2923d58920c1475c8d01fc7a5b5ca2ed25f5ab22"
+      "sha": "e73c1d89a7fef09d7ec0a7f54aa50116c30f0b95"
     },
     {
       "path": "img/background.svg",
@@ -217,7 +217,7 @@
     },
     {
       "path": "index.html",
-      "sha": "f1123b2a84e2ffc75cafa99f2b28513c1462b7a6"
+      "sha": "b193992ddf0b4e59fd3f3567c008c57bbf73fed5"
     },
     {
       "path": "js/academic-data-source.js",
