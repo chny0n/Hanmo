@@ -5,7 +5,7 @@ const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
-  'html/catalog.html','html/academic-calendar.html',
+  'html/catalog.html','html/academic-calendar.html','html/academic-support.html',
 ];
 const htmlRoutes=[
   'index.html',...studentPages,
@@ -20,6 +20,7 @@ for(const name of [
   'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
+  'js/academic-support.js','css/academic-support.css','img/favicon.svg',
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
@@ -29,8 +30,7 @@ for(const name of [
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
 for(const banned of ['html/academic-progress.html','html/academic-faq.html',
  'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
- 'js/degree-preparation.js','img/hufs_logo.png',
- 'html/academic-support.html','js/academic-support.js','css/academic-support.css'])
+ 'js/degree-preparation.js','img/hufs_logo.png'])
  if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
 
 // 사이트맵은 포크의 공개 페이지에만 사용하고, 합성 오류·세션 페이지는 제외합니다.
@@ -39,7 +39,7 @@ const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
 const publicRoutes=[
   '', 'html/vsugang.html','html/academic-timeline.html',
   'html/forecast.html','html/catalog.html','html/academic-calendar.html',
-  'html/planner.html','html/developer.html'
+  'html/academic-support.html','html/planner.html','html/developer.html'
 ];
 const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
 const expectedLocations=publicRoutes.map(route=>sitemapBase+route);
@@ -188,6 +188,11 @@ for(const retired of ['js/incident-options.js','css/scenario-settings.css','js/i
  'js/scenario-lab.js','js/scenario-workshop.js','js/scenario-review.js'])
  if(await exists(join(dist,retired)))throw Error('Removed prototype leaked: '+retired);
 
+const supportHTML=await readFile(join(dist,'html/academic-support.html'),'utf8');
+const supportJS=await readFile(join(dist,'js/academic-support.js'),'utf8');
+if(!supportHTML.includes('id="support-query"')||!supportHTML.includes('id="support-suggestions"')||
+   /<select\b|(?:tel|mailto):|02-2173-|031-330-/.test(supportHTML+supportJS))
+  throw Error('School contacts must remain a local query-suggestion interface without stored directory data');
 for(const page of [root]){
  // 돌발상황은 모드 메뉴에서만 시작한다.
  if(page.includes('scenario-workshop.html')||page.includes('vsugang.html#scenario-settings'))

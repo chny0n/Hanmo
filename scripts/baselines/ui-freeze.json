@@ -1,15 +1,19 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 원본 Hanmo UI 동기화 후 미검증 학교 문의처 페이지·자산 완전 제거, 1980×1080 PC 단일 화면 배치 검증 기준 반영. 원본 BASIC/TIME/SELECT·독립 대기·돌발상황·비공식 안내를 보존.",
+  "purpose": "현행 UI 파일별 Git SHA. 2026-11-23 검색형 학교 문의처 복원(연락처 데이터 없음), 정사각형 favicon, 1980x1080 개발자/돌발상황/표 위치/공지·검색 간격 정렬. 원작 BASIC/TIME/SELECT와 비공식 안내 유지.",
   "files": [
     {
       "path": "css/academic-calendar.css",
       "sha": "e79b1e6a46d5469b108f189adbd1a6784dd78d54"
     },
     {
+      "path": "css/academic-support.css",
+      "sha": "4971c6a6f2c1e3c0c8ecb20159fa777841e482c7"
+    },
+    {
       "path": "css/developer.css",
-      "sha": "dd3a656979242c8db13f45fdd4b05c449461b94e"
+      "sha": "38f6e0340bba57ead965e52b801a769e6e846f45"
     },
     {
       "path": "css/gnb.css",
@@ -17,7 +21,7 @@
     },
     {
       "path": "css/hanmo-components.css",
-      "sha": "59d24d13ba3ebb3eadabcceb2686b7e864229a43"
+      "sha": "1e8fdafc310403c629eabff6af6e8b6495f75f0d"
     },
     {
       "path": "css/hanmo-flat.css",
@@ -25,7 +29,7 @@
     },
     {
       "path": "css/hanmo-policy-footer.css",
-      "sha": "bb0a3e2886ffae1d0c33f74495f4b85916fd8a0f"
+      "sha": "a0c52c96d55e7ad2cf3293d6ed7dbcd3e10ae366"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -61,7 +65,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "0f564fe7b5c9d10d62520dfee316922f51da104d"
+      "sha": "2c02df860077f14c5b1aceb4f1e4150300bdd4c1"
     },
     {
       "path": "css/result.css",
@@ -73,7 +77,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "2334bd320203ddc3ac29547c73dc3e1bcf685b89"
+      "sha": "0f96b001cdad495827ed77067d27c21a68e196d5"
     },
     {
       "path": "css/vsugang.css",
@@ -81,35 +85,39 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "1247cce366ae73f221e544a535fee50562ea8276"
+      "sha": "7fd9fcab38e527a2d04282fcb7ac65d8b710b187"
+    },
+    {
+      "path": "html/academic-support.html",
+      "sha": "c38dae1cbc66681c3e3035e506d5bb9a31a374ce"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "18ca0ab1cc1f9e06370fc6a62b08579a8a760b36"
+      "sha": "11c24de1794e50c32e22e3ddd74b45bad8261c10"
     },
     {
       "path": "html/catalog.html",
-      "sha": "1d138ade3c4d80b7475c89bb0a7001f55b60d2e1"
+      "sha": "3c18ff765fd2201de93d085858a35b2e92ebc5e6"
     },
     {
       "path": "html/developer.html",
-      "sha": "7e772c388133f7f8c7914020f24b81cd935ab493"
+      "sha": "b9b0c50b09b4823267f51624d9923a3608c96c95"
     },
     {
       "path": "html/forecast.html",
-      "sha": "e29573143b48358fe83dff9394ac186facccbad5"
+      "sha": "5a3c9c900e6421f3081843f26158a1a8ef837671"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "896bbb7d6c23d389c79936de4ba7c71a6cad4278"
+      "sha": "732cb574799283b0160ba194de8cc3f531808441"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "bf268c877cfa57103e9c7cc8aa16cbfb14bb06bc"
+      "sha": "b95e157b63865c28a95df7c0284060ffdf5cf71c"
     },
     {
       "path": "html/planner.html",
-      "sha": "4c910541209290f328ecaf07c5984a754eaa093f"
+      "sha": "3dddb47cc1661841c91054794ba2dd35f510b185"
     },
     {
       "path": "html/practice.html",
@@ -117,15 +125,15 @@
     },
     {
       "path": "html/result.html",
-      "sha": "c962f4668fe86638f93d3aa4ad2f83d79140e461"
+      "sha": "e32f761f88de02d32f3a4fa818b5ee4e65fc4f21"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "aee6e4907249d36c1f1c9c6b4b8c79572474b386"
+      "sha": "7ce600a6139a39f484b7bb3da5051868a38fec5a"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "6c59f80f7ed341425aad3ddd34316ed97b8b42fd"
+      "sha": "370174d9508621132221d1acd027d1f5bc0e1aa5"
     },
     {
       "path": "img/background.svg",
@@ -146,6 +154,10 @@
     {
       "path": "img/dlackedLogo.svg",
       "sha": "c5c65390cfe101bb8ce6fab39152800493c65838"
+    },
+    {
+      "path": "img/favicon.svg",
+      "sha": "36ad4066f2f378f19333e3602bbace1ef4a1a752"
     },
     {
       "path": "img/hanmo_color.png",
@@ -169,11 +181,15 @@
     },
     {
       "path": "index.html",
-      "sha": "d1e6493da1b37425c13fec2a9f94dba39b6a7d9f"
+      "sha": "590c3de13a08d3ae03184e18748f38d7e681ce03"
     },
     {
       "path": "js/academic-data-source.js",
       "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
+    },
+    {
+      "path": "js/academic-support.js",
+      "sha": "a495f0e17fc1a2ac5d6ccbdc2bc4da7122f0bfe7"
     },
     {
       "path": "js/capacity-settings.js",

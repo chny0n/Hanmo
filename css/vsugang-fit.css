@@ -191,3 +191,25 @@ body.hanmo-vsugang .settingSection .settingActions .settingButton {
 @media (max-width: 500px) {
   body.hanmo-vsugang .settingSection .settingPanel { padding: 18px; }
 }
+
+/* 돌발상황은 SETTING과 정확히 같은 단위 정사각형을 사용합니다. */
+body.hanmo-vsugang .grid > :is(.setting,#incident-options) {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #000912;
+  border-radius: 0;
+  background: #06111c;
+  color: inherit;
+  font-family: var(--hm-font);
+  font-size: inherit;
+  line-height: normal;
+}
+body.hanmo-vsugang .grid > .setting { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+body.hanmo-vsugang .grid > .setting > h2 { flex: 0 0 auto; }
+body.hanmo-vsugang #incident-options { justify-content: flex-start; }
+body.hanmo-vsugang #incident-options .mode-tile-title { display: block; }

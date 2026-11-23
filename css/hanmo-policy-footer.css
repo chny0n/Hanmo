@@ -217,3 +217,17 @@ body.hanmo-pc-only-layout > main {
   body.hanmo-practice-layout .timer { margin-top: clamp(24px, 7vh, 74px); }
   body.hanmo-pc-only-layout > main { flex: 1 1 auto; min-height: 0; }
 }
+
+/* 헤더·개발자 소개·고지가 브라우저 내부 스크롤 없이 함께 들어오도록 합니다. */
+@media (min-width: 1200px) and (min-height: 780px) {
+  body.hanmo-developer {
+    display: flex; flex-direction: column; height: 100dvh; min-height: 0; overflow: hidden;
+  }
+  body.hanmo-developer > main {
+    box-sizing: border-box; flex: 1 1 auto; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; width: 100%; height: auto;
+    min-height: 0; margin: 0; padding: 12px 20px; overflow: hidden;
+  }
+  body.hanmo-developer .container .info.blueBox { padding: 14px 20px; }
+  body.hanmo-developer > .hanmo-policy-footer { flex: 0 0 auto; }
+}

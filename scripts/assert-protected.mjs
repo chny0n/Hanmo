@@ -12,7 +12,7 @@ if(offenders.length)throw Error('Protected HUFS imitation changed:\n'+offenders.
 const allowed=p=>p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('e2e/')||p.startsWith('css/')||p.startsWith('html/')
- ||['img/background.svg','img/hanmo_color.png','img/watermark.png'].includes(p)
+ ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg'].includes(p)
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
  '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml',
  'package-lock.json','playwright.config.mjs'].includes(p);

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const ROOT=path.join(__dirname,'..');
-const student=['planner','forecast','catalog','academic-timeline','academic-calendar'];
+const student=['planner','forecast','catalog','academic-timeline','academic-calendar','academic-support'];
 test('삭제된 학사 FAQ·졸업 페이지와 학교 로고를 웹에 남기지 않는다',()=>{
  for(const p of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
   'css/academic-faq.css','js/academic-faq.js','img/hufs_logo.png'])
@@ -22,11 +22,11 @@ test('허용된 화면에 비공식 안내를 표시하고 금지된 메뉴 경�
   assert.doesNotMatch(html,/>HUFS 학업 도우미</);
  }
 });
-test('상단 메뉴는 달력을 제공하고 검증되지 않은 문의처 링크를 제거한다',()=>{
+test('상단 메뉴는 달력·검색형 문의처로 이동한다',()=>{
  for(const p of ['index.html',...student.map(s=>'html/'+s+'.html'),'html/vsugang.html','html/developer.html','html/result.html']){
   const html=fs.readFileSync(path.join(ROOT,p),'utf8');
   const prefix=p==='index.html'?'./html/':'./';
-  for(const name of ['academic-calendar'])
+  for(const name of ['academic-calendar','academic-support'])
    assert.ok(html.includes('href="'+prefix+name+'.html"'),p+' '+name);
  }
 });
@@ -142,7 +142,7 @@ test('home restores the original mock registration layout without the academic-e
  assert.ok(bar);
  const allowed=['./index.html','./html/academic-timeline.html',
    './html/catalog.html','./html/academic-calendar.html',
-   './html/planner.html'];
+   './html/academic-support.html','./html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
  assert.match(home,/onclick="location\.href='\.\/html\/vsugang\.html'"/);
  const homeScript=fs.readFileSync(path.join(ROOT,'js/index.js'),'utf8');
@@ -329,7 +329,7 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
  const notice=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
  assert.doesNotMatch(notice,/<h2[^>]*>공지 (?:검색|목록)<\/h2>/);
  assert.doesNotMatch(notice,/notice-filter-title/);
- assert.match(notice,/<section class="hanmo-card" aria-label="공개 공지 필터">/);
+ assert.match(notice,/<section class="hanmo-card hanmo-search-controls" aria-label="공개 공지 필터">/);
  for(const id of ['notice-filter','notice-query','notice-type','notice-list','notice-count','notice-retry']){
   assert.ok(notice.includes('id="'+id+'"'),id);
  }
@@ -338,7 +338,7 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
 
 
 test('학사 공지·강의 검색의 메뉴명과 최상단 표제는 완전히 일치한다',()=>{
- for(const file of ['academic-timeline','catalog']){
+ for(const file of ['academic-timeline','catalog','academic-support']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   const menu=html.match(/<a href="\.\/[^"]+" aria-current="page">([^<]+)<\/a>/);
   const h2=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h2>([^<]+)<\/h2>/);
@@ -356,24 +356,34 @@ test('학사 페이지 제목 구분선과 첫 구성요소 사이의 여백은 
  const css=fs.readFileSync(path.join(ROOT,'css/hanmo-title-divider.css'),'utf8');
  assert.match(css,/body\.hanmo-ui \.hanmo-main > \.hanmo-schoolmark\s*\{\s*margin:\s*12px 0 16px/);
  assert.match(css,/body\.hanmo-ui \.hanmo-main > #notice-context:empty\s*\{\s*display:\s*none/);
- for(const file of ['academic-timeline','catalog','academic-calendar','planner']){
+ for(const file of ['academic-timeline','catalog','academic-support','academic-calendar','planner']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),file);
   assert.ok(html.includes('class="hanmo-title-divider"'),file);
  }
 });
 
-test('검증되지 않은 학교 문의처 목록과 연락처 자료가 배포 소스에서 제거된다',()=>{
- for(const file of ['html/academic-support.html','js/academic-support.js',
-   'css/academic-support.css','docs/academic-support-center-brief.md',
-   'docs/references/hufs-support-contacts-2026-11-23.md']){
-  assert.equal(fs.existsSync(path.join(ROOT,file)),false,file);
+test('학교 문의처는 검색어 추천만 제공하고 미검증 연락처 자료를 다시 추가하지 않는다',()=>{
+ for(const file of ['html/academic-support.html','js/academic-support.js','css/academic-support.css']){
+  assert.equal(fs.existsSync(path.join(ROOT,file)),true,file);
  }
- const sitemap=fs.readFileSync(path.join(ROOT,'sitemap.xml'),'utf8');
- assert.doesNotMatch(sitemap,/academic-support/);
+ for(const removed of ['docs/academic-support-center-brief.md',
+  'docs/references/hufs-support-contacts-2026-11-23.md']){
+  assert.equal(fs.existsSync(path.join(ROOT,removed)),false,removed);
+ }
+ const html=fs.readFileSync(path.join(ROOT,'html/academic-support.html'),'utf8');
+ const js=fs.readFileSync(path.join(ROOT,'js/academic-support.js'),'utf8');
+ const site=fs.readFileSync(path.join(ROOT,'sitemap.xml'),'utf8');
+ assert.match(site,/html\/academic-support\.html/);
+ for(const id of ['support-query','support-suggestions','support-search-form','support-result-link']){
+  assert.ok(html.includes('id="'+id+'"'),id);
+ }
+ assert.doesNotMatch(html,/<select\b|(?:tel|mailto):/);
+ assert.doesNotMatch(js,/02-2173|031-330|@hufs\.ac\.kr|\bfetch\s*\(/);
+ assert.match(js,/site:hufs\.ac\.kr/);
  for(const p of ['index.html',...student.map(name=>'html/'+name+'.html'),
   'html/vsugang.html','html/developer.html','html/result.html']){
-  assert.doesNotMatch(fs.readFileSync(path.join(ROOT,p),'utf8'),/academic-support\.html|학교 문의처/,p);
+  assert.match(fs.readFileSync(path.join(ROOT,p),'utf8'),/academic-support\.html/,p);
  }
 });
 
@@ -385,4 +395,15 @@ test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정
  assert.deepEqual(names,['ZetBe','심민성','이의상','김채윤']);
  assert.ok(body.includes('한국외국어대학교 컴퓨터전자시스템공학부'));
  assert.ok(html.includes('class="hanmo-policy-footer"'));
+});
+
+test('새 favicon은 정사각형 자체 이미지로 사용하고 원본 신청 화면은 변경하지 않는다',()=>{
+ const icon=fs.readFileSync(path.join(ROOT,'img/favicon.svg'),'utf8');
+ assert.match(icon,/<svg[^>]*width="64" height="64" viewBox="0 0 64 64"/);
+ for(const page of ['index.html',...student.map(name=>'html/'+name+'.html'),
+  'html/vsugang.html','html/developer.html','html/result.html','html/selectZone.html','html/incident-404.html','html/pc-only.html']){
+  const html=fs.readFileSync(path.join(ROOT,page),'utf8');
+  assert.match(html,/rel="icon" type="image\/svg\+xml" sizes="any"/,page);
+  assert.ok(html.includes('img/favicon.svg'),page);
+ }
 });
