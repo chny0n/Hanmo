@@ -35,7 +35,7 @@
 | [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) | [구현][1차][P0][데이터] 공개 학사 메타데이터·개설 관측 검수 스냅샷 빌더 | `qamarrchae` | open |
 | [#44](https://github.com/ot4562-glitch/Hanmo_develop/issues/44) | [구현][1차][P1][NLP] 공개 공지 최소 메타데이터·원문 링크 인덱스 안전화 | `uisang2004-maker` | open |
 | [#46](https://github.com/ot4562-glitch/Hanmo_develop/issues/46) | [구현][1차][P1][NLP] 공개 공지 링크 메타데이터 추출의 오탐·금지 필드 차단 | `uisang2004-maker` | open |
-| [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) | [구현][1차][P0][데이터] 공개 강의 개설 이력·추세 비교·비공식 전망 백테스트 | `qamarrchae` | open |
+| [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) | [구현][1차][P2][데이터] 공개 강의 개설 이력·추세 비교·비공식 전망 백테스트 | `qamarrchae` | open |
 | [#51](https://github.com/ot4562-glitch/Hanmo_develop/issues/51) | [구현][1차][P1][NLP] 공개 공지 최소 주제 분류·정정/보류 표시 (개인화 제외) | `uisang2004-maker` | open |
 | [#52](https://github.com/ot4562-glitch/Hanmo_develop/issues/52) | [검증][1차][P2][NLP] 합성 행사 날짜 코어 유효성·백테스트 검증 (서비스 연결 보류) | `uisang2004-maker` | open |
 | [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53) | [구현][1차][P1][NLP] 학사공지 메타 정밀검색·필터·오타·관련도 개선 | `uisang2004-maker` | open |
