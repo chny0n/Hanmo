@@ -1,12 +1,14 @@
 # 한모 GitHub 이슈·아키텍처 동기화 색인
 
-**2026-11-23 기준.** 일반 GitHub 이슈 **기존 74건을 점검**했고 최종 인계 이슈 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)를 추가해 **총 75건(열림 25건 / 닫힘 50건)**입니다입니다. 제품·권리의 최우선 정본은 [정보처 서면 회신 원문](sources/2026-11-23-hufs-information-office-reply.txt)과 [아키텍처 §0](architecture.md)이며, 실제 작업 명세는 각 이슈의 **최신 본문·제목·상태**입니다. 오래된 체크리스트는 GitHub 편집 이력으로 남더라도 최신 명세를 덮어쓰지 않습니다.
+**2026-11-23 기준.** 일반 GitHub 이슈 **기존 74건을 점검**했고 최종 인계 이슈 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125) 및 긴급 철회 이슈 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)을 추가해 **총 76건(열림 26건 / 닫힘 50건)**입니다. 제품·권리의 최우선 정본은 [정보처 서면 회신 원문](sources/2026-11-23-hufs-information-office-reply.txt)과 [아키텍처 §0](architecture.md)이며, 실제 작업 명세는 각 이슈의 **최신 본문·제목·상태**입니다. 오래된 체크리스트는 GitHub 편집 이력으로 남더라도 최신 명세를 덮어쓰지 않습니다.
 
 학교는 과거 학기 목록·데이터 파일·API를 별도 제공하지 않으며 한모 서비스를 승인·인증·제휴하지 않았습니다. 허용 공개 학사공지의 최소 안내/원문 링크와 비식별 개설 관측 집계·비공식 자체 전망만 제한적으로 다루고, 교수명·수강 관련 정보, 학칙·졸업요건 **원문 링크/인용/요약/표/자동 확인**, 졸업학점 판정, 학교 대행 FAQ, 학교 계정·개인 성적자료는 제외합니다. 개별 강좌/분반 상세 이용은 서면 확인 전 보류합니다.
 
 **자동 수집은 현재 OFF·미구현:** 공지 ≤1회/일(첫 목록과 신규 상세만), 강의시간표 ≤2회/학기, 간격 ≥10초·동시 1·배치 최대 50건, 수강신청/정정과 각 전후 1일 중단, 오류·접속 제한 발생 시 당일 **재시도 금지**. 공개 노출 URL/운영자 User-Agent 준수와 전역 차단은 [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)에서 구현·검증합니다. DB는 **정적 스냅샷 우선**, 선택적으로 Supabase Free($0). **2차 #71 실기기 QA 이후 3차 책임자 김채윤(`qamarrchae`)이 직접 실습·보안/복구를 검증**합니다([#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)). 소스 설정은 `mode: disabled`이며 [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 구형 SQL로 미병합·실배포 부적합입니다.
 
-## 현재 열려 있는 실행·검증 이슈 (25건)
+**운영자 추가 결정:** 정보처에 당분간 추가 문의하지 않고, 공개자료를 활용한 **고급 검색·강의 관측·일정 통합·문의처 탐색의 기술/합성 개발**을 폭넓게 허용합니다. 학교 서면의 실자료 수집·재게시 제한은 해제되지 않으며 관련 위험·긴급 내리기 절차는 [공개자료 운영 결정](public-data-operating-decision.md) 및 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에서 추적합니다.
+
+## 현재 열려 있는 실행·검증 이슈 (26건)
 
 ### 공개 공지·집계 및 안전한 검색
 
@@ -38,6 +40,7 @@
 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64) | [구현][3차][P1][데이터] 허용 최소 데이터용 정적 스냅샷·선택적 Supabase 스키마 재설계 | open |
 | [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) | [구현][3차][P1][데이터] 허용 공지 링크·비식별 집계 공개 읽기 및 정적 대체 | open |
 | [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66) | [구현][3차][P0][데이터] 정보처 수집 제한·전역 예산·오류 당일 차단 파이프라인 | open |
+| [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126) | [구현][공통][P0][데이터] 공개 학사자료 긴급 OFF·철회·캐시·롤백 검증 | open |
 | [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | [검증][3차][P1][데이터] 김채윤의 정적 스냅샷·선택적 Supabase Free 직접 실습·인수 | open |
 
 ### JS 동등성·원본 실기기·출시 권리 감사

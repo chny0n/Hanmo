@@ -2,7 +2,7 @@
 
 > **설계 정본:** [docs/architecture.md §7.1](architecture.md)의 데이터 경계·수명주기 계약. 이 문서는 운영자용 절차이며, 설계를 독립적으로 변경하거나 학교의 자료 이용 허가를 대신하지 않습니다.
 >
-> **상태 (2026-11-23):** `main`에는 실제 Supabase DB 연결, 학교 자료 반입, 자동 보존·정리 기능이 없습니다. [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 SQL은 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했으나 운영 설치·API·권한 인수를 마치지 않았습니다. [학교 자료 사용권 #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) 확인 전에는 자료를 수집·재배포하지 않습니다.
+> **상태 (2026-11-23):** `main`에는 실제 Supabase DB 연결, 학교 자료 반입, 자동 보존·정리 기능이 없습니다. [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 SQL은 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했으나 운영 설치·API·권한 인수를 마치지 않았습니다. 이미 종결된 [서면 회신 기록 #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)의 조건과 [운영 결정 및 긴급 철회](public-data-operating-decision.md)를 별도로 지켜야 하며, 실자료 수집·재배포는 현재 OFF입니다.
 
 ## 1. 자료 등급과 보존 정책
 
@@ -68,3 +68,9 @@
 - 실제 시각 게이트: `npm run collection:gate` (실행 불허 시 종료 코드 1). `--at`으로 시계를 바꿔 실행을 우회할 수 없습니다.
 - **11/29 등 알려진 금지 구간 밖의 날도 수집 허가가 아닙니다.** 학교의 다른 등록/정정 전체 일정, 출처 권리, 허용 URL, 전역 요청 예산/10초/동시성/오류 당일 잠금이 검증되지 않았으며 현재 `data/academic-source-config.json`은 `mode: disabled`입니다. 실제 크롤러나 예약 실행은 없습니다.
 
+
+## 7. 운영자 공개정보 활용 개발 결정과 긴급 철회
+
+2026-11-23 운영자는 추가 학교 문의 없이 로그인 없는 공개자료 기반 기능 **알고리즘·UX·합성 실험 개발**을 폭넓게 허용했습니다. 구두 설명이 서면의 학교 자료 제한을 자동으로 해제하지는 않습니다. 실제 학교 자료는 §0의 접근/필드/수집 제한과 권리·독립 검수를 거치며 미확정 세부 이용은 연결하지 않습니다. [운영 결정·긴급 철회 런북](public-data-operating-decision.md)을 공통 기준으로 사용합니다.
+
+**긴급 중단은 데이터 수집 OFF → API/정적 공개 OFF → GitHub Pages/배포 파일·CDN/브라우저 캐시·이전 릴리스·인덱스 확인 → 익명 검증 → 재개 별도 검수**까지 끝나야 합니다. 현재 라이브 학교 데이터는 없고 통합 킬 스위치/캐시 철회 자동화도 미구현이므로 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에서 실제 중단 훈련을 완료하기 전에는 운영 완성을 주장하지 않습니다. 3차 Supabase 관련 역할은 김채윤에게 있으며 최종 원개발자 인수 #125에 포함합니다.
