@@ -3,13 +3,12 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../js/vsugang-fit.js'),'utf8');
-function harness({height=800,width=1400,h=690,w=1000,barY=78,ad=0}={}){
+function harness({height=800,width=1400,h=690,w=1000,barY=78}={}){
  const vars={},cssvars={},events={},queue=[],observed=[],cls=new Set();
- const footer={getBoundingClientRect:()=>({height:ad})};
  const landing={scrollHeight:h,offsetHeight:h,scrollWidth:w,offsetWidth:w,
    style:{setProperty:(k,v)=>cssvars[k]=v}};
  const main={clientHeight:height,clientWidth:width,
-   querySelector:k=>k==='.f-dirt-down'?landing:k==='.f-dirt-up'?footer:null};
+   querySelector:k=>k==='.f-dirt-down'?landing:null};
  const bar={getBoundingClientRect:()=>({bottom:barY})};
  const body={style:{setProperty:(k,v)=>vars[k]=v},
    classList:{toggle:(k,v)=>v?cls.add(k):cls.delete(k)},
@@ -24,14 +23,14 @@ function harness({height=800,width=1400,h=690,w=1000,barY=78,ad=0}={}){
  vm.runInNewContext(source,context,{filename:'vsugang-fit.js'});
  const flush=()=>{const fn=queue.shift();assert.ok(fn);fn();};
  flush();
- return {vars,cssvars,events,queue,observed,cls,main,bar,landing,footer,flush};
+ return {vars,cssvars,events,queue,observed,cls,main,bar,landing,flush};
 }
 test('normal monitor fits all mode tiles without scrolling document',()=>{
  const x=harness({height:910,width:1440,h:700,w:1200,barY:95});
  assert.equal(Number(x.cssvars['--vsugang-fit-scale']),1);
  assert.equal(x.vars['--vsugang-topbar-bottom'],'95px');
  assert.equal(x.cls.has('vsugang-compact-scroll'),false);
- assert.equal(x.observed.length,4);
+ assert.equal(x.observed.length,3);
 });
 test('720px-height desktop menu scales proportionally beneath nav',()=>{
  const x=harness({height:605,width:1280,h:750,w:1000,barY:105});
@@ -46,12 +45,12 @@ test('at high zoom only main gets scrollable and nav stays visible',()=>{
  assert.equal(x.cssvars['--vsugang-fit-scale'],'1');
  assert.equal(x.vars['--vsugang-topbar-bottom'],'190px');
 });
-test('resize and ad height remeasure fit and preserve navigation offset',()=>{
+test('resize remeasures fit without any advertisement allowance',()=>{
  const x=harness({height:900,width:1400,h:700,w:1100});
- x.footer.getBoundingClientRect=()=>({height:240});
+ x.main.clientHeight=620;
  x.events.resize();x.flush();
- assert.equal(x.vars['--vsugang-footer-height'],'240px');
  assert.ok(Number(x.cssvars['--vsugang-fit-scale'])<1);
+ assert.equal(x.vars['--vsugang-footer-height'],undefined);
  x.main.clientHeight=310;
  x.events.pageshow();x.flush();
  assert.equal(x.cls.has('vsugang-compact-scroll'),true);

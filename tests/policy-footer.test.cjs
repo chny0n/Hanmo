@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const pages=['index.html','html/academic-calendar.html','html/academic-support.html',
+const pages=['index.html','html/academic-calendar.html',
  'html/academic-timeline.html','html/catalog.html','html/developer.html',
  'html/forecast.html','html/incident-404.html','html/pc-only.html',
  'html/planner.html','html/practice.html','html/result.html',
@@ -24,16 +24,16 @@ test('모든 HTML은 비공식 고지를 굵게 한 번만, 마지막 콘텐츠�
   assert.ok(html.includes('href="'+css+'"'),page);
  }
 });
-test('홈 푸터는 절대배치 광고 밖에서 독립된 행을 차지한다',()=>{
+test('홈 푸터는 광고 없이 중앙 콘텐츠와 독립된 행을 차지한다',()=>{
  const css=fs.readFileSync(path.join(root,'css/hanmo-policy-footer.css'),'utf8');
  const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const layout=fs.readFileSync(path.join(root,'css/home-fit.css'),'utf8');
  assert.ok(css.includes('body.hanmo-home > .hanmo-policy-footer'));
  assert.ok(css.includes('flex: 0 0 auto'));
- assert.ok(css.includes('body.hanmo-home > .hanmo-policy-footer {'));
  assert.match(layout,/body\.hanmo-home > main[\s\S]*?overflow: hidden;/);
- assert.match(layout,/body\.hanmo-home \.home-ad-footer[\s\S]*?position: absolute;/);
- assert.ok(home.indexOf('home-ad-footer')<home.indexOf('footer class="hanmo-policy-footer"'));
+ assert.match(layout,/body\.hanmo-home \.home-fit-content[\s\S]*?top: 50%;/);
+ assert.doesNotMatch(home,/home-ad-footer|kakao_ad_area/);
+ assert.ok(home.indexOf('footer class="hanmo-policy-footer"')>home.indexOf('</main>'));
  assert.doesNotMatch(home.match(/<div class='mainNotice blueBox'>[\s\S]*?<\/div>/)?.[0]||'',/본 서비스는/);
 });
 test('모의신청·달력·지원 기기에서 독립된 하단 표시를 보존한다',()=>{

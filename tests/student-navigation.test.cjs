@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const ROOT=path.join(__dirname,'..');
-const student=['planner','forecast','catalog','academic-timeline','academic-calendar','academic-support'];
+const student=['planner','forecast','catalog','academic-timeline','academic-calendar'];
 test('삭제된 학사 FAQ·졸업 페이지와 학교 로고를 웹에 남기지 않는다',()=>{
  for(const p of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
   'css/academic-faq.css','js/academic-faq.js','img/hufs_logo.png'])
@@ -22,11 +22,11 @@ test('허용된 화면에 비공식 안내를 표시하고 금지된 메뉴 경�
   assert.doesNotMatch(html,/>HUFS 학업 도우미</);
  }
 });
-test('상단 메뉴의 달력과 학교 문의처 링크는 계속 제공한다',()=>{
+test('상단 메뉴는 달력을 제공하고 검증되지 않은 문의처 링크를 제거한다',()=>{
  for(const p of ['index.html',...student.map(s=>'html/'+s+'.html'),'html/vsugang.html','html/developer.html','html/result.html']){
   const html=fs.readFileSync(path.join(ROOT,p),'utf8');
   const prefix=p==='index.html'?'./html/':'./';
-  for(const name of ['academic-calendar','academic-support'])
+  for(const name of ['academic-calendar'])
    assert.ok(html.includes('href="'+prefix+name+'.html"'),p+' '+name);
  }
 });
@@ -142,7 +142,7 @@ test('home restores the original mock registration layout without the academic-e
  assert.ok(bar);
  const allowed=['./index.html','./html/academic-timeline.html',
    './html/catalog.html','./html/academic-calendar.html',
-   './html/academic-support.html','./html/planner.html'];
+   './html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
  assert.match(home,/onclick="location\.href='\.\/html\/vsugang\.html'"/);
  const homeScript=fs.readFileSync(path.join(ROOT,'js/index.js'),'utf8');
@@ -275,7 +275,7 @@ test('홈·모드·학업·개발자 조작에만 느린 글로우를 적용한�
 test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 제거한다',()=>{
  const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
   'html/academic-timeline.html','html/catalog.html','html/academic-calendar.html',
-  'html/academic-support.html','html/planner.html','html/forecast.html',
+  'html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
  const original=new Set(['index.html','html/vsugang.html','html/developer.html','html/result.html']);
  const sidebar=new Set(['html/incident-404.html']);
@@ -309,7 +309,7 @@ test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 
 
 test('모든 상단 바 브랜드 옆의 불필요한 비공식 문구를 제거한다',()=>{
  const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
-  'html/academic-calendar.html','html/academic-support.html','html/academic-timeline.html',
+  'html/academic-calendar.html','html/academic-timeline.html',
   'html/catalog.html','html/forecast.html','html/planner.html'];
  for(const page of pages){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
@@ -337,8 +337,8 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
 });
 
 
-test('학사 공지·강의 검색·학교 문의처의 메뉴명과 최상단 표제는 완전히 일치한다',()=>{
- for(const file of ['academic-timeline','catalog','academic-support']){
+test('학사 공지·강의 검색의 메뉴명과 최상단 표제는 완전히 일치한다',()=>{
+ for(const file of ['academic-timeline','catalog']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   const menu=html.match(/<a href="\.\/[^"]+" aria-current="page">([^<]+)<\/a>/);
   const h2=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h2>([^<]+)<\/h2>/);
@@ -356,37 +356,25 @@ test('학사 페이지 제목 구분선과 첫 구성요소 사이의 여백은 
  const css=fs.readFileSync(path.join(ROOT,'css/hanmo-title-divider.css'),'utf8');
  assert.match(css,/body\.hanmo-ui \.hanmo-main > \.hanmo-schoolmark\s*\{\s*margin:\s*12px 0 16px/);
  assert.match(css,/body\.hanmo-ui \.hanmo-main > #notice-context:empty\s*\{\s*display:\s*none/);
- for(const file of ['academic-timeline','catalog','academic-support','academic-calendar','planner']){
+ for(const file of ['academic-timeline','catalog','academic-calendar','planner']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),file);
   assert.ok(html.includes('class="hanmo-title-divider"'),file);
  }
 });
 
-test('학교 문의처는 캠퍼스별 공식 출처와 전화·메일·위치를 제공하고 실자료를 수집하지 않는다',()=>{
- const html=fs.readFileSync(path.join(ROOT,'html/academic-support.html'),'utf8');
- const js=fs.readFileSync(path.join(ROOT,'js/academic-support.js'),'utf8');
- const css=fs.readFileSync(path.join(ROOT,'css/academic-support.css'),'utf8');
- assert.ok(html.includes('href="../css/academic-support.css"'));
- for(const key of ['support-campus','support-topic','support-results','support-directory']){
-  assert.ok(html.includes('id="'+key+'"'),key);
+test('검증되지 않은 학교 문의처 목록과 연락처 자료가 배포 소스에서 제거된다',()=>{
+ for(const file of ['html/academic-support.html','js/academic-support.js',
+   'css/academic-support.css','docs/academic-support-center-brief.md',
+   'docs/references/hufs-support-contacts-2026-11-23.md']){
+  assert.equal(fs.existsSync(path.join(ROOT,file)),false,file);
  }
- for(const topic of ['ACADEMIC','COURSE','SEASONAL','STATUS','MAJOR','GRADUATION',
-  'CERTIFICATE','STUDENT_CARD','SCHOLARSHIP','TEACHING']){
-  assert.ok(html.includes('value="'+topic+'"'),topic);
+ const sitemap=fs.readFileSync(path.join(ROOT,'sitemap.xml'),'utf8');
+ assert.doesNotMatch(sitemap,/academic-support/);
+ for(const p of ['index.html',...student.map(name=>'html/'+name+'.html'),
+  'html/vsugang.html','html/developer.html','html/result.html']){
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT,p),'utf8'),/academic-support\.html|학교 문의처/,p);
  }
- for(const host of ['https://haksa.hufs.ac.kr/haksa/index.do',
-  'https://dep.hufs.ac.kr/onestop/13394/subview.do',
-  'https://dep.hufs.ac.kr/student/12765/subview.do']){
-  assert.ok(js.includes(host),host);
- }
- assert.ok(js.includes("document.createElement"));
- assert.ok(js.includes("document.createTextNode"));
- assert.ok(js.includes("replaceChildren"));
- assert.doesNotMatch(js,/\b(?:fetch|XMLHttpRequest|localStorage|sessionStorage)\s*\(/);
- assert.doesNotMatch(html,/type=["']file["']|<textarea\b/i);
- assert.ok(css.includes('.hanmo-support-directory'));
- assert.ok(html.includes('class="hanmo-policy-footer"'));
 });
 
 test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정렬한다',()=>{

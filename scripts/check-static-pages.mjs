@@ -5,7 +5,7 @@ const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
-  'html/catalog.html','html/academic-calendar.html','html/academic-support.html',
+  'html/catalog.html','html/academic-calendar.html',
 ];
 const htmlRoutes=[
   'index.html',...studentPages,
@@ -29,7 +29,8 @@ for(const name of [
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
 for(const banned of ['html/academic-progress.html','html/academic-faq.html',
  'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
- 'js/degree-preparation.js','img/hufs_logo.png'])
+ 'js/degree-preparation.js','img/hufs_logo.png',
+ 'html/academic-support.html','js/academic-support.js','css/academic-support.css'])
  if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
 
 // 사이트맵은 포크의 공개 페이지에만 사용하고, 합성 오류·세션 페이지는 제외합니다.
@@ -38,7 +39,6 @@ const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
 const publicRoutes=[
   '', 'html/vsugang.html','html/academic-timeline.html',
   'html/forecast.html','html/catalog.html','html/academic-calendar.html',
-  'html/academic-support.html',
   'html/planner.html','html/developer.html'
 ];
 const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
