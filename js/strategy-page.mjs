@@ -1,6 +1,6 @@
 // @ts-check
 // 학생이 직접 넣는 정보는 가상 과목 4개 항목뿐입니다.
-import {validateScenario,FIRST_CHOICE_SHARES} from './strategy-engine.mjs';
+import {validateScenario} from './strategy-engine.mjs';
 import {REACTION_KEY,readProfile,deriveActionTimes,automaticSeed} from './reaction-profile.mjs';
 const form=document.getElementById('strategy-form');
 if(form){
@@ -125,18 +125,16 @@ if(form){
       active.terminate();worker=null;busy(false);
       if(message.type==='error'){status.textContent=message.message;return;}
       const r=message.result;
-      const percent=value=>{
+      const outcome=wins=>{
         if(r.guaranteed)return '100%';
-        if(value<.01)return '0.01% 미만';
-        if(value>99.99)return '99.99% 초과';
-        return value.toFixed(2)+'%';
+        if(wins===0)return '성공 미관측';
+        if(wins===r.trials)return '실패 미관측';
+        return (100*wins/r.trials).toFixed(1)+'%';
       };
-      const share=key=>Math.round(100*FIRST_CHOICE_SHARES[key])+'%';
       recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
-        ' · 모형에서 전체 성공 추정 '+percent(r.allRate)+' (첫 선택 '+share('baseline')+')';
-      setup.textContent='같은 순서의 전체 성공 추정 · 첫 선택 '+share('spread')+'일 때 '+
-        percent(r.sensitivity.spread)+' · '+share('concentrated')+'일 때 '+
-        percent(r.sensitivity.concentrated)+' · 실험 시드 '+r.seed;
+        ' · 전체 성공률 '+outcome(r.allWins)+' (경쟁자 중복 기준)';
+      setup.textContent='같은 순서에서 경쟁자 중복이 적을 때 '+outcome(r.sensitivity.lessOverlap)+
+        ' · 많을 때 '+outcome(r.sensitivity.moreOverlap)+' · 실험 시드 '+r.seed;
       result.hidden=false;inputPanel.hidden=true;
       redo.focus({preventScroll:true});
     });

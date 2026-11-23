@@ -133,9 +133,9 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await page.locator('#strategy-run').click();
   await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
   await expect(page.locator('#strategy-recommendation')).toContainText('추천 신청 순서');
-  await expect(page.locator('#strategy-recommendation')).toContainText('모형에서 전체 성공 추정');
-  await expect(page.locator('#strategy-recommendation')).toContainText('첫 선택 35%');
-  await expect(page.locator('#strategy-setup')).toContainText(/첫 선택 20%.*50%.*실험 시드/);
+  await expect(page.locator('#strategy-recommendation')).toContainText('전체 성공률');
+  await expect(page.locator('#strategy-recommendation')).toContainText('경쟁자 중복 기준');
+  await expect(page.locator('#strategy-setup')).toContainText(/경쟁자 중복이 적을 때.*많을 때.*실험 시드/);
   await expect(page.locator('#strategy-input')).toBeHidden();
 });
 
@@ -144,14 +144,17 @@ test('전략 실험은 경쟁 중에는 100% 반올림을 피하고 충분한 �
   await page.goto('/html/strategy-lab.html');
   const readout=page.locator('#strategy-recommendation');
   const capacity=page.getByRole('spinbutton',{name:'A 정원',exact:true});
-  await capacity.fill('30');
-  for(const id of ['B','C'])await page.getByRole('spinbutton',{name:id+' 경쟁자',exact:true}).fill('0');
+  for(const id of ['B','C']){
+    await page.getByRole('spinbutton',{name:id+' 경쟁자',exact:true}).fill('0');
+  }
+  await page.getByRole('spinbutton',{name:'A 경쟁자',exact:true}).fill('200');
+  await capacity.fill('200');
   await page.locator('#strategy-run').click();
-  await expect(readout).toContainText('99.99% 초과');
+  await expect(readout).toContainText('실패 미관측');
   await page.locator('#strategy-back').click();
-  await capacity.fill('31');
+  await capacity.fill('201');
   await page.locator('#strategy-run').click();
-  await expect(readout).toContainText('100% (첫 선택 35%)');
+  await expect(readout).toContainText('100% (경쟁자 중복 기준)');
 });
 
 test('전략 실험은 다른 탭의 반응 프로필 등록과 삭제를 반영한다',async({page,context})=>{
