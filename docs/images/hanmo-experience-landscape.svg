@@ -48,7 +48,7 @@
 <path d="M803 506h13m-13 7h13" stroke="#8AD0D8" stroke-width="2" stroke-linecap="round"/>
 <text x="844" y="514" fill="#EAF6FC" font-size="24" font-weight="700" >PC 진단·반응속도</text>
 <rect x="1144" y="494" width="175" height="38" rx="19" fill="#2C302D" stroke="#747452" stroke-width="1"/>
-<text x="1231" y="519" fill="#F6D797" font-size="19" font-weight="650" text-anchor="middle">연결 대기</text>
+<text x="1231" y="519" fill="#F6D797" font-size="19" font-weight="650" text-anchor="middle">실행 가능</text>
 <rect x="776" y="557" width="565" height="70" rx="13" fill="#102D40" stroke="#315A72" stroke-width="1"/>
 <rect x="794" y="575" width="31" height="31" rx="10" fill="#163E51" stroke="#4C91A4" stroke-width="1"/>
 <path d="M803 590h13m-13 7h13" stroke="#8AD0D8" stroke-width="2" stroke-linecap="round"/>
