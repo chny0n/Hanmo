@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 정책 준수 UI 보호 SHA. 모든 페이지의 비공식 학교 고지를 본문·광고 다음의 최하단에 분리하고, 홈 광고와 고지의 독립 공간을 보장한 2026-11-23 작업 반영. 기존 모의신청 상호작용은 회귀 검사 대상.",
+  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 전체 화면에 index 한모 제목 구분선을 통일하되 BASIC/TIME/SELECT 신청·광고·비공식 푸터 동작은 유지. 회귀 검사 후에만 갱신.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -26,6 +26,10 @@
     {
       "path": "css/hanmo-policy-footer.css",
       "sha": "30ed4c6522afa041a441bc4d7c3b541758a7f0bd"
+    },
+    {
+      "path": "css/hanmo-title-divider.css",
+      "sha": "7bf7542cdc3df21a5f12fa16b00cd52058740a24"
     },
     {
       "path": "css/hanmo-tokens.css",
@@ -77,19 +81,19 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "6b050a4b08021a79e7a8dbdfd52075bf44d009cf"
+      "sha": "00e1b51ac241561f4521d35d1c039cfc31da1e71"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "5dd300713991a116a91f995f7e0d90b9c3a03c46"
+      "sha": "98621bafc9a99d76bbecc2c3e4b87a4c12398974"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "fb66c44d52a48c02c4c8436d9bec871e2591e7be"
+      "sha": "e477118539607510af216b4d75533a195f77037d"
     },
     {
       "path": "html/catalog.html",
-      "sha": "d6d657a28b89e0fc8bc0c61e906201adf119d3ab"
+      "sha": "64b9806ac00918da1a37cd4480a45fc397d22b29"
     },
     {
       "path": "html/developer.html",
@@ -97,23 +101,23 @@
     },
     {
       "path": "html/forecast.html",
-      "sha": "70c215f41b4862ddc9d1ac0f70f73981e1968204"
+      "sha": "732bdb2abef2d10ce978b512d975db418d883bb0"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "95e4017a935c4506e0785a1d8fa4375e8297d426"
+      "sha": "896bbb7d6c23d389c79936de4ba7c71a6cad4278"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "86ebd8e0d604abf25e910a8a485bd2a8daa98834"
+      "sha": "bf268c877cfa57103e9c7cc8aa16cbfb14bb06bc"
     },
     {
       "path": "html/planner.html",
-      "sha": "d2a9d3b399ba7628f0abb0b9cf1beb9dfa8e800a"
+      "sha": "b7bed6596cf6e87f73554967d44fe814655484ed"
     },
     {
       "path": "html/practice.html",
-      "sha": "567905771442cf9be675d278d82a91b6b7fcc246"
+      "sha": "dac31df81ba4ba9dd39c8d804a3a4444557b960a"
     },
     {
       "path": "html/result.html",
@@ -121,7 +125,7 @@
     },
     {
       "path": "html/selectZone.html",
-      "sha": "b13ffd14ac7bd7fb2e1cef950f41c96d9517c40d"
+      "sha": "a0f90d88e6ff07a6855d31a8f472064fbd171818"
     },
     {
       "path": "html/vsugang.html",

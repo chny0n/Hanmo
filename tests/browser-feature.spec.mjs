@@ -15,7 +15,8 @@ test('정보처 서면 이후 금지된 페이지와 메뉴가 보이지 않고 
  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support','planner']){
   await page.goto('/html/'+slug+'.html');
   await expect(page.locator('body > .hanmo-policy-footer')).toContainText('정확한 정보는 학교 원문');
-  await expect(page.locator('.hanmo-markline')).toHaveCount(0);
+  await expect(page.locator('.hanmo-title-divider')).toHaveCount(1);
+  await expect(page.locator('.hanmo-title-divider img')).toBeVisible();
   await expect(page.locator('.hanmo-topbar')).toBeVisible();
  }
 });
@@ -65,6 +66,25 @@ test('홈 광고와 최하단 고지는 좁은 데스크톱에서도 겹치지 �
     expect(geometry.footerHeight).toBeGreaterThan(0);
     await expect(page.locator('.hanmo-policy-footer strong')).toBeVisible();
   }
+});
+
+
+test('페이지 제목 아래 한모 구분 장식의 선·로고가 잘 보인다',async({page})=>{
+ const routes=['/html/academic-timeline.html','/html/catalog.html','/html/academic-calendar.html',
+  '/html/academic-support.html','/html/planner.html','/html/pc-only.html',
+  '/html/practice.html','/html/selectZone.html'];
+ for(const route of routes){
+  await page.goto(route);
+  const logo=page.locator('.hanmo-title-divider img');
+  await expect(logo,route).toBeVisible();
+  const dimension=await logo.boundingBox();
+  expect(dimension,route).not.toBeNull();
+  expect(dimension.height,route).toBeGreaterThanOrEqual(9);
+  const line=page.locator('.hanmo-title-divider > hr');
+  await expect(line).toHaveCount(2);
+  const lineSizes=await line.evaluateAll(items=>items.map(el=>el.getBoundingClientRect().width));
+  expect(lineSizes.every(size=>size>0),route).toBe(true);
+ }
 });
 
 test('관심강좌·전공·교양·기초 선택은 Search 전 메뉴만 바꾸고 네 화면을 캡처한다',async({page})=>{

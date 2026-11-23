@@ -1,0 +1,46 @@
+/* 홈의 — ㅎㅁ — 헤더 장식을 현재 페이지 제목에도 동일하게 적용합니다. */
+.hanmo-title-divider {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(560px, 90%);
+  margin: 10px auto 0;
+}
+.hanmo-title-divider > hr {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: #bdbdbd;
+}
+.hanmo-title-divider > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+.hanmo-title-divider img {
+  display: block;
+  width: auto;
+  max-width: 54px;
+  height: 10px;
+  object-fit: contain;
+}
+/* 모의신청 좌측 메뉴는 기존 신청표·타이머의 레이아웃을 변경하지 않습니다. */
+.hanmo-title-divider--sidebar {
+  width: min(160px, calc(100% - 24px));
+  margin: 10px auto 0;
+}
+.hanmo-title-divider--sidebar > span {
+  padding: 0 10px;
+}
+/* 달력은 구분선이 추가돼도 기존 날짜 행의 높이를 유지합니다. */
+.academic-calendar-main .hanmo-schoolmark {
+  margin-bottom: 14px;
+}
+body.hanmo-pc-only-layout .hanmo-title-divider {
+  width: min(320px, 100%);
+  margin: 0 auto 20px;
+}

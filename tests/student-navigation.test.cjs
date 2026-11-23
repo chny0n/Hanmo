@@ -271,3 +271,32 @@ test('홈·모드·학업·개발자 조작에만 느린 글로우를 적용한�
  assert.ok(mode.includes('.grid > .basic-mode-tile'));
  assert.ok(common.includes('.hanmo-topbar .hanmo-nav-inline a::before'));
 });
+
+test('모든 HTML 페이지의 제목에는 홈과 같은 한모 구분 장식이 하나씩 있다',()=>{
+ const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
+  'html/academic-timeline.html','html/catalog.html','html/academic-calendar.html',
+  'html/academic-support.html','html/planner.html','html/forecast.html',
+  'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
+ const original=new Set(['index.html','html/vsugang.html','html/developer.html','html/result.html']);
+ const sidebar=new Set(['html/practice.html','html/selectZone.html','html/incident-404.html']);
+ for(const page of pages){
+  const html=fs.readFileSync(path.join(ROOT,page),'utf8');
+  const image=page==='index.html'?'./img/hanmo_white.svg':'../img/hanmo_white.svg';
+  assert.ok(html.includes('src="'+image+'"'),page);
+  if(original.has(page)){
+   assert.equal((html.match(/<div class=['"]hanmo['"]>/g)||[]).length,1,page);
+   assert.equal((html.match(/class="hanmo-title-divider(?:[ "])/g)||[]).length,0,page);
+  }else{
+   assert.equal((html.match(/<div class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true">/g)||[]).length,1,page);
+   assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),page);
+   assert.match(html,/class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true"><hr><span><img src="\.\.\/img\/hanmo_white\.svg" alt=""><\/span><hr><\/div>/);
+   if(sidebar.has(page))assert.ok(html.includes('class="hanmo-title-divider hanmo-title-divider--sidebar"'),page);
+  }
+  // 푸터의 학교 비공식 고지는 제목 장식 추가와 무관하게 페이지 마지막에 남아야 합니다.
+  assert.ok(html.lastIndexOf('hanmo-policy-footer')>html.indexOf('hanmo_white.svg'),page);
+ }
+ const css=fs.readFileSync(path.join(ROOT,'css/hanmo-title-divider.css'),'utf8');
+ assert.match(css,/height: 10px;/);
+ assert.match(css,/hanmo-title-divider--sidebar/);
+ assert.match(css,/academic-calendar-main/);
+});
