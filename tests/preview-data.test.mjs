@@ -9,6 +9,9 @@ const disabled=JSON.stringify({schemaVersion:1,mode:'disabled'});
 
 test('공개 QA는 활성, 구형, 비밀 정보가 섞인 설정을 거부한다',()=>{
   assert.doesNotThrow(()=>assertDisabledPreviewConfig(disabled));
+  assert.throws(()=>assertDisabledPreviewConfig('가상의 비밀 입력'),{
+    message:'공개 미리보기의 학사자료 설정은 유효한 JSON이어야 합니다.',
+  });
   for(const config of [null,[],{}, {schemaVersion:1,mode:'supabase'},
     {schemaVersion:1,mode:'disabled',payload:{}},{schemaVersion:0,mode:'disabled'}]){
     assert.throws(()=>assertDisabledPreviewConfig(JSON.stringify(config)),/비활성 학사자료 설정/);

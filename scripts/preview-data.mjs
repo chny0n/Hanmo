@@ -9,7 +9,9 @@ const probeHash='33285803a799be38faadcc0777e9fdf6adf36cef2d2bc49ea7098cc11e1a5a7
 
 /** @param {string} text 공개 QA의 자료 연결 설정 */
 export function assertDisabledPreviewConfig(text){
-  const config=JSON.parse(text);
+  let config;
+  try{config=JSON.parse(text);}
+  catch{throw new Error('공개 미리보기의 학사자료 설정은 유효한 JSON이어야 합니다.');}
   if(!config||Object.keys(config).length!==2||config.schemaVersion!==1||config.mode!=='disabled')
     throw new Error('공개 미리보기에는 비활성 학사자료 설정만 허용됩니다.');
 }
