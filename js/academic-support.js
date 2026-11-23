@@ -62,10 +62,10 @@
       return;
     }
     const search=new URL('https://www.google.com/search');
-    search.searchParams.set('q','site:hufs.ac.kr '+value+' 담당 부서 연락처');
+    search.searchParams.set('q','한국외국어대학교 '+value);
     resultLink.href=search.toString();
-    resultLink.textContent='외부 검색에서 공식 사이트 결과 보기';
-    resultText.textContent='검색어: '+value+' — 학교 공식 사이트로 범위를 제한한 외부 검색 링크입니다. 결과의 정확성과 최신성은 확인되지 않았습니다.';
+    resultLink.textContent='구글에서 학교명으로 검색 결과 보기';
+    resultText.textContent='구글 검색어: 한국외국어대학교 '+value+' — 검색 결과에 비공식 사이트가 포함될 수 있으므로 학교 원문을 확인하세요.';
     result.hidden=false;
     feedback.textContent='검색 링크를 만들었습니다. 외부 검색을 열기 전 검색어를 확인하세요.';
   }

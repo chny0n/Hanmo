@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 UI 파일별 Git SHA. 2026-11-23 검색형 학교 문의처 복원(연락처 데이터 없음), 정사각형 favicon, 1980x1080 개발자/돌발상황/표 위치/공지·검색 간격 정렬. 원작 BASIC/TIME/SELECT와 비공식 안내 유지.",
+  "purpose": "현행 UI 파일별 SHA. 2026-11-23 긴급수정: 원본 700×700 한모 사진 favicon 복구, 기존 모의수강신청 색상·워터마크 복원, 검색 전후 표 고정, 기여자 전공·구글 검색·가상 404 색상 수정. 원본 신청 로직 보호.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -29,7 +29,7 @@
     },
     {
       "path": "css/hanmo-policy-footer.css",
-      "sha": "a0c52c96d55e7ad2cf3293d6ed7dbcd3e10ae366"
+      "sha": "4d8a6331659bfe385fcd3cf7ec49c64895eed009"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -49,7 +49,7 @@
     },
     {
       "path": "css/incident-404.css",
-      "sha": "e2c0167eccaf390f6ba5277c040415c51475acd0"
+      "sha": "09f8a3c4404d838f0691f770194f34c79c4b7cc9"
     },
     {
       "path": "css/index.css",
@@ -65,7 +65,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "2c02df860077f14c5b1aceb4f1e4150300bdd4c1"
+      "sha": "900699df37380821064db808652ed0386398b2ef"
     },
     {
       "path": "css/result.css",
@@ -85,39 +85,39 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "7fd9fcab38e527a2d04282fcb7ac65d8b710b187"
+      "sha": "0a06a325d99dd832dc768d3dece69c72cc000992"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "c38dae1cbc66681c3e3035e506d5bb9a31a374ce"
+      "sha": "da3e30a985f252dbeb2eb342fb073a186d72d0b1"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "11c24de1794e50c32e22e3ddd74b45bad8261c10"
+      "sha": "122ce830393ab80b7fe5269dc2dc3ef4db935c0c"
     },
     {
       "path": "html/catalog.html",
-      "sha": "3c18ff765fd2201de93d085858a35b2e92ebc5e6"
+      "sha": "51611f4eaa37d931275111ded33c289ab890b6b0"
     },
     {
       "path": "html/developer.html",
-      "sha": "b9b0c50b09b4823267f51624d9923a3608c96c95"
+      "sha": "24bf0baff9ee461512db36798f6f1101c399beee"
     },
     {
       "path": "html/forecast.html",
-      "sha": "5a3c9c900e6421f3081843f26158a1a8ef837671"
+      "sha": "a7823cf6b9f26bec6014bdec4fb3d80530180323"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "732cb574799283b0160ba194de8cc3f531808441"
+      "sha": "9934057cdafc86b438474996e4c267450b968689"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "b95e157b63865c28a95df7c0284060ffdf5cf71c"
+      "sha": "799465c77dea68de282aacb55ab96843e87da7df"
     },
     {
       "path": "html/planner.html",
-      "sha": "3dddb47cc1661841c91054794ba2dd35f510b185"
+      "sha": "2b1a44782b537f31e6ee558d6469306dbfc6241c"
     },
     {
       "path": "html/practice.html",
@@ -125,15 +125,15 @@
     },
     {
       "path": "html/result.html",
-      "sha": "e32f761f88de02d32f3a4fa818b5ee4e65fc4f21"
+      "sha": "85e9f5f8dbcb953d16540c46a92aadaf33f4a963"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "7ce600a6139a39f484b7bb3da5051868a38fec5a"
+      "sha": "4429fdaf1e1931fa4fa84d98ab287c6e61a3ff5f"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "370174d9508621132221d1acd027d1f5bc0e1aa5"
+      "sha": "247fd9f4cbb85c521d2ca74ae6c7ad0e7253ae55"
     },
     {
       "path": "img/background.svg",
@@ -156,12 +156,8 @@
       "sha": "c5c65390cfe101bb8ce6fab39152800493c65838"
     },
     {
-      "path": "img/favicon.svg",
-      "sha": "36ad4066f2f378f19333e3602bbace1ef4a1a752"
-    },
-    {
       "path": "img/hanmo_color.png",
-      "sha": "3c7c89224e277953f624750c26d4e03ec6ffd9b6"
+      "sha": "baeb2dba7e23393844da368d51e6deb4b791fcb7"
     },
     {
       "path": "img/hanmo_white.svg",
@@ -177,11 +173,11 @@
     },
     {
       "path": "img/watermark.png",
-      "sha": "f4b7483d69d58422d05592ce110603aa74bfc718"
+      "sha": "3ee0a229438e94ffeb8b4566af293c6105409765"
     },
     {
       "path": "index.html",
-      "sha": "590c3de13a08d3ae03184e18748f38d7e681ce03"
+      "sha": "71bf3ab4b7bd2aa164b566b5615304d86f4c2074"
     },
     {
       "path": "js/academic-data-source.js",
@@ -189,7 +185,7 @@
     },
     {
       "path": "js/academic-support.js",
-      "sha": "a495f0e17fc1a2ac5d6ccbdc2bc4da7122f0bfe7"
+      "sha": "ae2bbf83410f27405bbae0524884a1a17a4e8a38"
     },
     {
       "path": "js/capacity-settings.js",

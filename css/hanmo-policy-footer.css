@@ -184,8 +184,6 @@ body.hanmo-pc-only-layout > main {
   body.hanmo-practice-layout > .half { min-height: 0; overflow: hidden; }
   body.hanmo-practice-layout .half > .selectZone_mainArea,
   body.hanmo-practice-layout .half > .mainArea { min-height: 0; overflow: hidden; }
-  body.hanmo-practice-layout .selectZone_mainArea { width: calc(100% - 220px); }
-  body.hanmo-practice-layout .selectZone_mainArea > h2 { flex: 0 0 35px; height: 35px; }
   body.hanmo-practice-layout .tableZone {
     box-sizing: border-box;
     display: flex;
@@ -210,11 +208,8 @@ body.hanmo-pc-only-layout > main {
     padding-bottom: 0;
     overflow: visible;
   }
-  body.hanmo-practice-layout .tableZone td { height: 22px; font-size: 12px; }
-  body.hanmo-practice-layout .tableZone th { height: 26px; font-size: 12px; }
   body.hanmo-practice-layout #course-search-prompt { margin: 6px 0; }
   body.hanmo-practice-layout .course-general-warning { margin-block: 4px; }
-  body.hanmo-practice-layout .timer { margin-top: clamp(24px, 7vh, 74px); }
   body.hanmo-pc-only-layout > main { flex: 1 1 auto; min-height: 0; }
 }
 
@@ -230,4 +225,63 @@ body.hanmo-pc-only-layout > main {
   }
   body.hanmo-developer .container .info.blueBox { padding: 14px 20px; }
   body.hanmo-developer > .hanmo-policy-footer { flex: 0 0 auto; }
+}
+
+/* 기존 모의신청 색상·폰트는 유지하고 selectZone의 상·하단 테이블 좌표만 고정합니다. */
+body.hanmo-practice-layout .half > :is(.mainArea,.selectZone_mainArea) {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+@media (min-width: 1200px) and (min-height: 750px) {
+  body.hanmo-practice-layout .selectZone_mainArea { overflow: hidden; }
+  body.hanmo-practice-layout .selectZone_mainArea > h2 {
+    box-sizing: border-box;
+    height: 42px;
+    min-height: 42px;
+    flex: 0 0 42px;
+    margin: 0;
+  }
+  body.hanmo-practice-layout .tableZone {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: calc(100% - 28px);
+    min-height: 0;
+    overflow: hidden;
+  }
+  body.hanmo-practice-layout .tableZone > #course-mode-nav,
+  body.hanmo-practice-layout .tableZone > .course-warning-slot,
+  body.hanmo-practice-layout .tableZone > #course-search-prompt {
+    flex-shrink: 0;
+  }
+  body.hanmo-practice-layout .vsugangTable {
+    box-sizing: border-box;
+    flex: 0 0 clamp(260px, 35vh, 380px);
+    height: clamp(260px, 35vh, 380px);
+    min-height: 0;
+    margin-top: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: stretch;
+  }
+  body.hanmo-practice-layout .vsugangedTable {
+    box-sizing: border-box;
+    flex: 0 0 clamp(138px, 21vh, 226px);
+    height: clamp(138px, 21vh, 226px);
+    min-height: 0;
+    margin-top: 26px;
+    padding-bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  body.hanmo-practice-layout .vsugangTable > table,
+  body.hanmo-practice-layout .vsugangedTable > table { width: 100%; }
+}
+/* 표가 없어도 검색 안내가 차지하는 24px은 유지하므로 Search 전후에 하단이 움직이지 않습니다. */
+body.hanmo-practice-layout #course-search-prompt[hidden] {
+  display: block;
+  visibility: hidden;
 }

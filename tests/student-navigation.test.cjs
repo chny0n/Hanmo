@@ -380,7 +380,7 @@ test('학교 문의처는 검색어 추천만 제공하고 미검증 연락처 �
  }
  assert.doesNotMatch(html,/<select\b|(?:tel|mailto):/);
  assert.doesNotMatch(js,/02-2173|031-330|@hufs\.ac\.kr|\bfetch\s*\(/);
- assert.match(js,/site:hufs\.ac\.kr/);
+ assert.match(js,/'한국외국어대학교 '\+value/);
  for(const p of ['index.html',...student.map(name=>'html/'+name+'.html'),
   'html/vsugang.html','html/developer.html','html/result.html']){
   assert.match(fs.readFileSync(path.join(ROOT,p),'utf8'),/academic-support\.html/,p);
@@ -393,17 +393,23 @@ test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정
  assert.ok(body);
  const names=[...body.matchAll(/<li><strong>([^<]+)<\/strong>/g)].map(x=>x[1]);
  assert.deepEqual(names,['ZetBe','심민성','이의상','김채윤']);
- assert.ok(body.includes('한국외국어대학교 컴퓨터전자시스템공학부'));
+ for(const affiliation of ['한국외국어대학교 컴퓨터전자시스템공학부','한국외국어대학교 경제학전공','한국외국어대학교 ELLT','한국외국어대학교 아랍어과']){
+  assert.ok(body.includes(affiliation),affiliation);
+ }
  assert.ok(html.includes('class="hanmo-policy-footer"'));
 });
 
-test('새 favicon은 정사각형 자체 이미지로 사용하고 원본 신청 화면은 변경하지 않는다',()=>{
- const icon=fs.readFileSync(path.join(ROOT,'img/favicon.svg'),'utf8');
- assert.match(icon,/<svg[^>]*width="64" height="64" viewBox="0 0 64 64"/);
+test('기존 정사각형 한모 사진이 모든 화면의 favicon이다',()=>{
+ const asset=fs.readFileSync(path.join(ROOT,'img/hanmo_color.png'));
+ assert.equal(asset.toString('ascii',1,4),'PNG');
+ assert.equal(asset.readUInt32BE(16),700);
+ assert.equal(asset.readUInt32BE(20),700);
+ assert.equal(fs.existsSync(path.join(ROOT,'img/favicon.svg')),false);
  for(const page of ['index.html',...student.map(name=>'html/'+name+'.html'),
-  'html/vsugang.html','html/developer.html','html/result.html','html/selectZone.html','html/incident-404.html','html/pc-only.html']){
+  'html/practice.html','html/vsugang.html','html/developer.html','html/result.html',
+  'html/selectZone.html','html/incident-404.html','html/pc-only.html']){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
-  assert.match(html,/rel="icon" type="image\/svg\+xml" sizes="any"/,page);
-  assert.ok(html.includes('img/favicon.svg'),page);
+  assert.match(html,/hanmo_color\.png/,page);
+  assert.doesNotMatch(html,/favicon\.svg/,page);
  }
 });

@@ -405,7 +405,7 @@ test('검색형 학교 문의처는 선택식 연락처 목록 없이 추천 검
   await expect(page.locator('#support-result')).toBeVisible();
   const href=await page.locator('#support-result-link').getAttribute('href');
   expect(href).toContain('https://www.google.com/search?');
-  expect(new URL(href).searchParams.get('q')).toContain('site:hufs.ac.kr 장학금 문의');
+  expect(new URL(href).searchParams.get('q')).toBe('한국외국어대학교 장학금 문의');
   await page.locator('#support-query').fill('직접 쓴 새로운 질문');
   await expect(page.locator('#support-suggestions button')).toHaveCount(0);
   await page.locator('#support-query').press('Enter');
@@ -415,17 +415,19 @@ test('검색형 학교 문의처는 선택식 연락처 목록 없이 추천 검
   expect(text).not.toMatch(/02-2173-|031-330-|@hufs\.ac\.kr/);
 });
 
-test('대표 favicon은 64x64 정사각형이고 모든 수정 가능 페이지에서 같은 아이콘을 사용한다',async({page})=>{
- const resource=await page.request.get('/img/favicon.svg');
- expect(resource.ok()).toBe(true);
- const svg=await resource.text();
- expect(svg).toMatch(/width="64" height="64" viewBox="0 0 64 64"/);
- for(const path of ['/index.html','/html/vsugang.html','/html/selectZone.html',
-  '/html/developer.html','/html/result.html','/html/academic-timeline.html',
-  '/html/catalog.html','/html/academic-calendar.html','/html/academic-support.html',
-  '/html/planner.html','/html/incident-404.html','/html/pc-only.html']){
-   await page.goto(path);
-   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href',/favicon\.svg$/);
+test('대표 favicon은 기존 한모 700x700 사진을 사용하며 합성 SVG를 쓰지 않는다',async({page})=>{
+ const response=await page.request.get('/img/hanmo_color.png');
+ expect(response.ok()).toBe(true);
+ const png=await response.body();
+ expect(png.toString('ascii',1,4)).toBe('PNG');
+ expect(png.readUInt32BE(16)).toBe(700);
+ expect(png.readUInt32BE(20)).toBe(700);
+ for(const path of ['/index.html','/html/practice.html','/html/vsugang.html',
+  '/html/selectZone.html','/html/developer.html','/html/result.html',
+  '/html/academic-timeline.html','/html/catalog.html','/html/academic-calendar.html',
+  '/html/academic-support.html','/html/planner.html','/html/incident-404.html','/html/pc-only.html']){
+  await page.goto(path);
+  await expect(page.locator('link[rel="icon"],link[rel="shortcut icon"]')).toHaveAttribute('href',/hanmo_color\.png$/);
  }
 });
 
@@ -510,4 +512,55 @@ test('학사공지와 강의검색의 제목·검색칸·상태 안내의 공백
  for(const key of Object.keys(positions[0])){
   expect(Math.abs(positions[0][key]-positions[1][key]),key+' whitespace differs').toBeLessThanOrEqual(1);
  }
+});
+
+test('Search 버튼 실행 전후 안내·상단 바·신청 완료 표가 화면 내 같은 좌표를 유지한다',async({page})=>{
+ await page.setViewportSize({width:1980,height:1080});
+ await page.addInitScript(()=>{
+  localStorage.setItem('deviceInfo','true');
+  localStorage.setItem('practiceSetter','1');
+  localStorage.setItem('psubjectValue','5');
+  localStorage.setItem('subjectValue','3');
+  localStorage.setItem('waitingValue','no');
+  localStorage.setItem('waitingEntryValue','no');
+ });
+ await page.goto('/html/selectZone.html');
+ const coords=()=>page.evaluate(()=>{
+  const r=q=>document.querySelector(q).getBoundingClientRect();
+  return {bar:r('#course-mode-nav').top,barHeight:r('#course-mode-nav').height,
+   warning:r('.course-warning-slot').top,prompt:r('#course-search-prompt').top,
+   course:r('.vsugangTable').top,courseHeight:r('.vsugangTable').height,
+   done:r('.vsugangedTable').top};
+ });
+ const before=await coords();
+ await page.locator('#course-mode-nav .search').click();
+ await expect(page.locator('.table')).toBeVisible();
+ await expect(page.locator('#course-search-prompt')).toBeHidden();
+ const after=await coords();
+ for(const key of Object.keys(before))expect(Math.abs(before[key]-after[key]),key).toBeLessThanOrEqual(1);
+ await page.locator('input[name="course-mode"][value="GENERAL"]').check();
+ const general=await coords();
+ for(const key of Object.keys(before))expect(Math.abs(before[key]-general[key]),'general '+key).toBeLessThanOrEqual(1);
+});
+
+test('practice와 selectZone은 기존 황갈색 메뉴·청색 사용자 패널을 유지한다',async({page})=>{
+ for(const path of ['/html/practice.html','/html/selectZone.html']){
+  await page.goto(path);
+  const colors=await page.evaluate(()=>({
+   nav:getComputedStyle(document.querySelector('.navigation')).backgroundColor,
+   user:getComputedStyle(document.querySelector('.userInfo')).backgroundColor,
+   button:getComputedStyle(document.querySelector('.navButton button')).backgroundColor
+  }));
+  expect(colors.nav,path).toBe('rgb(151, 121, 85)');
+  expect(colors.user,path).toBe('rgb(0, 45, 86)');
+  expect(colors.button,path).toBe('rgb(151, 121, 85)');
+  await expect(page.locator('.practiceBadge')).toHaveCount(0);
+ }
+});
+
+test('가상 404의 오류 설명은 적색으로 표시한다',async({page})=>{
+ await page.goto('/html/incident-404.html');
+ const red=await page.evaluate(()=>[...document.querySelector('.hanmo-404-area').children]
+  .map(x=>getComputedStyle(x).color));
+ expect(red).toEqual(['rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)']);
 });
