@@ -26,11 +26,16 @@ test('PC 진단은 실행 전 요청이 없고 다운로드 처리량을 측정�
   const requests=[];
   page.on('request',request=>requests.push(request.url()));
   await page.goto('/html/readiness.html');
+  await expect(page.locator('body')).not.toContainText(/p95/i);
   await expect(page.locator('#readiness-result')).toBeHidden();
   await expect(page.locator('#readiness-network')).toBeChecked();
   expect(requests.some(u=>u.includes('network-probe.txt'))).toBe(false);
   await page.locator('#readiness-start').click();
   await expect(page.locator('#readiness-result')).toBeVisible({timeout:30000});
+  await expect(page.locator('body')).not.toContainText(/p95/i);
+  for(const metric of ['frame','drift','latency']){
+    await expect(page.locator(`#readiness-${metric}-value`)).toContainText(/95% 이상이 \d+\.\dms 이하/);
+  }
   await expect(page.locator('#readiness-speed-value')).toContainText('Mbps');
   await expect(page.locator('#readiness-latency-value')).toContainText('ms');
   await expect(page.locator('#readiness-jitter-value')).toContainText('ms');
@@ -58,14 +63,21 @@ test('반응속도 8회 완료 결과가 브라우저에 저장된다',async({pa
 test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시간으로 실행된다',async({page})=>{
   await seedProfile(page);
   await page.goto('/html/strategy-lab.html');
+  await expect(page.locator('body')).not.toContainText('가상');
   await expect(page.locator('#strategy-reaction')).toContainText('250ms');
   await expect(page.locator('#strategy-clock')).toContainText('시');
   await expect(page.locator('#strategy-courses tr')).toHaveCount(3);
   await expect(page.locator('#strategy-courses input')).toHaveCount(12);
+  await expect(page.getByRole('textbox',{name:'A 과목 이름',exact:true})).toHaveValue('과목 A');
+  await expect(page.getByRole('spinbutton',{name:'A 정원',exact:true})).toHaveValue('8');
+  await page.getByRole('button',{name:'과목 추가',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'D 과목 이름',exact:true})).toHaveValue('과목 D');
+  await page.getByRole('button',{name:'D 삭제',exact:true}).click();
   await expect(page.locator('#strategy-form input[name="seed"], #strategy-form input[name="startDelay"], #strategy-form input[name="actionInterval"]')).toHaveCount(0);
   await expect(page.locator('#strategy-share')).toHaveCount(0);
   await page.locator('#strategy-run').click();
   await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
+  await expect(page.locator('#strategy-result')).not.toContainText('가상');
   await expect(page.locator('#strategy-recommendation')).toContainText('신청 순서는');
   await expect(page.locator('#strategy-recommendation')).toContainText('모든 과목 성공 확률은');
   await expect(page.locator('#strategy-input')).toBeHidden();
@@ -88,6 +100,7 @@ test('전략 계산을 취소해도 최소 과목 수를 유지한다',async({pa
   await rows.last().getByRole('button').click();
   await expect(rows).toHaveCount(2);
   await page.locator('#strategy-run').click();
+  await expect(page.locator('#strategy-status')).toHaveText('1,000회 반복 실험 중입니다.');
   await page.locator('#strategy-cancel').click();
   await expect(page.locator('#strategy-status')).toHaveText('계산을 취소했습니다.');
   for(const button of await rows.getByRole('button').all()) await expect(button).toBeDisabled({timeout:1000});

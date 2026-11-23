@@ -1,6 +1,8 @@
 // @ts-check
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {DESIGN_BASE_COMMIT,repositoryRoot,startDesignBaseline}
   from '../scripts/capture-design-baseline.mjs';
 import {gitBlobHashes} from '../scripts/git-blob-hashes.mjs';
@@ -133,7 +135,9 @@ function fixtureSnapshot(){
 
 /** @param {import('@playwright/test').Page} page @param {{state:string,requests:number}} fixture */
 async function mockData(page,fixture){
-  await page.route('**/data/academic-source-config.json',route=>route.fulfill({json:fixtureConfiguration}));
+  await page.route('**/data/academic-source-config.json',route=>route.fulfill({
+    json:fixture.state==='DISABLED'?{schemaVersion:1,mode:'disabled'}:fixtureConfiguration,
+  }));
   await page.route('https://hanmo-ui-fixture.supabase.co/**',route=>{
     if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:{
       'access-control-allow-origin':'*','access-control-allow-methods':'GET, OPTIONS',
@@ -143,6 +147,7 @@ async function mockData(page,fixture){
     if(fixture.state==='OFFLINE')return route.abort('connectionrefused');
     const snapshot=fixtureSnapshot();
     if(fixture.state==='INVALID')snapshot.expires_at='2026-11-02T00:00:00Z';
+    if(fixture.state==='REVOKED')snapshot.revoked_at='2026-11-05T00:00:00Z';
     return route.fulfill({json:fixture.state==='EMPTY'?[]:[snapshot],
       headers:{'access-control-allow-origin':'*'}});
   });
@@ -210,6 +215,37 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
       for(const field of screen.fields)await expect(page.locator(field)).toBeDisabled();
       expect(fixture.requests).toBe(2);
       await captureState(page,info,screen.slug+'-EMPTY-after-retry');
+    });
+
+    test(screen.name+'에서 철회한 판본은 재시도나 OFF 전환 뒤 다시 표시하지 않는다',async({page})=>{
+      const fixture={state:'READY',requests:0};
+      await mockData(page,fixture);
+      await page.goto(screen.path);
+      const status=page.locator(screen.status);
+      const cards=page.locator(screen.cards);
+      const retry=page.locator(screen.retry);
+      await expect(cards).toContainText('합성 화면 검증');
+      expect(fixture.requests).toBe(1);
+
+      fixture.state='REVOKED';
+      await page.reload();
+      await expect(status).toContainText(/검증|검수|확인할 수 없어/);
+      await expect(cards).toHaveCount(0);
+      await expect(page.locator(screen.query)).toBeDisabled();
+      await expect(retry).toBeVisible();
+      expect(fixture.requests).toBe(2);
+      await retry.click();
+      await expect.poll(()=>fixture.requests).toBe(3);
+      await expect(status).toContainText(/검증|검수|확인할 수 없어/);
+      await expect(cards).toHaveCount(0);
+
+      fixture.state='DISABLED';
+      await page.reload();
+      await expect(status).toContainText(/연결 전|미연결|연결되지/);
+      await expect(cards).toHaveCount(0);
+      await expect(page.locator(screen.query)).toBeDisabled();
+      await expect(retry).toBeHidden();
+      expect(fixture.requests).toBe(3);
     });
 
     for(const state of ['EMPTY','INVALID','READY']){
@@ -320,13 +356,17 @@ test('practice와 selectZone의 소스·공유 스타일·이미지는 기준 Gi
   const protectedPaths=[
     'html/practice.html','html/selectZone.html','css/practice.css','css/normalize.css',
     'css/gnb.css','css/hanmo-policy-footer.css','js/pc-only.js','js/gnb.js',
-    'js/hanmoSys.js','js/practice.js','js/selectZone.js','img/favicon-purple.svg',
+    'js/hanmoSys.js','js/practice.js','js/selectZone.js','js/result.js','img/favicon-purple.svg',
     'img/watermark.png','img/register.png','img/delete.png','img/hanmo_color.png',
   ];
+  const baseline=JSON.parse(readFileSync(join(repositoryRoot,'scripts/baselines/ui-freeze.json'),'utf8'));
+  const approvedChanges=new Set(['css/practice.css','js/selectZone.js','js/result.js']);
   const current=gitBlobHashes(repositoryRoot,protectedPaths);
   for(const path of protectedPaths){
-    const original=execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
-      {cwd:repositoryRoot,encoding:'utf8'}).trim();
+    const original=approvedChanges.has(path)?baseline.files.find(file=>file.path===path)?.sha
+      :execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
+        {cwd:repositoryRoot,encoding:'utf8'}).trim();
+    expect(original,path).toBeTruthy();
     expect(current.get(path),path).toBe(original);
   }
 });

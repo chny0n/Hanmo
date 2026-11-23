@@ -1,8 +1,10 @@
 import {readFile,stat,readdir} from 'node:fs/promises';
 import {resolve,join,sep} from 'node:path';
+import {assertPreviewData} from './preview-data.mjs';
 
 const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
+await assertPreviewData(dist);
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
   'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
@@ -16,7 +18,7 @@ const htmlRoutes=[
 const exists=async(path)=>{try{return (await stat(path)).isFile();}catch{return false;}};
 const must=async(name)=>{if(!await exists(join(dist,name)))throw Error('Missing staged asset '+name);};
 for(const name of [
-  'index.html','css/student-ui.css','js/student-forecast.js',
+  'index.html','LICENSE','THIRD-PARTY-NOTICES.txt','img/lucide/LICENSE','css/student-ui.css','js/student-forecast.js',
   'js/student-preferences.js','js/student-notices.js','js/student-catalog.js',
   'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',

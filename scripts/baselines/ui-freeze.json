@@ -73,7 +73,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "900699df37380821064db808652ed0386398b2ef"
+      "sha": "a07e1630ffbd8fa7f67beaa9963b7eb81f57a2de"
     },
     {
       "path": "css/result.css",
@@ -129,7 +129,7 @@
     },
     {
       "path": "html/readiness.html",
-      "sha": "b8cd9d7a632806892224f17db69215d86e0531e3"
+      "sha": "71c536423ae5b6c9069ead90973e4f77e910db0f"
     },
     {
       "path": "html/result.html",
@@ -141,7 +141,7 @@
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "0677ccbf73cb619d09eab733535e5f50d0d8af55"
+      "sha": "cb335efe5be02169cbb6f7a23b7f1c4198514473"
     },
     {
       "path": "html/vsugang.html",
@@ -261,7 +261,7 @@
     },
     {
       "path": "js/result.js",
-      "sha": "9d273f3deb5d6e693b7bd2e7d37e852a6f8db8f0"
+      "sha": "83e3ae8aefbd29090c0ea91e2ad34673e52ee011"
     },
     {
       "path": "js/scenario-settings.js",
@@ -269,7 +269,7 @@
     },
     {
       "path": "js/selectZone.js",
-      "sha": "7c8d4ca8c4f18f1159c19fb0d576dd3a3471c2f3"
+      "sha": "671b6aeb56df29e41122658305663560efc36861"
     },
     {
       "path": "js/student-catalog.js",

@@ -49,5 +49,5 @@ test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
   assert.doesNotThrow(()=>validateScenario(limit));
   assert.equal(simulate(limit).order.length,limit.courses.length);
   limit.courses[0].capacity=301;
-  assert.throws(()=>validateScenario(limit),/가상 정원/);
+  assert.throws(()=>validateScenario(limit),{name:'RangeError',message:'정원 입력값을 확인하세요.'});
 });

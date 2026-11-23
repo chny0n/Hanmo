@@ -273,6 +273,14 @@ test('TIME-only report remains TIME-only even with a stored SELECT amount',()=>{
   assert.match(h.get('result').children[0].children[0].textContent,/8\.750/);
   assert.match(h.get('time').children[1].textContent,/TIME 부분/);
 });
+test('손상된 저장 시간과 음수 대기 차감으로 잘못된 결과 시간을 표시하지 않는다',()=>{
+  const h=createHarness({practiceSetter:1,psubjectValue:3,subjectValue:2,
+    waitingValue:'yes',TIMEtime:'Infinity',SELECTtime:'2',SELECTWaitTime:'3'});
+  h.load('result.js');
+  assert.equal(h.get('time').children[1].children[0].textContent,'0.000초');
+  assert.equal(h.get('time').children[2].children[0].textContent,'0.000초');
+  assert.equal(h.get('result').children[0].children[0].textContent,'0.000초');
+});
 test('tampered practice count is never interpreted as HTML on the report page',()=>{
   const h=createHarness({practiceSetter:1,psubjectValue:'<img src=x onerror=alert(1)>',
     subjectValue:1,waitingValue:'no',TIMEtime:'1.25',SELECTtime:'2'});

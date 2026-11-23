@@ -683,16 +683,58 @@ test('홈 NOTICE는 원본 한모의 두 문구를 5초마다 세로 순환한�
   expect(await list.evaluate(element=>element.style.bottom)).toBe('77px');
   await page.clock.fastForward(5100);
   expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
+  await list.hover();
+  await page.clock.fastForward(5100);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
+  await page.mouse.move(0,0);
+  await items.nth(0).locator('a').focus();
+  await page.clock.fastForward(5100);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
+  await items.nth(0).locator('a').blur();
+  await page.clock.fastForward(5100);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('77px');
+  await page.evaluate(()=>{
+    Object.defineProperties(document,{
+      hidden:{value:true,configurable:true},
+      visibilityState:{value:'hidden',configurable:true},
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.clock.runFor(15_000);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('77px');
+  await page.evaluate(()=>{
+    Reflect.deleteProperty(document,'hidden');
+    Reflect.deleteProperty(document,'visibilityState');
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.clock.runFor(5000);
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
 });
 
-test('통합 학사 정보와 강의 검색에서 불필요한 학교 홈페이지 링크를 숨긴다',async({page})=>{
+test('학교 원문은 학사 달력의 링크를 선택할 때만 새 탭에서 열린다',async({page,context})=>{
+ const schedule='https://academic.hufs.ac.kr/academic/index.do';
+ const visits=[];
+ context.on('request',request=>{
+   if(request.url()===schedule)visits.push(request.url());
+ });
+ await context.route(schedule,route=>route.fulfill({
+   contentType:'text/plain; charset=utf-8',body:'학사일정 원문 링크 검증',
+ }));
  for(const slug of ['academic-timeline','catalog']){
    await page.goto('/html/'+slug+'.html');
    await expect(page.getByRole('link',{name:'학교 홈페이지'})).toHaveCount(0);
  }
  await page.goto('/html/academic-timeline.html');
  await expect(page.getByRole('tab',{name:'학사 공지'})).toBeVisible();
- await expect(page.getByRole('tab',{name:'학사 달력'})).toBeVisible();
+ await page.getByRole('tab',{name:'학사 달력'}).click();
+ const link=page.getByRole('link',{name:/학교 학사일정 원문/});
+ await expect(link).toHaveAttribute('href',schedule);
+ expect(visits).toEqual([]);
+ const [popup]=await Promise.all([page.waitForEvent('popup'),link.press('Enter')]);
+ await expect(popup).toHaveURL(schedule);
+ await expect(popup.locator('body')).toContainText('학사일정 원문 링크 검증');
+ expect(visits).toEqual([schedule]);
+ expect(await popup.evaluate(()=>window.opener===null)).toBe(true);
 });
 test('공개 학사 도움말은 현재 제공하는 화면에서 마우스·키보드로 확인된다',async({page})=>{
  await page.goto('/html/catalog.html');

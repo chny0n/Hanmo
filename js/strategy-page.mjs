@@ -17,9 +17,9 @@ if(form){
   const reaction=document.getElementById('strategy-reaction');
   let worker=null;
   const initial=[
-    {id:'A',name:'가상 A',rank:1,capacity:8,rivals:30},
-    {id:'B',name:'가상 B',rank:2,capacity:20,rivals:50},
-    {id:'C',name:'가상 C',rank:3,capacity:20,rivals:30},
+    {id:'A',name:'과목 A',rank:1,capacity:8,rivals:30},
+    {id:'B',name:'과목 B',rank:2,capacity:20,rivals:50},
+    {id:'C',name:'과목 C',rank:3,capacity:20,rivals:30},
   ];
   function readRows(){
     return [...body.querySelectorAll('tr')].map(row=>{
@@ -35,7 +35,7 @@ if(form){
       for(const field of ['name','rank','capacity','rivals']){
         const td=document.createElement('td'),input=document.createElement('input');
         input.dataset.field=field;input.required=true;
-        input.setAttribute('aria-label',item.id+' '+({name:'과목 이름',rank:'중요 순위',capacity:'가상 정원',rivals:'경쟁자'}[field]));
+        input.setAttribute('aria-label',item.id+' '+({name:'과목 이름',rank:'중요 순위',capacity:'정원',rivals:'경쟁자'}[field]));
         input.type=field==='name'?'text':'number';
         if(field==='name')input.maxLength=30;
         else{
@@ -87,7 +87,7 @@ if(form){
     const items=readRows();if(items.length>=8)return;
     const id='ABCDEFGH'.split('').find(c=>!items.some(row=>row.id===c));
     if(!id)return;
-    items.push({id,name:'가상 '+id,rank:items.length+1,capacity:15,rivals:30});
+    items.push({id,name:'과목 '+id,rank:items.length+1,capacity:15,rivals:30});
     renderRows(items);
   });
   cancel.addEventListener('click',()=>{
@@ -111,7 +111,7 @@ if(form){
     catch{status.textContent='계산 스레드를 실행하지 못했습니다.';return;}
     const active=worker;busy(true);
     clock.textContent=label;
-    status.textContent='가상 경쟁 조건을 1,000회 반복 실험 중입니다.';
+    status.textContent='1,000회 반복 실험 중입니다.';
     active.addEventListener('message',event=>{
       if(worker!==active)return;
       const message=event.data;
