@@ -143,7 +143,7 @@ test('개발자 페이지는 네 명의 Contributor를 나란히 표기한다',a
  await page.goto('/html/developer.html');
  await expect(page.locator('.hanmo-contributor-list > li')).toHaveCount(4);
  await expect(page.locator('.hanmo-contributor-list strong')).toHaveText(['ZetBe','심민성','이의상','김채윤']);
- await expect(page.locator('.hanmo-contributor-list span')).toHaveCount(1);
+ await expect(page.locator('.hanmo-contributor-list span')).toHaveCount(4);
 });
 
 test('관심강좌·전공·교양·기초 선택은 Search 전 메뉴만 바꾸고 네 화면을 캡처한다',async({page})=>{
