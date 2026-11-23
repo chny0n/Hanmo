@@ -1,12 +1,12 @@
 # 한모 GitHub 이슈·아키텍처 동기화 색인
 
-**2026-11-23 기준.** 일반 GitHub 이슈 **74건을 열린·닫힌 상태 모두 확인**했습니다. 이 중 **열림 24건 / 닫힘 50건**입니다. 제품·권리의 최우선 정본은 [정보처 서면 회신 원문](sources/2026-11-23-hufs-information-office-reply.txt)과 [아키텍처 §0](architecture.md)이며, 실제 작업 명세는 각 이슈의 **최신 본문·제목·상태**입니다. 오래된 체크리스트는 GitHub 편집 이력으로 남더라도 최신 명세를 덮어쓰지 않습니다.
+**2026-11-23 기준.** 일반 GitHub 이슈 **기존 74건을 점검**했고 최종 인계 이슈 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)를 추가해 **총 75건(열림 25건 / 닫힘 50건)**입니다입니다. 제품·권리의 최우선 정본은 [정보처 서면 회신 원문](sources/2026-11-23-hufs-information-office-reply.txt)과 [아키텍처 §0](architecture.md)이며, 실제 작업 명세는 각 이슈의 **최신 본문·제목·상태**입니다. 오래된 체크리스트는 GitHub 편집 이력으로 남더라도 최신 명세를 덮어쓰지 않습니다.
 
 학교는 과거 학기 목록·데이터 파일·API를 별도 제공하지 않으며 한모 서비스를 승인·인증·제휴하지 않았습니다. 허용 공개 학사공지의 최소 안내/원문 링크와 비식별 개설 관측 집계·비공식 자체 전망만 제한적으로 다루고, 교수명·수강 관련 정보, 학칙·졸업요건 **원문 링크/인용/요약/표/자동 확인**, 졸업학점 판정, 학교 대행 FAQ, 학교 계정·개인 성적자료는 제외합니다. 개별 강좌/분반 상세 이용은 서면 확인 전 보류합니다.
 
-**자동 수집은 현재 OFF·미구현:** 공지 ≤1회/일(첫 목록과 신규 상세만), 강의시간표 ≤2회/학기, 간격 ≥10초·동시 1·배치 최대 50건, 수강신청/정정과 각 전후 1일 중단, 오류·접속 제한 발생 시 당일 **재시도 금지**. 공개 노출 URL/운영자 User-Agent 준수와 전역 차단은 [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)에서 구현·검증합니다. DB는 **정적 스냅샷 우선**, 선택적으로 Supabase Free($0). 소스 설정은 `mode: disabled`이며 [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 구형 SQL로 미병합·실배포 부적합입니다.
+**자동 수집은 현재 OFF·미구현:** 공지 ≤1회/일(첫 목록과 신규 상세만), 강의시간표 ≤2회/학기, 간격 ≥10초·동시 1·배치 최대 50건, 수강신청/정정과 각 전후 1일 중단, 오류·접속 제한 발생 시 당일 **재시도 금지**. 공개 노출 URL/운영자 User-Agent 준수와 전역 차단은 [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)에서 구현·검증합니다. DB는 **정적 스냅샷 우선**, 선택적으로 Supabase Free($0). **2차 #71 실기기 QA 이후 3차 책임자 김채윤(`qamarrchae`)이 직접 실습·보안/복구를 검증**합니다([#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)). 소스 설정은 `mode: disabled`이며 [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 구형 SQL로 미병합·실배포 부적합입니다.
 
-## 현재 열려 있는 실행·검증 이슈 (24건)
+## 현재 열려 있는 실행·검증 이슈 (25건)
 
 ### 공개 공지·집계 및 안전한 검색
 
@@ -50,6 +50,7 @@
 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) | [검증][공통][P1][통합] PC 접근성·비공식 고지·지원 기기·삭제 UI 전체 QA | open |
 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) | [검증][공통][P0][통합] 학교 서면 이용 경계·공식 오인·공개 산출물·GPL 출시 감사 | open |
 | [#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101) | [검증][공통][P0][통합] JS/JSDoc 이관 후 허용 웹·타입·원본 동등성 최종 인수 | open |
+| [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125) | [검증][4차][P0][인수] 전체 개발 완료 후 원개발자 dlacked에게 소스·운영 인계 | open |
 
 ## 불허·미승인 범위로 종료한 이슈 (8건, `not_planned`)
 
@@ -128,6 +129,7 @@
 - **병합 확인:** [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117) 통합 검색, [#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119) 공지 후보, [#122](https://github.com/ot4562-glitch/Hanmo_develop/pull/122) 합성 CAPACITY. 이는 실학사 자료 연결/학교 승인·정확도 근거가 아닙니다.
 - **미병합과 상충 범위:** [#118](https://github.com/ot4562-glitch/Hanmo_develop/pull/118) 학사 FAQ, [#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120) 날짜 계산, [#121](https://github.com/ot4562-glitch/Hanmo_develop/pull/121) 학칙 비교 및 Draft [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 운영에 포함되지 않으며, 특히 FAQ/학칙은 서면 범위상 학생 서비스 연결 금지입니다.
 - **코드 이관:** [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)로 TS→JS/JSDoc 이관 완료. 3차 Supabase 실설치를 선행해야 한다는 옛 지시는 폐기, 최종 동등성/PC QA는 [#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101).
+- **최종 원개발자 인계:** 전체 개발·QA·권리·운영 검증을 마친 뒤 원개발자 `dlacked`에게 소스·문서·테스트·운영 절차를 전달하고 수락 확인하는 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)는 **계획 중인 미완료 작업**입니다.
 - **관리:** 이슈는 댓글로 변경 알림을 쓰지 않고 **제목·본문·상태 직접 편집**으로 정합성을 유지합니다. 코어/합성 CI 성공과 허용 자료의 사람 검수·실DB·브라우저 실기기·운영 인수는 별개입니다.
 
 새 이슈를 만들 때는 [에이전트 운영 규칙](../agent.md#github-이슈-작성과-분류)의 우선순위·담당·검증 가능한 완료 조건을 따르고 동일한 기존 열린 이슈를 우선 보완합니다.

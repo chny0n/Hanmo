@@ -123,8 +123,8 @@ test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 �
  assert.match(html,/name='waitingCourseYN' value='yes' checked/);
  assert.match(html,/name='waitingEntryYN' value='no' checked/);
  assert.match(html,/name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked/);
- assert.match(css,/\.settingPanel \.waiting-setting-group label:has\(input:checked\)/);
- assert.match(css,/\.settingPanel \.waiting-setting-group input\[type="radio"\]/);
+ assert.match(css,/\.settingPanel \.waiting-setting-group \.segmented input:checked \+ span/);
+ assert.match(css,/\.settingPanel \.waiting-setting-group \.segmented input\[type="radio"\]/);
  assert.match(css,/prefers-reduced-motion:\s*reduce/);
 });
 
