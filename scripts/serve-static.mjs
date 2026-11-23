@@ -17,6 +17,7 @@ const mime={
   '.jpg':'image/jpeg',
   '.jpeg':'image/jpeg',
   '.xml':'application/xml; charset=utf-8',
+  '.txt':'text/plain; charset=utf-8',
 };
 createServer(async(request,response)=>{
   let file;

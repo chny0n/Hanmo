@@ -1,10 +1,9 @@
 // @ts-check
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
-import {readFileSync} from 'node:fs';
-import {join} from 'node:path';
 import {DESIGN_BASE_COMMIT,repositoryRoot,startDesignBaseline}
   from '../scripts/capture-design-baseline.mjs';
+import {gitBlobHashes} from '../scripts/git-blob-hashes.mjs';
 
 const fixedTime=new Date('2026-11-23T12:00:00Z');
 const viewports=[{width:1440,height:900},{width:1280,height:720}];
@@ -317,17 +316,18 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
   }
 });
 
-test('practice와 selectZone의 소스·공유 스타일·이미지는 변경 전과 바이트가 같다',()=>{
+test('practice와 selectZone의 소스·공유 스타일·이미지는 기준 Git blob과 같다',()=>{
   const protectedPaths=[
     'html/practice.html','html/selectZone.html','css/practice.css','css/normalize.css',
     'css/gnb.css','css/hanmo-policy-footer.css','js/pc-only.js','js/gnb.js',
     'js/hanmoSys.js','js/practice.js','js/selectZone.js','img/favicon-purple.svg',
     'img/watermark.png','img/register.png','img/delete.png','img/hanmo_color.png',
   ];
+  const current=gitBlobHashes(repositoryRoot,protectedPaths);
   for(const path of protectedPaths){
-    const original=execFileSync('git',['show',DESIGN_BASE_COMMIT+':'+path],
-      {cwd:repositoryRoot,maxBuffer:16*1024*1024});
-    expect(readFileSync(join(repositoryRoot,path)).equals(original),path).toBe(true);
+    const original=execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
+      {cwd:repositoryRoot,encoding:'utf8'}).trim();
+    expect(current.get(path),path).toBe(original);
   }
 });
 

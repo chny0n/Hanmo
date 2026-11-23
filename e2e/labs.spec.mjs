@@ -78,6 +78,34 @@ test('반응속도 기록이 없으면 결과를 임의 생성하지 않는다',
   await expect(page.locator('#strategy-result')).toBeHidden();
 });
 
+test('전략 계산을 취소해도 최소 과목 수를 유지한다',async({page})=>{
+  await seedProfile(page);
+  await page.addInitScript(()=>{
+    Worker.prototype.postMessage=()=>{};
+  });
+  await page.goto('/html/strategy-lab.html');
+  const rows=page.locator('#strategy-courses tr');
+  await rows.last().getByRole('button').click();
+  await expect(rows).toHaveCount(2);
+  await page.locator('#strategy-run').click();
+  await page.locator('#strategy-cancel').click();
+  await expect(page.locator('#strategy-status')).toHaveText('계산을 취소했습니다.');
+  for(const button of await rows.getByRole('button').all()) await expect(button).toBeDisabled({timeout:1000});
+  await expect(page.locator('#strategy-run')).toBeEnabled();
+});
+
+test('로컬 저장소 접근이 차단되어도 반응 테스트와 전략 화면이 응답한다',async({page})=>{
+  await page.addInitScript(()=>{
+    Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Blocked','SecurityError');}});
+  });
+  await page.goto('/html/reaction-test.html');
+  await page.locator('#reaction-start').click();
+  await expect(page.locator('#reaction-target')).toBeEnabled({timeout:1000});
+  await page.goto('/html/strategy-lab.html');
+  await page.locator('#strategy-run').click();
+  await expect(page.locator('#strategy-status')).toContainText('반응속도 테스트를 먼저');
+});
+
 test('학사 공지와 학사 달력은 한 URL의 탭으로 전환된다',async({page})=>{
   await page.goto('/html/academic-timeline.html');
   await expect(page.getByRole('tab',{name:'학사 공지'})).toHaveAttribute('aria-selected','true');

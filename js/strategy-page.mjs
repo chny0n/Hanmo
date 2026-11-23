@@ -60,23 +60,24 @@ if(form){
     add.disabled=items.length>=8;
   }
   function refreshProfile(){
-    const p=readProfile(localStorage);
+    const p=readProfile();
     reaction.textContent=p
       ?'반응속도 중앙값 '+p.medianMs+'ms · 행동시간 자동 적용'
       :'반응속도 측정 결과 없음 · 먼저 테스트를 완료하세요.';
     return p;
   }
-  function scenario(){
+  function scenario(seed){
     const profile=refreshProfile();
     if(!profile)throw new RangeError('반응속도 테스트를 먼저 완료해야 전략을 계산할 수 있습니다.');
     return validateScenario({
-      courses:readRows(),seed:automaticSeed().seed,trials:1000,...deriveActionTimes(profile),
+      courses:readRows(),seed,trials:1000,...deriveActionTimes(profile),
     });
   }
   function busy(active){
     for(const input of form.querySelectorAll('input,button'))input.disabled=active;
     cancel.hidden=!active;
-    if(!active)add.disabled=body.children.length>=8;
+    add.disabled=active||body.rows.length>=8;
+    for(const button of body.querySelectorAll('button'))button.disabled=active||body.rows.length<=2;
   }
   renderRows(initial);
   const displayed=automaticSeed();
@@ -99,8 +100,9 @@ if(form){
   });
   form.addEventListener('submit',event=>{
     event.preventDefault();if(worker)return;
+    const {seed,label}=automaticSeed();
     let input;
-    try{input=scenario();}
+    try{input=scenario(seed);}
     catch(error){status.textContent=error instanceof Error?error.message:'입력값을 확인하세요.';return;}
     if(typeof Worker!=='function'){
       status.textContent='이 브라우저는 별도 계산 스레드를 지원하지 않습니다.';return;
@@ -108,7 +110,7 @@ if(form){
     try{worker=new Worker(new URL('./strategy-worker.mjs',import.meta.url),{type:'module'});}
     catch{status.textContent='계산 스레드를 실행하지 못했습니다.';return;}
     const active=worker;busy(true);
-    clock.textContent=automaticSeed().label;
+    clock.textContent=label;
     status.textContent='가상 경쟁 조건을 1,000회 반복 실험 중입니다.';
     active.addEventListener('message',event=>{
       if(worker!==active)return;

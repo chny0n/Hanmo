@@ -19,7 +19,7 @@ export function profileFromSamples(samples,at=Date.now()){
 }
 export function readProfile(store,now=Date.now()){
   try{
-    const p=JSON.parse(store?.getItem(REACTION_KEY)||'null');
+    const p=JSON.parse((store??globalThis.localStorage)?.getItem(REACTION_KEY)||'null');
     if(p?.version!==1||p.count!==REACTION_COUNT||
        !Number.isInteger(p.medianMs)||p.medianMs<80||p.medianMs>3000||
        !Number.isInteger(p.p90Ms)||p.p90Ms<p.medianMs||p.p90Ms>3000||
@@ -37,13 +37,12 @@ export function deriveActionTimes(profile){
     jitterMs:Math.round(Math.min(1500,Math.max(40,profile.variationMs))),
   };
 }
-export function automaticSeed(date=new Date()){
-  const formatter=new Intl.DateTimeFormat('en-GB',{
+const seoulClock=new Intl.DateTimeFormat('en-GB',{
     timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',
     hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',
-  });
-  const pieces=Object.fromEntries(formatter.formatToParts(date).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
-  const two=s=>String(s).padStart(2,'0');
+});
+export function automaticSeed(date=new Date()){
+  const pieces=Object.fromEntries(seoulClock.formatToParts(date).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
   // 사용자가 요청한 월의 마지막 숫자에 0을 붙인 표시코드로, 실제 월 표기는 아닙니다.
   const clockLabel=pieces.hour+'시 '+pieces.minute+'분 '+pieces.second+'초 '+
     pieces.day+'일 '+String(Number(pieces.month)%10)+'0월';

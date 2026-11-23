@@ -32,7 +32,7 @@ for(const name of [
  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-worker.mjs',
  'js/reaction-page.mjs','js/reaction-profile.mjs',
  'data/network-probe.txt',
- 'js/strategy-engine.mjs','js/lab-share.mjs',
+ 'js/strategy-engine.mjs',
  'html/academic-timeline.html',
  'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-forecast.js','js/student-entry.js','data/academic-source-config.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);

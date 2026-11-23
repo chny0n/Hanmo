@@ -9,7 +9,7 @@ if(start){
   const report=document.getElementById('reaction-report');
   const result=document.getElementById('reaction-result');
   const reset=document.getElementById('reaction-reset');
-  const p=readProfile(localStorage);
+  const p=readProfile();
   if(p){report.textContent='사용자님의 반응속도는 중앙값 '+p.medianMs+'ms 입니다.';result.hidden=false;}
   let phase='idle',timer=0,shownAt=0,misses=0;
   const samples=[];
@@ -40,9 +40,7 @@ if(start){
   function respond(){
     if(phase==='waiting'){
       misses++;
-      clearTimeout(timer);phase='idle';target.dataset.phase='idle';
-      status.textContent='너무 빨리 눌렀습니다. '+misses+'번째 오입력 · 재시작 버튼을 누르세요.';
-      start.disabled=false;reset.hidden=true;target.disabled=true;
+      stop('너무 빨리 눌렀습니다. '+misses+'번째 오입력 · 재시작 버튼을 누르세요.');
       samples.length=0;tally.textContent='0 / '+REACTION_COUNT;
       return;
     }

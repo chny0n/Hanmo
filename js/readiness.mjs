@@ -161,7 +161,7 @@ if(typeof document!=='undefined'){
           navigator.hardwareConcurrency?navigator.hardwareConcurrency+' 논리 코어':'브라우저 미지원');
         value('readiness-memory-value',
           navigator.deviceMemory?navigator.deviceMemory+'GB (대략값)':'브라우저 미지원');
-        const profile=readProfile(localStorage);
+        const profile=readProfile();
         value('readiness-reaction-value',profile?profile.medianMs+'ms (반응 테스트에서 읽음)':'미측정 · 반응 테스트 이용');
         result.hidden=false;inputs.hidden=true;
         status.textContent='완료 · 본 결과는 브라우저 및 한모 정적 배포 서버에 대한 관측값입니다.';

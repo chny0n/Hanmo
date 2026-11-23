@@ -26,19 +26,20 @@ export function validateScenario(input){
   }
   return input;
 }
-// 고정된 가상 소진속도입니다. 실측 강좌 경쟁률이나 서버 처리속도에서 유래하지 않았습니다.
+const SYNTHETIC_RATES=[0.08,0.06,0.09,0.05,0.075,0.055,0.085,0.065];
+
+/** @param {number} index 과목의 입력 위치 */
 export function syntheticRate(index){
-  return [0.08,0.06,0.09,0.05,0.075,0.055,0.085,0.065][index%8];
+  return SYNTHETIC_RATES[index%SYNTHETIC_RATES.length];
 }
-function uniform(seed,trial,course,draw){
+function random01(seed,trial,course,draw){
   let x=(seed^Math.imul(trial+1,0x9e3779b9)^
     Math.imul(course+3,0x85ebca6b)^Math.imul(draw+17,0xc2b2ae35))>>>0;
   x=Math.imul(x^(x>>>16),0x7feb352d);
   x=Math.imul(x^(x>>>15),0x846ca68b);
-  return ((x^(x>>>16))>>>0)+0.5;
+  return (((x^(x>>>16))>>>0)+0.5)/4294967296;
 }
-function random01(seed,trial,course,draw){return uniform(seed,trial,course,draw)/4294967296;}
-function trialState(s,trial){
+function actionTimes(s,trial){
   const times=[];let elapsed=s.startDelayMs/1000;
   for(let slot=0;slot<s.courses.length;slot++){
     const u1=random01(s.seed,trial,100,slot*2),u2=random01(s.seed,trial,100,slot*2+1);
@@ -46,19 +47,23 @@ function trialState(s,trial){
     elapsed+=Math.max(100,s.actionMs+s.jitterMs*z)/1000;
     times.push(elapsed);
   }
-  const arrives=s.courses.map((course,index)=>{
-    const arr=new Float64Array(course.rivals),rate=syntheticRate(index);
-    for(let k=0;k<arr.length;k++){
-      arr[k]=-Math.log(1-random01(s.seed,trial,index,k))/rate;
-    }
-    return arr;
-  });
-  return {times,arrives};
+  return times;
 }
-function succeeded(arr,capacity,at){
-  let earlier=0;
-  for(const arrival of arr)if(arrival<=at)earlier++;
-  return earlier<capacity;
+
+function firstFullSlot(s,trial,courseIndex,times){
+  const {capacity,rivals}=s.courses[courseIndex];
+  if(capacity>rivals)return times.length;
+  const arrivals=new Float64Array(rivals);
+  const rate=syntheticRate(courseIndex);
+  for(let k=0;k<rivals;k++)arrivals[k]=-Math.log(1-random01(s.seed,trial,courseIndex,k))/rate;
+
+  for(let slot=0;slot<times.length;slot++){
+    let earlier=0;
+    for(let k=0;k<rivals;k++){
+      if(arrivals[k]<=times[slot]&&++earlier===capacity)return slot;
+    }
+  }
+  return times.length;
 }
 /** 비트마스크 DP로 8개 과목의 기대 가중 점수를 최대화합니다. */
 export function bestOrder(weights,probability){
@@ -88,12 +93,14 @@ export function bestOrder(weights,probability){
 export function simulate(raw){
   const s=validateScenario(raw),n=s.courses.length;
   const success=Array.from({length:n},()=>new Float64Array(n));
+  // 한 과목이 가득 찬 뒤의 모든 신청 위치는 실패합니다. 추천 순서도 이 값을 재사용합니다.
+  const fullSlots=new Uint8Array(s.trials*n);
   for(let trial=0;trial<s.trials;trial++){
-    const state=trialState(s,trial);
+    const times=actionTimes(s,trial);
     for(let j=0;j<n;j++){
-      for(let slot=0;slot<n;slot++){
-        if(succeeded(state.arrives[j],s.courses[j].capacity,state.times[slot]))success[j][slot]++;
-      }
+      const fullSlot=firstFullSlot(s,trial,j,times);
+      fullSlots[trial*n+j]=fullSlot;
+      for(let slot=0;slot<fullSlot;slot++)success[j][slot]++;
     }
   }
   const probability=success.map(row=>Array.from(row,v=>v/s.trials));
@@ -102,11 +109,10 @@ export function simulate(raw){
   let allSucceeded=0,totalWeighted=0;
   const sum=weights.reduce((a,b)=>a+b,0);
   for(let trial=0;trial<s.trials;trial++){
-    const state=trialState(s,trial);
     let earned=0,all=true;
     for(let slot=0;slot<n;slot++){
       const j=order[slot];
-      const ok=succeeded(state.arrives[j],s.courses[j].capacity,state.times[slot]);
+      const ok=slot<fullSlots[trial*n+j];
       if(ok)earned+=weights[j];else all=false;
     }
     if(all)allSucceeded++;

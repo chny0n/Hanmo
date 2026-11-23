@@ -176,15 +176,3 @@
 - 철회 후 API·정적 공개판·이전 배포·캐시·복구 경로의 재노출을 검사합니다.
 
 이 조건과 기존 독립 자료 검수·운영 인수를 통과하기 전에는 **`mode: disabled`를 유지**합니다. 정책 범위 확대는 새 근거·필드 검수·판본 갱신 후 판단하며, 축소나 철회는 해당 수집·공개를 먼저 중단합니다.
-
-## 9. 폐기된 문의처 추천어 계획 (과거 설계 기록)
-
-2026-11-23 사용자 지시에 따라 독립 학교 문의처 학생 페이지(`html/academic-support.html`)·메뉴를 삭제하고 [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59)를 `not_planned`로 닫았습니다. 이전 Google 검색 링크·일반 추천어 집계는 **추가 구현·공개 대상이 아닙니다**.
-
-`js/academic/core/campus-assist/support-topic-trends.js` 및 `data/support-topic-suggestions.json`처럼 남아 있을 수 있는 합성/미연결 자료는 학생 공개 데이터나 공식 연락처 증거가 아닙니다. 과거 계획의 세부 사항은 GitHub 기록에서 참조합니다. 다른 분야의 허용 학교 자료 수집 예산도 문의처를 이유로 늘리지 않습니다.
-
-## 10. 현행 UI·검수 연계
-
-- 학사 공지와 월간 달력은 **`html/academic-timeline.html` 한 페이지의 탭**이며 강의 검색은 `html/catalog.html`(미연결)입니다.
-- PC 진단·반응속도·합성 전략은 별도 학생 도구이며, 가상 정원은 **1~300**입니다. 두 협업자 이의상·김채윤의 공동 검증은 [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 수행합니다.
-- [아키텍처](architecture.md)가 현행 기준이며 이 문서의 용량·필드·수집 계획은 실제 학교 자료 사용 승인이나 구현 완료를 뜻하지 않습니다.
