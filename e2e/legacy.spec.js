@@ -44,12 +44,12 @@ test('모드 타일의 포커스·클릭 영역과 간결한 hover 표시를 유
   }));
   expect(outline.style).not.toBe('none');
   expect(outline.width).toBeGreaterThanOrEqual(2);
-  // 역 ㄱ자 타일의 가운데는 돌발상황 클릭 영역이므로 왼쪽 위를 검사한다.
+  // 역 ㄱ자 타일의 가운데는 돌발상황 클릭 영역이며, 느린 빛 효과는 유지합니다.
   await tile.hover({position:{x:60,y:60}});
   await expect.poll(()=>tile.evaluate(element=>
     getComputedStyle(element).backgroundColor)).not.toBe(originalBackground);
   await expect.poll(()=>tile.evaluate(element=>
-    getComputedStyle(element,'::before').content)).toBe('none');
+    getComputedStyle(element,'::before').content)).not.toBe('none');
 });
 
 test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',async({page})=>{
