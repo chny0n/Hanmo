@@ -5,7 +5,7 @@ const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
-  'html/catalog.html','html/academic-progress.html',
+  'html/catalog.html','html/academic-calendar.html','html/academic-support.html',
 ];
 const htmlRoutes=[
   'index.html',...studentPages,
@@ -17,7 +17,7 @@ const must=async(name)=>{if(!await exists(join(dist,name)))throw Error('Missing 
 for(const name of [
   'index.html','css/student-ui.css','js/student-forecast.js',
   'js/student-preferences.js','js/student-notices.js','js/student-catalog.js',
-  'js/student-entry.js','js/degree-preparation.js','css/academic-progress.css',
+  'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
   'js/home-fit.js','css/home-fit.css',
@@ -27,13 +27,18 @@ for(const name of [
   ...htmlRoutes,
 ])await must(name);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
+for(const banned of ['html/academic-progress.html','html/academic-faq.html',
+ 'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
+ 'js/degree-preparation.js','img/hufs_logo.png'])
+ if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
 
 // 사이트맵은 포크의 공개 페이지에만 사용하고, 합성 오류·세션 페이지는 제외합니다.
 const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
 const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
 const publicRoutes=[
   '', 'html/vsugang.html','html/academic-timeline.html',
-  'html/forecast.html','html/catalog.html','html/academic-progress.html',
+  'html/forecast.html','html/catalog.html','html/academic-calendar.html',
+  'html/academic-support.html',
   'html/planner.html','html/developer.html'
 ];
 const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
@@ -194,6 +199,13 @@ for(const p of htmlRoutes){
   const html=await readFile(join(dist,p),'utf8');
   if(/(?:href|src)=["'][^"']*scenario-(?:workshop|lab)\.html/i.test(html))
     throw Error('Dead standalone scenario link from '+p);
+}
+for(const path of ['index.html',...studentPages,'html/vsugang.html','html/developer.html','html/result.html']){
+ const html=await readFile(join(dist,path),'utf8');
+ if(html.includes('academic-progress.html')||html.includes('academic-faq.html'))
+   throw Error('Deleted page still linked from: '+path);
+ if(!html.includes('본 서비스는 한국외국어대학교의 공식 서비스가 아니며'))
+   throw Error('Missing unofficial notice: '+path);
 }
 console.log('Student preview smoke: '+studentPages.length+' student pages, '+
   linkCount+' links, '+ariaCount+' ARIA references; only optional transition 404 is OFF by default; sidebar stays inert until browser reload/back.');
