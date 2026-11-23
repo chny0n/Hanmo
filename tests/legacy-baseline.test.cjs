@@ -350,14 +350,15 @@ test('home renders semester/notice and shows PC-only message when device is unsu
   const list=h.get('noticeList');
   assert.equal(list.children.length,2);
   assert.match(list.children[0].children[0].textContent,/업데이트/);
-  assert.equal(list.children[0].hidden,false);
-  assert.equal(list.children[1].hidden,true);
-  // 정적 한 건만 남아 있던 회귀를 방지하도록 실제 순환 함수를 실행합니다.
+  assert.match(list.children[1].textContent,/1년간 4만 명/);
+  assert.equal(list.style.bottom,'0px');
+  // 원본 NOTICE의 77px 세로 순환이 첫 화면과 다음 화면을 번갈아 보여줍니다.
   assert.equal(h.events.intervals.length,1);
   assert.equal(h.events.intervals[0].delay,5000);
   h.events.intervals[0].fn();
-  assert.equal(list.children[0].hidden,true);
-  assert.equal(list.children[1].hidden,false);
+  assert.equal(list.style.bottom,'77px');
+  h.events.intervals[0].fn();
+  assert.equal(list.style.bottom,'0px');
   assert.match(h.get('title').innerText,/2026-2학기/);
   assert.equal(h.get('phoneContainer').style.display,'flex');
   assert.equal(h.get('container').style.display,'none');
