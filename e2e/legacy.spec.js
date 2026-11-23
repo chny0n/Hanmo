@@ -92,7 +92,8 @@ test('TIME은 입장 시각 전에는 막고 이후에는 TIME 결과만 저장�
   expect(await page.evaluate(()=>Number(localStorage.getItem('TIMEtime')))).toBeGreaterThan(0);
 });
 
-test('SELECT의 대기 취소 뒤 같은 과목을 Enter로 다시 신청할 수 있다',async({page})=>{
+test('SELECT에서 중복 Enter를 차단하고 대기 취소와 삭제 뒤 같은 과목을 다시 신청한다',async({page})=>{
+  await page.setViewportSize({width:636,height:314});
   await page.clock.install({time:safeDate});
   await page.addInitScript(()=>{Math.random=()=>0.25;});
   const confirmation=[];
@@ -102,6 +103,7 @@ test('SELECT의 대기 취소 뒤 같은 과목을 Enter로 다시 신청할 수
   });
   await setPracticeOptions(page);
   await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+  await page.locator('.vsugangVal').fill('2');
   await page.locator('input[name="waitingCourseYN"][value="yes"]').check();
   await page.locator('.settingSection .settingButton').click();
   await page.getByRole('button',{name:/SELECT MODE/}).press('Enter');
@@ -118,6 +120,10 @@ test('SELECT의 대기 취소 뒤 같은 과목을 Enter로 다시 신청할 수
   await expect(register).not.toHaveCSS('outline-style','none');
   await page.keyboard.press('Enter');
   await expect(page.locator('.waitingCloseBtn')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  expect(confirmation).toHaveLength(1);
+  await expect(page.locator('.done tr')).toHaveCount(0);
   await page.locator('.waitingCloseBtn').click();
   await expect(register).toBeFocused();
   await expect(page.locator('.done tr')).toHaveCount(0);
@@ -125,9 +131,19 @@ test('SELECT의 대기 취소 뒤 같은 과목을 Enter로 다시 신청할 수
   await expect(page.locator('.waitingCloseBtn')).toBeVisible();
   expect(confirmation).toEqual(Array(2).fill('모의수강신청 과목1을 수강신청 하시겠습니까?'));
   await page.clock.runFor(4000);
+  const registered=page.locator('.done tr');
+  await expect(registered).toHaveCount(1);
+  await expect(registered.first()).toContainText('모의수강신청 과목1');
+  await registered.first().locator('button.delete').click();
+  await expect(registered).toHaveCount(0);
+  await register.press('Enter');
+  await page.clock.runFor(4000);
+  await expect(registered).toHaveCount(1);
+  await page.getByRole('button',{name:'모의수강신청 과목2 신청'}).press('Enter');
+  await page.clock.runFor(4000);
   await expect(page).toHaveURL(/\/html\/result\.html$/);
   await expect(page.locator('.time')).toContainText('TIME 부분 소요 시간0.000초');
-  expect(await page.evaluate(()=>Number(localStorage.getItem('SELECTWaitTime')))).toBeGreaterThanOrEqual(7);
+  expect(await page.evaluate(()=>Number(localStorage.getItem('SELECTWaitTime')))).toBeGreaterThanOrEqual(14);
 });
 
 test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 복구를 요구하지 않는다',async({page})=>{

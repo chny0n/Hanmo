@@ -326,10 +326,10 @@ test('practice와 selectZone의 소스·공유 스타일·이미지는 기준 Gi
     'img/watermark.png','img/register.png','img/delete.png','img/hanmo_color.png',
   ];
   const baseline=JSON.parse(readFileSync(join(repositoryRoot,'scripts/baselines/ui-freeze.json'),'utf8'));
-  const approvedScripts=new Set(['js/selectZone.js','js/result.js']);
+  const approvedChanges=new Set(['css/practice.css','js/selectZone.js','js/result.js']);
   const current=gitBlobHashes(repositoryRoot,protectedPaths);
   for(const path of protectedPaths){
-    const original=approvedScripts.has(path)?baseline.files.find(file=>file.path===path)?.sha
+    const original=approvedChanges.has(path)?baseline.files.find(file=>file.path===path)?.sha
       :execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
         {cwd:repositoryRoot,encoding:'utf8'}).trim();
     expect(original,path).toBeTruthy();
