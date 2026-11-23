@@ -21,6 +21,8 @@ if(root){
     showNonCurrentDates:false,
     dayMaxEvents:3,
     navLinks:false,
+    dayCellTopClass:'hanmo-calendar-date',
+    dayHeaderInnerClass:'hanmo-calendar-weekday',
     headerToolbar:{left:'prev,next today',center:'title',right:''},
     buttons:{today:{text:'오늘'}},
     events:[],

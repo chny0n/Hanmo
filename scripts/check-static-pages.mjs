@@ -109,11 +109,11 @@ for(const needed of [
 ]){
   if(!root.includes(needed))throw Error('Original home element or script missing: '+needed);
 }
-if(!root.includes('<body class="hanmo-home">')||
+if(!root.includes('<body class="hanmo-home hanmo-refined">')||
    !root.includes('class="home-fit-content"')||
    !root.includes('href="./css/home-fit.css"')||
    !root.includes('src="./js/home-fit.js" defer'))
-  throw Error('Home must fit its topbar and announcements into a single viewport');
+  throw Error('Home must retain its navigation and content layout hooks');
 if(!root.includes('onclick="location.reload()"'))
   throw Error('Home refresh button must work on a GitHub Pages project path');
 for(const page of studentPages){
@@ -152,7 +152,7 @@ for(const page of studentPages){
     throw Error('Redundant page-introduction block remains: '+page);
 }
 const menu=await readFile(join(dist,'html/vsugang.html'),'utf8');
-if(!menu.includes('<body class="hanmo-vsugang">')||
+if(!menu.includes('<body class="hanmo-vsugang hanmo-refined">')||
    !menu.includes('href="../css/vsugang-fit.css"')||
    !menu.includes('src="../js/vsugang-fit.js" defer'))
   throw Error('Mode menu must load viewport fitting below the topbar');

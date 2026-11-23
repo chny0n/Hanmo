@@ -4,7 +4,7 @@
   <script src="../js/pc-only.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="비공식 강의 개설 전망 · 실제 정보 미연결">
+  <meta name="description" content="강의 자료 검색 · 현재 자료 미연결">
   <title>강의 검색 | 한모</title>
   <link rel="icon" type="image/svg+xml" sizes="any" href="../img/favicon-purple.svg">
   <link rel="stylesheet" href="../css/student-ui.css">
@@ -13,8 +13,9 @@
   <script src="../js/student-profile-bar.js" defer></script>
   <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
   <link rel="stylesheet" href="../css/hanmo-title-divider.css">
+  <link rel="stylesheet" href="../css/hanmo-refined.css">
 </head>
-<body class="hanmo-ui hanmo-search-page">
+<body class="hanmo-refined hanmo-ui hanmo-search-page">
   <a class="hanmo-skip" href="#main">본문으로 이동</a>
   <header class="hanmo-topbar">
   <a class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"><img src="../img/hanmo_white.svg" width="29" height="24" alt="">한모</a>
@@ -29,21 +30,21 @@
 </header>
   <main id="main" class="hanmo-main" tabindex="-1">
   <div class="hanmo-schoolmark" aria-label="강의 검색 화면">
-    <h2>강의 검색</h2>
+    <h1>강의 검색</h1>
     <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
 
     
   </div>
-<section class="hanmo-card hanmo-search-controls" aria-label="비공식 개설 전망">
+<section class="hanmo-card hanmo-search-controls" aria-label="강의 검색 필터">
   <div class="hanmo-filter hanmo-search-form">
-    <label class="hanmo-field" for="catalog-query">비공식 가공 자료 검색<input id="catalog-query" type="search" placeholder="과목명을 입력하세요" autocomplete="off" disabled></label>
-    <label class="hanmo-field" for="catalog-campus">캠퍼스<select id="catalog-campus" disabled><option value="ALL">모든 캠퍼스</option><option value="서울">서울</option><option value="글로벌">글로벌</option></select></label>
+    <label class="hanmo-field" for="catalog-query">과목명·학수번호<input id="catalog-query" type="search" placeholder="과목명 또는 학수번호" autocomplete="off" disabled></label>
+    <label class="hanmo-field" for="catalog-campus">캠퍼스<select id="catalog-campus" disabled><option value="ALL">모든 캠퍼스</option><option value="SEOUL">서울</option><option value="GLOBAL">글로벌</option></select></label>
     <label class="hanmo-field" for="catalog-target-term">조회 학기<select id="catalog-target-term" disabled><option value="2027-1">2027-1</option><option value="2026-2">2026-2</option></select></label>
   </div>
 </section>
-<section class="hanmo-section-title" aria-label="강의 검색 안내 상태"><p class="hanmo-status" id="catalog-status" role="status">학교의 별도 API·과거 목록 제공은 없습니다. 허용된 공개 집계만 검증 중이며 현재 연결하지 않았습니다.</p></section>
+<section class="hanmo-section-title" aria-label="강의 검색 안내 상태"><p class="hanmo-status" id="catalog-status" role="status">강의 자료 연결 전입니다. 학교 원문에서 확인해 주세요.</p></section>
 <div id="catalog-results" class="hanmo-list" aria-live="polite"></div>
-  <div class="hanmo-actions"><button id="catalog-retry" class="hanmo-btn secondary" type="button">연결 다시 시도</button><a class="hanmo-btn" href="https://hufs.ac.kr/" target="_blank" rel="noopener noreferrer">학교 공식 안내</a></div>
+  <div class="hanmo-actions"><button id="catalog-retry" class="hanmo-btn secondary" type="button" hidden><span class="hm-icon hm-icon-retry" aria-hidden="true"></span>연결 다시 시도</button><a class="hanmo-btn" href="https://hufs.ac.kr/" target="_blank" rel="noopener noreferrer">학교 홈페이지<span class="hm-icon hm-icon-external" aria-hidden="true"></span></a></div>
 </main>
   <footer class="hanmo-policy-footer" aria-label="비공식 서비스 안내"><p><strong>본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.</strong></p></footer>
 </body>

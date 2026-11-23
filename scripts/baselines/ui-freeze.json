@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 현행 보호 SHA: 최신 dlacked/Hanmo SETTING의 예/아니오 2칸 UI를 대기 2종과 돌발상황 2종에 적용(권장 표시 없음), 학사공지/강의검색 안내·버튼 왼쪽 검색칸 정렬. 기존 모의신청 동작·상태 키 보존. 원개발자 인계는 전체 단계 완료 후 별도 수락.",
+  "purpose": "2026-11-23 사용자 요청: practice·selectZone 및 공통 의존성을 보존하는 미니멀 UI 개선. 남색·금색·한모 장식 유지, native 링크·명시 상태·1184px 본문·FullCalendar 조작 정돈. 이번 변경의 기준 커밋은 0df1c0dafd23939f48b35aa68614e8461bb83b31이며 이 manifest 자체는 시각 QA 완료 증거가 아닙니다.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -30,6 +30,10 @@
     {
       "path": "css/hanmo-policy-footer.css",
       "sha": "4d8a6331659bfe385fcd3cf7ec49c64895eed009"
+    },
+    {
+      "path": "css/hanmo-refined.css",
+      "sha": "111b768fa1ad940239dd98a2e1e339910a18b464"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -85,23 +89,23 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "d26dab3bc3d3fc1ba1af74ab71fd4d0e80b52722"
+      "sha": "16303e1002f66a80808e3ec2679d1e1a86ef2953"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "fb9c58fb6b17c6b11f7483be8ba8cdcba4d04aa6"
+      "sha": "43240a07646af743cf4927618350e9a081473b1d"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "0b5f0c6007108dc22140e43e225a3fcbbd128d29"
+      "sha": "e2b3e061542fbfcb2f8d574dcf3801d50fa716e2"
     },
     {
       "path": "html/catalog.html",
-      "sha": "6ecb67baaf00349c7ae4403a8b0b058439ccddc7"
+      "sha": "939667f11a7589d51dcf6ce129c93cc5581f98a7"
     },
     {
       "path": "html/developer.html",
-      "sha": "d460e36ed516f0aef05997dfca0b72f53734d839"
+      "sha": "135bb54fdded45bc9dedc49ee263b511770f91fc"
     },
     {
       "path": "html/forecast.html",
@@ -113,11 +117,11 @@
     },
     {
       "path": "html/pc-only.html",
-      "sha": "60e84b4d752357d314a307ef363544dc13013bd3"
+      "sha": "f077fca25e5275c64720f42f6f1e1518db4c71fc"
     },
     {
       "path": "html/planner.html",
-      "sha": "ded5721552921a5a9beadae8af48abd07485def9"
+      "sha": "616cb64f4e51868ee587a6469b08f1d211e5decd"
     },
     {
       "path": "html/practice.html",
@@ -125,7 +129,7 @@
     },
     {
       "path": "html/result.html",
-      "sha": "23419ae02b7227589200eb4f30e5bc83ea273ac9"
+      "sha": "d8e4874cab63a5ac00f60dc26b1bff5be94bf1ca"
     },
     {
       "path": "html/selectZone.html",
@@ -133,7 +137,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "afcd756e256bdeaa761399f7ee0a008242aa9a59"
+      "sha": "4e91ee1dff496c862166271f95588889c42e7220"
     },
     {
       "path": "img/background.svg",
@@ -172,6 +176,26 @@
       "sha": "8fe51bea9fe8656ba47850de5720ffc0e69ae805"
     },
     {
+      "path": "img/lucide/LICENSE",
+      "sha": "718bb3f0e44153809972abed31839375804bf652"
+    },
+    {
+      "path": "img/lucide/arrow-right.svg",
+      "sha": "7cf51782e7b069553458ef5d788057d44669628f"
+    },
+    {
+      "path": "img/lucide/external-link.svg",
+      "sha": "5ae55851edf016cc899260d8020ebd3875e50b6d"
+    },
+    {
+      "path": "img/lucide/rotate-ccw.svg",
+      "sha": "651f170ab3f0f7b5cc7d18e371e612b5fd03a58c"
+    },
+    {
+      "path": "img/lucide/search.svg",
+      "sha": "77b4f7cee1102823fd48249cc50329b7c89b40bd"
+    },
+    {
       "path": "img/register.png",
       "sha": "7ac4ce918133af246c3f239073354a0af3ba4296"
     },
@@ -185,7 +209,7 @@
     },
     {
       "path": "index.html",
-      "sha": "9044e3297052efd7484a6141f4c23cb276dd527f"
+      "sha": "3c39a0f50c6f6901af4154e9d89ca0ece916b355"
     },
     {
       "path": "js/academic-data-source.js",
@@ -193,7 +217,7 @@
     },
     {
       "path": "js/academic-support.js",
-      "sha": "ae2bbf83410f27405bbae0524884a1a17a4e8a38"
+      "sha": "34877b0d2e904a3e4deb2e67912f237007aad174"
     },
     {
       "path": "js/capacity-settings.js",
@@ -217,7 +241,7 @@
     },
     {
       "path": "js/index.js",
-      "sha": "83961396f353ceebed45025cbed13a100ff86ace"
+      "sha": "27e17096d178039d8bce7fda523c596beae45833"
     },
     {
       "path": "js/pc-only.js",
@@ -241,11 +265,11 @@
     },
     {
       "path": "js/student-catalog.js",
-      "sha": "b4c324680fb4e4b7bea774568991c73976c42c54"
+      "sha": "30cd7fba94d9970be744a72bf4b42ae57d55e8b5"
     },
     {
       "path": "js/student-notices.js",
-      "sha": "04beef806f6e561e151357b66e38cd90308c8d7a"
+      "sha": "0dff69808885c3aa65dd7110f41c5c16d10241d0"
     },
     {
       "path": "js/student-preferences.js",

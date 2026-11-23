@@ -13,8 +13,9 @@
   <script src="../js/student-profile-bar.js" defer></script>
   <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
   <link rel="stylesheet" href="../css/hanmo-title-divider.css">
+  <link rel="stylesheet" href="../css/hanmo-refined.css">
 </head>
-<body class="hanmo-ui">
+<body class="hanmo-refined hanmo-ui">
   <a class="hanmo-skip" href="#main">본문으로 이동</a>
   <header class="hanmo-topbar">
   <a class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"><img src="../img/hanmo_white.svg" width="29" height="24" alt="">한모</a>
@@ -29,7 +30,7 @@
 </header>
   <main id="main" class="hanmo-main" tabindex="-1">
   <div class="hanmo-schoolmark" aria-label="내정보 화면">
-    <h2>내정보</h2>
+    <h1>내정보</h1>
     <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
 
     
@@ -53,11 +54,11 @@
       <label class="hanmo-field" for="planner-double">선택한 이중전공·부전공명
         <input id="planner-double" type="text" maxlength="100" autocomplete="off" placeholder="이중전공 또는 부전공을 선택하세요" disabled>
       </label>
-      <label class="hanmo-field" for="planner-cohort">학번 (입학년도)
+      <label class="hanmo-field" for="planner-cohort">입학년도
         <input id="planner-cohort" type="number" min="2010" max="2100" step="1" placeholder="예: 2024" required>
       </label>
     </div>
-    <div class="hanmo-actions"><button class="hanmo-btn" type="submit">이 브라우저에 선택 저장</button><button class="hanmo-btn secondary" id="planner-clear" type="button">저장된 선택 지우기</button><button class="hanmo-btn" id="planner-go-notices" type="button">학사 공지로 이동</button></div>
+    <div class="hanmo-actions"><button class="hanmo-btn" type="submit">이 브라우저에 저장</button><button class="hanmo-btn secondary" id="planner-clear" type="button">저장한 정보 지우기</button><button class="hanmo-btn" id="planner-go-notices" type="button">학사 공지 보기<span class="hm-icon hm-icon-next" aria-hidden="true"></span></button></div>
     <p class="hanmo-status" id="planner-message" role="status" aria-live="polite"></p>
   </form>
 </section>

@@ -1,4 +1,4 @@
-/* 공개 승인을 받은 강좌를 검색한다. */
+/* 연결 상태를 구분하고 검수된 강의 자료만 검색합니다. */
 (function(){
  'use strict';
  const query=document.getElementById('catalog-query');
@@ -12,17 +12,17 @@
  const adapter=window.HanmoAcademicData;
  let offerings=[],state='LOADING',meta=null,loading=false;
  const messages={
-   LOADING:'승인된 강좌 자료를 확인하고 있습니다.',
-   NOT_CONNECTED:'승인된 강좌·분반 데이터가 아직 연결되지 않았습니다.',
-   EMPTY:'연결은 되었지만 공개 승인된 강좌 정보가 없습니다.',
-   OFFLINE:'자료 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-   INVALID:'공개 강좌 자료의 출처·판본·유효기간을 검증할 수 없어 표시하지 않습니다.'
+   LOADING:'강의 자료를 확인하고 있습니다.',
+   NOT_CONNECTED:'강의 자료 연결 전입니다. 학교 원문에서 확인해 주세요.',
+   EMPTY:'현재 표시할 강의 자료가 없습니다.',
+   OFFLINE:'자료 연결에 실패했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.',
+   INVALID:'자료 검증에 실패해 표시를 중단했습니다. 학교 원문을 확인해 주세요.'
  };
  const text=(tag,message,cls)=>{
    const el=document.createElement(tag);el.textContent=message;
    if(cls)el.className=cls;return el;
  };
- /** 공개 승인된 동일 학수번호 묶음의 확인된 분반만 표시한다. */
+ /** 검수된 동일 학수번호 묶음의 확인된 분반만 표시합니다. */
  function render(){
    results.replaceChildren();
    if(state!=='READY')return;
@@ -58,12 +58,12 @@
      }
      for(const [academicTerm,termRows] of [...byTerm].sort((a,b)=>b[0].localeCompare(a[0]))){
        const teachers=[...new Set(termRows.map(x=>x.instructor).filter(Boolean))].join(' / ');
-       card.append(text('p',academicTerm+' 공개 승인 개설 자료 · '+termRows.length+
+       card.append(text('p',academicTerm+' 확인된 개설 자료 · '+termRows.length+
          '개 분반'+(teachers?' · '+teachers:'')));
      }
      const inTerm=byTerm.get(target);
      const assessment=inTerm?
-       target+' 공개 승인 자료에 개설 기록 '+inTerm.length+'개 분반이 있습니다. 학교 원문 확인 필요.':
+       target+' 확인된 자료에 개설 기록 '+inTerm.length+'개 분반이 있습니다. 학교 원문 확인 필요.':
        target+' 전망(보장 아님): 검수된 동일과목 판본·전체학기 관측 범위가 없어 판단 보류(UNKNOWN). 누락 학기를 미개설로 간주하지 않습니다.';
      const note=text('p',assessment,'hanmo-status');
      card.append(note);
@@ -80,7 +80,7 @@
    query.disabled=state!=='READY';
    campus.disabled=state!=='READY';
    if(term)term.disabled=state!=='READY';
-   if(outlook)outlook.textContent=state==='READY'? '같은 계절 과거 관측을 검수한 경우에만 전망할 수 있습니다. 현재 확인되지 않은 학기는 UNKNOWN으로 표시합니다.':'학교가 승인한 강좌 자료 미연결. 검색·필터·개설 전망은 비활성화되어 있습니다.';
+   if(outlook)outlook.textContent=state==='READY'? '같은 계절 과거 관측을 검수한 경우에만 전망할 수 있습니다. 현재 확인되지 않은 학기는 UNKNOWN으로 표시합니다.':'강의 자료 연결 전입니다.';
    if(state!=='READY')status.textContent=messages[state]||messages.INVALID;
    render();
  }
@@ -91,7 +91,10 @@
    try{show(adapter&&typeof adapter.load==='function'
       ?await adapter.load():{status:'OFFLINE'});}
    catch{show({status:'OFFLINE'});}
-   finally{loading=false;retry.disabled=false;}
+   finally{
+     loading=false;retry.disabled=false;
+     retry.hidden=!['OFFLINE','INVALID'].includes(state);
+   }
  }
  query.addEventListener('input',render);
  campus.addEventListener('change',render);
