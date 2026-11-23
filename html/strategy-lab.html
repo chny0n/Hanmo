@@ -4,10 +4,11 @@
   <script src="../js/pc-only.js"></script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="반응속도 측정과 가상 경쟁 모델을 이용한 한모 비공식 수강신청 순서 실험">
-  <title>전략 시뮬레이션 | 한모</title>
+  <title>전략 실험 | 한모</title>
   <link rel="icon" href="../img/favicon-purple.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/student-ui.css">
   <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
+  <link rel="stylesheet" href="../css/hanmo-title-divider.css">
   <link rel="stylesheet" href="../css/hanmo-refined.css">
   <link rel="stylesheet" href="../css/hanmo-labs.css">
   <script src="../js/student-profile-bar.js" defer></script>
@@ -28,17 +29,16 @@
   </nav>
 </header>
   <main id="main" class="hanmo-main lab-layout" tabindex="-1">
-    <div class="lab-heading">
-      <p class="lab-kicker">HANMO / SYNTHETIC STRATEGY</p>
-      <h1>수강신청 전략 시뮬레이션</h1>
-      <p>가상의 과목 정보를 입력하면 반응속도 테스트 결과로 행동시간을 자동 설정해 신청 순서를 실험합니다.</p>
+    <div class="hanmo-schoolmark" aria-label="전략 실험 화면">
+      <div class="hanmo-title-line"><span class="hanmo-title-help"><button class="hanmo-title-help-button" type="button" aria-label="전략 실험 기능 안내" aria-describedby="strategy-page-help">i</button><span class="hanmo-title-help-tip" id="strategy-page-help" role="tooltip">가상 과목의 신청 순서와 성공 빈도를 비교합니다.</span></span><h1>전략 실험</h1></div>
+      <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
     </div>
     <section id="strategy-input" class="lab-panel" aria-labelledby="strategy-input-heading">
       <div class="lab-section-heading"><h2 id="strategy-input-heading">가상 과목 입력</h2><span class="lab-minor">중요 순위 1이 가장 높습니다.</span></div>
       <form id="strategy-form">
         <div class="lab-table-scroll">
           <table class="lab-table lab-input-table">
-            <caption>가상 과목 2~8개 · 입력은 이름·중요 순위·정원·경쟁자만</caption>
+            <caption>가상 과목 2~8개</caption>
             <thead><tr><th>과목 이름</th><th>중요 순위</th><th>가상 정원</th><th>경쟁자</th><th>삭제</th></tr></thead>
             <tbody id="strategy-courses"></tbody>
           </table>

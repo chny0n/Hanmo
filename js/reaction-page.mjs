@@ -10,7 +10,7 @@ if(start){
   const result=document.getElementById('reaction-result');
   const reset=document.getElementById('reaction-reset');
   const p=readProfile(localStorage);
-  if(p){report.textContent='저장된 중앙값 '+p.medianMs+'ms · 90백분위 '+p.p90Ms+'ms. 다시 측정할 수 있습니다.';result.hidden=false;}
+  if(p){report.textContent='사용자님의 반응속도는 중앙값 '+p.medianMs+'ms 입니다.';result.hidden=false;}
   let phase='idle',timer=0,shownAt=0,misses=0;
   const samples=[];
   function stop(message){
@@ -23,10 +23,10 @@ if(start){
       const profile=profileFromSamples(samples);
       try{localStorage.setItem(REACTION_KEY,JSON.stringify(profile));}
       catch{status.textContent='브라우저 저장이 차단돼 전략 실험실에 값을 전달할 수 없습니다.';stop();return;}
-      report.textContent='중앙 반응속도 '+profile.medianMs+'ms · 90백분위 '+profile.p90Ms+
-        'ms · 변동폭 '+profile.variationMs+'ms';
+      report.textContent='사용자님의 반응속도는 중앙값 '+profile.medianMs+'ms 입니다.';
       result.hidden=false;
-      stop('측정 완료. 전략 실험실에서 이 결과를 자동으로 사용합니다.');
+      stop();
+      status.textContent='';
       return;
     }
     phase='waiting';target.dataset.phase='waiting';

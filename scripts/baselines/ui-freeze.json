@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 사용자 승인: 기존 BASIC/TIME/SELECT 보호 유지, 반응 테스트·고도 PC 진단·간소 전략·결과 PNG·학사 통합·문의처 삭제·공통 내비게이션·한 화면 레이아웃.",
+  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -9,7 +9,7 @@
     },
     {
       "path": "css/academic-unified.css",
-      "sha": "40583f67c4aee03889f71e73763abbfcc88c8ddc"
+      "sha": "604bbcfcd3e09f41dcaebb10de8051e7c85bf7f1"
     },
     {
       "path": "css/developer.css",
@@ -29,7 +29,7 @@
     },
     {
       "path": "css/hanmo-labs.css",
-      "sha": "f66f3ca73ef5a90b1d5bede65a4cbff14e8b3d3d"
+      "sha": "07051344518a86a2dd66d6d0267d1d72fdff48a6"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -93,7 +93,7 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "bff21cd7be2db6fed7918185b7d6ca584a47e127"
+      "sha": "f5a210bc759917cfb2f361d09ece7af2a7b65031"
     },
     {
       "path": "html/catalog.html",
@@ -125,15 +125,15 @@
     },
     {
       "path": "html/reaction-test.html",
-      "sha": "16907dce2c412ea8ff0325b9571d4e8d0f404186"
+      "sha": "e2ea539790fc23b36d52a0102c269d584e190910"
     },
     {
       "path": "html/readiness.html",
-      "sha": "ebeea6fc0451f784a53c92f8877630263dcffc3e"
+      "sha": "b8cd9d7a632806892224f17db69215d86e0531e3"
     },
     {
       "path": "html/result.html",
-      "sha": "320e5f139a283bce3e460f162219b41e16371783"
+      "sha": "8e46ee4dba9dd683f1fe68118022fb73575031ba"
     },
     {
       "path": "html/selectZone.html",
@@ -141,7 +141,7 @@
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "2a6d07ca0d8759b662dae4783ee513455a8739f8"
+      "sha": "0677ccbf73cb619d09eab733535e5f50d0d8af55"
     },
     {
       "path": "html/vsugang.html",

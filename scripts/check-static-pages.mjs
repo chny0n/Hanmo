@@ -28,7 +28,7 @@ for(const name of [
   'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js',
   'js/readiness.mjs','js/strategy-page.mjs','js/strategy-engine.mjs',
   'js/strategy-worker.mjs','js/lab-share.mjs','js/reaction-profile.mjs',
-  'js/reaction-page.mjs','js/practice-report-share.mjs','data/network-probe.txt',
+  'js/reaction-page.mjs','data/network-probe.txt',
   'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,
 ])await must(name);

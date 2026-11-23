@@ -91,24 +91,57 @@ test('학사 공지와 학사 달력은 한 URL의 탭으로 전환된다',async
   expect((await page.request.get('/html/academic-calendar.html')).status()).toBe(404);
 });
 
-test('연습 결과에서 모드와 옵션을 포함한 PNG 파일을 저장한다',async({page})=>{
-  await page.addInitScript(()=>{
-    localStorage.setItem('practiceSetter','1');
-    localStorage.setItem('psubjectValue','3');
-    localStorage.setItem('subjectValue','2');
-    localStorage.setItem('waitingValue','yes');
-    localStorage.setItem('waitingEntryValue','no');
-    localStorage.setItem('TIMEtime','1.222');
-    localStorage.setItem('SELECTtime','3.444');
-    localStorage.setItem('SELECTWaitTime','0.100');
-    sessionStorage.setItem('hanmo.synthetic404.selection.v1','yes');
-    sessionStorage.setItem('hanmo.syntheticCapacity.selection.v1','no');
-  });
+test('모의수강신청 결과의 PNG 저장 UI와 스크립트를 제거한다',async({page})=>{
   await page.goto('/html/result.html');
-  const download=page.waitForEvent('download');
-  await page.locator('#practice-report-save').click();
-  const file=await download;
-  expect(file.suggestedFilename()).toBe('hanmo-practice-result.png');
+  await expect(page.locator('#practice-report-save')).toHaveCount(0);
+  await expect(page.locator('script[src*="practice-report-share"]')).toHaveCount(0);
+  expect((await page.request.get('/js/practice-report-share.mjs')).status()).toBe(404);
+});
+
+test('반응속도 측정 결과는 중앙값만 한 줄로 표시된다',async({page})=>{
+  await seedProfile(page);
+  await page.goto('/html/reaction-test.html');
+  await expect(page.locator('#reaction-result')).toBeVisible();
+  await expect(page.locator('#reaction-report')).toHaveText('사용자님의 반응속도는 중앙값 250ms 입니다.');
+  await expect(page.getByRole('heading',{name:'내 반응시간'})).toHaveCount(0);
+  await expect(page.locator('#reaction-result .lab-footnote')).toHaveCount(0);
+});
+
+test('다섯 기능 화면의 메뉴명·제목·i 도움말·구분선 좌표를 통일한다',async({page})=>{
+  const routes=[
+    ['readiness','PC 진단'],['reaction-test','반응속도 테스트'],
+    ['strategy-lab','전략 실험'],['academic-timeline','학사 정보'],['catalog','강의 검색'],
+  ];
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
+    await page.setViewportSize(viewport);
+    const positions=[];
+    for(const [slug,label] of routes){
+      await page.goto('/html/'+slug+'.html');
+      await expect(page.locator('.hanmo-topbar a[aria-current="page"]')).toHaveText(label);
+      await expect(page.locator('main .hanmo-schoolmark h1')).toHaveText(label);
+      await expect(page.locator('.hanmo-title-divider')).toHaveCount(1);
+      await expect(page.locator('.hanmo-title-divider img')).toBeVisible();
+      const info=page.locator('.hanmo-title-help-button');
+      const tooltip=page.locator('.hanmo-title-help-tip');
+      await expect(info).toHaveText('i');
+      await expect(tooltip).toBeHidden();
+      await info.hover();
+      await expect(tooltip).toBeVisible();
+      expect((await tooltip.innerText()).length).toBeLessThan(80);
+      await page.mouse.move(0,0);
+      await info.focus();
+      await expect(tooltip).toBeVisible();
+      const divider=await page.locator('.hanmo-title-divider').boundingBox();
+      const title=await page.locator('.hanmo-schoolmark h1').boundingBox();
+      expect(divider,slug).not.toBeNull();
+      expect(title,slug).not.toBeNull();
+      positions.push({slug,barTop:divider.y,barLeft:divider.x,barWidth:divider.width,titleTop:title.y});
+    }
+    for(const key of ['barTop','barLeft','barWidth','titleTop']){
+      const values=positions.map(item=>item[key]);
+      expect(Math.max(...values)-Math.min(...values),viewport.width+' '+key+' '+JSON.stringify(positions)).toBeLessThanOrEqual(1);
+    }
+  }
 });
 
 test('일반 PC 뷰포트에서 새 페이지와 통합 학사 화면의 문서 스크롤이 없다',async({page})=>{

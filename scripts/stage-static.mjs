@@ -30,7 +30,7 @@ for(const name of [
  'html/readiness.html','html/reaction-test.html','html/strategy-lab.html','css/hanmo-labs.css',
  'css/academic-unified.css','js/academic-unified.js',
  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-worker.mjs',
- 'js/reaction-page.mjs','js/reaction-profile.mjs','js/practice-report-share.mjs',
+ 'js/reaction-page.mjs','js/reaction-profile.mjs',
  'data/network-probe.txt',
  'js/strategy-engine.mjs','js/lab-share.mjs',
  'html/academic-timeline.html',

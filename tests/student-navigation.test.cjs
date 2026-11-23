@@ -267,6 +267,7 @@ test('검토한 화면 스타일은 비보호 페이지에만 연결한다',()=>
 test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 제거한다',()=>{
  const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
   'html/academic-timeline.html','html/catalog.html',
+  'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
   'html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
  const original=new Set(['index.html','html/vsugang.html','html/developer.html','html/result.html']);
@@ -329,13 +330,15 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
 });
 
 
-test('학사 공지·강의 검색의 메뉴명과 최상단 표제는 완전히 일치한다',()=>{
- for(const file of ['academic-timeline','catalog']){
+test('다섯 기능 페이지의 상단 메뉴명과 제목이 일치한다',()=>{
+ for(const file of ['readiness','reaction-test','strategy-lab','academic-timeline','catalog']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   const menu=html.match(/<a href="\.\/[^"]+" aria-current="page">([^<]+)<\/a>/);
   const heading=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h1>([^<]+)<\/h1>/);
   assert.ok(menu&&heading,file);
   assert.equal(menu[1],heading[1],file);
+  assert.match(html,/class="hanmo-title-help-button"[^>]*aria-describedby="[^"]+"[^>]*>i<\/button>/,file);
+  assert.match(html,/class="hanmo-title-help-tip"[^>]*role="tooltip">[^<]+<\/span>/,file);
  }
  const catalog=fs.readFileSync(path.join(ROOT,'html/catalog.html'),'utf8');
  assert.ok(catalog.includes('과목명·학수번호'));
@@ -348,7 +351,7 @@ test('학사 페이지 제목 구분선과 첫 구성요소 사이의 여백은 
  const css=fs.readFileSync(path.join(ROOT,'css/hanmo-title-divider.css'),'utf8');
  assert.match(css,/body\.hanmo-ui \.hanmo-main > \.hanmo-schoolmark\s*\{\s*margin:\s*12px 0 16px/);
  assert.match(css,/body\.hanmo-ui \.hanmo-main > #notice-context:empty\s*\{\s*display:\s*none/);
- for(const file of ['academic-timeline','catalog','planner']){
+ for(const file of ['readiness','reaction-test','strategy-lab','academic-timeline','catalog','planner']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),file);
   assert.ok(html.includes('class="hanmo-title-divider"'),file);
@@ -436,11 +439,8 @@ test('3차 김채윤 담당과 최종 원개발자 인수가 문서에서 일관
 });
 
 
-test('연습 결과 PNG에 설정·돌발상황 선택값을 포함한다',()=>{
+test('모의수강신청 결과의 PNG 저장 기능이 제거됐다',()=>{
  const html=fs.readFileSync(path.join(ROOT,'html/result.html'),'utf8');
- const script=fs.readFileSync(path.join(ROOT,'js/practice-report-share.mjs'),'utf8');
- assert.match(html,/id="practice-report-save"/);
- for(const key of ['practiceSetter','waitingValue','waitingEntryValue',
-    'hanmo.synthetic404.selection.v1','hanmo.syntheticCapacity.selection.v1'])
-   assert.ok(script.includes(key),key);
+ assert.doesNotMatch(html,/practice-report-save|practice-report-share\.mjs|연습 결과 PNG 저장/);
+ assert.equal(fs.existsSync(path.join(ROOT,'js/practice-report-share.mjs')),false);
 });
