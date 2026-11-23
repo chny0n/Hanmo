@@ -73,12 +73,14 @@ test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',asy
   await expect(page.locator('.result p span')).toContainText('초');
 });
 
-test('TIME은 입장 시각 전에는 막고 이후에는 TIME 결과만 저장한다',async({page})=>{
+test('TIME은 입장 시각 전에는 막고 이후에는 TIME 결과만 저장한다',async({page,baseURL})=>{
+  await page.route(url=>url.origin!==new URL(baseURL).origin,route=>route.abort());
   await page.clock.install({time:safeDate});
   const dialogs=[];
   page.on('dialog',dialog=>{dialogs.push(dialog.message());void dialog.accept();});
   await setPracticeOptions(page);
   await page.getByRole('button',{name:/TIME MODE/}).press('Enter');
+  await page.waitForLoadState('load');
   await expect(page.locator('.practiceMode')).toContainText('TIME MODE');
   await page.locator('.sugang').click();
   expect(dialogs).toEqual(['수강신청 기간이 아닙니다.']);
