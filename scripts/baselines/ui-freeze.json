@@ -1,19 +1,11 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "Approved sitewide direct academic navigation and degree credit bars aligned with earned/remaining values at 1920x1080; unverified data remains unapproved, original practice/selectZone screens preserved.",
+  "purpose": "현행 보호 UI 파일별 blob SHA; 2026-11-23 정보처 서면 회신에 따른 금지 화면·학교 로고 삭제, 비공식 고지 및 허용 메뉴 갱신. 신규 변경 시 정책·PC/원본 회귀 확인 필요.",
   "files": [
     {
       "path": "css/academic-calendar.css",
       "sha": "e79b1e6a46d5469b108f189adbd1a6784dd78d54"
-    },
-    {
-      "path": "css/academic-faq.css",
-      "sha": "a96c1b5821be3ab1d47c98b85e332f212b7633d0"
-    },
-    {
-      "path": "css/academic-progress.css",
-      "sha": "baf3e60a198971f9683f09a02500961882e8d516"
     },
     {
       "path": "css/developer.css",
@@ -25,7 +17,7 @@
     },
     {
       "path": "css/hanmo-components.css",
-      "sha": "de040a7e82b1adf9302d67dbf4572b0768bdfa96"
+      "sha": "59d24d13ba3ebb3eadabcceb2686b7e864229a43"
     },
     {
       "path": "css/hanmo-flat.css",
@@ -81,63 +73,55 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "0a861c6612cda7509a5439ae3a878d31bcc30016"
-    },
-    {
-      "path": "html/academic-faq.html",
-      "sha": "f876b1b3ccdcefdb75522271aaf1ff53105f9680"
-    },
-    {
-      "path": "html/academic-progress.html",
-      "sha": "fc3e4ec04630fd71b7d518bf7ad392a97bf6684c"
+      "sha": "1524a0fc2d17bb51046ab10a27cfb264a3260566"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "4513968308e242fd712b8837781f26eb5f6c52b6"
+      "sha": "21315e462e83b4a6fb2b624b544a4372e272df99"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "69950e47d1ca33f7cbb8caf92672f4362d5108d0"
+      "sha": "05a546405a2339b39e48eef8ec8e372fcce8b25e"
     },
     {
       "path": "html/catalog.html",
-      "sha": "ee47c1ef5622b0a1e7fc79c94946626b3363d50a"
+      "sha": "866b743dc45229a5fdec8238f3a8cb6c01ac5284"
     },
     {
       "path": "html/developer.html",
-      "sha": "949dbcefc274eb3ea9b26f8e8d7057990002765f"
+      "sha": "46135425ef0e5e64d10a768386d5d6e513a0b3b9"
     },
     {
       "path": "html/forecast.html",
-      "sha": "16daa9e5955ce3f4c2c54fa1892236bed26d6634"
+      "sha": "8020b436a91e84c1ffd275e2b996e517c36c9c3b"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "2df8fdd41f8a98a82f731438877ebcb6b722e7d6"
+      "sha": "15e5bf6f397df865ed47ceab3714d0a0bb7e072d"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "fbc89a4c93150f80c77384d0dd676b6bde297bbd"
+      "sha": "fcdefd7fec65744abc0c09c31bfd6f463458a618"
     },
     {
       "path": "html/planner.html",
-      "sha": "cacd3fc388fdd8c58d025efcef522d8dfc19ca13"
+      "sha": "ddfef41d37a4f7b25c5f41999b5a4f35a2bb687b"
     },
     {
       "path": "html/practice.html",
-      "sha": "3813ebcfa4afe4deaa4b41a94859f053bde98509"
+      "sha": "513ff17c6388caeae1c5f6d2f27838a2ea6c106e"
     },
     {
       "path": "html/result.html",
-      "sha": "3f300a18644988aa79b137e58a51e5f8d9e98548"
+      "sha": "926ab82cc6347db4cac64146555278eb6d4015fd"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "99670bdd304e9f3b241ddd4b300b59ca29e19012"
+      "sha": "c165642e1012af755063ef21d5018b1208c697ad"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "7725ee5a61b8b59dd67709298b22d7b8fb21f0e1"
+      "sha": "f1d9f68bbb5f348f51e1dfeb3db68699dd11d203"
     },
     {
       "path": "img/background.svg",
@@ -168,10 +152,6 @@
       "sha": "8fe51bea9fe8656ba47850de5720ffc0e69ae805"
     },
     {
-      "path": "img/hufs_logo.png",
-      "sha": "16ec2e58eb49cc80fda17f91f951b68782179e45"
-    },
-    {
       "path": "img/register.png",
       "sha": "7ac4ce918133af246c3f239073354a0af3ba4296"
     },
@@ -185,15 +165,11 @@
     },
     {
       "path": "index.html",
-      "sha": "5c6406a22cccadfc00898659f6cd6a93c85aa759"
+      "sha": "5040694da47c08d0beffdb291efdcff88f48e4dd"
     },
     {
       "path": "js/academic-data-source.js",
       "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
-    },
-    {
-      "path": "js/academic-faq.js",
-      "sha": "849f9095f9d830109c198cbe1e27e113ff90527c"
     },
     {
       "path": "js/academic-support.js",
@@ -267,5 +243,6 @@
       "path": "js/vsugang.js",
       "sha": "f1600cffd02276cc41d0a5c261d90fcec8088b3c"
     }
-  ]
+  ],
+  "policyRevision": "2026-11-23-hufs-written-restrictions"
 }
