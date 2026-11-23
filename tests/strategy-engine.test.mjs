@@ -42,3 +42,12 @@ test('정수·표본 범위 검증을 유지한다',()=>{
   const s=input();s.courses[1].capacity=-2;
   assert.throws(()=>simulate(s),/범위|확인/);
 });
+
+test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
+  const limit=input();
+  limit.courses[0].capacity=300;
+  assert.doesNotThrow(()=>validateScenario(limit));
+  assert.equal(simulate(limit).order.length,limit.courses.length);
+  limit.courses[0].capacity=301;
+  assert.throws(()=>validateScenario(limit),/가상 정원/);
+});

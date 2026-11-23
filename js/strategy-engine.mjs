@@ -16,7 +16,7 @@ export function validateScenario(input){
     requireInteger(course.rank,1,c.length,'중요 순위');
     if(ranks.has(course.rank))throw new RangeError('중요 순위는 1부터 과목 수까지 중복 없이 설정하세요.');
     ranks.add(course.rank);
-    requireInteger(course.capacity,1,50,'가상 정원');
+    requireInteger(course.capacity,1,300,'가상 정원');
     requireInteger(course.rivals,0,200,'가상 경쟁자');
   }
   requireInteger(input.seed,0,4294967295,'실험 식별값');

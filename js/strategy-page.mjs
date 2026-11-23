@@ -40,7 +40,7 @@ if(form){
         if(field==='name')input.maxLength=30;
         else{
           input.min=field==='rivals'?'0':'1';
-          input.max=field==='rank'?String(items.length):field==='capacity'?'50':'200';
+          input.max=field==='rank'?String(items.length):field==='capacity'?'300':'200';
           input.step='1';
         }
         input.value=String(item[field]);td.append(input);tr.append(td);
