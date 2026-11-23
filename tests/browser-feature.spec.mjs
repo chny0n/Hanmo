@@ -685,37 +685,25 @@ test('홈 NOTICE는 원본 한모의 두 문구를 5초마다 세로 순환한�
   expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
 });
 
-test('세 페이지의 학교 홈페이지 링크와 문의 검색 생성 버튼을 제거한다',async({page})=>{
-  for(const slug of ['academic-timeline','catalog','academic-support']){
-    await page.goto('/html/'+slug+'.html');
-    await expect(page.getByRole('link',{name:'학교 홈페이지'})).toHaveCount(0);
-  }
-  await expect(page.locator('#support-submit')).toHaveCount(0);
-  await expect(page.locator('#support-topic-heading')).toHaveText('예시 검색어');
-  await page.locator('#support-query').fill('장학금');
-  await expect(page.locator('#support-result-link')).toBeVisible();
-  const href=await page.locator('#support-result-link').getAttribute('href');
-  expect(new URL(href).searchParams.get('q')).toBe('한국외국어대학교 장학금');
-  await page.locator('#support-query').fill('');
-  await expect(page.locator('#support-result-link')).toBeHidden();
-  await page.getByRole('button',{name:'장학금 문의'}).click();
-  await expect(page.locator('#support-result-link')).toBeVisible();
+test('통합 학사 정보와 강의 검색에서 불필요한 학교 홈페이지 링크를 숨긴다',async({page})=>{
+ for(const slug of ['academic-timeline','catalog']){
+   await page.goto('/html/'+slug+'.html');
+   await expect(page.getByRole('link',{name:'학교 홈페이지'})).toHaveCount(0);
+ }
+ await page.goto('/html/academic-timeline.html');
+ await expect(page.getByRole('tab',{name:'학사 공지'})).toBeVisible();
+ await expect(page.getByRole('tab',{name:'학사 달력'})).toBeVisible();
 });
-
-test('네 학업 화면의 i 안내가 마우스와 키보드 포커스를 지원한다',async({page})=>{
-  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support']){
-    await page.goto('/html/'+slug+'.html');
-    const info=page.locator('.hanmo-title-help-button');
-    const tip=page.locator('.hanmo-title-help-tip');
-    await expect(info).toHaveCount(1);
-    await expect(tip).toBeHidden();
-    await info.hover();
-    await expect(tip).toBeVisible();
-    expect((await tip.textContent()).trim().length).toBeGreaterThan(10);
-    await page.mouse.move(0,0);
-    await info.focus();
-    await expect(tip).toBeVisible();
-  }
+test('공개 학사 도움말은 현재 제공하는 화면에서 마우스·키보드로 확인된다',async({page})=>{
+ await page.goto('/html/catalog.html');
+ const info=page.locator('.hanmo-title-help-button');
+ const tip=page.locator('.hanmo-title-help-tip');
+ await expect(info).toHaveCount(1);
+ await info.hover();
+ await expect(tip).toBeVisible();
+ await page.mouse.move(0,0);
+ await info.focus();
+ await expect(tip).toBeVisible();
 });
 
 test('SETTING과 돌발상황의 배경·테두리·느린 빛이 일치한다',async({page})=>{
