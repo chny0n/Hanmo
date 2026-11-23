@@ -28,6 +28,7 @@ const allowed=p=>p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('e2e/')||p.startsWith('css/')||p.startsWith('html/')
  ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg','img/hanmo_purple.png','img/favicon-purple.svg'].includes(p)
+ ||p.startsWith('img/lucide/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
  '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml',
  'package-lock.json','playwright.config.mjs'].includes(p);

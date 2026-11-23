@@ -45,15 +45,23 @@ test('모든 화면에서 비공식 안내는 화면 안의 최하단에 나타�
  }
 });
 
-test('광고가 제거된 홈은 좁은 데스크톱에서도 안내가 잘리지 않는다',async({page})=>{
+test('좁은 데스크톱 홈에서도 주요 조작과 안내를 스크롤로 읽을 수 있다',async({page})=>{
  for(const viewport of [{width:1280,height:720},{width:960,height:600},{width:650,height:500}]){
   await page.setViewportSize(viewport);
   await page.goto('/index.html');
   await expect(page.locator('.home-ad-footer')).toHaveCount(0);
-  const footer=await page.locator('body > .hanmo-policy-footer').boundingBox();
+  const practice=page.getByRole('link',{name:'수강신청 연습하기'});
+  await practice.scrollIntoViewIfNeeded();
+  await expect(practice).toBeInViewport();
+  await expect(page.getByRole('button',{name:'새로고침'})).toBeVisible();
+  await expect(page.getByRole('link',{name:'개발자 소개'})).toBeVisible();
+  const notice=page.locator('body > .hanmo-policy-footer');
+  await notice.scrollIntoViewIfNeeded();
+  const footer=await notice.boundingBox();
   expect(footer,JSON.stringify(viewport)).not.toBeNull();
   expect(footer.y+footer.height,JSON.stringify(viewport)).toBeLessThanOrEqual(viewport.height+1);
   await expect(page.locator('.hanmo-policy-footer strong')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width+1);
  }
 });
 
@@ -87,7 +95,7 @@ test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은
     await expect(page.locator('body > .hanmo-policy-footer strong')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
   }
   await page.goto('/html/catalog.html');
-  await expect(page.locator('.hanmo-schoolmark h2')).toHaveText('강의 검색');
+  await expect(page.locator('.hanmo-schoolmark h1')).toHaveText('강의 검색');
   await expect(page.locator('#catalog-query')).toHaveCount(1);
   await expect(page.locator('#catalog-results')).toHaveCount(1);
   await page.goto('/html/academic-timeline.html');
@@ -107,13 +115,13 @@ test('학사 공지·강의 검색은 내비게이션 이름과 페이지 표제
  for(const name of ['academic-timeline','catalog','academic-support']){
   await page.goto('/html/'+name+'.html');
   const current=page.locator('.hanmo-topbar a[aria-current="page"]');
-  const title=page.locator('.hanmo-schoolmark h2');
+  const title=page.locator('.hanmo-schoolmark h1');
   await expect(current).toHaveCount(1);
   await expect(title).toHaveCount(1);
   expect((await current.innerText()).trim()).toBe((await title.innerText()).trim());
  }
  await page.goto('/html/catalog.html');
- await expect(page.locator('label[for="catalog-query"]')).toContainText('비공식 가공 자료 검색');
+ await expect(page.locator('label[for="catalog-query"]')).toContainText('과목명·학수번호');
  await expect(page.locator('#catalog-query')).toBeDisabled();
 });
 
@@ -289,7 +297,8 @@ test('1920x1080 달력은 날짜행이 접히지 않고 모든 날짜가 보인�
   await expect(page.locator('#calendar-view [role="cell"][data-date]').first()).toBeVisible();
   const scrollHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
   expect(scrollHeight).toBeLessThanOrEqual(1081);
-  await expect(page.locator('#calendar-status')).toHaveCount(0);
+  await expect(page.locator('#calendar-status')).toBeVisible();
+  await expect(page.locator('#calendar-status')).toHaveText('학교 일정 연결 전');
   await page.screenshot({path:'e2e-artifacts/calendar-restored-1920x1080.png',fullPage:false});
 });
 
@@ -342,7 +351,8 @@ test('학사 달력과 미연결 강의 전망이 안전하게 작동한다',asy
   const days=await page.locator('#calendar-view [role="cell"][data-date]').count();
   expect(days).toBeGreaterThanOrEqual(28);
   expect(days).toBeLessThanOrEqual(42);
-  await expect(page.locator('#calendar-status')).toHaveCount(0);
+  await expect(page.locator('#calendar-status')).toBeVisible();
+  await expect(page.locator('#calendar-status')).toHaveText('학교 일정 연결 전');
   await page.screenshot({path:'e2e-artifacts/academic-calendar-month.png',fullPage:false});
   await page.goto('/html/academic-support.html');
   await expect(page.locator('#support-query')).toBeVisible();
@@ -376,14 +386,15 @@ test('1980x1080에서 모든 공개 페이지가 스크롤 없이 화면 안에 
      const footer=document.querySelector('body > .hanmo-policy-footer');
      const m=main?.getBoundingClientRect(),f=footer?.getBoundingClientRect();
      return {w:document.documentElement.scrollWidth,h:document.documentElement.scrollHeight,
-       mainWidth:m?.width,mainBottom:m?.bottom,contentBottom:main?.lastElementChild?.getBoundingClientRect().bottom,
+       mainWidth:m?.width,mainLeft:m?.left,mainBottom:m?.bottom,contentBottom:main?.lastElementChild?.getBoundingClientRect().bottom,
        footerBottom:f?.bottom};
    });
    expect(g.w,path+' horizontal scroll').toBeLessThanOrEqual(1981);
    expect(g.h,path+' vertical scroll').toBeLessThanOrEqual(1081);
    expect(g.footerBottom,path+' footer').toBeLessThanOrEqual(1081);
-   if(/academic-timeline|catalog|academic-calendar|planner/.test(path)){
-     expect(g.mainWidth,path+' wide layout').toBeGreaterThan(1700);
+   if(/academic-timeline|catalog|academic-calendar|academic-support|planner/.test(path)){
+     expect(g.mainWidth,path+' 작업 영역 폭').toBeCloseTo(1184,0);
+     expect(g.mainLeft+g.mainWidth/2,path+' 중앙 정렬').toBeCloseTo(viewport.width/2,0);
      expect(g.contentBottom,path+' content').toBeLessThanOrEqual(g.mainBottom+2);
    }
  }
@@ -535,7 +546,7 @@ test('학사공지와 강의검색의 제목·검색칸·상태 안내의 공백
   const g=await page.evaluate(()=>{
    const top=s=>document.querySelector(s).getBoundingClientRect().top;
    return {heading:top('.hanmo-schoolmark'),panel:top('.hanmo-search-controls'),
-    firstInput:top('.hanmo-search-controls input'),status:top('.hanmo-section-title')};
+    firstInput:top('.hanmo-search-controls input'),status:top('#notice-status,#catalog-status')};
   });
   positions.push(g);
  }
@@ -619,7 +630,7 @@ test('개발자 소개는 세 Contributor의 입학연도를 정확히 표시한
  expect(entries[3]).toContain("아랍어과 '23");
 });
 
-test('강의검색·학사공지 본문 폭은 문의처와 1440·1980 PC에서 같다',async({page})=>{
+test('강의검색·학사공지·문의처는 넓은 PC에서도 같은 읽기 폭과 정렬을 유지한다',async({page})=>{
  for(const width of [1440,1980]){
   await page.setViewportSize({width,height:1080});
   const sizes=[];
@@ -629,11 +640,16 @@ test('강의검색·학사공지 본문 폭은 문의처와 1440·1980 PC에서 
     const main=document.querySelector('main.hanmo-main');
     const panel=document.querySelector('.hanmo-support-search,.hanmo-search-controls');
     const m=main.getBoundingClientRect(),p=panel.getBoundingClientRect();
-    return {mainWidth:m.width,panelWidth:p.width,panelLeft:p.left,
+    const style=getComputedStyle(main);
+    return {mainWidth:m.width,mainLeft:m.left,panelWidth:p.width,panelLeft:p.left,
+     paddingLeft:parseFloat(style.paddingLeft),paddingRight:parseFloat(style.paddingRight),
      viewport:window.innerWidth,overflow:document.documentElement.scrollWidth};
    });
-   expect(geometry.mainWidth,path+' main width').toBeGreaterThanOrEqual(width-1);
-   expect(geometry.panelWidth,path+' panel width').toBeGreaterThan(width===1980?1600:1250);
+   expect(geometry.mainWidth,path+' 작업 영역 폭').toBeCloseTo(1184,0);
+   expect(geometry.mainLeft+geometry.mainWidth/2,path+' 중앙 정렬').toBeCloseTo(width/2,0);
+   expect(geometry.panelWidth,path+' 콘텐츠 폭').toBeCloseTo(
+    geometry.mainWidth-geometry.paddingLeft-geometry.paddingRight,0);
+   expect(geometry.panelLeft,path+' 콘텐츠 시작점').toBeCloseTo(geometry.mainLeft+geometry.paddingLeft,0);
    expect(geometry.overflow,path+' horizontal scroll').toBeLessThanOrEqual(width+1);
    sizes.push(geometry);
   }
@@ -702,13 +718,16 @@ test('학사공지·강의검색의 안내와 버튼은 검색 입력란 왼쪽�
    const info=await page.evaluate(()=>{
     const r=selector=>document.querySelector(selector).getBoundingClientRect();
     const input=r('.hanmo-search-controls input');
-    const notice=document.querySelector('#notice-count')?r('#notice-count'):r('#catalog-status');
-    const actions=r('.hanmo-actions > :first-child');
+    const notice=r('#notice-status,#catalog-status');
+    const action=Array.from(document.querySelectorAll('.hanmo-actions > *'))
+      .find(element=>element.getBoundingClientRect().width>0);
+    const actions=action?.getBoundingClientRect();
     const status=document.querySelector('#notice-status');
     const statusLeft=status?
       status.getBoundingClientRect().left+parseFloat(getComputedStyle(status).paddingLeft):null;
-    return {inputLeft:input.left,textLeft:notice.left,buttonLeft:actions.left,statusLeft};
+    return {inputLeft:input.left,textLeft:notice.left,buttonLeft:actions?.left,statusLeft};
    });
+   expect(info.buttonLeft,route+' 보이는 대체 경로').not.toBeUndefined();
    expect(Math.abs(info.inputLeft-info.textLeft),route+' info at '+width).toBeLessThanOrEqual(1);
    expect(Math.abs(info.inputLeft-info.buttonLeft),route+' actions at '+width).toBeLessThanOrEqual(1);
    if(info.statusLeft!==null){

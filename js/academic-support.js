@@ -64,14 +64,14 @@
     const search=new URL('https://www.google.com/search');
     search.searchParams.set('q','한국외국어대학교 '+value);
     resultLink.href=search.toString();
-    resultLink.textContent='구글에서 학교명으로 검색 결과 보기';
-    resultText.textContent='구글 검색어: 한국외국어대학교 '+value+' — 검색 결과에 비공식 사이트가 포함될 수 있으므로 학교 원문을 확인하세요.';
+    resultLink.textContent='Google에서 검색';
+    resultText.textContent='한국외국어대학교 '+value;
     result.hidden=false;
-    feedback.textContent='검색 링크를 만들었습니다. 외부 검색을 열기 전 검색어를 확인하세요.';
+    feedback.textContent='검색 링크를 만들었습니다.';
   }
   input.addEventListener('input',()=>{
     result.hidden=true;
-    feedback.textContent='추천 검색어를 누르거나 검색어를 직접 입력하세요.';
+    feedback.textContent='문의 주제를 입력하거나 추천 검색어를 선택하세요.';
     showSuggestions();
   });
   form.addEventListener('submit',event=>{

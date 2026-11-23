@@ -11,19 +11,11 @@ const nowTime=new Date();
 
 // 검증된 정적 공지만 사용한다. 사용자 입력 HTML을 이 영역에 직접 삽입하지 않는다.
 const noticeList=[
-  '<a href="https://everytime.kr/374012/v/415946307">한모 업데이트 내용은 여기를 눌러 확인해주세요.</a>',
-  '1년간 4만 명의 학우가 사용한 한모 (2025)',
+  '<a href="https://everytime.kr/374012/v/415946307">한모 업데이트 보기</a>',
 ];
-for(let index=noticeList.length-1;index>=0;index--){
-  $NOTICELIST.insertAdjacentHTML('afterbegin','<li>'+noticeList[index]+'</li>');
+for(const notice of noticeList){
+  $NOTICELIST.insertAdjacentHTML('beforeend','<li>'+notice+'</li>');
 }
-
-let homeNoticeIndex=0;
-function rotateNotice(){
-  $NOTICELIST.style.bottom=homeNoticeIndex===0?'77px':'0px';
-  homeNoticeIndex=(homeNoticeIndex+1)%2;
-}
-setInterval(rotateNotice,5000);
 
 function check(){
   if(localStorage.getItem('deviceInfo')==='false'){

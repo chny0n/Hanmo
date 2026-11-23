@@ -27,17 +27,29 @@ async function useAllowedPracticeHour(page){
   });
 }
 
-test('원본 모드 타일의 포커스·글로우가 브라우저에서 보인다',async({page})=>{
+test('모드 타일의 포커스·클릭 영역과 간결한 hover 표시를 유지한다',async({page})=>{
   await page.clock.install({time:safeDate});
   await setPracticeOptions(page);
   const tile=page.locator('.basic-mode-tile');
+  await page.mouse.move(0,0);
+  await page.keyboard.press('Tab');
   await tile.focus();
   await expect(tile).toBeFocused();
   await expect(tile).toHaveCSS('clip-path',/polygon/);
+  await expect(tile).toHaveCSS('background-color','rgb(6, 17, 28)');
+  const originalBackground=await tile.evaluate(element=>getComputedStyle(element).backgroundColor);
+  const outline=await tile.evaluate(element=>({
+    style:getComputedStyle(element).outlineStyle,
+    width:parseFloat(getComputedStyle(element).outlineWidth)
+  }));
+  expect(outline.style).not.toBe('none');
+  expect(outline.width).toBeGreaterThanOrEqual(2);
   // 역 ㄱ자 타일의 가운데는 돌발상황 클릭 영역이므로 왼쪽 위를 검사한다.
   await tile.hover({position:{x:60,y:60}});
   await expect.poll(()=>tile.evaluate(element=>
-    Number(getComputedStyle(element,'::before').opacity))).toBeGreaterThan(0.5);
+    getComputedStyle(element).backgroundColor)).not.toBe(originalBackground);
+  await expect.poll(()=>tile.evaluate(element=>
+    getComputedStyle(element,'::before').content)).toBe('none');
 });
 
 test('BASIC에서 가상 과목 신청 후 결과 화면까지 이동한다',async({page})=>{
