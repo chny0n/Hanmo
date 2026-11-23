@@ -138,5 +138,6 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1120px,100%);max-wi
  .hanmo-strategy .lab-table caption{padding-bottom:2px;font-size:11px}
  .hanmo-strategy .lab-actions{margin:4px 0}
  .hanmo-strategy .lab-auto-details{padding:3px 0}
- .hanmo-strategy .lab-status{margin:4px 0}
+ .hanmo-strategy .lab-status{margin:0}
+ .hanmo-strategy .lab-heading{margin-bottom:2px}
 }
