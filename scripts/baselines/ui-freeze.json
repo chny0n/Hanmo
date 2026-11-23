@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 보호 UI 파일별 blob SHA; 2026-11-23 정보처 서면 회신에 따른 금지 화면·학교 로고 삭제, 비공식 고지 및 허용 메뉴 갱신. 신규 변경 시 정책·PC/원본 회귀 확인 필요.",
+  "purpose": "현행 정책 준수 UI 보호 SHA. 모든 페이지의 비공식 학교 고지를 본문·광고 다음의 최하단에 분리하고, 홈 광고와 고지의 독립 공간을 보장한 2026-11-23 작업 반영. 기존 모의신청 상호작용은 회귀 검사 대상.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -22,6 +22,10 @@
     {
       "path": "css/hanmo-flat.css",
       "sha": "600c17d6f5a11d12731cc97aebb3575fc9dadb92"
+    },
+    {
+      "path": "css/hanmo-policy-footer.css",
+      "sha": "30ed4c6522afa041a441bc4d7c3b541758a7f0bd"
     },
     {
       "path": "css/hanmo-tokens.css",
@@ -73,55 +77,55 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "5fd76281c8451ea89af73623ddea8d1812565469"
+      "sha": "6b050a4b08021a79e7a8dbdfd52075bf44d009cf"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "21315e462e83b4a6fb2b624b544a4372e272df99"
+      "sha": "5dd300713991a116a91f995f7e0d90b9c3a03c46"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "6e9dc836e6e35bf0a49a3824fbf5c0d001d6dca4"
+      "sha": "fb66c44d52a48c02c4c8436d9bec871e2591e7be"
     },
     {
       "path": "html/catalog.html",
-      "sha": "538e10c2a4c428c18a731569710f2de2ecc394cc"
+      "sha": "d6d657a28b89e0fc8bc0c61e906201adf119d3ab"
     },
     {
       "path": "html/developer.html",
-      "sha": "7a1de620b3a5128ff0d71f4790cfaef57d45458c"
+      "sha": "17a241be77b71c3ded5f1367c66abc12a0065b28"
     },
     {
       "path": "html/forecast.html",
-      "sha": "68a7842bf466f0c80efdf41fd276b4d408a679d8"
+      "sha": "70c215f41b4862ddc9d1ac0f70f73981e1968204"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "15e5bf6f397df865ed47ceab3714d0a0bb7e072d"
+      "sha": "95e4017a935c4506e0785a1d8fa4375e8297d426"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "fcdefd7fec65744abc0c09c31bfd6f463458a618"
+      "sha": "86ebd8e0d604abf25e910a8a485bd2a8daa98834"
     },
     {
       "path": "html/planner.html",
-      "sha": "cf159e402c23a55d748b5985d4e9a69084a28526"
+      "sha": "d2a9d3b399ba7628f0abb0b9cf1beb9dfa8e800a"
     },
     {
       "path": "html/practice.html",
-      "sha": "513ff17c6388caeae1c5f6d2f27838a2ea6c106e"
+      "sha": "567905771442cf9be675d278d82a91b6b7fcc246"
     },
     {
       "path": "html/result.html",
-      "sha": "6e46f7bc621ceaa8ebd227fc460a25a4323073a3"
+      "sha": "7a51ffc3e1aa303a90acd3947ca08b2d1f89af88"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "c165642e1012af755063ef21d5018b1208c697ad"
+      "sha": "b13ffd14ac7bd7fb2e1cef950f41c96d9517c40d"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "f5160d929d00a13fdd1cc3569269893bc2174cd7"
+      "sha": "f2b695506c5dd4108ba733177a2edde546f00b2f"
     },
     {
       "path": "img/background.svg",
@@ -165,7 +169,7 @@
     },
     {
       "path": "index.html",
-      "sha": "72b1c5c6569ad1b763387812bc9e525741f21041"
+      "sha": "e02ee0a03b7124787009602d9efa057c23180cd5"
     },
     {
       "path": "js/academic-data-source.js",

@@ -19,8 +19,9 @@
 		<link href="../css/normalize.css" rel="stylesheet" type="text/css">
     	<link href="../css/gnb.css" rel="stylesheet" type="text/css">
 		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
-    </head>
-    <body>
+      <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
+</head>
+    <body class="hanmo-practice-layout">
 		<script>
             (function(){var w=window;if(w.ChannelIO){return w.console.error("ChannelIO script included twice.");}var ch=function(){ch.c(arguments);};ch.q=[];ch.c=function(args){ch.q.push(args);};w.ChannelIO=ch;function l(){if(w.ChannelIOInitialized){return;}w.ChannelIOInitialized=true;var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src="https://cdn.channel.io/plugin/ch-plugin-web.js";var x=document.getElementsByTagName("script")[0];if(x.parentNode){x.parentNode.insertBefore(s,x);}}if(document.readyState==="complete"){l();}else{w.addEventListener("DOMContentLoaded",l);w.addEventListener("load",l);}})();
         
@@ -61,7 +62,7 @@
                 </div>
 			</nav>
             <main class="selectZone_mainArea">
-                <p class="hanmo-practice-policy" role="note" style="font-size:12px;line-height:1.5;color:#001b2a;background:#fff8df;padding:4px 8px;max-width:90%;margin:4px auto">본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.</p> <!--화면의 오른쪽 정보 출력에 해당, 내용 가운데 배치를 위해 grid 사용-->
+                <!--화면의 오른쪽 정보 출력에 해당, 내용 가운데 배치를 위해 grid 사용-->
                 
 				<h2>수강신청 및 수정/삭제(Course Registeration[Adding/Deleting])</h2>
 				<div class='tableZone'>
@@ -155,6 +156,7 @@
 				</div>
             </main>
         </div>
+        <footer class="hanmo-policy-footer" aria-label="비공식 서비스 안내"><p><strong>본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.</strong></p></footer>
 		<script src="../js/gnb.js"></script>
         <script src="../js/selectZone.js"></script>
 		<script src='../js/hanmoSys.js'></script>

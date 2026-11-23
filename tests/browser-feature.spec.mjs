@@ -11,13 +11,60 @@ test('정보처 서면 이후 금지된 페이지와 메뉴가 보이지 않고 
  await page.goto('/index.html');
  await expect(page.locator('.hanmo-topbar a[href*="academic-progress"]')).toHaveCount(0);
  await expect(page.locator('.hanmo-topbar a[href*="academic-faq"]')).toHaveCount(0);
- await expect(page.locator('.mainNotice')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
+ await expect(page.locator('body > .hanmo-policy-footer')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support','planner']){
   await page.goto('/html/'+slug+'.html');
-  await expect(page.locator('.hanmo-policy-note')).toContainText('정확한 정보는 학교 원문');
+  await expect(page.locator('body > .hanmo-policy-footer')).toContainText('정확한 정보는 학교 원문');
   await expect(page.locator('.hanmo-markline')).toHaveCount(0);
   await expect(page.locator('.hanmo-topbar')).toBeVisible();
  }
+});
+
+
+test('모든 화면에서 비공식 안내는 본문·광고 뒤의 최하단에 나타난다',async({page})=>{
+  const paths=['/index.html','/html/vsugang.html','/html/practice.html',
+    '/html/selectZone.html','/html/result.html','/html/developer.html',
+    '/html/academic-timeline.html','/html/catalog.html','/html/academic-calendar.html',
+    '/html/academic-support.html','/html/planner.html','/html/pc-only.html'];
+  const exact='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.';
+  for(const path of paths){
+    await page.goto(path);
+    const note=page.locator('body > footer.hanmo-policy-footer');
+    await expect(note,'footer missing: '+path).toHaveCount(1);
+    await expect(note.locator('strong')).toHaveText(exact);
+    const layout=await page.evaluate(()=>{
+      const note=document.querySelector('body > footer.hanmo-policy-footer');
+      const previous=note?.previousElementSibling;
+      const ad=document.querySelector('.home-ad-footer');
+      const r=note?.getBoundingClientRect();
+      return {last:note?.tagName,hasPrev:!!previous,
+        noteTop:r?.top,noteBottom:r?.bottom,
+        adBottom:ad?.getBoundingClientRect().bottom,
+        viewportHeight:innerHeight,viewportWidth:innerWidth};
+    });
+    expect(layout.hasPrev,path).toBe(true);
+    expect(layout.noteBottom-layout.noteTop,path).toBeGreaterThan(30);
+    if(path==='/index.html'){
+      expect(layout.adBottom+8,path).toBeLessThanOrEqual(layout.noteTop);
+      expect(layout.noteBottom,path).toBeLessThanOrEqual(layout.viewportHeight+1);
+    }
+  }
+});
+
+test('홈 광고와 최하단 고지는 좁은 데스크톱에서도 겹치지 않는다',async({page})=>{
+  for(const viewport of [{width:1280,height:720},{width:960,height:600},{width:650,height:500}]){
+    await page.setViewportSize(viewport);
+    await page.goto('/index.html');
+    const geometry=await page.evaluate(()=>{
+      const ad=document.querySelector('.home-ad-footer').getBoundingClientRect();
+      const note=document.querySelector('body > .hanmo-policy-footer').getBoundingClientRect();
+      return {adBottom:ad.bottom,footerTop:note.top,footerBottom:note.bottom,footerHeight:note.height};
+    });
+    expect(geometry.adBottom+8,JSON.stringify(viewport)).toBeLessThanOrEqual(geometry.footerTop);
+    expect(geometry.footerBottom,JSON.stringify(viewport)).toBeLessThanOrEqual(viewport.height+1);
+    expect(geometry.footerHeight).toBeGreaterThan(0);
+    await expect(page.locator('.hanmo-policy-footer strong')).toBeVisible();
+  }
 });
 
 test('관심강좌·전공·교양·기초 선택은 Search 전 메뉴만 바꾸고 네 화면을 캡처한다',async({page})=>{

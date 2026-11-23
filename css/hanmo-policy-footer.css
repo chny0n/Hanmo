@@ -1,0 +1,111 @@
+/* 서면 고지를 모든 HTML의 마지막 콘텐츠로 분리하고 광고와 공간을 공유하지 않습니다. */
+.hanmo-policy-footer {
+  box-sizing: border-box;
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 10px 24px 12px;
+  border-top: 1px solid rgba(159, 193, 210, .3);
+  background: #061521;
+  color: #f3f7fa;
+  text-align: center;
+  font: 600 12px/1.65 "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  user-select: text;
+}
+.hanmo-policy-footer p {
+  max-width: 1100px;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+.hanmo-policy-footer strong { font-weight: 750; }
+
+/* 홈은 광고가 main에만 위치하고 마지막 안내는 별도 flex 행에 놓입니다. */
+body.hanmo-home > .hanmo-policy-footer {
+  padding-left: clamp(84px, 10vw, 144px);
+  padding-right: clamp(84px, 10vw, 144px);
+}
+
+/* 학업 안내 화면: 긴 자료는 본문에서 스크롤하고 고지는 페이지 맨 마지막에 놓습니다. */
+body.hanmo-ui {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+body.hanmo-ui > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+/* 원본 소개·결과 화면은 콘텐츠와 광고 뒤에 문서 푸터를 둡니다. */
+body.hanmo-policy-legacy {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+body.hanmo-policy-legacy > main {
+  flex: 1 0 auto;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+body.hanmo-policy-legacy > main > .f-dirt-up {
+  flex: 1 0 auto;
+  height: auto;
+  min-height: 90px;
+}
+
+/* 기존 좌측 모의신청 메뉴/타이머·표는 유지하고 우측 본문만 필요 시 스크롤합니다. */
+body.hanmo-practice-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+body.hanmo-practice-layout > .half {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+body.hanmo-practice-layout .half > :is(.mainArea, .selectZone_mainArea) {
+  min-height: 0;
+  overflow-y: auto;
+}
+body.hanmo-practice-layout .mainArea > .f-dirt-up {
+  flex: 1 0 auto;
+  height: auto;
+  min-height: 90px;
+}
+body.hanmo-synthetic-404.hanmo-practice-layout .half {
+  min-height: 0;
+}
+
+/* PC 전용 안내는 본문을 중앙에 두되 고지를 뷰포트 맨 아래로 내립니다. */
+body.hanmo-pc-only-layout {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0;
+}
+body.hanmo-pc-only-layout > main {
+  margin: auto;
+}
+@media (max-width: 700px) {
+  .hanmo-policy-footer { padding: 10px 16px; font-size: 11px; line-height: 1.6; }
+  body.hanmo-home > .hanmo-policy-footer { padding-left: 70px; padding-right: 70px; }
+}
