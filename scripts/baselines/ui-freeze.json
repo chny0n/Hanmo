@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 사용자 요청: practice·selectZone 및 공통 의존성을 보존하는 미니멀 UI 개선. 남색·금색·한모 장식 유지, native 링크·명시 상태·1184px 본문·FullCalendar 조작 정돈. 이번 변경의 기준 커밋은 0df1c0dafd23939f48b35aa68614e8461bb83b31이며 이 manifest 자체는 시각 QA 완료 증거가 아닙니다.",
+  "purpose": "2026-11-23 후속 요청: NOTICE 순환 복구, 제목 서비스 문구, 세 화면 학교 홈페이지 링크·문의 생성 버튼 제거, 네 페이지 i 도움말, SETTING·돌발상황 동일한 빛. practice·selectZone 및 공통 의존성 보호.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -9,7 +9,7 @@
     },
     {
       "path": "css/academic-support.css",
-      "sha": "7d2798ec0c7367fcd1fe83f1990856e5f9d8ec80"
+      "sha": "dc5eb9ac04b134075f79b92918ec9ce2775365ff"
     },
     {
       "path": "css/developer.css",
@@ -33,7 +33,7 @@
     },
     {
       "path": "css/hanmo-refined.css",
-      "sha": "111b768fa1ad940239dd98a2e1e339910a18b464"
+      "sha": "97a3669b2a2309bbaba1ed1ada61c32f047dfa1e"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -89,19 +89,19 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "16303e1002f66a80808e3ec2679d1e1a86ef2953"
+      "sha": "05b697268d948f67179f914291c83b1d02a6481b"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "43240a07646af743cf4927618350e9a081473b1d"
+      "sha": "8a59ca1475f09b12387ed0fdd304ab7f1df40f6b"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "e2b3e061542fbfcb2f8d574dcf3801d50fa716e2"
+      "sha": "6d97f3a61c1babd34e9f669600238fff92eecfe8"
     },
     {
       "path": "html/catalog.html",
-      "sha": "939667f11a7589d51dcf6ce129c93cc5581f98a7"
+      "sha": "989ea913d7bbc175cef555c09e6085ac5fb6b5b6"
     },
     {
       "path": "html/developer.html",
@@ -209,7 +209,7 @@
     },
     {
       "path": "index.html",
-      "sha": "3c39a0f50c6f6901af4154e9d89ca0ece916b355"
+      "sha": "b3e2df7812c1a27216fdabf8c0207914c087c77a"
     },
     {
       "path": "js/academic-data-source.js",
@@ -217,7 +217,7 @@
     },
     {
       "path": "js/academic-support.js",
-      "sha": "34877b0d2e904a3e4deb2e67912f237007aad174"
+      "sha": "1849467b3f2e474a75930a163ddc59eca5dcb7f2"
     },
     {
       "path": "js/capacity-settings.js",
@@ -241,7 +241,7 @@
     },
     {
       "path": "js/index.js",
-      "sha": "27e17096d178039d8bce7fda523c596beae45833"
+      "sha": "57007060f4dadbdb49a9ddfd291c5ffce1335852"
     },
     {
       "path": "js/pc-only.js",
@@ -285,7 +285,7 @@
     },
     {
       "path": "js/vsugang.js",
-      "sha": "5353fb9251a2d8ac94585007d4c6cb8983afef22"
+      "sha": "de143d3e416de633074530694f6507b9c4b8fdac"
     }
   ],
   "policyRevision": "2026-11-23-hufs-written-restrictions"

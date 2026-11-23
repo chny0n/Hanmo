@@ -71,7 +71,8 @@ test('두 접속 대기 옵션은 독립적이고 기본값은 강의 신청 예
   h.context.getSettingValue();
   assert.equal(h.localStorage.getItem('waitingValue'),'yes');
   assert.equal(h.localStorage.getItem('waitingEntryValue'),'no');
-  assert.equal(h.widgets.setting.style.background,'#001203');
+  assert.equal(h.widgets.setting.style.background,undefined);
+  assert.match(h.widgets.printValue.innerText,/올바른 설정값/);
 });
 
 test('네 가지 예/아니오 조합을 기존 강의 대기 키와 신규 접속 대기 키에 독립 저장한다',()=>{

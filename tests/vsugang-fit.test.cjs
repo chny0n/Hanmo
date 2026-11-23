@@ -87,26 +87,22 @@ function menuSettingHarness(){
   return {stored,parts,incident,context};
 }
 
-test('필수 설정 미완료일 때 SETTING만 붉고 선택형 돌발상황은 남색 기본값을 유지한다',()=>{
+test('SETTING과 돌발상황은 설정 상태와 무관하게 동일한 남색 타일을 사용한다',()=>{
   const x=menuSettingHarness();
-  assert.equal(x.parts.setting.style.background,'#120000');
+  assert.equal(x.parts.setting.style.background,undefined);
   assert.equal(x.incident.style.background,undefined);
-  assert.match(menuStyles,
-    /body\.hanmo-vsugang \.grid > :is\(\.setting,#incident-options\)\{[^}]*background:#06111c/);
-});
-
-test('설정 유효성 변경은 선택형 돌발상황 타일 색상을 바꾸지 않는다',()=>{
-  const x=menuSettingHarness();
+  assert.match(x.parts.printValue.innerText,/연습 전 과목 수/);
+  assert.match(menuStyles,/grid > :is\(\.setting,#incident-options\)/);
   x.stored.set('psubjectValue','5');
   x.stored.set('subjectValue','2');
   x.stored.set('waitingValue','no');
   x.context.setValue();
-  assert.equal(x.parts.setting.style.background,'#001203');
+  assert.equal(x.parts.setting.style.background,undefined);
   assert.equal(x.incident.style.background,undefined);
+  assert.match(x.parts.printValue.innerText,/올바른 설정값/);
   x.stored.delete('waitingValue');
   x.context.setValue();
-  assert.equal(x.parts.setting.style.background,'#120000');
-  assert.equal(x.incident.style.background,undefined);
+  assert.match(x.parts.printValue.innerText,/연습 전 과목 수/);
 });
 
 test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 스타일을 사용한다',()=>{

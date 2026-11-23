@@ -736,3 +736,76 @@ test('학사공지·강의검색의 안내와 버튼은 검색 입력란 왼쪽�
   }
  }
 });
+
+test('홈 NOTICE는 실제 한모 안내를 교체하고 서비스 제목을 표시한다',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('deviceInfo','true'));
+  await page.clock.install({time:new Date('2026-11-23T14:00:00+09:00')});
+  await page.goto('/index.html');
+  await expect(page.locator('main h1')).toHaveText('2026-2학기 한모 비공식 모의수강신청 서비스');
+  const current=page.locator('.noticeList li:visible');
+  await expect(current).toHaveCount(1);
+  await expect(current).toContainText('한모 업데이트 보기');
+  await page.clock.fastForward(5100);
+  await expect(current).toContainText('돌발상황 연습은 BASIC에서 설정할 수 있어요.');
+  await page.clock.fastForward(5100);
+  await expect(current).toContainText('한모 업데이트 보기');
+});
+
+test('세 페이지의 학교 홈페이지 링크와 문의 검색 생성 버튼을 제거한다',async({page})=>{
+  for(const slug of ['academic-timeline','catalog','academic-support']){
+    await page.goto('/html/'+slug+'.html');
+    await expect(page.getByRole('link',{name:'학교 홈페이지'})).toHaveCount(0);
+  }
+  await expect(page.locator('#support-submit')).toHaveCount(0);
+  await expect(page.locator('#support-topic-heading')).toHaveText('예시 검색어');
+  await page.locator('#support-query').fill('장학금');
+  await expect(page.locator('#support-result-link')).toBeVisible();
+  const href=await page.locator('#support-result-link').getAttribute('href');
+  expect(new URL(href).searchParams.get('q')).toBe('한국외국어대학교 장학금');
+  await page.locator('#support-query').fill('');
+  await expect(page.locator('#support-result-link')).toBeHidden();
+  await page.getByRole('button',{name:'장학금 문의'}).click();
+  await expect(page.locator('#support-result-link')).toBeVisible();
+});
+
+test('네 학업 화면의 i 안내가 마우스와 키보드 포커스를 지원한다',async({page})=>{
+  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support']){
+    await page.goto('/html/'+slug+'.html');
+    const info=page.locator('.hanmo-title-help-button');
+    const tip=page.locator('.hanmo-title-help-tip');
+    await expect(info).toHaveCount(1);
+    await expect(tip).toBeHidden();
+    await info.hover();
+    await expect(tip).toBeVisible();
+    expect((await tip.textContent()).trim().length).toBeGreaterThan(10);
+    await page.mouse.move(0,0);
+    await info.focus();
+    await expect(tip).toBeVisible();
+  }
+});
+
+test('SETTING과 돌발상황의 배경·테두리·느린 빛이 일치한다',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('deviceInfo','true'));
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.goto('/html/vsugang.html');
+  const setting=page.locator('.grid > .setting');
+  const incident=page.locator('#incident-options');
+  const style=locator=>locator.evaluate(element=>{
+    const tile=getComputedStyle(element);
+    const before=getComputedStyle(element,'::before');
+    return {background:tile.backgroundColor,border:tile.borderColor,
+      content:before.content,opacity:Number(before.opacity)};
+  });
+  const first=await style(setting);
+  const second=await style(incident);
+  expect(first.background).toBe(second.background);
+  expect(first.border).toBe(second.border);
+  expect(first.content).not.toBe('none');
+  expect(second.content).not.toBe('none');
+  await incident.hover();
+  await page.waitForTimeout(1150);
+  expect((await style(incident)).opacity).toBeGreaterThan(0.6);
+  await setting.hover();
+  await page.waitForTimeout(1150);
+  expect((await style(setting)).opacity).toBeGreaterThan(0.6);
+});
