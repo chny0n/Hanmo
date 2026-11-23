@@ -730,18 +730,22 @@ test('학사공지·강의검색은 학교 링크 제거 뒤에도 안내·상�
  }
 });
 
-test('홈 NOTICE는 실제 한모 안내를 교체하고 서비스 제목을 표시한다',async({page})=>{
+test('홈 NOTICE는 원본 한모의 두 문구를 5초마다 세로 순환한다',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('deviceInfo','true'));
   await page.clock.install({time:new Date('2026-11-23T14:00:00+09:00')});
   await page.goto('/index.html');
   await expect(page.locator('main h1')).toHaveText('2026-2학기 한모 비공식 모의수강신청 서비스');
-  const current=page.locator('.noticeList li:visible');
-  await expect(current).toHaveCount(1);
-  await expect(current).toContainText('한모 업데이트 보기');
+  const list=page.locator('.noticeList');
+  const items=list.locator('li');
+  await expect(items).toHaveCount(2);
+  await expect(items.nth(0)).toContainText('한모 업데이트 내용은 여기를 눌러 확인해주세요.');
+  await expect(items.nth(1)).toContainText('1년간 4만 명의 학우가 사용한 한모 (2025)');
+  await expect(items.nth(0).locator('a')).toHaveAttribute('href','https://everytime.kr/374012/v/415946307');
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
   await page.clock.fastForward(5100);
-  await expect(current).toContainText('돌발상황 연습은 BASIC에서 설정할 수 있어요.');
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('77px');
   await page.clock.fastForward(5100);
-  await expect(current).toContainText('한모 업데이트 보기');
+  expect(await list.evaluate(element=>element.style.bottom)).toBe('0px');
 });
 
 test('세 페이지의 학교 홈페이지 링크와 문의 검색 생성 버튼을 제거한다',async({page})=>{
