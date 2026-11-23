@@ -9,7 +9,7 @@
 | 구분 | 현재 적용할 경계 |
 |---|---|
 | **서비스 표시·디자인** | 모든 주요 화면에 “본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다” 수준의 **눈에 띄는 비공식 고지**. 학교 로고·엠블럼 및 공식처럼 오인되는 이름·디자인 금지. “학교 승인”, “학교와 협의”, 공식 인정·보증 표현 금지. 모의신청 화면도 실제 수강신청 시스템과 구별 |
-| **공개 학사공지** | 로그인 없이 공개된 페이지의 **허용된 정보 안내와 원문 링크**에 한정. 본문·첨부파일을 그대로 재게시하지 않음. 자료의 정정·취소·최신성 및 원문 확인을 학생에게 안내 |
+| **공개 학사공지** | 로그인 없는 공개 페이지의 **제목·게시 메타/원문 링크를 고급 검색·정규화·가공·중복/정정 비교**. 공지 본문·첨부 그대로 재게시하지 않고 교수명·수강 관련 정보·개별 적용 판정 제외 |
 | **강의 개설 이력·전망** | 대면 공개정보 가공 설명을 기준으로 공개 개설 이력·과목 메타데이터의 검색/추세를 개발·필드별 검수 대상으로 포함. **교수명·'수강 관련 정보'는 서면 금지대로 제외**. 금지 표현과 충돌할 소지가 있는 개별 분반·정원·수강 항목은 위험 기록/검수 전 공개 보류. 학교 공식 개설/수강 판정으로 오인 금지 |
 | **절대 제한** | 학교 자료를 이용한 학칙·졸업요건의 링크·인용·요약·표·자동 확인, 규정 기반 졸업학점 계산·졸업 가능 판정 **금지**. 학교를 대신한 학사 제도/절차 FAQ 답변 **금지**. 학교 계정 수집·대리 로그인·개인 성적자료 취급 **금지** |
 | **책임·변경** | 자체 가공 정보는 학사 판단의 근거가 아님. 실제 수강신청·졸업·마감은 학교 공식 공지·시스템 기준. 정확성·결과 책임은 서비스 운영자에게 있으며 학교는 이용 범위를 변경·철회하고 접속을 차단할 수 있음 |
@@ -62,7 +62,7 @@
 | 영역 | 현재 `main`에서 확인되는 것 | 미충족 조건 / 다음 게이트 |
 |---|---|---|
 | **학생용 PC 페이지·내정보** | 홈·모의신청·내정보·학사공지·강의 전망·달력 **존재**, 졸업 준비·학사 FAQ 페이지 **삭제**. 주요 화면에 비공식 안내 추가 | 공식 오인 디자인/학교 관련 이미지·메타 전수 감사와 PC/접근성 브라우저 QA는 별도. 개설 원장·실학사자료 미연결. [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39)·[#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
-| **학업·전망·NLP 코어** | JS/JSDoc 검색·분류·전망·근거 평가 코어와 합성 테스트; [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117)·[#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119) 병합 | **공개 공지 링크/허용 메타데이터·비식별 집계만 대상**. 학교 대신 FAQ·학칙 적용·교수명/수강 관련 정보 노출 금지. 실제 학교 데이터와의 연결·평가 아직 없음. [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) |
+| **학업·전망·NLP 코어** | JS/JSDoc 검색·분류·전망·근거 평가 코어와 합성 테스트; [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117)·[#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119) 병합 | 공지 고급 검색·검수된 공개 개설/행사 가공 메타·비식별 집계로 확장 설계. 학교 대신 FAQ·학칙 적용·교수명/수강 관련 정보 노출 금지. 실제 학교 데이터는 미연결. [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) |
 | **학생 데이터 읽기** | `js/academic-data-source.js`는 `NOT_CONNECTED/EMPTY/OFFLINE/INVALID/READY` 구분. 설정은 **`mode: disabled`** | 허용 범위로 축소한 새 payload/RLS/검수·철회 정책을 검증하기 전에는 연결 금지. 구형 `faq`, `instructor`, 학칙·분반 상세 계약을 운영하지 않음 |
 | **모의수강신청·돌발상황** | BASIC/TIME/SELECT 연습과 BASIC 전용 선택형 합성 돌발상황 **2개**: `RECONNECT`(1회 가상 404→새로고침 복구), `CAPACITY`(임의 1과목 가상 정원 마감·전공/교양/기초 합성 대체과목 검색). 둘 다 기본 OFF이며 실제 학교 정원·장애가 아님. [#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)·[#108](https://github.com/ot4562-glitch/Hanmo_develop/pull/108)·[#110](https://github.com/ot4562-glitch/Hanmo_develop/pull/110)·[#122](https://github.com/ot4562-glitch/Hanmo_develop/pull/122) | 자동화 회귀가 통과했더라도 Windows Chrome/Edge의 원본 SELECT 대기번호·Enter 연속 입력·키보드·404 복구 및 CAPACITY OFF 동등성은 실기기 인수 필요. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50)·[#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) |
 | **모의 대기 옵션** | 필수 SETTING에 **강의 신청 대기 기본 예**(`waitingValue`)와 **수강신청 페이지 접속 대기 기본 아니오**(`waitingEntryValue`)를 독립 저장. 원본 `dlacked/Hanmo`의 2칸형 **예/아니오** 선택 UI를 SETTING 2종과 돌발상황 2종에 적용(‘권장’ 표기 제외); 상태 저장과 기본값은 불변. 404와 접속 대기 모두 예일 때 **404 새로고침 복구 뒤**에 페이지 접속 대기 시작. [#109](https://github.com/ot4562-glitch/Hanmo_develop/pull/109) | 기능 단위 Node 회귀는 있으나 실제 PC 브라우저 동작/원본 불변성 인수는 별도. [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) |
@@ -81,7 +81,7 @@
 
 한모는 **학교가 운영·인증하지 않는 별도의 PC 웹 모의수강신청 연습 및 비공식 공개정보 탐색 서비스**입니다. 입학부터 졸업까지 학교 제도를 자동 판정하는 플랫폼이라는 기존 목표는 **2026-11-23 서면 회신에 따라 폐기**합니다. 학교 계정·실제 성적·수강신청 시스템과 독립적으로 작동합니다.
 
-- **포함:** BASIC/TIME/SELECT 합성 연습, 가상 404/가상 정원 마감, 로컬 사용자 선택(학점 산술 UI는 삭제·미제공), 허용된 공지 메타데이터+원문 링크 안내, 허용 데이터로 만든 **자체 비공식 개설 집계/전망**, 공식 문의처 연결.
+- **포함:** BASIC/TIME/SELECT 합성 연습, 가상 404/가상 정원 마감, 로컬 사용자 선택(학점 산술 UI는 삭제·미제공), **공개 공지 메타 고급 검색**, 필드 검수된 **과거 개설 관측·비식별 추세/전망**, **공식 공개 일정 통합·변경 비교**, **문의처 정밀 탐색**. 실제 자료 연결은 현재 OFF.
 - **제외:** 학교 로고/엠블럼·공식 서비스 위장, 학교를 대신한 학사 FAQ, 학칙/졸업요건의 링크·인용·요약·DB화·자동 확인, 학교 규정 기반 졸업학점·졸업 가능 판정, 교수명 및 수강 관련 정보, 학사시스템 내부 주소·로그인·학교 계정·개인 성적자료.
 - **학교 공식 기준:** 공개된 자체 정보는 학사 판단·수강신청·졸업 판정·마감 확정의 근거가 아닙니다. 불완전한 출처·권리/필드 경계·중단 시기는 **표시 보류와 원문 확인**을 우선합니다.
 - **UI 변경 원칙:** 디자인의 고유성·비공식 고지를 먼저 확보하며, 원본 BASIC/TIME/SELECT의 연습 품질은 보호합니다. 새 정책에 저촉되는 기존 UI/원본 자산은 예외적으로 반드시 수정해야 합니다.
@@ -91,8 +91,9 @@
 | 영역 | 허용 대상 | 공개·검증 경계 |
 |---|---|---|
 | **합성 모의신청** | BASIC/TIME/SELECT, RECONNECT, CAPACITY, 대기 설정 | 실제 학교 화면/장애/정원/신청 결과와 혼동 금지, 두 돌발상황 기본 OFF |
-| **공개 공지 탐색** | 허용된 공개 공지의 안내 메타데이터와 **공식 원문 링크** | 공지 본문·첨부 재게시 금지, 교수명·수강 관련 정보 제외, 학생별 공식 적용/마감 판정 금지 |
-| **비공식 개설 전망** | 허용된 공개 관측으로 만든 최소 집계·관측 범위·예상 | 학교 자료/확정 개설/확률 보장으로 표현하지 않음. 과목별·분반별 정보 공개는 서면으로 범위 확인 전 보류 |
+| **공개 공지 탐색** | 제목·게시일·출처 메타 기반 **고급 검색·중복/정정 비교·공식 원문 링크** | 공지 본문·첨부 재게시 금지, 교수명·수강 관련 정보 제외, 학생별 공식 적용/마감 판정 금지 |
+| **공개 개설 이력·비공식 전망** | 공개 과목 메타·학기별 개설 관측 **필드 검수 후보**와 비식별 통계·추세·결측 | 교수명·'수강 관련 정보' 등 명시 금지 제외, 충돌·미검수 개별 분반 공개 보류. 학교 확정 개설/확률 보장 금지 |
+| **공개 일정 비교** | 공개 행사 날짜·제목·공식 URL의 비복제 가공·변경 추적 **후보** | 학칙·졸업요건/학생 신청 자격·마감 자동 판정 금지, [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) 개발·검수 필요 |
 
 ### 1.2 첫 학생용 공개 목표와 차단 조건
 
@@ -253,7 +254,7 @@ BASIC 오른쪽 아래 **돌발상황**은 `RECONNECT`(1회 가상 404)와 `CAPA
 3. 실제 URL/DB 연결 시 권리와 필드 제거·사람 검수·RLS/익명 조회·정정/철회·스냅샷 무효화/복구를 검증하고, 운영자 승인 전 공개하지 않습니다.
 4. 위반·이상 접속·접속 차단·자료 철회 시 **수집/학생 노출 긴급 OFF** 및 안전한 정적 안내 페이지로 되돌립니다. 이전 배포본이라도 금지 마크/자료가 남아 있으면 그대로 롤백하지 않습니다.
 
-## 7. 3차 — 허용 메타데이터·비공식 집계용 저장소 (Supabase 선택)
+## 7. 3차 — 검수된 공개 메타데이터·비공식 집계용 저장소 (Supabase 선택)
 
 **현황:** `data/academic-source-config.json`은 `mode: disabled`, 공개 승인 자료·실 Supabase 연결·실크롤러는 **없습니다**. [Draft PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 격리 SQL/보안 시제품이며 학생용 운영 데이터 모델로 승인하지 않습니다. 기존 `notices/offerings/faq` payload와 `instructor`, 학칙·학사 FAQ·과목 상세 정보 설계는 서면 회신과 **충돌하거나 허용 범위가 미확정**이므로 배포 전에 폐기/축소합니다.
 
@@ -264,8 +265,10 @@ BASIC 오른쪽 아래 **돌발상황**은 `RECONNECT`(1회 가상 404)와 `CAPA
 | 데이터 영역 | 저장 가능 범위 | 명시적 제외 |
 |---|---|---|
 | `sources` / `collection_runs` | 공개 URL·이용 조건 버전·접근 범위·확인일·횟수/오류/차단 이력 | 학교 내부/비노출 엔드포인트, 로그인 정보, 우회 접근 |
-| `notice_links` | 허용 공개 공지의 최소 안내 메타데이터·원문 URL·확인시각·정정/보류 상태 | 공지 원문·첨부파일 복제, 교수명·수강 관련 정보, 공식 학생 적용/마감 판정 |
-| `offering_aggregates` | **비식별 통계**·학기별 관측 범위·표본·결측·산출 버전. 공개 과목명/학수번호/학기/캠퍼스별 **가공 관측 이력은 필드 심사 통과 시 별도 계약 후보**이며 현재 SQL 미구현 | 교수명·'수강 관련 정보'·학생 신청/정원 상세, 금지 범위와 충돌하는 개별 분반 세부. 학교 공식 개설 확정 판정 금지 |
+| `notice_links` | 검수된 공개 공지 제목·게시일·분류·공식 URL·확인시각·정정/보류·중복 연결 정보 | 공지 원문·첨부 복제, 교수명·수강 관련 정보, 학생 적용/마감 판정 |
+| `offering_aggregates` | **비식별 통계**·학기별 관측 범위·표본·결측·산출 버전 | 교수명·'수강 관련 정보'·학생 신청/정원 상세·학교 공식 개설 확정 판정 금지 |
+| `offering_observations` *(후보)* | 공개 과목명/학수번호/학기/캠퍼스별 **개설 관측 이력 후보**. #41의 명시 금지·충돌 필드 독립 검수 완료 전 공개 DTO·SQL 반입 금지 | 교수명·학생 수강/신청 상태·금지 수강정보·불명확한 분반/정원 세부 |
+| `event_links` *(후보)* | 공식 공개 일정의 날짜·제목·캠퍼스·출처 URL·중복/정정 메타. #127 합성 구현 뒤 검수 후보 | 공지 원문 재게시, 학칙/졸업요건, 학생 개인 신청기한/자격 자동 판정 |
 | `reviews` / `public_releases` | 출처 권리·검수·철회·최종 확인일·독립 공개 스냅샷 해시 | 학칙·졸업요건·FAQ 원문/RulePack, 개인 성적/학적, 원문 HTML/PDF/첨부 |
 
 `courses`, `sections`, `faculty`, `teaching_assignments`, `graduation_rules`, `program_requirements`, `faq` 등의 구형 목표 테이블을 그대로 실제 프로젝트에 배포하지 않습니다. 허용 범위를 확인하기 전에 운영 DB에 이미 해당 자료가 있다고 가정하지 않습니다. 본 데이터 계약은 **새 설계이며 적용된 SQL 스키마가 아닙니다**.
@@ -345,10 +348,10 @@ BASIC 오른쪽 아래 **돌발상황**은 `RECONNECT`(1회 가상 404)와 `CAPA
 | 우선순위 | 변경 및 영향 | 검증/추적 |
 |---|---|---|
 | **P0** | 직접 확인한 `img/hufs_logo.png` 제거·웹 비공식 안내 반영. **남은 과제:** 공식 유사 디자인/문구·파비콘·구형 SVG 전수 감사 및 PC 브라우저 가시성 검증 | [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39) · [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
-| **P0** | 졸업요건·학사 FAQ 페이지·메뉴 삭제 완료. **남은 과제:** 학칙/FAQ 코어의 공개 호출 경로 차단·미사용 산술 UI 정책 검증, 구형 REST payload 필드 제거 | [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
+| **P0** | 졸업요건·학사 FAQ 페이지·메뉴 삭제 완료. **남은 과제:** 학칙/FAQ 코어의 공개 호출 경로 차단·미사용 산술 UI 정책 검증, 구형 REST payload 필드 제거 | [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
 | **P0** | 학사 FAQ 답변/근거 표시 중단; 학사 문의 공식 채널 연결. NLP 코어의 학생 배포 차단 | [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40) · [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) |
 | **P0** | 학교 자료 크롤러 기본 OFF, §0.1 제한·금지기간·User-Agent·오류 당일 중단·전역 카운터·**수집/공개/캐시/구판 긴급 철회**를 합성 검증 | [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) · [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66) · [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126) |
-| **P1** | 대면 가공 설명에 따른 **공지 고급 검색·공개 개설 메타/비식별 이력·공식 일정 통합·문의처 정밀 탐색**의 필드별 가공 계약을 재설계. 명시 금지인 교수명·수강 정보는 제외하고 충돌 위험 필드는 검수·공개 보류 | [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) · [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) · [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) |
+| **P1** | 대면 가공 설명에 따른 **공지 고급 검색·공개 개설 메타/비식별 이력·공식 일정 통합·문의처 정밀 탐색**의 필드별 가공 계약을 재설계. 명시 금지인 교수명·수강 정보는 제외하고 충돌 위험 필드는 검수·공개 보류 | [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) · [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) · [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) · [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) |
 | **P1** | Supabase Draft #93의 금지 필드·FAQ·규정 테이블/공개 payload를 재설계하거나 정적 스냅샷 대안 채택 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)–[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
 | **P1** | 고지·출처·정정·철회·학생 오인/접근성·Windows PC 브라우저 실검증, 원본 시뮬레이터 회귀 | [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) · [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) |
 
