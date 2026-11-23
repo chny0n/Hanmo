@@ -1,6 +1,6 @@
 <div align="center">
 
-  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo_color.png" width="78" alt="한모 로고"></a>
+  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo_purple.png" width="78" alt="한모 로고"></a>
 
   <h1>한모 · Hanmo Develop</h1>
 
@@ -58,7 +58,7 @@
 | 기존 한모의 경험 | 확장된 경험 |
 | :--- | :--- |
 | **BASIC · TIME · SELECT** — 전체 신청, 시작 타이밍, 과목 신청 속도 연습 | **BASIC 선택형 돌발상황** — 가상 404는 새로고침으로 복구하고, 가상 정원 마감(`CAPACITY`)은 임의 한 과목 마감 후 합성 대체과목을 조회 |
-| **SETTING** — 연습할 과목 수와 기본 신청 대기 | **대기 조건 분리** — 강의 신청 대기 기본 **예**, 신청 페이지 접속 대기 기본 **아니오** |
+| **SETTING** — 연습할 과목 수와 기본 신청 대기 | **대기 조건 분리** — 강의 신청 대기 기본 **예**, 신청 페이지 접속 대기 기본 **아니오**. SETTING·돌발상황은 원본 한모의 2칸 예/아니오 UI로 통일(권장 표시 없음) |
 | **익숙한 신청 화면과 결과 흐름** | **RECONNECT·CAPACITY 각각 기본 OFF** — 같은 탭 선택을 보존하며 원본 신청/대기/결과 흐름과 실제 학교 자료를 분리 |
 | **모의수강신청에 집중한 PC 웹** | **내정보·학사공지·개설 전망(검색 화면 통합)·학사 달력** — 직접 입력은 로컬 저장, 공개 데이터는 아직 미연결 |
 
@@ -108,10 +108,10 @@ flowchart LR
 | :--- | :--- | :--- |
 | **모의수강신청** · [열기](html/vsugang.html) | BASIC/TIME/SELECT, 기본 OFF인 가상 404·정원 마감, 독립 대기 설정 | **합성 모의연습 가능** · 실제 신청 아님 |
 | **내정보** · [열기](html/planner.html) | 캠퍼스·전공·입학년도 직접 입력과 로컬 저장 | **직접 입력 가능** · 학교 학적 미연동 |
-| **학사 공지** · [열기](html/academic-timeline.html) | 허용된 공개 공지의 최소 안내와 **공식 원문 링크** 제공 준비 | 실제 공지 스냅샷 **미연결** · 본문/첨부 복제하지 않음 |
-| **강의 검색·개설 전망** · [열기](html/catalog.html) | 허용된 비식별 관측 집계의 **한모 자체 전망**을 표시할 준비 | 데이터 **미연결** · 교수/수강 관련·개별 분반 상세 제외, [기존 전망 경로](html/forecast.html)는 여기로 이동 |
+| **학사 공지** · [열기](html/academic-timeline.html) | 허용된 공개 공지의 최소 안내와 **공식 원문 링크** 제공 준비 | 실제 공지 스냅샷 **미연결** · 검색칸과 안내·버튼 왼쪽 정렬 · 본문/첨부 복제하지 않음 |
+| **강의 검색·개설 전망** · [열기](html/catalog.html) | 허용된 비식별 관측 집계의 **한모 자체 전망**을 표시할 준비 | 데이터 **미연결** · 검색칸과 안내·버튼 왼쪽 정렬 · 교수/수강 관련·개별 분반 상세 제외, [기존 전망 경로](html/forecast.html)는 여기로 이동 |
 | **학사 달력** · [열기](html/academic-calendar.html) | 월간 달력과 **학교 공식 일정 링크** | 학교 일정을 자동 확정·대신 안내하지 않음 |
-| **학교 문의처** · [열기](html/academic-support.html) | 문의 주제 입력·검색어 추천·공식 도메인으로 제한한 외부 검색 링크 생성 | 학교 부서·전화·이메일·위치 **미보유**, 검색어는 외부 링크를 열기 전에는 전송하지 않음 |
+| **학교 문의처** · [열기](html/academic-support.html) | 문의 주제 입력·검색어 추천·구글에서 `한국외국어대학교 + 검색어`로 검색 | 학교 부서·전화·이메일·위치 **미보유**, 검색 결과는 공식 사이트만으로 제한되지 않음. 외부 링크를 열기 전에는 검색어를 전송하지 않음 |
 
 <a id="site-flow"></a>
 
@@ -174,6 +174,8 @@ flowchart TB
 ### 개발 및 자동 검증
 
 Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install chromium` → `npm run test:e2e` 순서로 확인합니다. GitHub Actions의 자동 검사 통과는 Windows Chrome/Edge·NVDA·고배율 실기기 인수나 운영 배포 승인과는 별개입니다.
+
+**단계·인수 계획:** 2차 모의신청 Windows 실기기 QA([#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71))가 끝난 다음, 3차 담당 **김채윤(`qamarrchae`)**이 선택적 Supabase Free를 **직접 설치·RLS/권한·백업/복구 실습**합니다([#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)). 현재 실제 데이터 연결은 OFF이고 정적 최소 자료가 우선입니다. 전체 프로젝트 완성 후에만 원개발자 **[dlacked/Hanmo](https://github.com/dlacked/Hanmo)**에게 결과물을 전달하고 명시적으로 인수 수락을 확인합니다([#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)). 실기기·자료/운영 인수는 아직 완료되지 않았습니다.
 
 [설계 문서](docs/architecture.md) · [문서 안내](docs/README.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 

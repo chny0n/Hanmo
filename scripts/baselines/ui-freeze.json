@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 긴급 UI 보정: 최신 550×218 보라 원본을 투명 정사각형 SVG favicon에 원비율로 중앙 배치; 문의처 군더더기 삭제; Contributor 입학년도; 학사 공지·강의 검색 본문 폭을 문의처와 동일하게 조정. 모의수강신청 로직 불변.",
+  "purpose": "2026-11-23 현행 보호 SHA: 최신 dlacked/Hanmo SETTING의 예/아니오 2칸 UI를 대기 2종과 돌발상황 2종에 적용(권장 표시 없음), 학사공지/강의검색 안내·버튼 왼쪽 검색칸 정렬. 기존 모의신청 동작·상태 키 보존. 원개발자 인계는 전체 단계 완료 후 별도 수락.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -25,7 +25,7 @@
     },
     {
       "path": "css/hanmo-flat.css",
-      "sha": "8eb87ccc9adc747c6439be89c6e928f22409b36b"
+      "sha": "ddb890861ddeb2d9a64f6aeb4af3a73b1d6d66d3"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -77,7 +77,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "0f96b001cdad495827ed77067d27c21a68e196d5"
+      "sha": "cc986466608283ee79e4b3daf195ff22a9d1290a"
     },
     {
       "path": "css/vsugang.css",
@@ -133,7 +133,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "d16d8106186194f696c096127685a2bc13a0503d"
+      "sha": "afcd756e256bdeaa761399f7ee0a008242aa9a59"
     },
     {
       "path": "img/background.svg",

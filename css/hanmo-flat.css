@@ -98,3 +98,13 @@ body.hanmo-ui.hanmo-search-page > main.hanmo-main > :is(.hanmo-section-title, .h
     max-width: none;
   }
 }
+
+/* 안내 문장과 링크 버튼의 시작점을 검색 입력란의 왼쪽에 정확히 맞춥니다. */
+body.hanmo-ui.hanmo-search-page > main.hanmo-main > :is(.hanmo-section-title,.hanmo-actions,#notice-status) {
+  padding-inline:30px;
+}
+@media (max-width:830px) {
+  body.hanmo-ui.hanmo-search-page > main.hanmo-main > :is(.hanmo-section-title,.hanmo-actions,#notice-status) {
+    padding-inline:14px;
+  }
+}

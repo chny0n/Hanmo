@@ -80,13 +80,17 @@
           <div class='waiting-setting-groups'>
             <fieldset class='waiting-setting-group'>
               <legend>강의 신청에 적용할까요?</legend>
-              <label><input type='radio' name='waitingCourseYN' value='yes' checked /> 예</label>
-              <label><input type='radio' name='waitingCourseYN' value='no' /> 아니오</label>
+              <div class='segmented'>
+                <label><input type='radio' name='waitingCourseYN' value='yes' checked /><span>예</span></label>
+                <label><input type='radio' name='waitingCourseYN' value='no' /><span>아니오</span></label>
+              </div>
             </fieldset>
             <fieldset class='waiting-setting-group'>
               <legend>수강신청 페이지 접속 시에 적용할까요?</legend>
-              <label><input type='radio' name='waitingEntryYN' value='yes' /> 예</label>
-              <label><input type='radio' name='waitingEntryYN' value='no' checked /> 아니오</label>
+              <div class='segmented'>
+                <label><input type='radio' name='waitingEntryYN' value='yes' /><span>예</span></label>
+                <label><input type='radio' name='waitingEntryYN' value='no' checked /><span>아니오</span></label>
+              </div>
             </fieldset>
           </div>
           <div class='settingActions'>
@@ -149,14 +153,18 @@
     <div class="incident-option-group">
       <fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">
         <legend id="incident-reconnect-label">가상 404·접속 끊김</legend>
-        <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"> <span>예</span></label>
-        <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked> <span>아니오</span></label>
+        <div class="segmented">
+          <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
+          <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
+        </div>
         <small id="incident-reconnect-description">BASIC에서 수강신청 화면으로 이동할 때 1회 가상 404가 표시됩니다.</small>
       </fieldset>
       <fieldset class="waiting-setting-group" aria-describedby="incident-capacity-description">
         <legend>정원 마감 · 대체 과목 찾기</legend>
-        <label><input type="radio" name="incident-CAPACITY" value="yes" data-capacity-toggle> <span>예</span></label>
-        <label><input type="radio" name="incident-CAPACITY" value="no" data-capacity-off checked> <span>아니오</span></label>
+        <div class="segmented">
+          <label><input type="radio" name="incident-CAPACITY" value="yes" data-capacity-toggle><span>예</span></label>
+          <label><input type="radio" name="incident-CAPACITY" value="no" data-capacity-off checked><span>아니오</span></label>
+        </div>
         <small id="incident-capacity-description">BASIC에서 임의의 한 과목이 정원 마감됩니다.</small>
       </fieldset>
     </div>

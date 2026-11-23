@@ -643,3 +643,77 @@ test('강의검색·학사공지 본문 폭은 문의처와 1440·1980 PC에서 
   }
  }
 });
+
+test('최신 원본 한모의 2칸 예·아니오 선택을 SETTING과 돌발상황에 공통 적용한다',async({page})=>{
+ await page.setViewportSize({width:1980,height:1080});
+ await page.goto('/html/vsugang.html');
+ await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+ await expect(page.locator('.settingSection .segmented')).toHaveCount(2);
+ const first=page.locator('.settingSection .segmented').first();
+ await expect(first.locator('span')).toHaveText(['예','아니오']);
+ await expect(page.locator('input[name="waitingCourseYN"][value="yes"]')).toBeChecked();
+ await expect(page.locator('input[name="waitingEntryYN"][value="no"]')).toBeChecked();
+ const optionStyle=await first.evaluate(group=>{
+   const labels=[...group.querySelectorAll('label')];
+   const checked=group.querySelector('input:checked + span');
+   return {columns:getComputedStyle(group).gridTemplateColumns.split(' ').length,
+     checkedBackground:getComputedStyle(checked).backgroundColor,
+     offBackground:getComputedStyle(labels[1].querySelector('span')).backgroundColor,
+     widths:labels.map(x=>x.getBoundingClientRect().width)};
+ });
+ expect(optionStyle.columns).toBe(2);
+ expect(optionStyle.checkedBackground).toBe('rgb(28, 45, 64)');
+ expect(optionStyle.offBackground).toBe('rgba(0, 0, 0, 0)');
+ expect(Math.abs(optionStyle.widths[0]-optionStyle.widths[1])).toBeLessThanOrEqual(1);
+ await page.locator('.psugangVal').fill('3');
+ await page.locator('.vsugangVal').fill('1');
+ await page.locator('input[name="waitingCourseYN"][value="no"]').check();
+ await page.locator('input[name="waitingEntryYN"][value="yes"]').check();
+ await page.locator('.settingSection .settingButton').click();
+ expect(await page.evaluate(()=>({
+   course:localStorage.getItem('waitingValue'),
+   entry:localStorage.getItem('waitingEntryValue')
+ }))).toEqual({course:'no',entry:'yes'});
+ await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+ await expect(page.locator('input[name="waitingCourseYN"][value="no"]')).toBeChecked();
+ await expect(page.locator('input[name="waitingEntryYN"][value="yes"]')).toBeChecked();
+ await page.locator('.settingSection .settingCancel').click();
+ await page.locator('#incident-options').click();
+ await expect(page.locator('#scenario-settings .segmented')).toHaveCount(2);
+ await expect(page.locator('input[name="incident-RECONNECT"][value="no"]')).toBeChecked();
+ await expect(page.locator('input[name="incident-CAPACITY"][value="no"]')).toBeChecked();
+ const incidentStyle=await page.locator('#scenario-settings .segmented').first()
+   .evaluate(group=>getComputedStyle(group.querySelector('input:checked + span')).backgroundColor);
+ expect(incidentStyle).toBe(optionStyle.checkedBackground);
+ await expect(page.locator('body')).not.toContainText('권장');
+ await page.locator('input[name="incident-RECONNECT"][value="yes"]').check();
+ await page.locator('input[name="incident-CAPACITY"][value="yes"]').check();
+ await page.locator('#scenario-settings button[value="save"]').click();
+ await page.locator('#incident-options').click();
+ await expect(page.locator('input[name="incident-RECONNECT"][value="yes"]')).toBeChecked();
+ await expect(page.locator('input[name="incident-CAPACITY"][value="yes"]')).toBeChecked();
+});
+
+test('학사공지·강의검색의 안내와 버튼은 검색 입력란 왼쪽에 맞춘다',async({page})=>{
+ for(const width of [1440,1980]){
+  await page.setViewportSize({width,height:1080});
+  for(const route of ['/html/academic-timeline.html','/html/catalog.html']){
+   await page.goto(route);
+   const info=await page.evaluate(()=>{
+    const r=selector=>document.querySelector(selector).getBoundingClientRect();
+    const input=r('.hanmo-search-controls input');
+    const notice=document.querySelector('#notice-count')?r('#notice-count'):r('#catalog-status');
+    const actions=r('.hanmo-actions > :first-child');
+    const status=document.querySelector('#notice-status');
+    const statusLeft=status?
+      status.getBoundingClientRect().left+parseFloat(getComputedStyle(status).paddingLeft):null;
+    return {inputLeft:input.left,textLeft:notice.left,buttonLeft:actions.left,statusLeft};
+   });
+   expect(Math.abs(info.inputLeft-info.textLeft),route+' info at '+width).toBeLessThanOrEqual(1);
+   expect(Math.abs(info.inputLeft-info.buttonLeft),route+' actions at '+width).toBeLessThanOrEqual(1);
+   if(info.statusLeft!==null){
+    expect(Math.abs(info.inputLeft-info.statusLeft),route+' notice at '+width).toBeLessThanOrEqual(1);
+   }
+  }
+ }
+});

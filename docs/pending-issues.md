@@ -38,7 +38,7 @@
 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64) | [구현][3차][P1][데이터] 허용 최소 데이터용 정적 스냅샷·선택적 Supabase 스키마 재설계 | open |
 | [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) | [구현][3차][P1][데이터] 허용 공지 링크·비식별 집계 공개 읽기 및 정적 대체 | open |
 | [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66) | [구현][3차][P0][데이터] 정보처 수집 제한·전역 예산·오류 당일 차단 파이프라인 | open |
-| [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | [검증][3차][P1][통합] 정적 최소 스냅샷·선택적 Supabase 권리/보안/복구 인수 | open |
+| [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | [검증][3차][P1][데이터] 김채윤의 정적 스냅샷·선택적 Supabase Free 직접 실습·인수 | open |
 
 ### JS 동등성·원본 실기기·출시 권리 감사
 

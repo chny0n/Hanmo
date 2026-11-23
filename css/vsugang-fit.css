@@ -47,24 +47,35 @@ body.hanmo-vsugang .settingPanel{
   border-radius:8px;background:#0e2535
 }
 .settingPanel .waiting-setting-group legend{padding:0 5px;color:#f0f5fa;font-weight:600}
-/* 대기시간과 돌발상황은 같은 선택 버튼·라디오 크기·상태 명암을 사용한다. */
-.settingPanel .waiting-setting-group label{
-  display:inline-flex;align-items:center;justify-content:flex-start;gap:9px;
-  min-height:38px;padding:5px 13px;cursor:pointer;
-  border:1px solid #415e70;border-radius:8px;background:#102735;
-  color:#d7e3eb;font-size:14px;line-height:1.4;
-  transition:background-color .18s ease-out,border-color .18s ease-out,color .18s ease-out
+/* 원본 한모의 두 칸 선택 모양을 SETTING·돌발상황에 공통 적용한다. */
+.settingPanel .waiting-setting-group .segmented{
+  box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:4px;flex:1 1 100%;width:100%;min-width:0;
+  padding:4px;background:#000d18;border:1px solid #2a3a4c;border-radius:10px
 }
-.settingPanel .waiting-setting-group label:has(input:checked){
-  background:#193a4d;border-color:#6b8796;color:#f2f6f8
+.settingPanel .waiting-setting-group .segmented label{
+  display:block;position:relative;min-width:0;margin:0;padding:0;
+  border:0;border-radius:7px;background:transparent;cursor:pointer
 }
-.settingPanel .waiting-setting-group label:hover{
-  border-color:#7790a1
+.settingPanel .waiting-setting-group .segmented input[type="radio"]{
+  position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;
+  cursor:pointer;z-index:1;pointer-events:auto
 }
-.settingPanel .waiting-setting-group input[type="radio"]{
-  margin:0;width:16px;height:16px;accent-color:#dab87f;flex:none
+.settingPanel .waiting-setting-group .segmented span{
+  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:36px;padding:4px 8px;border-radius:7px;
+  background:transparent;color:#8a9bb0;font-size:14px;font-weight:500;
+  transition:background-color .2s ease-out,color .2s ease-out
 }
-
+.settingPanel .waiting-setting-group .segmented input:checked + span{
+  background:#1c2d40;color:#fff;font-weight:700
+}
+.settingPanel .waiting-setting-group .segmented input:focus-visible{
+  outline:none
+}
+.settingPanel .waiting-setting-group .segmented input:focus-visible + span{
+  outline:2px solid #ffd27a;outline-offset:1px
+}
 #scenario-settings{width:100%;max-width:none;margin:0;border:0;color:inherit}
 #scenario-settings[open]{display:flex;align-items:center;justify-content:center}
 #scenario-settings::backdrop{background:transparent}
@@ -162,7 +173,7 @@ body.hanmo-vsugang #scenario-settings[open] .settingPanel {
 @media (prefers-reduced-motion: reduce) {
   body.hanmo-vsugang .grid > :is(div, button),
   body.hanmo-vsugang .grid > :is(div, button)::before,
-  .settingPanel .waiting-setting-group label { transition: none; }
+  .settingPanel .waiting-setting-group .segmented span { transition: none; }
   body.hanmo-vsugang .settingSection .settingPanel,
   body.hanmo-vsugang #scenario-settings[open] .settingPanel { animation: none; }
 }

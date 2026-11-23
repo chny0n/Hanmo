@@ -420,3 +420,39 @@ test('보라 원본을 투명 정사각형 안에 비율대로 넣은 favicon을
   assert.doesNotMatch(html,/rel="icon"[^>]*hanmo_color\\.png/,page);
  }
 });
+
+test('SETTING·돌발상황 네 선택은 원본 한모의 예/아니오 두 칸 UI를 공유한다',()=>{
+ const html=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+ const css=fs.readFileSync(path.join(ROOT,'css/vsugang-fit.css'),'utf8');
+ assert.equal([...html.matchAll(/<div class=['"]segmented['"]>/g)].length,4);
+ for(const name of ['waitingCourseYN','waitingEntryYN','incident-RECONNECT','incident-CAPACITY']){
+  assert.match(html,new RegExp('name=["\\x27]'+name+'["\\x27] value=["\\x27]yes["\\x27]'),name+' yes');
+  assert.match(html,new RegExp('name=["\\x27]'+name+'["\\x27] value=["\\x27]no["\\x27]'),name+' no');
+ }
+ assert.doesNotMatch(html,/예\s*\(권장\)/);
+ assert.match(css,/\.waiting-setting-group \.segmented input:checked \+ span/);
+ assert.match(css,/\.waiting-setting-group \.segmented input:focus-visible \+ span/);
+ assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+});
+
+test('학사공지·강의검색 안내·링크 버튼은 검색 영역과 같은 내부 여백을 사용한다',()=>{
+ const css=fs.readFileSync(path.join(ROOT,'css/hanmo-flat.css'),'utf8');
+ assert.match(css,/\(\.hanmo-section-title,\.hanmo-actions,#notice-status\)/);
+ assert.match(css,/padding-inline:30px/);
+ assert.match(css,/padding-inline:14px/);
+ for(const slug of ['catalog','academic-timeline']){
+  const html=fs.readFileSync(path.join(ROOT,'html',slug+'.html'),'utf8');
+  assert.match(html,/class="hanmo-card hanmo-search-controls"/);
+  assert.match(html,/class="hanmo-actions"/);
+ }
+});
+
+test('3차 김채윤 담당과 최종 원개발자 인수가 문서에서 일관되게 별도 게이트로 표시된다',()=>{
+ for(const name of ['README.md','agent.md','docs/architecture.md','docs/pending-issues.md']){
+  const content=fs.readFileSync(path.join(ROOT,name),'utf8');
+  assert.match(content,/qamarrchae|김채윤/,name);
+  assert.match(content,/#125/,name);
+  assert.match(content,/2차|#71/,name);
+ }
+ assert.match(fs.readFileSync(path.join(ROOT,'README.md'),'utf8'),/<div align="center">/);
+});
