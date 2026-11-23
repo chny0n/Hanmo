@@ -1,6 +1,6 @@
 # 한모 GitHub 이슈·아키텍처 동기화 색인
 
-**2026-11-23 기준.** 일반 GitHub 이슈 **기존 74건을 점검**했고 최종 인계 이슈 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125) 및 긴급 철회 이슈 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)을 추가해 **총 76건(열림 26건 / 닫힘 50건)**입니다. 제품·권리의 최우선 정본은 [정보처 서면 회신 원문](sources/2026-11-23-hufs-information-office-reply.txt)과 [아키텍처 §0](architecture.md)이며, 실제 작업 명세는 각 이슈의 **최신 본문·제목·상태**입니다. 오래된 체크리스트는 GitHub 편집 이력으로 남더라도 최신 명세를 덮어쓰지 않습니다.
+**2026-11-23 기준.** 일반 GitHub 이슈 **기존 74건을 점검**했고 최종 인계 이슈 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125) · 긴급 철회 이슈 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126) · 공식 일정 통합 [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127)을 추가해 **총 77건(열림 27건 / 닫힘 50건)**입니다. 제품·권리의 최우선 정본은 [정보처 서면 회신 원문](sources/2026-11-23-hufs-information-office-reply.txt)과 [아키텍처 §0](architecture.md)이며, 실제 작업 명세는 각 이슈의 **최신 본문·제목·상태**입니다. 오래된 체크리스트는 GitHub 편집 이력으로 남더라도 최신 명세를 덮어쓰지 않습니다.
 
 학교는 별도 과거 학기 목록·데이터 파일·API를 제공하지 않고 한모 서비스를 승인·인증·제휴하지 않았습니다. 운영자는 정보처 **두 직원의 대면 안내에서 공개정보 가공 가능** 취지를 들었다고 전했고, **명시적 서면 금지 항목은 제외·자동 수집은 서면 한도 준수·그 밖의 공개정보 가공은 운영자 해석으로 기능/필드 검수에 포함**하기로 했습니다. 공지 메타 고급 검색·개설 관측 이력·공식 행사 일정 통합·문의처 탐색이 대상입니다. 교수명·'수강 관련 정보'·학칙·졸업요건·FAQ 대행·학교 계정·개인 성적자료와 공지 본문/첨부 재게시 등 **이메일 명시 금지는 유지**합니다. 구체 필드의 금지 표현 충돌은 검수 전 공개 보류하며 이메일 말미 '열거 외 이용 불허'와의 **해석 충돌을 [운영 문서](public-data-operating-decision.md)에 공개**합니다.
 
@@ -8,21 +8,21 @@
 
 **운영자 추가 결정:** 정보처에 추가 문의 없이 진행하되 **서면 명시 금지·자동 수집 조건을 우선**하고, 그 밖의 **공개자료 활용·가공은 대면 설명을 근거로 제품 설계 및 자료 필드 검수 범위**에 포함합니다. 자동 실수집/노출은 아직 OFF입니다. 서면의 열거 외 이용 불허 문구와 운영자 해석의 차이·긴급 내리기 절차는 [공개자료 운영 결정](public-data-operating-decision.md)과 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에 기록합니다.
 
-## 현재 열려 있는 실행·검증 이슈 (26건)
+## 현재 열려 있는 실행·검증 이슈 (27건)
 
 ### 공개 공지·집계 및 안전한 검색
 
 | 이슈 | 현재 제목 | 상태 |
 |---|---|---|
 | [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40) | [검증][1차][P1][NLP] 허용 공지 링크 검색·비식별 집계 안전성 골드셋 | open |
-| [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) | [검증][1차][P0][데이터] 허용 공개 공지·비식별 개설 집계의 필드·결측 검증 | open |
-| [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) | [구현][1차][P0][데이터] 허용 공지 링크·비식별 집계 검수 스냅샷 빌더 | open |
+| [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) | [검증][1차][P0][데이터] 공개 공지·강의 개설 메타데이터의 서면 금지 필드·가공/결측 검증 | open |
+| [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) | [구현][1차][P0][데이터] 공개 학사 메타데이터·개설 관측 검수 스냅샷 빌더 | open |
 | [#44](https://github.com/ot4562-glitch/Hanmo_develop/issues/44) | [구현][1차][P1][NLP] 공개 공지 최소 메타데이터·원문 링크 인덱스 안전화 | open |
 | [#46](https://github.com/ot4562-glitch/Hanmo_develop/issues/46) | [구현][1차][P1][NLP] 공개 공지 링크 메타데이터 추출의 오탐·금지 필드 차단 | open |
-| [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) | [구현][1차][P0][데이터] 허용 비식별 강의 개설 집계·전망 백테스트 연결 | open |
+| [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) | [구현][1차][P0][데이터] 공개 강의 개설 이력·추세 비교·비공식 전망 백테스트 | open |
 | [#51](https://github.com/ot4562-glitch/Hanmo_develop/issues/51) | [구현][1차][P1][NLP] 공개 공지 최소 주제 분류·정정/보류 표시 (개인화 제외) | open |
 | [#52](https://github.com/ot4562-glitch/Hanmo_develop/issues/52) | [검증][1차][P2][NLP] 합성 행사 날짜 코어 유효성·백테스트 검증 (서비스 연결 보류) | open |
-| [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53) | [구현][1차][P1][NLP] 허용 공지 링크 검색의 오타·띄어쓰기·안전 랭킹 연결 | open |
+| [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53) | [구현][1차][P1][NLP] 학사공지 메타 고급검색·오타·정정 중복·관련도 개선 | open |
 
 ### 학생 웹·로컬 프로필
 
@@ -32,13 +32,15 @@
 | [#45](https://github.com/ot4562-glitch/Hanmo_develop/issues/45) | [구현][1차][P1][데이터] 내정보 직접 입력의 로컬 저장·삭제·손상 복구 검증 | open |
 | [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | [구현][1차][P0][통합] 비공식 모의연습→공지 원문 링크·개설 집계 안내 흐름 완성 | open |
 | [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58) | [검증][1차][P1][통합] 비공식 달력·학교 일정 링크·마감 오인 방지 QA | open |
+| [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) | [구현][1차][P1][통합] 공개 공식 문의처 정밀 탐색·업무/캠퍼스 비교·링크 최신성 | open |
+| [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) | [구현][1차][P1][통합] 공개 학사일정 메타데이터 통합·중복 제거·변경 비교 엔진 | open |
 
 ### 정적 최소 스냅샷·선택적 Supabase
 
 | 이슈 | 현재 제목 | 상태 |
 |---|---|---|
-| [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64) | [구현][3차][P1][데이터] 허용 최소 데이터용 정적 스냅샷·선택적 Supabase 스키마 재설계 | open |
-| [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) | [구현][3차][P1][데이터] 허용 공지 링크·비식별 집계 공개 읽기 및 정적 대체 | open |
+| [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64) | [구현][3차][P1][데이터] 공개 메타·개설 관측·비식별 집계 정적 스냅샷·Supabase 설계 | open |
+| [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65) | [구현][3차][P1][데이터] 공개 공지·개설 이력·행사 메타 읽기 및 정적 대체 | open |
 | [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66) | [구현][3차][P0][데이터] 정보처 수집 제한·전역 예산·오류 당일 차단 파이프라인 | open |
 | [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126) | [구현][공통][P0][데이터] 공개 학사자료 긴급 OFF·철회·캐시·롤백 검증 | open |
 | [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) | [검증][3차][P1][데이터] 김채윤의 정적 스냅샷·선택적 Supabase Free 직접 실습·인수 | open |
