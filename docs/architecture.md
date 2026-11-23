@@ -174,7 +174,7 @@ Draft [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 SQL·Post
 - **로컬/CI:** Node 22 `npm ci` → `npm run check` → Chromium Playwright. 기본 연습, 5개 기능 페이지의 제목·`i`·한모 구분선 좌표, 탭 전환·결과 PNG 버튼 제거, 전략 경계(300 허용/301 거부), 반응 프로필·Worker/정적 빌드·문서 링크를 검증합니다.
 - **실기기 미완료:** Windows Chrome/Edge, 60·120Hz, 키보드·NVDA·200% 확대, 한 화면 조작·측정 중 탭 전환/오류, 학교 자료 OFF·비공식 고지·원작 회귀 #71·#72·#134. CI 성공을 이 단계 완료로 간주하지 않습니다.
 - **설치 브라우저 자동 검증:** PowerShell에서 `$env:HANMO_BROWSER_CHANNEL='chrome'` 또는 `'msedge'`를 설정한 뒤 `npm run test:e2e`와 `npx playwright test --config tests/playwright-feature.config.mjs`를 실행합니다. 이 결과에는 브라우저 버전과 검사한 SHA를 기록합니다. NVDA·물리 입력·브라우저 실제 확대율은 별도 인수에서 확인합니다.
-- **정책·라이선스/인계:** 공식 로고/오인·학교 자료 라이선스·GPL-3.0/출처를 감사[#73]. JS/JSDoc 이관 자체는 완료됐으나 전체 기능의 동등성/운영 인수[#101]는 미완료. 원작자 `dlacked`에게 최종 인계[#125]하여 명시적 수락을 받기 전 제품 완성 선언 금지.
+- **정책·라이선스/인계:** 공식 로고/오인·학교 자료 라이선스·GPL-3.0/출처를 감사[#73]. JS/JSDoc 이관 자체는 완료됐으나 전체 기능의 동등성/운영 인수[#101]는 미완료. 원작자 `dlacked`에게 전달할 증거와 수락 조건은 [최종 인계 기록](student-data-source-handoff.md#최종-인계-기록)에 있습니다. [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)의 명시적 수락 전 제품 완성 선언 금지.
 - **SVG:** `docs/images/hanmo-01~04`, `hanmo-hero-hufs.svg`, `hanmo-experience-landscape.svg`, `hanmo-feature-preview.svg`, `hanmo-trust-flow.svg`는 현재 5페이지·합성/자료 OFF·4단계 인수 상태에 맞춰 갱신. 이미 정확한 BASIC 합성 분기 그림은 원래 버전 유지.
 
 ## 10. 협업 PR·이슈 운영 규칙 (2026-11-23 현행 사용자 지시)
