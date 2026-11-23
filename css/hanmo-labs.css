@@ -1,0 +1,61 @@
+/* 신규 진단·전략 페이지에서만 사용하는 한모 독립 실험실 스타일입니다. */
+body.hanmo-lab{--lab-text:#f2f5f8;--lab-muted:#b8c9d5;--lab-border:#38556a;color:var(--lab-text);}
+body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1120px,100%);max-width:1120px;margin:0 auto;padding:50px 32px 100px;}
+.hanmo-lab .lab-heading{max-width:820px;margin:0 0 46px;}
+.hanmo-lab .lab-kicker{margin:0 0 14px;color:#f4c76c;font-size:12px;font-weight:700;letter-spacing:.12em;}
+.hanmo-lab .lab-heading h1{margin:0 0 14px;color:var(--lab-text);font-weight:650;font-size:clamp(26px,3vw,34px);letter-spacing:-.03em;}
+.hanmo-lab .lab-heading>p:last-child{max-width:78ch;margin:0;color:var(--lab-muted);font-size:15px;line-height:1.8;word-break:keep-all;}
+.hanmo-lab .lab-panel{margin:0 0 35px;padding:28px 0;border-top:1px solid var(--lab-border);background:transparent;box-shadow:none;}
+.hanmo-lab .lab-section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 20px;}
+.hanmo-lab .lab-section-heading h2{margin:0;font-weight:600;color:var(--lab-text);font-size:21px;}
+.hanmo-lab .lab-minor{color:var(--lab-muted);font-size:12px;}
+.hanmo-lab .lab-explainer{display:grid;gap:8px;margin:0 0 24px;color:var(--lab-muted);font-size:14px;}
+.hanmo-lab .lab-explainer p{margin:0;line-height:1.7;}
+.hanmo-lab .lab-explainer strong{color:var(--lab-text);font-weight:600;}
+.hanmo-lab .lab-check{display:flex;align-items:flex-start;gap:12px;margin:0 0 24px;padding:17px 18px;border:1px solid var(--lab-border);border-radius:4px;cursor:pointer;}
+.hanmo-lab .lab-check input{margin-top:4px;accent-color:#f4c76c;}
+.hanmo-lab .lab-check span{font-size:14px;}
+.hanmo-lab .lab-check small{display:block;margin-top:5px;color:var(--lab-muted);font-size:12px;}
+.hanmo-lab .lab-actions{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0;}
+.hanmo-lab .lab-button{border:1px solid #62849a;border-radius:4px;padding:11px 17px;min-height:44px;background:transparent;color:var(--lab-text);cursor:pointer;font:600 14px var(--hm-font,system-ui);}
+.hanmo-lab .lab-button.primary{background:#f4c76c;border-color:#f4c76c;color:#081725;}
+.hanmo-lab .lab-button:hover:not(:disabled){border-color:#f4c76c;}
+.hanmo-lab .lab-button:focus-visible,.hanmo-lab input:focus-visible,.hanmo-lab select:focus-visible,.hanmo-lab .lab-key-target:focus-visible{outline:3px solid #f4c76c;outline-offset:3px;}
+.hanmo-lab .lab-button:disabled{opacity:.45;cursor:not-allowed;}
+.hanmo-lab .lab-status{min-height:1.8em;margin:14px 0;color:#e5cc98;font-size:14px;}
+.hanmo-lab .lab-key-panel{padding:22px 0 10px;}
+.hanmo-lab .lab-key-panel p{margin:0 0 12px;color:var(--lab-muted);}
+.hanmo-lab .lab-key-target{min-height:100px;width:100%;background:#0a2637;border:1px dashed #88a8bc;border-radius:5px;color:var(--lab-text);font:500 16px var(--hm-font,system-ui);cursor:default;}
+.hanmo-lab .lab-summary{padding:14px 0;margin:0 0 20px;color:#e9d39d;font-size:14px;line-height:1.8;}
+.hanmo-lab .lab-stats{margin:0 0 20px;}
+.hanmo-lab .lab-stats>div{display:grid;grid-template-columns:minmax(200px,30%) 1fr;gap:20px;padding:15px 0;border-top:1px solid #294557;}
+.hanmo-lab .lab-stats dt{font-size:14px;color:var(--lab-muted);}
+.hanmo-lab .lab-stats dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;font-size:15px;}
+.hanmo-lab .lab-footnote{font-size:13px;line-height:1.7;color:var(--lab-muted);max-width:80ch;margin:20px 0;}
+.hanmo-lab .lab-table-scroll{width:100%;overflow-x:auto;margin:0 0 18px;}
+.hanmo-lab .lab-table{border-collapse:collapse;width:100%;font-size:13px;text-align:left;}
+.hanmo-lab .lab-table caption{text-align:left;color:var(--lab-muted);padding:0 0 12px;font-size:12px;}
+.hanmo-lab .lab-table th{font-weight:600;color:#f4c76c;white-space:nowrap;border-bottom:1px solid #517088;padding:11px 9px;}
+.hanmo-lab .lab-table td{padding:12px 9px;color:var(--lab-text);border-bottom:1px solid #243f51;vertical-align:middle;}
+.hanmo-lab .lab-input-table{min-width:850px;}
+.hanmo-lab .lab-input-table input{max-width:104px;min-width:55px;width:100%;box-sizing:border-box;}
+.hanmo-lab .lab-input-table input[data-field="name"]{min-width:94px;}
+.hanmo-lab :is(input,select){background:#0a2536;border:1px solid #517088;color:var(--lab-text);border-radius:3px;padding:10px;font:500 13px var(--hm-font,system-ui);}
+.hanmo-lab .lab-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:26px 0;}
+.hanmo-lab .lab-controls label{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--lab-muted);}
+.hanmo-lab .lab-controls input,.hanmo-lab .lab-controls select{width:100%;min-height:42px;}
+.hanmo-lab .lab-text-button{color:var(--lab-muted);background:none;border:0;text-decoration:underline;font:inherit;cursor:pointer;padding:8px;}
+.hanmo-lab .lab-text-button:disabled{opacity:.4;cursor:default;}
+.hanmo-lab .lab-sensitivity{margin:12px 0 22px;padding-left:20px;color:var(--lab-text);font-size:14px;}
+.hanmo-lab .lab-sensitivity li{margin-bottom:8px;}
+.hanmo-lab h3{margin:24px 0 12px;font-size:17px;}
+.hanmo-lab [hidden]{display:none!important;}
+@media(max-width:900px){
+ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{padding:30px 24px 70px;}
+ .hanmo-lab .lab-controls{grid-template-columns:repeat(2,minmax(0,1fr));}
+ .hanmo-lab .lab-stats>div{grid-template-columns:1fr;gap:5px;}
+}
+@media(max-width:640px){
+ .hanmo-lab .lab-controls{grid-template-columns:1fr;}
+ .hanmo-lab .lab-section-heading{display:block;}
+}

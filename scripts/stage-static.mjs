@@ -25,6 +25,9 @@ for(const bundle of bundles)
   await copyFile(join(build,bundle),join(dist,'js',bundle));
 for(const name of [
  'index.html','html/planner.html','html/forecast.html','html/catalog.html',
+ 'html/readiness.html','html/strategy-lab.html','css/hanmo-labs.css',
+ 'js/readiness.mjs','js/strategy-page.mjs','js/strategy-worker.mjs',
+ 'js/strategy-engine.mjs','js/lab-share.mjs',
  'html/academic-timeline.html',
  'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-forecast.js','js/student-entry.js','data/academic-source-config.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "2026-11-23 사용자 승인 UI 수정: 원본 NOTICE 문구·세로 순환 복원, 학교 문의처 불필요 안내 제거, vsugang 제목 '서비스' 추가, SETTING·돌발상황 팝업 디자인 통일. 기존 BASIC/TIME/SELECT 동작과 비공식 고지 보존.",
+  "purpose": "2026-11-23 승인: 독립 PC 진단·가상 전략 실험 2개 페이지 및 홈 진입 링크 추가. 기존 BASIC/TIME/SELECT 보호와 2026-11-23 NOTICE·문의처·vsugang 디자인 기준 유지.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -26,6 +26,10 @@
     {
       "path": "css/hanmo-flat.css",
       "sha": "ddb890861ddeb2d9a64f6aeb4af3a73b1d6d66d3"
+    },
+    {
+      "path": "css/hanmo-labs.css",
+      "sha": "24e688fafee7cade5c8512f298067804ac1a63db"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -128,12 +132,20 @@
       "sha": "d1e5dea37b110ca7002c95629463ab577f090023"
     },
     {
+      "path": "html/readiness.html",
+      "sha": "017cfc462c70bc1691d602bc4950b233e88b8590"
+    },
+    {
       "path": "html/result.html",
       "sha": "d8e4874cab63a5ac00f60dc26b1bff5be94bf1ca"
     },
     {
       "path": "html/selectZone.html",
       "sha": "9c3497be93620f3fba62168d209ee3a7b3c07b60"
+    },
+    {
+      "path": "html/strategy-lab.html",
+      "sha": "c71913a477057f1c5f487648a635cd038c702b84"
     },
     {
       "path": "html/vsugang.html",
@@ -176,16 +188,16 @@
       "sha": "8fe51bea9fe8656ba47850de5720ffc0e69ae805"
     },
     {
-      "path": "img/lucide/LICENSE",
-      "sha": "718bb3f0e44153809972abed31839375804bf652"
-    },
-    {
       "path": "img/lucide/arrow-right.svg",
       "sha": "7cf51782e7b069553458ef5d788057d44669628f"
     },
     {
       "path": "img/lucide/external-link.svg",
       "sha": "5ae55851edf016cc899260d8020ebd3875e50b6d"
+    },
+    {
+      "path": "img/lucide/LICENSE",
+      "sha": "718bb3f0e44153809972abed31839375804bf652"
     },
     {
       "path": "img/lucide/rotate-ccw.svg",
@@ -209,7 +221,7 @@
     },
     {
       "path": "index.html",
-      "sha": "b3e2df7812c1a27216fdabf8c0207914c087c77a"
+      "sha": "c7d98a487e1c9795fe3d6cf48212a6656f3b8e74"
     },
     {
       "path": "js/academic-data-source.js",

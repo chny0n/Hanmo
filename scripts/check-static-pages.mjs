@@ -5,6 +5,7 @@ const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
+  'html/readiness.html','html/strategy-lab.html',
   'html/catalog.html','html/academic-calendar.html','html/academic-support.html',
 ];
 const htmlRoutes=[
@@ -24,6 +25,8 @@ for(const name of [
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
+  'css/hanmo-labs.css','js/readiness.mjs','js/strategy-page.mjs',
+  'js/strategy-engine.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
   'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,
 ])await must(name);
@@ -37,7 +40,7 @@ for(const banned of ['html/academic-progress.html','html/academic-faq.html',
 const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
 const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
 const publicRoutes=[
-  '', 'html/vsugang.html','html/academic-timeline.html',
+  '', 'html/vsugang.html','html/readiness.html','html/strategy-lab.html','html/academic-timeline.html',
   'html/forecast.html','html/catalog.html','html/academic-calendar.html',
   'html/academic-support.html','html/planner.html','html/developer.html'
 ];
