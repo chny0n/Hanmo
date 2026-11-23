@@ -1,3 +1,4 @@
+// @ts-check
 // 검수된 공지 제목의 흔한 표현만 일반 문의 주제로 묶습니다. 원문·검색 기록은 내보내지 않습니다.
 /**
  * @typedef {{id:string,title:string,approvedForSuggestions:boolean,scopePolicyVersion:string}} ReviewedTitle
