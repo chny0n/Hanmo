@@ -130,6 +130,13 @@
 | [#115](https://github.com/ot4562-glitch/Hanmo_develop/issues/115) | [설계][1차][P1][통합] 개설 전망 통합 채택·졸업 준비 메뉴 폐기 이력 | closed |
 | [#116](https://github.com/ot4562-glitch/Hanmo_develop/issues/116) | [설계][2차][P2][통합] BASIC 합성 CAPACITY 채택·기타 돌발상황 보류 기록 | closed |
 
+## 최신 문서·이슈 동기화 확인
+
+- **2026-11-23 현재 열린 일반 이슈 27건:** 각 제목의 차수·유형·P0/P1/P2 라벨과 아래 색인의 제목·상태를 GitHub에 맞춰 정리했습니다. 목록을 닫거나 기능 완료로 선언한 것은 아닙니다.
+- **학생 우선순위:** 공지 정밀검색 #53·검색 안전 평가 #40, 강의 개설 검수 #48은 별도. #127은 일정 월간 표시의 **P2 선택 확장**, **‘바뀐 공지만 보기’ 필터와 전후 비교 학생 화면은 폐기**했습니다.
+- **병합/코드 상태:** [PR #128](https://github.com/ot4562-glitch/Hanmo_develop/pull/128)·[PR #129](https://github.com/ot4562-glitch/Hanmo_develop/pull/129)는 `main`에 반영됐습니다. 문의 생성 버튼·학교 홈페이지 바로가기 제거, 제목 i 안내, 홈 NOTICE 순환·SETTING/돌발상황 빛 복구의 PC 자동 QA는 완료됐으나 Windows 실기기/실자료 연결/학교 자료 이용 인수는 별도입니다.
+- **정본:** [현행 아키텍처](architecture.md)·[학생 기능/최소 데이터 계획](focused-public-data-plan.md)·[잠정 운영 방침](public-data-operating-decision.md). 아래 과거 종료 이슈는 기능 출시가 아니라 당시 설계 기록입니다.
+
 ## 사실과 미완료 인수 구분
 
 - **실제로 유지되는 웹:** 홈·BASIC/TIME/SELECT 합성 연습(가상 RECONNECT·CAPACITY 각각 기본 OFF), 학사공지 링크/미연결, 개설 전망/미연결, 달력/공식 원문 링크, 내정보/직접 입력. **졸업 준비·학사 FAQ HTML/JS/CSS·학교 로고 파일은 삭제**. Windows Chrome/Edge/NVDA 실기기와 상징물·SVG 전수 감사는 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72), [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73)에서 계속 검증해야 합니다.
