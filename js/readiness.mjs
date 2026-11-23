@@ -34,6 +34,7 @@ export function findings({frame,longTasks,network,drift}){
   return result;
 }
 const text=(value)=>typeof value==='number'?value.toFixed(1):'측정 불가';
+const within95Percent=(value)=>'측정값의 95% 이상이 '+text(value)+'ms 이하';
 const guard=(condition,message)=>{if(condition)throw new Error(message);};
 async function fetchWithTimeout(url,options,signal){
   const controller=new AbortController();
@@ -148,10 +149,10 @@ if(typeof document!=='undefined'){
         guard(signal.aborted,'진단 취소');
         const alerts=findings({frame,longTasks,network,drift});
         summary.textContent=alerts.join(' ');
-        value('readiness-frame-value',text(frame.median)+'ms 중앙 · P95 '+text(frame.p95)+'ms · 끊김 '+frame.interruptions+'회');
+        value('readiness-frame-value','중앙값 '+text(frame.median)+'ms · '+within95Percent(frame.p95)+' · 끊김 '+frame.interruptions+'회');
         value('readiness-task-value',longTasks===null?'지원되지 않음':longTasks+'회 (50ms 이상)');
-        value('readiness-drift-value',drift===null?'측정 불가':text(drift)+'ms P95');
-        value('readiness-latency-value',network?.median===null||!network?'미측정':text(network.median)+'ms · P95 '+text(network.p95)+'ms');
+        value('readiness-drift-value',drift===null?'측정 불가':within95Percent(drift));
+        value('readiness-latency-value',network?.median===null||!network?'미측정':'중앙값 '+text(network.median)+'ms · '+within95Percent(network.p95));
         value('readiness-jitter-value',network?.jitter===null||!network?'미측정':text(network.jitter)+'ms');
         value('readiness-speed-value',network?.mbps===null||!network?'미측정':text(network.mbps)+'Mbps (한모 CDN 한정)');
         value('readiness-error-value',network?network.failures+'/7회':'미측정');

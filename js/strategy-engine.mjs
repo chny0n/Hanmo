@@ -4,7 +4,7 @@ const requireInteger=(value,min,max,label)=>{
   if(!Number.isSafeInteger(value)||value<min||value>max)throw new RangeError(label+' 입력값을 확인하세요.');
 };
 export function validateScenario(input){
-  if(!input||!Array.isArray(input.courses))throw new RangeError('가상 과목이 없습니다.');
+  if(!input||!Array.isArray(input.courses))throw new RangeError('과목이 없습니다.');
   const c=input.courses;
   requireInteger(c.length,2,8,'과목 수');
   const ranks=new Set(),ids=new Set();
@@ -16,8 +16,8 @@ export function validateScenario(input){
     requireInteger(course.rank,1,c.length,'중요 순위');
     if(ranks.has(course.rank))throw new RangeError('중요 순위는 1부터 과목 수까지 중복 없이 설정하세요.');
     ranks.add(course.rank);
-    requireInteger(course.capacity,1,300,'가상 정원');
-    requireInteger(course.rivals,0,200,'가상 경쟁자');
+    requireInteger(course.capacity,1,300,'정원');
+    requireInteger(course.rivals,0,200,'경쟁자');
   }
   requireInteger(input.seed,0,4294967295,'실험 식별값');
   requireInteger(input.trials,100,5000,'실험 반복 수');

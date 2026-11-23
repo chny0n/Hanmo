@@ -3,7 +3,7 @@
 <head>
   <script src="../js/pc-only.js"></script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="반응속도 측정과 가상 경쟁 모델을 이용한 한모 비공식 수강신청 순서 실험">
+  <meta name="description" content="반응속도 측정과 경쟁 모형을 이용한 한모 비공식 수강신청 순서 실험">
   <title>전략 실험 | 한모</title>
   <link rel="icon" href="../img/favicon-purple.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/student-ui.css">
@@ -30,21 +30,21 @@
 </header>
   <main id="main" class="hanmo-main lab-layout" tabindex="-1">
     <div class="hanmo-schoolmark" aria-label="전략 실험 화면">
-      <div class="hanmo-title-line"><span class="hanmo-title-help"><button class="hanmo-title-help-button" type="button" aria-label="전략 실험 기능 안내" aria-describedby="strategy-page-help">i</button><span class="hanmo-title-help-tip" id="strategy-page-help" role="tooltip">가상 과목의 신청 순서와 성공 빈도를 비교합니다.</span></span><h1>전략 실험</h1></div>
+      <div class="hanmo-title-line"><span class="hanmo-title-help"><button class="hanmo-title-help-button" type="button" aria-label="전략 실험 기능 안내" aria-describedby="strategy-page-help">i</button><span class="hanmo-title-help-tip" id="strategy-page-help" role="tooltip">입력한 과목의 신청 순서와 실험에서 성공한 비율을 비교합니다.</span></span><h1>전략 실험</h1></div>
       <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
     </div>
     <section id="strategy-input" class="lab-panel" aria-labelledby="strategy-input-heading">
-      <div class="lab-section-heading"><h2 id="strategy-input-heading">가상 과목 입력</h2><span class="lab-minor">중요 순위 1이 가장 높습니다.</span></div>
+      <div class="lab-section-heading"><h2 id="strategy-input-heading">과목 입력</h2><span class="lab-minor">중요 순위 1이 가장 높습니다.</span></div>
       <form id="strategy-form">
         <div class="lab-table-scroll">
           <table class="lab-table lab-input-table">
-            <caption>가상 과목 2~8개</caption>
-            <thead><tr><th>과목 이름</th><th>중요 순위</th><th>가상 정원</th><th>경쟁자</th><th>삭제</th></tr></thead>
+            <caption>과목 2~8개</caption>
+            <thead><tr><th>과목 이름</th><th>중요 순위</th><th>정원</th><th>경쟁자</th><th>삭제</th></tr></thead>
             <tbody id="strategy-courses"></tbody>
           </table>
         </div>
         <div class="lab-actions">
-          <button type="button" class="lab-button secondary" id="strategy-add">가상 과목 추가</button>
+          <button type="button" class="lab-button secondary" id="strategy-add">과목 추가</button>
         </div>
         <div class="lab-auto-details">
           <p><span>실험 식별값 · 자동</span><strong id="strategy-clock">—</strong></p>
@@ -52,17 +52,17 @@
           <a href="./reaction-test.html">반응속도 테스트로 이동</a>
         </div>
         <div class="lab-actions">
-          <button type="submit" class="lab-button primary" id="strategy-run">1,000회 가상 실험 시작</button>
+          <button type="submit" class="lab-button primary" id="strategy-run">1,000회 실험 시작</button>
         </div>
       </form>
       <button type="button" class="lab-button secondary" id="strategy-cancel" hidden>계산 중단</button>
-      <p class="lab-status" id="strategy-status" role="status" aria-live="polite">가상 도착속도는 내부 모델에서 정합니다. 실제 학교 정원·경쟁률·신청 확률과 무관합니다.</p>
+      <p class="lab-status" id="strategy-status" role="status" aria-live="polite">실험에 사용할 경쟁자의 신청 시점은 모형에서 정합니다. 실제 학교 정원·경쟁률·신청 확률과 무관합니다.</p>
     </section>
     <section id="strategy-result" class="lab-panel lab-result-panel" aria-labelledby="strategy-results-heading" hidden>
-      <div class="lab-section-heading"><h2 id="strategy-results-heading">전략 비교 결과</h2><span class="lab-minor">가상 실험 · 실제 예측 아님</span></div>
+      <div class="lab-section-heading"><h2 id="strategy-results-heading">전략 비교 결과</h2><span class="lab-minor">실험 결과 · 실제 예측 아님</span></div>
       <p id="strategy-recommendation" class="lab-strategy-answer" role="status"></p>
       <p id="strategy-setup" class="lab-footnote"></p>
-      <p class="lab-footnote">모든 과목 성공 확률은 가상 경쟁자와 임의 소진속도 모델에서 1,000회 반복한 빈도입니다. 실제 수강신청 성공 확률로 해석하지 마세요.</p>
+      <p class="lab-footnote">모든 과목 성공 확률은 경쟁자의 신청 시점을 달리해 1,000회 실험했을 때 모두 신청에 성공한 비율입니다. 실제 수강신청 성공 확률로 해석하지 마세요.</p>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 실험</button>
     </section>
   </main>
