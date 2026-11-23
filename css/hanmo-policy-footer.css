@@ -109,3 +109,111 @@ body.hanmo-pc-only-layout > main {
   .hanmo-policy-footer { padding: 10px 16px; font-size: 11px; line-height: 1.6; }
   body.hanmo-home > .hanmo-policy-footer { padding-left: 70px; padding-right: 70px; }
 }
+
+/* 1980×1080 PC 기준: 모든 화면의 실제 문서 높이는 1개 뷰포트에 맞춥니다.
+   작은 화면과 고배율에서는 기존 접근 가능한 반응형 배치를 보존합니다. */
+@media (min-width: 1600px) and (min-height: 900px) {
+  html { box-sizing: border-box; width: 100%; height: 100%; overflow: hidden; }
+  body.hanmo-home,
+  body.hanmo-ui,
+  body.hanmo-vsugang,
+  body.hanmo-policy-legacy,
+  body.hanmo-practice-layout,
+  body.hanmo-pc-only-layout {
+    box-sizing: border-box;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .hanmo-policy-footer {
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding-block: 8px;
+  }
+  /* 학업 화면은 기존 1070px 제한을 풀고 1980px 너비를 활용합니다. */
+  body.hanmo-ui > .hanmo-topbar { flex: 0 0 auto; }
+  body.hanmo-ui > main.hanmo-main {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 18px clamp(28px, 3vw, 66px) 12px;
+    overflow: hidden;
+  }
+  body.hanmo-ui .hanmo-main > .hanmo-card,
+  body.hanmo-ui .hanmo-main > .hanmo-card-grid,
+  body.hanmo-ui .hanmo-main > .academic-calendar-surface {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+  }
+  body.hanmo-ui .hanmo-main > .hanmo-schoolmark { flex: 0 0 auto; }
+  body.hanmo-ui .hanmo-card-grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  body.hanmo-ui .hanmo-fields { gap: 16px 28px; }
+  body.hanmo-ui .hanmo-list { min-height: 0; }
+  body.hanmo-ui .academic-calendar-main { max-width: none; }
+  /* 구형 개발자·결과 화면도 헤더·본문·고지의 세 행만 사용합니다. */
+  body.hanmo-policy-legacy > main {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+    width: 100%;
+    justify-content: center;
+    overflow: hidden;
+  }
+  body.hanmo-policy-legacy main > .f-dirt-down {
+    max-height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+  body.hanmo-policy-legacy .titleContainer { top: 0; }
+  body.hanmo-policy-legacy .container { margin-top: 14px; }
+  body.hanmo-policy-legacy .info { margin-top: 9px; line-height: 1.35; }
+  body.hanmo-policy-legacy .info.blueBox { padding-block: 9px; }
+  body.hanmo-policy-legacy .info img { height: 80px; }
+  body.hanmo-policy-legacy .hanmo-contributor-list li { padding-block: 6px; }
+  body.hanmo-policy-legacy .box { margin-top: 12px; gap: 12px; }
+  body.hanmo-policy-legacy .button { margin-bottom: 8px; }
+  body.hanmo-vsugang > main { min-height: 0; overflow: hidden; }
+  /* 수강신청 표는 최다 15개 과목을 두 세로 영역에 모두 표시하도록 밀도를 조정합니다. */
+  body.hanmo-practice-layout > .half { min-height: 0; overflow: hidden; }
+  body.hanmo-practice-layout .half > .selectZone_mainArea,
+  body.hanmo-practice-layout .half > .mainArea { min-height: 0; overflow: hidden; }
+  body.hanmo-practice-layout .selectZone_mainArea { width: calc(100% - 220px); }
+  body.hanmo-practice-layout .selectZone_mainArea > h2 { flex: 0 0 35px; height: 35px; }
+  body.hanmo-practice-layout .tableZone {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: calc(100% - 24px);
+    min-height: 0;
+    overflow: hidden;
+  }
+  body.hanmo-practice-layout .vsugangTable {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    margin-top: 8px;
+    overflow: visible;
+  }
+  body.hanmo-practice-layout .vsugangedTable {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    margin-top: 12px;
+    padding-bottom: 0;
+    overflow: visible;
+  }
+  body.hanmo-practice-layout .tableZone td { height: 22px; font-size: 12px; }
+  body.hanmo-practice-layout .tableZone th { height: 26px; font-size: 12px; }
+  body.hanmo-practice-layout #course-search-prompt { margin: 6px 0; }
+  body.hanmo-practice-layout .course-general-warning { margin-block: 4px; }
+  body.hanmo-practice-layout .timer { margin-top: clamp(24px, 7vh, 74px); }
+  body.hanmo-pc-only-layout > main { flex: 1 1 auto; min-height: 0; }
+}

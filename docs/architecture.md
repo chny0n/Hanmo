@@ -53,7 +53,7 @@
 
 | 영역 | 현재 `main`에서 확인되는 것 | 미충족 조건 / 다음 게이트 |
 |---|---|---|
-| **학생용 PC 페이지·내정보** | 홈·모의신청·내정보·학사공지·강의 전망·달력·학교 문의처 **존재**, 졸업 준비·학사 FAQ 페이지 **삭제**. 주요 화면에 비공식 안내 추가 | 공식 오인 디자인/학교 관련 이미지·메타 전수 감사와 PC/접근성 브라우저 QA는 별도. 개설 원장·실학사자료 미연결. [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39)·[#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
+| **학생용 PC 페이지·내정보** | 홈·모의신청·내정보·학사공지·강의 전망·달력 **존재**, 졸업 준비·학사 FAQ 페이지 **삭제**. 주요 화면에 비공식 안내 추가 | 공식 오인 디자인/학교 관련 이미지·메타 전수 감사와 PC/접근성 브라우저 QA는 별도. 개설 원장·실학사자료 미연결. [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39)·[#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
 | **학업·전망·NLP 코어** | JS/JSDoc 검색·분류·전망·근거 평가 코어와 합성 테스트; [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117)·[#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119) 병합 | **공개 공지 링크/허용 메타데이터·비식별 집계만 대상**. 학교 대신 FAQ·학칙 적용·교수명/수강 관련 정보 노출 금지. 실제 학교 데이터와의 연결·평가 아직 없음. [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) |
 | **학생 데이터 읽기** | `js/academic-data-source.js`는 `NOT_CONNECTED/EMPTY/OFFLINE/INVALID/READY` 구분. 설정은 **`mode: disabled`** | 허용 범위로 축소한 새 payload/RLS/검수·철회 정책을 검증하기 전에는 연결 금지. 구형 `faq`, `instructor`, 학칙·분반 상세 계약을 운영하지 않음 |
 | **모의수강신청·돌발상황** | BASIC/TIME/SELECT 연습과 BASIC 전용 선택형 합성 돌발상황 **2개**: `RECONNECT`(1회 가상 404→새로고침 복구), `CAPACITY`(임의 1과목 가상 정원 마감·전공/교양/기초 합성 대체과목 검색). 둘 다 기본 OFF이며 실제 학교 정원·장애가 아님. [#106](https://github.com/ot4562-glitch/Hanmo_develop/pull/106)·[#108](https://github.com/ot4562-glitch/Hanmo_develop/pull/108)·[#110](https://github.com/ot4562-glitch/Hanmo_develop/pull/110)·[#122](https://github.com/ot4562-glitch/Hanmo_develop/pull/122) | 자동화 회귀가 통과했더라도 Windows Chrome/Edge의 원본 SELECT 대기번호·Enter 연속 입력·키보드·404 복구 및 CAPACITY OFF 동등성은 실기기 인수 필요. [#50](https://github.com/ot4562-glitch/Hanmo_develop/issues/50)·[#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) |
@@ -118,7 +118,6 @@ html/catalog.html ← html/forecast.html → 강의 검색·전망 화면(승인
 html/academic-progress.html → 2026-11-23 삭제 (졸업 준비/요건 페이지)
 html/academic-calendar.html → 달력 껍데기(확정 자료 없음)
 html/academic-faq.html → 2026-11-23 삭제 (학사 FAQ 페이지)
-html/academic-support.html → 캠퍼스별 공식 문의처 연결(학사종합·원스톱·학생/장학팀 원문/전화/메일/위치, 10개 문의 분야 분류; 학사 FAQ 자체 답변 없음)
 js/academic/ → 합성 검증 코어, 일부 규정·FAQ 로직 존재(학생용 연결 금지)
 data/academic-source-config.json → mode: disabled(유지)
 
@@ -179,7 +178,7 @@ data/academic-source-config.json → mode: disabled(유지)
 ### 4.4 달력·공식 학사 상담·FAQ 전환
 
 - **달력:** 브라우저의 빈 달력·사용자 개인 메모 등 학교 자료 비의존 UI만 유지할 수 있습니다. 학교 공지의 허용 범위 밖인 학사행사 데이터의 별도 구조화·일정/신청 마감 자동 판정은 하지 않습니다. 공식 일정은 확인 가능한 학교 채널로 안내하고 자체 예상일을 공식 D-day로 표기하지 않습니다.
-- **학사 FAQ:** 학교 제도·절차에 대한 질문의 자체 답변 생성·인용·요약·검색 근거 노출을 **출시 범위에서 제외**합니다. `html/academic-faq.html`은 삭제됐으며 학교 문의처 링크 안내는 `html/academic-support.html`에서 제공합니다. 학교 제도·절차 질문에 직접 답변하지 않습니다. 기존 BM25·FAQ guard·근거형 답변 코어는 **합성 내부 시험용**으로만 구분합니다.
+- **학사 FAQ:** 학교 제도·절차에 대한 질문의 자체 답변 생성·인용·요약·검색 근거 노출을 **출시 범위에서 제외**합니다. `html/academic-faq.html`은 삭제됐으며 검증되지 않은 문의처 정보 제공은 중단합니다. 학교 제도·절차 질문에 직접 답변하지 않습니다. 기존 BM25·FAQ guard·근거형 답변 코어는 **합성 내부 시험용**으로만 구분합니다.
 - **학칙:** FAQ·달력·진학/교환학생 보조 기능을 포함한 **어느 경로에서도 학칙·졸업요건 링크/인용·요약·표·자동확인 금지**. 학교의 학사 판단이 필요한 경우 공식 채널 이용을 안내합니다.
 - **상담:** 운영 중인 공식 문의처의 공개 연락 경로로 연결하되 학교 명의로 답변·예약/자격·검증을 대행하지 않습니다. 부서/연락처의 최신성은 공식 사이트에서 확인합니다.
 

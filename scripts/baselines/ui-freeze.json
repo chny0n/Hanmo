@@ -1,15 +1,11 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 보호 UI 파일별 SHA. 원본 dlacked/Hanmo f02bdd2의 비공식 브랜딩·광고 제거·정수 입력 방식과 개발판 독립 대기·돌발상황을 선택적으로 통합. 별도 보호된 practice.html·css/vsugang.css는 유지하고 정책·회귀 검증을 적용.",
+  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 원본 Hanmo UI 동기화 후 미검증 학교 문의처 페이지·자산 완전 제거, 1980×1080 PC 단일 화면 배치 검증 기준 반영. 원본 BASIC/TIME/SELECT·독립 대기·돌발상황·비공식 안내를 보존.",
   "files": [
     {
       "path": "css/academic-calendar.css",
       "sha": "e79b1e6a46d5469b108f189adbd1a6784dd78d54"
-    },
-    {
-      "path": "css/academic-support.css",
-      "sha": "0aba1dd1d6059e26d93ed312bf7e97dc822f8824"
     },
     {
       "path": "css/developer.css",
@@ -29,7 +25,7 @@
     },
     {
       "path": "css/hanmo-policy-footer.css",
-      "sha": "30ed4c6522afa041a441bc4d7c3b541758a7f0bd"
+      "sha": "bb0a3e2886ffae1d0c33f74495f4b85916fd8a0f"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -85,27 +81,23 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "19a6d94988ab6396900db73867c25a168e8134a5"
-    },
-    {
-      "path": "html/academic-support.html",
-      "sha": "9309c6c8f7aa554883739ba97bcc66a714dd0a57"
+      "sha": "1247cce366ae73f221e544a535fee50562ea8276"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "9719bd7b756568347ef2cf234a034981d1fdf614"
+      "sha": "18ca0ab1cc1f9e06370fc6a62b08579a8a760b36"
     },
     {
       "path": "html/catalog.html",
-      "sha": "2abc814555edcf4f6b604c5f46f5867a221f05a3"
+      "sha": "1d138ade3c4d80b7475c89bb0a7001f55b60d2e1"
     },
     {
       "path": "html/developer.html",
-      "sha": "45318be1575a9821e910585f722cd72bdd38ff7c"
+      "sha": "7e772c388133f7f8c7914020f24b81cd935ab493"
     },
     {
       "path": "html/forecast.html",
-      "sha": "e8c388ed9ac0893908b515eaff02e30b80738a69"
+      "sha": "e29573143b48358fe83dff9394ac186facccbad5"
     },
     {
       "path": "html/incident-404.html",
@@ -117,7 +109,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "055c90e83db11424a11c446e21f43cdcae268d80"
+      "sha": "4c910541209290f328ecaf07c5984a754eaa093f"
     },
     {
       "path": "html/practice.html",
@@ -125,7 +117,7 @@
     },
     {
       "path": "html/result.html",
-      "sha": "70355c7b505addce94d354c751ed7e879e0cc5ca"
+      "sha": "c962f4668fe86638f93d3aa4ad2f83d79140e461"
     },
     {
       "path": "html/selectZone.html",
@@ -133,7 +125,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "afee740eb1f0b64064b8b03d944fb06d12786354"
+      "sha": "6c59f80f7ed341425aad3ddd34316ed97b8b42fd"
     },
     {
       "path": "img/background.svg",
@@ -177,15 +169,11 @@
     },
     {
       "path": "index.html",
-      "sha": "a0aada028c70eb91cbbc3f5ce11201bde4a87325"
+      "sha": "d1e6493da1b37425c13fec2a9f94dba39b6a7d9f"
     },
     {
       "path": "js/academic-data-source.js",
       "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
-    },
-    {
-      "path": "js/academic-support.js",
-      "sha": "260c784a1e7094d9eeb17d96cac53bba701653eb"
     },
     {
       "path": "js/capacity-settings.js",
