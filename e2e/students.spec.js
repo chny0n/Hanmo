@@ -14,16 +14,88 @@ test('데스크톱에서 학생 페이지 이동과 키보드 본문 건너뛰�
   await expect(page.locator('#planner-profile')).toBeVisible();
 });
 
-test('내정보 입력·저장은 이 브라우저에만 남고 공지 화면으로 이동할 수 있다',async({page})=>{
+const profileKey='hanmo:student-planner:profile:v1';
+
+test('구형 내정보를 복원하고 저장·삭제를 다른 탭에 반영하며 모의신청 설정을 보존한다',async({page,context,baseURL})=>{
+  const legacyProfile={campus:'SEOUL',major:'QA-LEGACY-MAJOR',doubleMajor:'QA-LEGACY-DOUBLE',cohort:2024};
+  const legacyPractice={psubjectValue:'3',subjectValue:'2',waitingValue:'yes',waitingEntryValue:'no'};
+  const origin=new URL(baseURL).origin;
+  const unexpected=[];
+  await context.route('**/*',route=>{
+    const request=route.request();
+    const url=new URL(request.url());
+    if(url.origin===origin&&['GET','HEAD'].includes(request.method())&&
+      ![...url.searchParams.values()].some(value=>value.includes('QA-'))&&
+      !url.pathname.includes('QA-'))return route.continue();
+    unexpected.push({method:request.method(),origin:url.origin,path:url.pathname});
+    return route.abort();
+  });
   await page.goto('/html/planner.html');
-  await page.locator('#planner-campus').selectOption('SEOUL');
-  await page.locator('#planner-major').fill('경제학전공');
-  await page.locator('#planner-cohort').fill('2024');
+  await page.evaluate(({key,profile,practice})=>{
+    localStorage.setItem(key,JSON.stringify(profile));
+    for(const [name,value] of Object.entries(practice))localStorage.setItem(name,value);
+  },{key:profileKey,profile:legacyProfile,practice:legacyPractice});
+  await page.reload();
+  await expect(page.locator('#planner-major')).toHaveValue(legacyProfile.major);
+  await expect(page.locator('#planner-secondary-kind')).toHaveValue('DOUBLE');
+  await expect(page.locator('#planner-double')).toHaveValue(legacyProfile.doubleMajor);
+  await expect(page.locator('#planner-cohort')).toHaveValue('2024');
+
+  const observer=await context.newPage();
+  await observer.goto('/html/academic-timeline.html');
+  const summary=observer.locator('[data-profile-summary]');
+  await expect(summary).toContainText(legacyProfile.doubleMajor);
+  await page.locator('#planner-major').fill('QA-UPDATED-MAJOR');
   await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
-  await expect(page.locator('#planner-message')).not.toBeEmpty();
+  await expect(page.locator('#planner-message')).toContainText('이 브라우저에 저장했습니다');
+  await expect(summary).toContainText('QA-UPDATED-MAJOR');
+  await page.reload();
+  await expect(page.locator('#planner-major')).toHaveValue('QA-UPDATED-MAJOR');
+  await page.getByRole('button',{name:'저장한 정보 지우기'}).click();
+  await expect(summary).toHaveText('내정보 미설정');
+  await page.reload();
+  await expect(page.locator('#planner-major')).toHaveValue('');
+  expect(await page.evaluate(key=>localStorage.getItem(key),profileKey)).toBeNull();
+  expect(await page.evaluate(keys=>Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)])),
+    Object.keys(legacyPractice))).toEqual(legacyPractice);
   await page.getByRole('link',{name:'학사 정보'}).click();
   await expect(page).toHaveURL(/\/html\/academic-timeline\.html$/);
-  await expect(page.locator('.hanmo-profile-summary')).toContainText('경제학전공');
+  expect(unexpected).toEqual([]);
+});
+
+test('손상된 내정보는 표시하지 않고 직접 입력한 정보로 복구할 수 있다',async({page})=>{
+  await page.goto('/html/planner.html');
+  await page.evaluate(key=>localStorage.setItem(key,'{손상된 합성 프로필'),profileKey);
+  await page.reload();
+  await expect(page.locator('#planner-message')).toContainText('저장된 정보를 읽지 못했습니다');
+  await expect(page.locator('[data-profile-summary]')).toHaveText('내정보 미설정');
+  await expect(page.locator('#planner-major')).toHaveValue('');
+  await page.locator('#planner-campus').selectOption('GLOBAL');
+  await page.locator('#planner-major').fill('복구 검증용 합성 전공');
+  await page.locator('#planner-cohort').fill('2024');
+  await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
+  await page.reload();
+  await expect(page.locator('#planner-major')).toHaveValue('복구 검증용 합성 전공');
+  await expect(page.locator('[data-profile-summary]')).toContainText('복구 검증용 합성 전공');
+});
+
+test('브라우저가 내정보 저장을 거부하면 실패를 알리고 작성 중인 입력을 보존한다',async({page})=>{
+  await page.goto('/html/planner.html');
+  await page.evaluate(key=>{
+    const original=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(name,value){
+      if(name===key)throw new DOMException('합성 저장소 차단','QuotaExceededError');
+      return original.call(this,name,value);
+    };
+  },profileKey);
+  await page.locator('#planner-campus').selectOption('SEOUL');
+  await page.locator('#planner-major').fill('저장 실패 검증용 합성 전공');
+  await page.locator('#planner-cohort').fill('2024');
+  await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
+  await expect(page.locator('#planner-message')).toContainText('이 브라우저에 저장할 수 없습니다');
+  await expect(page.locator('#planner-major')).toHaveValue('저장 실패 검증용 합성 전공');
+  await expect(page.locator('[data-profile-summary]')).toHaveText('내정보 미설정');
+  expect(await page.evaluate(key=>localStorage.getItem(key),profileKey)).toBeNull();
 });
 
 test('학사자료 OFF에서 공지·달력과 강의 검색은 외부 자료를 요청하지 않는다',async({page,baseURL})=>{
