@@ -36,4 +36,6 @@ createServer(async(request,response)=>{
   }catch{
     response.writeHead(404,{'content-type':'text/plain; charset=utf-8'});response.end('Not found');
   }
-}).listen(port,'127.0.0.1',()=>console.log('한모 브라우저 QA: http://127.0.0.1:'+port));
+}).listen(port,'127.0.0.1',function(){
+  console.log('한모 브라우저 QA: http://127.0.0.1:'+this.address().port);
+});
