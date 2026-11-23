@@ -55,3 +55,14 @@
 - [ ] 소유자 작성 PR의 협업자 승인 또는 협업자 작성 PR의 소유자 검토, 그리고 실제 Supabase 인수·운영자 승인
 
 **미구현:** #93 SQL은 격리 PostgreSQL 설치·권한·철회 회귀까지만 검증했습니다. 실제 Supabase 운영 DB에는 적용되지 않았고, 자동 90일 삭제·3개 학년도 분반 압축·payload 중복 제거·REST 부분 조회·법적 보존 판단은 구현하지 않았습니다. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)·[#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65)·[#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)·[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)에서 별도로 확인합니다.
+
+## 6. 2026 동계 계절학기 기간의 자동 실행 차단 (부분 구현)
+
+사용자 제공 신청 시간: **2026-11-25~11-27** 및 **12-01~12-03**, 매일 10:00~16:00 KST. 정보처 서면 조건에 맞춰 **신청일의 24시간 전체+전후 1일**을 차단합니다.
+
+- 수집 불가: **11/24 00:00~11/29 00:00 미만**, **11/30 00:00~12/05 00:00 미만** (KST).
+- 달력 데이터: [`data/collection-blackouts.json`](../data/collection-blackouts.json). 새 수강신청/정정 기간은 이 JSON에 추가하고 합성 경계 테스트를 갱신합니다.
+- 테스트용 조회: `npm run collection:status -- --at 2026-12-02T10:00:00+09:00` (네트워크 호출 없음).
+- 실제 시각 게이트: `npm run collection:gate` (실행 불허 시 종료 코드 1). `--at`으로 시계를 바꿔 실행을 우회할 수 없습니다.
+- **11/29 등 알려진 금지 구간 밖의 날도 수집 허가가 아닙니다.** 학교의 다른 등록/정정 전체 일정, 출처 권리, 허용 URL, 전역 요청 예산/10초/동시성/오류 당일 잠금이 검증되지 않았으며 현재 `data/academic-source-config.json`은 `mode: disabled`입니다. 실제 크롤러나 예약 실행은 없습니다.
+
