@@ -9,6 +9,8 @@
 - 기존 UI freeze는 권리 위반/공식 오인 요소를 보존하지 않습니다. 실제 이미지·화면 수정과 보호 baseline 갱신·QA는 별도 작업이며, 이번 문서 수정은 구현/실운영 승인이 아닙니다. 운영자는 추가 정보처 문의를 당분간 진행하지 않습니다. 공개정보라도 금지 필드나 구체 충돌 항목은 제외/보류합니다.
 - **데이터 항목/해석 계약:** 서면 **명시 금지 → 전부 제외**, 자동 수집 **서면 조건 그대로**, 나머지 로그인 없는 공개자료의 **검색·가공·집계는 두 직원의 대면 설명을 근거로 내부 운영 범위에 포함**합니다. 그러나 이메일의 '열거 외 이용 불허'와 충돌할 수 있어 학교 공식 확대 승인으로 단정하지 않습니다. 필드별 위험·출처·검수·철회 기록 필수. 실자료 연결은 여전히 `mode: disabled`; [운영 방침/런북](docs/public-data-operating-decision.md)·[#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66)·[#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126).
 
+- **안내의 공식성·변경 관리:** 이메일과 대면 설명 **모두 직원 차원의 안내**이며 운영자에 따르면 기관의 확정된 공식 정책이 아닙니다. 현행 서면 제한은 내부 안전 기본값으로 따르되 앞으로 **허용 범위 확대·축소가 모두 가능**합니다. 새 근거 발생 시 출처/날짜/권한·필드별 정책판본·배포 범위를 기록합니다. 축소 시 수집/학생 공개/캐시를 먼저 OFF, 확대 시 추가 필드·자동 수집 한도는 **새 근거와 독립 검수 없이는 자동 활성화하지 않습니다**. [잠정 정책 ADR](docs/public-data-operating-decision.md)·[#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126).
+
 ## 설계 문서 및 작업 방식
 
 - **`docs/architecture.md`는 현행 제품·기술 설계의 기준 문서입니다.** 폐기된 설계는 본문에 누적하지 않고 GitHub Issue와 커밋 기록으로 추적합니다.

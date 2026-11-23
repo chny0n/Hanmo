@@ -6,6 +6,8 @@
 
 **`main` 기준(2026-11-23):** 학생 화면의 과거 참고 공지·합성 강좌 데이터는 제거했습니다. `data/academic-source-config.json`은 `schemaVersion: 1`, `mode: disabled`입니다. 승인 학교 자료와 Supabase 연결은 없습니다. 이 문서는 [브라우저 읽기 계약](architecture.md)을 설명하며 운영 DB 설치 지침이 아닙니다.
 
+**정책 판본에 관한 인수 주의:** 운영자에 따르면 정보처의 이메일과 두 직원의 대면 설명은 **모두 학교의 확정된 공식 정책이 아닌 직원 안내**로, 학사정보 데이터 범위는 향후 확대·축소될 수 있습니다. 현재의 서면 명시 금지 및 자동 수집 수치·기간은 내부 운영 기준으로 유지합니다. 김채윤의 3차 자료 검수·Supabase 인수에는 향후 `scopePolicyVersion`, 근거 출처의 공식성 확인 상태, 변경 전후 필드 차이, 축소 시 철회/확대 시 재검수를 포함합니다. **정책 버전 자동화나 실 DB 연결은 아직 미구현**이며 [운영 방침](public-data-operating-decision.md)을 참조합니다.
+
 ## Supabase Free 실제 연결 전제
 
 **2차 Windows 실기기 QA(#71) 완료 후 김채윤(`qamarrchae`)이 담당자로서 직접 별도 Supabase Free 실습 프로젝트를 생성**하고 학교 자료 이용권, 원문/판본 독립 검수, 승인 출처 관리와 RLS 실제 조회 테스트를 거쳐야 합니다. [Draft PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 **현재 `main` 미병합**입니다. 철회 상태 복원/재발행 금지, 검수 후 출처 연결 변경 차단, 관리자 함수 권한 검사와 빈 공개 데이터 확인을 구현해 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했습니다. 이는 실제 Supabase 프로젝트의 Data API, RLS, 익명 요청, 동시 트랜잭션, 학교 실자료를 시험한 결과가 아닙니다. **김채윤 실습·운영 검증 전까지 실연동하지 않으며**, 전체 완성 후 [원개발자 인계 #125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)는 별도 수락을 필요로 합니다.
