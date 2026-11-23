@@ -1,6 +1,6 @@
 // @ts-check
 // 학생이 직접 넣는 정보는 가상 과목 4개 항목뿐입니다.
-import {validateScenario} from './strategy-engine.mjs';
+import {validateScenario,FIRST_CHOICE_SHARES} from './strategy-engine.mjs';
 import {REACTION_KEY,readProfile,deriveActionTimes,automaticSeed} from './reaction-profile.mjs';
 const form=document.getElementById('strategy-form');
 if(form){
@@ -125,11 +125,18 @@ if(form){
       active.terminate();worker=null;busy(false);
       if(message.type==='error'){status.textContent=message.message;return;}
       const r=message.result;
-      const percent=value=>value.toFixed(1)+'%';
+      const percent=value=>{
+        if(r.guaranteed)return '100%';
+        if(value<.01)return '0.01% 미만';
+        if(value>99.99)return '99.99% 초과';
+        return value.toFixed(2)+'%';
+      };
+      const share=key=>Math.round(100*FIRST_CHOICE_SHARES[key])+'%';
       recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
-        ' · 모형에서 전체 성공 추정 '+percent(r.allRate);
-      setup.textContent='이 순서에서 경쟁자 도착률을 기준보다 25% 높이거나 낮추면 전체 성공 추정은 '+
-        percent(r.sensitivity.faster)+'~'+percent(r.sensitivity.slower)+'입니다. 실험 시드 '+r.seed+'.';
+        ' · 모형에서 전체 성공 추정 '+percent(r.allRate)+' (첫 선택 '+share('baseline')+')';
+      setup.textContent='같은 순서의 전체 성공 추정 · 첫 선택 '+share('spread')+'일 때 '+
+        percent(r.sensitivity.spread)+' · '+share('concentrated')+'일 때 '+
+        percent(r.sensitivity.concentrated)+' · 실험 시드 '+r.seed;
       result.hidden=false;inputPanel.hidden=true;
       redo.focus({preventScroll:true});
     });

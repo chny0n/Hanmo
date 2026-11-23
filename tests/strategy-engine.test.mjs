@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,syntheticRate} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -9,7 +9,7 @@ const input=()=>({
     {id:'C',name:'가상 C',rank:3,capacity:20,rivals:30},
   ],
 });
-test('시드가 같으면 최적 신청 순서와 가상 성공 빈도가 같다',()=>{
+test('시드가 같으면 최적 신청 순서와 가상 성공 확률이 같다',()=>{
   assert.deepEqual(simulate(input()),simulate(input()));
 });
 test('가상 결과와 순서는 범위 및 과목 개수를 준수한다',()=>{
@@ -19,10 +19,12 @@ test('가상 결과와 순서는 범위 및 과목 개수를 준수한다',()=>{
   assert.ok(r.meanScore>=0&&r.meanScore<=100);
   assert.equal(r.model,'SYNTHETIC_ONLY');
 });
-test('가상 정원이 충분하면 모든 과목 성공 빈도는 100%다',()=>{
+test('가상 정원이 충분하면 모든 과목 성공 확률은 100%다',()=>{
   const s=input();
   s.courses.forEach(c=>{c.capacity=50;c.rivals=1;});
-  assert.equal(simulate(s).allRate,100);
+  const result=simulate(s);
+  assert.equal(result.allRate,100);
+  assert.equal(result.guaranteed,true);
 });
 test('경쟁자가 없으면 모든 과목에 성공한다',()=>{
   const s=input();s.courses.forEach(c=>{c.rivals=0;});
@@ -35,7 +37,6 @@ test('1이 가장 높은 중요 순위이고 중복 순위를 거부한다',()=>
 test('사용자 도착률/수동순서 입력 없이 유효한 전략을 계산한다',()=>{
   const s=input();
   assert.ok(s.courses.every(c=>!('rate' in c)&&!('manualOrder' in c)));
-  assert.ok(syntheticRate(0)>0);
   assert.equal(bestOrder([3,2],[[1,.5],[.8,.7]]).length,2);
 });
 test('정수·표본 범위 검증을 유지한다',()=>{
@@ -51,16 +52,30 @@ test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
   limit.courses[0].capacity=301;
   assert.throws(()=>validateScenario(limit),{name:'RangeError',message:'정원 입력값을 확인하세요.'});
 });
-test('행동시간이 고정이고 정원이 1이면 선착순 성공 확률을 해석식과 비교할 수 있다',()=>{
-  const s={...input(),startDelayMs:0,actionMs:500,jitterMs:0};
-  s.courses=s.courses.slice(0,2);
-  s.courses.forEach((course,i)=>Object.assign(course,{capacity:1,rivals:i+2}));
+test('첫 신청 650ms에서 정원 1석의 성공 확률을 감마 누적확률과 비교한다',()=>{
+  const s={...input(),startDelayMs:0,actionMs:650,jitterMs:0};
+  s.courses=[
+    {...s.courses[0],capacity:1,rivals:2},
+    {...s.courses[1],capacity:1,rivals:0},
+  ];
   const result=simulate(s);
-  const exponent=result.ranks.reduce((sum,rank,slot)=>
-    sum+syntheticRate(rank-1)*s.courses[rank-1].rivals*(slot+1)*.5,0);
-  assert.ok(Math.abs(result.allRate-100*Math.exp(-exponent))<1e-9);
-  assert.ok(Math.abs(result.sensitivity.faster-100*Math.exp(-1.25*exponent))<1e-9);
-  assert.ok(Math.abs(result.sensitivity.slower-100*Math.exp(-.75*exponent))<1e-9);
+  assert.deepEqual(result.ranks,[1,2]);
+  // 첫 슬롯에서 F(270)은 1 - e^(-20) × Σ(20^k/k!), k=0..19입니다.
+  const reacted=.52974273316076;
+  const expected=share=>100*(1-share*reacted)**2;
+  assert.ok(Math.abs(result.allRate-expected(.35))<1e-9);
+  assert.ok(Math.abs(result.sensitivity.concentrated-expected(.5))<1e-9);
+  assert.ok(Math.abs(result.sensitivity.spread-expected(.2))<1e-9);
+});
+test('경쟁 과목의 순서는 표의 입력 위치에 영향을 받지 않고 오픈 집중도에 반응한다',()=>{
+  const s={...input(),trials:1000,startDelayMs:0,actionMs:580,jitterMs:60};
+  s.courses[2].rivals=50;
+  const result=simulate(s);
+  assert.equal(result.guaranteed,false);
+  assert.ok(result.allRate>0&&result.allRate<99.99);
+  assert.ok(result.sensitivity.concentrated<result.allRate);
+  assert.ok(result.allRate<result.sensitivity.spread);
+  assert.deepEqual(simulate({...s,courses:[...s.courses].reverse()}),result);
 });
 test('가상 정원이 증가할수록 최적 기대점수가 높아지며 경쟁자가 증가하면 낮아진다',()=>{
   const s=input();
