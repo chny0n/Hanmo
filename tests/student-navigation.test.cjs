@@ -272,21 +272,26 @@ test('홈·모드·학업·개발자 조작에만 느린 글로우를 적용한�
  assert.ok(common.includes('.hanmo-topbar .hanmo-nav-inline a::before'));
 });
 
-test('모든 HTML 페이지의 제목에는 홈과 같은 한모 구분 장식이 하나씩 있다',()=>{
+test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 제거한다',()=>{
  const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
   'html/academic-timeline.html','html/catalog.html','html/academic-calendar.html',
   'html/academic-support.html','html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
  const original=new Set(['index.html','html/vsugang.html','html/developer.html','html/result.html']);
- const sidebar=new Set(['html/practice.html','html/selectZone.html','html/incident-404.html']);
+ const sidebar=new Set(['html/incident-404.html']);
+ const noDivider=new Set(['html/practice.html','html/selectZone.html']);
  for(const page of pages){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
   const image=page==='index.html'?'./img/hanmo_white.svg':'../img/hanmo_white.svg';
-  assert.ok(html.includes('src="'+image+'"'),page);
-  if(original.has(page)){
+  if(noDivider.has(page)){
+   assert.doesNotMatch(html,/hanmo-title-divider/,page);
+   assert.ok(html.includes('모의수강신청'),page);
+  }else if(original.has(page)){
+   assert.ok(html.includes('src="'+image+'"'),page);
    assert.equal((html.match(/<div class=['"]hanmo['"]>/g)||[]).length,1,page);
    assert.equal((html.match(/class="hanmo-title-divider(?:[ "])/g)||[]).length,0,page);
   }else{
+   assert.ok(html.includes('src="'+image+'"'),page);
    assert.equal((html.match(/<div class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true">/g)||[]).length,1,page);
    assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),page);
    assert.match(html,/class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true"><hr><span><img src="\.\.\/img\/hanmo_white\.svg" alt=""><\/span><hr><\/div>/);
@@ -299,4 +304,34 @@ test('모든 HTML 페이지의 제목에는 홈과 같은 한모 구분 장식�
  assert.match(css,/height: 10px;/);
  assert.match(css,/hanmo-title-divider--sidebar/);
  assert.match(css,/academic-calendar-main/);
+});
+
+
+test('모든 상단 바 브랜드 옆의 불필요한 비공식 문구를 제거한다',()=>{
+ const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
+  'html/academic-calendar.html','html/academic-support.html','html/academic-timeline.html',
+  'html/catalog.html','html/forecast.html','html/planner.html'];
+ for(const page of pages){
+  const html=fs.readFileSync(path.join(ROOT,page),'utf8');
+  const brand=html.match(/<a class="hanmo-brand"[^>]*>[\s\S]*?<\/a>/)?.[0];
+  assert.ok(brand,page);
+  assert.ok(brand.includes('한모</a>'),page);
+  assert.doesNotMatch(brand,/비공식 연습·정보|<span\b/,page);
+  assert.ok(html.includes('class="hanmo-policy-footer"'),page);
+ }
+});
+
+test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검색·결과는 유지한다',()=>{
+ const catalog=fs.readFileSync(path.join(ROOT,'html/catalog.html'),'utf8');
+ assert.match(catalog,/<h2>강의 개설 전망<\/h2>/);
+ assert.doesNotMatch(catalog,/자료 확인 전/);
+ for(const id of ['catalog-query','catalog-results','catalog-status'])assert.ok(catalog.includes('id="'+id+'"'));
+ const notice=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
+ assert.doesNotMatch(notice,/<h2[^>]*>공지 (?:검색|목록)<\/h2>/);
+ assert.doesNotMatch(notice,/notice-filter-title/);
+ assert.match(notice,/<section class="hanmo-card" aria-label="공개 공지 필터">/);
+ for(const id of ['notice-filter','notice-query','notice-type','notice-list','notice-count','notice-retry']){
+  assert.ok(notice.includes('id="'+id+'"'),id);
+ }
+ assert.ok(notice.includes('class="hanmo-policy-footer"'));
 });

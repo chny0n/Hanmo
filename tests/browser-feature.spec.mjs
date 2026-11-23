@@ -11,6 +11,7 @@ test('정보처 서면 이후 금지된 페이지와 메뉴가 보이지 않고 
  await page.goto('/index.html');
  await expect(page.locator('.hanmo-topbar a[href*="academic-progress"]')).toHaveCount(0);
  await expect(page.locator('.hanmo-topbar a[href*="academic-faq"]')).toHaveCount(0);
+ await expect(page.locator('.hanmo-topbar .hanmo-brand')).not.toContainText('비공식 연습·정보');
  await expect(page.locator('body > .hanmo-policy-footer')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
  for(const slug of ['academic-timeline','catalog','academic-calendar','academic-support','planner']){
   await page.goto('/html/'+slug+'.html');
@@ -18,6 +19,7 @@ test('정보처 서면 이후 금지된 페이지와 메뉴가 보이지 않고 
   await expect(page.locator('.hanmo-title-divider')).toHaveCount(1);
   await expect(page.locator('.hanmo-title-divider img')).toBeVisible();
   await expect(page.locator('.hanmo-topbar')).toBeVisible();
+  await expect(page.locator('.hanmo-topbar .hanmo-brand')).toHaveText('한모');
  }
 });
 
@@ -72,7 +74,7 @@ test('홈 광고와 최하단 고지는 좁은 데스크톱에서도 겹치지 �
 test('페이지 제목 아래 한모 구분 장식의 선·로고가 잘 보인다',async({page})=>{
  const routes=['/html/academic-timeline.html','/html/catalog.html','/html/academic-calendar.html',
   '/html/academic-support.html','/html/planner.html','/html/pc-only.html',
-  '/html/practice.html','/html/selectZone.html'];
+  '/html/forecast.html'];
  for(const route of routes){
   await page.goto(route);
   const logo=page.locator('.hanmo-title-divider img');
@@ -85,6 +87,32 @@ test('페이지 제목 아래 한모 구분 장식의 선·로고가 잘 보인�
   const lineSizes=await line.evaluateAll(items=>items.map(el=>el.getBoundingClientRect().width));
   expect(lineSizes.every(size=>size>0),route).toBe(true);
  }
+});
+
+
+test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은 유지된다',async({page})=>{
+  const headerPages=['/index.html','/html/vsugang.html','/html/developer.html',
+    '/html/result.html','/html/academic-timeline.html','/html/catalog.html',
+    '/html/academic-calendar.html','/html/academic-support.html','/html/planner.html'];
+  for(const path of headerPages){
+    await page.goto(path);
+    await expect(page.locator('.hanmo-topbar .hanmo-brand')).toHaveText('한모');
+    await expect(page.locator('body > .hanmo-policy-footer strong')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
+  }
+  await page.goto('/html/catalog.html');
+  await expect(page.locator('.hanmo-schoolmark h2')).toHaveText('강의 개설 전망');
+  await expect(page.locator('#catalog-query')).toHaveCount(1);
+  await expect(page.locator('#catalog-results')).toHaveCount(1);
+  await page.goto('/html/academic-timeline.html');
+  await expect(page.getByRole('heading',{name:'공지 검색'})).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'공지 목록'})).toHaveCount(0);
+  await expect(page.locator('#notice-filter')).toHaveCount(1);
+  await expect(page.locator('#notice-query')).toBeVisible();
+  await expect(page.locator('#notice-list')).toHaveCount(1);
+  for(const path of ['/html/practice.html','/html/selectZone.html']){
+    await page.goto(path);
+    await expect(page.locator('.hanmo-title-divider')).toHaveCount(0);
+  }
 });
 
 test('관심강좌·전공·교양·기초 선택은 Search 전 메뉴만 바꾸고 네 화면을 캡처한다',async({page})=>{

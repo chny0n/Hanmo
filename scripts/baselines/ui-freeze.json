@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 전체 화면에 index 한모 제목 구분선을 통일하되 BASIC/TIME/SELECT 신청·광고·비공식 푸터 동작은 유지. 회귀 검사 후에만 갱신.",
+  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 사용자 요청에 따라 상단 바 한모 옆 설명·강의검색의 자료 확인 전·학사공지의 중복 제목을 제거하고, practice/selectZone의 제목 장식만 예외적으로 제외. 비공식 서비스 최하단 고지·모의신청 동작은 유지.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -81,27 +81,27 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "00e1b51ac241561f4521d35d1c039cfc31da1e71"
+      "sha": "19a6d94988ab6396900db73867c25a168e8134a5"
     },
     {
       "path": "html/academic-support.html",
-      "sha": "98621bafc9a99d76bbecc2c3e4b87a4c12398974"
+      "sha": "9c4bbb1677aca4946f2539feb1ed1393be57c493"
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "e477118539607510af216b4d75533a195f77037d"
+      "sha": "9719bd7b756568347ef2cf234a034981d1fdf614"
     },
     {
       "path": "html/catalog.html",
-      "sha": "64b9806ac00918da1a37cd4480a45fc397d22b29"
+      "sha": "d1b79a26e112480c0a331ca66fc772e77c5fdd06"
     },
     {
       "path": "html/developer.html",
-      "sha": "17a241be77b71c3ded5f1367c66abc12a0065b28"
+      "sha": "b9e6ed5ea9ad3e73185d919848d0fb13177a49df"
     },
     {
       "path": "html/forecast.html",
-      "sha": "732bdb2abef2d10ce978b512d975db418d883bb0"
+      "sha": "e8c388ed9ac0893908b515eaff02e30b80738a69"
     },
     {
       "path": "html/incident-404.html",
@@ -113,23 +113,23 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "b7bed6596cf6e87f73554967d44fe814655484ed"
+      "sha": "055c90e83db11424a11c446e21f43cdcae268d80"
     },
     {
       "path": "html/practice.html",
-      "sha": "dac31df81ba4ba9dd39c8d804a3a4444557b960a"
+      "sha": "4f5d04e8ad1dc9d456d5ff2aaffe7133d4b31d18"
     },
     {
       "path": "html/result.html",
-      "sha": "7a51ffc3e1aa303a90acd3947ca08b2d1f89af88"
+      "sha": "5dadba026ecf57f02182e1ff464f8c3579c27dc4"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "a0f90d88e6ff07a6855d31a8f472064fbd171818"
+      "sha": "912aa80db2b6af388dc447d34d2330034d5b3d75"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "f2b695506c5dd4108ba733177a2edde546f00b2f"
+      "sha": "e94e0813810361cc1017d965a3464359cd7dff52"
     },
     {
       "path": "img/background.svg",
@@ -173,7 +173,7 @@
     },
     {
       "path": "index.html",
-      "sha": "e02ee0a03b7124787009602d9efa057c23180cd5"
+      "sha": "2795e37b880d1de564c72f1c540d89cee96004d4"
     },
     {
       "path": "js/academic-data-source.js",
