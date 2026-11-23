@@ -25,6 +25,8 @@ function element(tag='div') {
     attributes:{},htmls:[],focusCount:0,
     appendChild(child){this.childNodes.push(child);return child;},
     append(...children){this.childNodes.push(...children);},
+    replaceChildren(...children){this.childNodes=children;},
+    matches(){return false;},
     prepend(...children){this.childNodes.unshift(...children);},
     insertAdjacentHTML(where,html){this.htmls.push({where,html});this.innerHTML+=html;},
     setAttribute(k,v){this.attributes[k]=String(v);},
@@ -345,7 +347,17 @@ test('hanmo system keeps PC user on practice outside restricted window',()=>{
 test('home renders semester/notice and shows PC-only message when device is unsupported',()=>{
   const h=createHarness({deviceInfo:false});
   h.load('index.js');
-  assert.match(h.get('noticeList').innerHTML,/업데이트/);
+  const list=h.get('noticeList');
+  assert.equal(list.children.length,2);
+  assert.match(list.children[0].children[0].textContent,/업데이트/);
+  assert.equal(list.children[0].hidden,false);
+  assert.equal(list.children[1].hidden,true);
+  // 정적 한 건만 남아 있던 회귀를 방지하도록 실제 순환 함수를 실행합니다.
+  assert.equal(h.events.intervals.length,1);
+  assert.equal(h.events.intervals[0].delay,5000);
+  h.events.intervals[0].fn();
+  assert.equal(list.children[0].hidden,true);
+  assert.equal(list.children[1].hidden,false);
   assert.match(h.get('title').innerText,/2026-2학기/);
   assert.equal(h.get('phoneContainer').style.display,'flex');
   assert.equal(h.get('container').style.display,'none');
