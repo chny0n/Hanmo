@@ -24,11 +24,11 @@ test('허용된 화면에 비공식 안내를 표시하고 금지된 메뉴 경�
 });
 test('상단 메뉴에는 진단·반응·전략·통합 학사 정보만 보인다',()=>{
  const targets=['readiness','reaction-test','strategy-lab','academic-timeline','catalog','planner'];
- for(const path of ['index.html',...student.map(x=>'html/'+x+'.html'),
+ for(const route of ['index.html',...student.map(x=>'html/'+x+'.html'),
   'html/vsugang.html','html/developer.html','html/result.html']){
-   const html=fs.readFileSync(path.join(ROOT,path),'utf8');
+   const html=fs.readFileSync(path.join(ROOT,route),'utf8');
    const bar=html.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0]??'';
-   for(const target of targets)assert.ok(bar.includes(target+'.html'),path+' '+target);
+   for(const target of targets)assert.ok(bar.includes(target+'.html'),route+' '+target);
    assert.doesNotMatch(bar,/academic-calendar\.html|academic-support\.html/);
  }
 });
