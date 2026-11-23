@@ -4,7 +4,33 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const ROOT=path.join(__dirname,'..');
-const student=['planner','forecast','catalog','academic-timeline','academic-progress'];
+const student=['planner','forecast','catalog','academic-timeline','academic-calendar','academic-support'];
+test('삭제된 학사 FAQ·졸업 페이지와 학교 로고를 웹에 남기지 않는다',()=>{
+ for(const p of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
+  'css/academic-faq.css','js/academic-faq.js','img/hufs_logo.png'])
+  assert.equal(fs.existsSync(path.join(ROOT,p)),false,p);
+ const source=JSON.parse(fs.readFileSync(path.join(ROOT,'data/academic-source-config.json'),'utf8'));
+ assert.equal(source.mode,'disabled');
+});
+test('허용된 화면에 비공식 안내를 표시하고 금지된 메뉴 경로를 제거한다',()=>{
+ const pages=['index.html',...student.map(s=>'html/'+s+'.html'),
+  'html/vsugang.html','html/developer.html','html/result.html'];
+ for(const p of pages){
+  const html=fs.readFileSync(path.join(ROOT,p),'utf8');
+  assert.ok(html.includes('본 서비스는 한국외국어대학교의 공식 서비스가 아니며'),p);
+  assert.doesNotMatch(html,/academic-progress\.html|academic-faq\.html/);
+  assert.doesNotMatch(html,/>HUFS 학업 도우미</);
+ }
+});
+test('상단 메뉴의 달력과 학교 문의처 링크는 계속 제공한다',()=>{
+ for(const p of ['index.html',...student.map(s=>'html/'+s+'.html'),'html/vsugang.html','html/developer.html','html/result.html']){
+  const html=fs.readFileSync(path.join(ROOT,p),'utf8');
+  const prefix=p==='index.html'?'./html/':'./';
+  for(const name of ['academic-calendar','academic-support'])
+   assert.ok(html.includes('href="'+prefix+name+'.html"'),p+' '+name);
+ }
+});
+
 test('public student pages live under html and never request pasted HTML or JSON',()=>{
  for(const name of student){
    const html=fs.readFileSync(path.join(ROOT,'html',name+'.html'),'utf8');
@@ -96,81 +122,6 @@ test('planner uses the shared top navigation instead of four duplicate feature c
  assert.doesNotMatch(body,/class="hanmo-card" href="\.(?:\/academic-timeline|\/forecast|\/catalog|\/academic-progress)\.html"/);
 });
 
-test('academic entry handoff and three A/B/C plans integrate into existing pages without a sidebar',()=>{
- const planner=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
- const notices=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
- const progress=fs.readFileSync(path.join(ROOT,'html/academic-progress.html'),'utf8');
- for(const id of ['planner-campus','planner-major','planner-double','planner-cohort','planner-go-notices'])
-  assert.ok(planner.includes('id="'+id+'"'),id);
- assert.ok(planner.includes('../js/student-entry.js'));
- assert.ok(notices.includes('id="notice-context"'));
- for(const id of ['degree-context-summary','degree-credit-form','degree-guidance','degree-credits-panel','degree-requirements-panel'])
-  assert.ok(progress.includes('id="'+id+'"'),id);
- assert.doesNotMatch(progress,/degree-advanced|record-form|plan-form|scenario-choice|academic-progress\.js|student-progress\.js/);
- assert.ok(progress.includes('../js/degree-preparation.js'));
- assert.ok(progress.includes('../css/academic-progress.css'));
- assert.doesNotMatch(progress,/class="planner-sidebar"|type="file"|<textarea/);
- const plannerNav=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
- assert.doesNotMatch(plannerNav,/href="\.\/vsugang\.html"/,'remove old mock-registration card');
-});
-
-test('모든 텍스트 검색은 입력 즉시 갱신하며 FAQ에 실행 버튼이 없다',()=>{
-  const faq=fs.readFileSync(path.join(ROOT,'html/academic-faq.html'),'utf8');
-  const faqJs=fs.readFileSync(path.join(ROOT,'js/academic-faq.js'),'utf8');
-  const notices=fs.readFileSync(path.join(ROOT,'js/student-notices.js'),'utf8');
-  const courses=fs.readFileSync(path.join(ROOT,'js/student-catalog.js'),'utf8');
-  assert.doesNotMatch(faq,/<button[^>]*type="submit"[^>]*>검색<\/button>/);
-  assert.match(faqJs,/input\.addEventListener\('input',render\)/);
-  assert.match(faqJs,/input\.addEventListener\('search',render\)/);
-  assert.match(notices,/query\.addEventListener\('input',render\)/);
-  assert.match(courses,/query\.addEventListener\('input',render\)/);
-});
-
-test('학사 화면의 불필요한 공식 상태 문구는 제거하고 부서명 링크를 쓴다',()=>{
-  const html=page=>fs.readFileSync(path.join(ROOT,'html',page+'.html'),'utf8');
-  const calendar=html('academic-calendar');
-  const faq=html('academic-faq');
-  const progress=html('academic-progress');
-  const support=html('academic-support');
-  assert.doesNotMatch(calendar,/공식 일정 미연결|id="calendar-status"/);
-  assert.doesNotMatch(faq,/id="faq-status"|공식 답변 미연결/);
-  assert.doesNotMatch(progress,/자가 입력 · 공식 판정 아님/);
-  assert.doesNotMatch(support,/id="support-status"/);
-  const supportScript=fs.readFileSync(path.join(ROOT,'js/academic-support.js'),'utf8');
-  assert.match(supportScript,/h\.append\(department\)/);
-  assert.match(supportScript,/department\.href=item\.source/);
-  assert.doesNotMatch(supportScript,/원문에서 담당 업무·번호 재확인/);
-});
-
-test('상단 학업 도구 링크는 모든 공통 상단 바에서 펼치기 없이 직접 표시된다',()=>{
-  const pages=['index.html','html/academic-timeline.html','html/catalog.html','html/planner.html',
-    'html/academic-progress.html','html/academic-calendar.html','html/academic-faq.html',
-    'html/academic-support.html','html/forecast.html','html/vsugang.html',
-    'html/developer.html','html/result.html'];
-  for(const page of pages){
-    const source=fs.readFileSync(path.join(ROOT,page),'utf8');
-    const bar=source.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
-    assert.ok(bar,'상단 바 없음: '+page);
-    assert.doesNotMatch(bar,/hanmo-tools|학업 도구/,'남은 드롭다운: '+page);
-    const base=page==='index.html'?'./html/':'./';
-    for(const [target,title] of [['academic-calendar','학사 달력'],
-      ['academic-faq','학사 FAQ'],['academic-support','공식 상담']]){
-      assert.match(bar,new RegExp('<a href="'+base.replaceAll('.','\\.')+target+'\\.html"[^>]*>'+title+'<\\/a>'),page+' '+title);
-    }
-  }
-});
-test('FAQ와 졸업 준비의 미검수 상태는 데이터 변경 없이 반복 문구만 숨긴다',()=>{
-  const faq=fs.readFileSync(path.join(ROOT,'js/academic-faq.js'),'utf8');
-  const degree=fs.readFileSync(path.join(ROOT,'js/academic/app/degree-preparation.js'),'utf8');
-  const html=fs.readFileSync(path.join(ROOT,'html/academic-progress.html'),'utf8');
-  const style=fs.readFileSync(path.join(ROOT,'css/academic-progress.css'),'utf8');
-  assert.doesNotMatch(faq,/ · 확인 필요/);
-  assert.doesNotMatch(degree,/목표 확인 필요| · 확인 필요/);
-  assert.doesNotMatch(html,/학교 공식 요건 확인 필요/);
-  assert.match(style,/#degree-credits-panel>\.degree-credit-results\{grid-column:2;grid-row:2/);
-  assert.match(degree,/row\.append\(name,value,track\)/);
-});
-
 test('home restores the original mock registration layout without the academic-entry promo block',()=>{
  const home=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
  assert.match(home,/<nav class="hanmo-topbar"/);
@@ -190,8 +141,8 @@ test('home restores the original mock registration layout without the academic-e
  const bar=home.match(/<nav class="hanmo-topbar"[\s\S]*?<\/nav>/)?.[0];
  assert.ok(bar);
  const allowed=['./index.html','./html/academic-timeline.html',
-   './html/catalog.html','./html/academic-progress.html','./html/academic-calendar.html',
-   './html/academic-faq.html','./html/academic-support.html','./html/planner.html'];
+   './html/catalog.html','./html/academic-calendar.html',
+   './html/academic-support.html','./html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
  assert.match(home,/onclick="location\.href='\.\/html\/vsugang\.html'"/);
  const homeScript=fs.readFileSync(path.join(ROOT,'js/index.js'),'utf8');
@@ -308,19 +259,15 @@ test('홈·모드·학업·개발자 조작에만 느린 글로우를 적용한�
  const mode=fs.readFileSync(path.join(ROOT,'css/vsugang-fit.css'),'utf8');
  const home=fs.readFileSync(path.join(ROOT,'css/home-fit.css'),'utf8');
  const common=fs.readFileSync(path.join(ROOT,'css/hanmo-components.css'),'utf8');
- const credit=fs.readFileSync(path.join(ROOT,'css/academic-progress.css'),'utf8');
  for(const css of [mode,home,common]){
     assert.ok(css.includes('radial-gradient'));
     assert.ok(css.includes('transition: opacity 1.08s'));
     assert.ok(css.includes('prefers-reduced-motion'));
   }
-  assert.doesNotMatch(credit,/radial-gradient|\.progress-main \.progress-form button::before/,
-    '졸업 준비의 신규 미니멀 조작에는 별도 글로우를 두지 않는다');
  assert.ok(common.includes('--hm-glow-ease'));
  assert.ok(home.includes('body.hanmo-home .button::before'));
  assert.ok(common.includes('body.hanmo-ui :is(.hanmo-btn, .hanmo-practice-links a)::before'));
  assert.ok(common.includes('body.hanmo-flat-legacy .container > .button::before'));
  assert.ok(mode.includes('.grid > .basic-mode-tile'));
  assert.ok(common.includes('.hanmo-topbar .hanmo-nav-inline a::before'));
- assert.ok(!credit.includes('.progress-main table::before'));
 });
