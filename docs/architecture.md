@@ -30,7 +30,7 @@
 
 **웹 1차 정리 반영:** 졸업 준비 `html/academic-progress.html`과 학사 FAQ `html/academic-faq.html`, 전용 CSS·FAQ JS, 학교 로고 `img/hufs_logo.png`는 [웹 정리 커밋](https://github.com/ot4562-glitch/Hanmo_develop/commit/2712bd939502a31755fd21026ac96fe81650c552)에서 삭제했습니다. 메뉴·사이트맵·빌드·테스트도 수정했습니다. **학교 학칙/졸업요건·FAQ 계산 및 근거형 답변의 순수 코어와 옛 데이터 소스 계약은 코드에 남을 수 있지만 운영 기능은 아닙니다.** 학교 자료 연결 `mode: disabled`를 유지하고 웹 디자인·접근성/실기기 검수는 별도 완료 게이트입니다.
 
-학교 문양을 사용하던 기존 홈·상단바·이미지·파비콘·SVG·메타정보와 실제 수강신청을 연상시키는 화면은 **별도 수정 및 브라우저 QA 대상**입니다. 기존 UI 동결 정책은 새 서면 금지사항을 보존할 근거가 아니므로 관련 변경을 우선하되, 원본 동작·실기기 회귀·디자인 구별을 확인합니다. **이번 문서 반영은 코드·디자인 수정 또는 운영 배포 완료가 아닙니다.** `data/academic-source-config.json`의 `mode: disabled`를 유지하고, 금지된 필드가 포함된 기존 Supabase Draft #93·공개 payload는 수정·재설계 전 활성화하지 않습니다.
+학교 문양을 사용하던 기존 홈·상단바·이미지·파비콘·SVG·메타정보와 실제 수강신청을 연상시키는 화면은 **별도 수정 및 브라우저 QA 대상**입니다. 기존 UI 동결 정책은 새 서면 금지사항을 보존할 근거가 아니므로 관련 변경을 우선하되, 원본 동작·실기기 회귀·디자인 구별을 확인합니다. **2026-11-23 웹 1차 정리로 금지된 페이지·학교 로고 파일 제거와 비공식 고지를 반영했습니다. 그러나 디자인 전수/Windows 실기기 QA, 원본 운영 도메인 공개·학교의 서비스 인정은 완료되지 않았습니다.** `data/academic-source-config.json`의 `mode: disabled`를 유지하고, 금지된 필드가 포함된 기존 Supabase Draft #93·공개 payload는 수정·재설계 전 활성화하지 않습니다.
 
 ### 현행 구현 상태 · 2026-11-23 (main 코드 기준, 서면 정책 준수는 별도)
 
@@ -58,7 +58,7 @@
 
 한모는 **학교가 운영·인증하지 않는 별도의 PC 웹 모의수강신청 연습 및 비공식 공개정보 탐색 서비스**입니다. 입학부터 졸업까지 학교 제도를 자동 판정하는 플랫폼이라는 기존 목표는 **2026-11-23 서면 회신에 따라 폐기**합니다. 학교 계정·실제 성적·수강신청 시스템과 독립적으로 작동합니다.
 
-- **포함:** BASIC/TIME/SELECT 합성 연습, 가상 404/가상 정원 마감, 로컬 사용자 선택·산술 학점 기록, 허용된 공지 메타데이터+원문 링크 안내, 허용 데이터로 만든 **자체 비공식 개설 집계/전망**, 공식 문의처 연결.
+- **포함:** BASIC/TIME/SELECT 합성 연습, 가상 404/가상 정원 마감, 로컬 사용자 선택(학점 산술 UI는 삭제·미제공), 허용된 공지 메타데이터+원문 링크 안내, 허용 데이터로 만든 **자체 비공식 개설 집계/전망**, 공식 문의처 연결.
 - **제외:** 학교 로고/엠블럼·공식 서비스 위장, 학교를 대신한 학사 FAQ, 학칙/졸업요건의 링크·인용·요약·DB화·자동 확인, 학교 규정 기반 졸업학점·졸업 가능 판정, 교수명 및 수강 관련 정보, 학사시스템 내부 주소·로그인·학교 계정·개인 성적자료.
 - **학교 공식 기준:** 공개된 자체 정보는 학사 판단·수강신청·졸업 판정·마감 확정의 근거가 아닙니다. 불완전한 출처·권리/필드 경계·중단 시기는 **표시 보류와 원문 확인**을 우선합니다.
 - **UI 변경 원칙:** 디자인의 고유성·비공식 고지를 먼저 확보하며, 원본 BASIC/TIME/SELECT의 연습 품질은 보호합니다. 새 정책에 저촉되는 기존 UI/원본 자산은 예외적으로 반드시 수정해야 합니다.
@@ -85,7 +85,7 @@
 |---|---|---|---|
 | **1차 — 독립 학업 플랫폼** | **정적 HTML/CSS + JavaScript/JSDoc 전용** | 학사공지·전망·학업 코어와 테스트를 JS로 통일하고 이전 동작과 비교 | **현행 PC 웹 UI 동결**, 원본 모의신청·PC-only 보호 |
 | **2차 — 기존 모의신청 시나리오** | JavaScript + `html/vsugang.html`의 설정·합성 연습, 원본 모방 페이지 별도 보호 | **BASIC `RECONNECT`(가상 404)·`CAPACITY`(가상 정원 마감·합성 후보 검색) 두 가지**, 모두 기본 OFF. 404는 같은 탭 선택 유지·새로고침 복구. 강의 신청 대기 기본 예, 페이지 접속 대기 기본 아니오. LAST_VALID·가상 타이머·실제 대체과목/시간 충돌 코드는 제외 | BASIC/TIME/SELECT 진입·SELECT 대기번호·Enter 반복 안내·키보드·타이머·결과 계약 보호, 운영 반영은 §6.1 적용 |
-| **3차 — Supabase 연계·제품 안정화** | 신규 데이터 어댑터는 **JavaScript**, DB는 SQL/RLS | 새 소스는 JavaScript, DB는 SQL. Draft #93은 PostgreSQL CI 검증만 완료, 실제 승인 데이터의 읽기·철회·복구 연동은 미완료 | 임창용 님 운영·자료 권리·실환경 인수 게이트 |
+| **3차 — 정적 최소 자료·선택적 Supabase** | 신규 데이터 어댑터는 **JavaScript**, DB는 SQL/RLS | 새 소스는 JavaScript, DB는 SQL. Draft #93은 PostgreSQL CI 검증만 완료, 실제 승인 데이터의 읽기·철회·복구 연동은 미완료 | 임창용 님 운영·자료 권리·실환경 인수 게이트 |
 | **4차 — JavaScript 소스 통합 검증** | **JavaScript + JSDoc/`checkJs`** 중심 | JS/JSDoc 소스 이전은 완료; 이전 결과 동등성·PC 브라우저·보안/운영의 최종 인수가 목표 | **코드 언어 통일은 3차와 독립**, 4차 **최종 제품 인수는 3차 실연동 후** |
 
 우리 팀은 **1·2차의 실제 구현과 검증**에 집중합니다. 원개발자가 모방 페이지를 원사이트와 비교해 **직접 제작**했고, `selectZone` 변경은 프로젝트 범위 안에서 진행해도 된다고 사용자에게 답변한 것으로 전달받았습니다. 이는 보호된 학교 서버 소스를 확보했다는 뜻이 아니며, 해당 허락만으로 기본 SELECT 대기열·확인창 동작을 파괴해도 된다는 뜻은 아닙니다(§5.3). **Supabase 사용 또한 원개발자가 허용한다고 답변한 것으로 사용자에게서 확인했습니다.** 실제 Supabase Free($0) 프로젝트의 소유·관리 책임은 **임창용 님**으로 유지하고, 계정·접근 권한·비밀키·실연동 승인과 학교 학사자료 사용권은 별도입니다. 3차 설계 인계만으로 실연동 완료나 **4차 최종 제품 인수**를 선언하지 않습니다. [운영 책임 #29](https://github.com/ot4562-glitch/Hanmo_develop/issues/29)
@@ -120,10 +120,10 @@ data/academic-source-config.json → mode: disabled(유지)
 
 ### 3.1 실행·권리·개인정보 경계
 
-- **정적 우선·코드 언어:** 새로운 코드·테스트는 JavaScript + JSDoc을 사용하고, 기존 JS 소스·모의신청 연습은 합성 상태에서 독립 동작합니다. 운영 Supabase 없이도 모의신청·로컬 산술 기록이 돌아가야 합니다.
+- **정적 우선·코드 언어:** 새로운 코드·테스트는 JavaScript + JSDoc을 사용하고, 기존 JS 소스·모의신청 연습은 합성 상태에서 독립 동작합니다. 운영 Supabase 없이도 모의신청·로컬 내정보 선택 기능이 작동해야 합니다. 학점 산술 화면은 삭제됐으며 별도 범위 결정 없이 복원하지 않습니다.
 - **학사자료 계약:** 모든 데이터 객체에 이용 근거 범위, 원문 URL, 확인시각, 제외 필드, 집계 방식, 권리/철회 상태를 별도 기록합니다. URL/해시/검수자가 있다는 것만으로 금지 자료 사용이 허용되지 않습니다.
 - **불명확한 필드:** 교수명·학생의 수강 관련 정보는 수집/저장/공개 대상에서 제외합니다. 개별 과목명·학수번호·분반·시간표와 공개 집계의 허용 경계가 불명확한 경우 **해당 세부 서비스 노출을 보류**합니다. 기존 사용자의 WIS 저장 HTML/CSV를 공식 자료 우회 반입 경로로 사용하지 않습니다.
-- **계정·개인자료:** 학교 계정/암호/SSO·대리 로그인·학교 학적·개인 성적표·성적/이수 원장 파일을 취급하지 않습니다. 프로필 및 범용 학점 산술 입력값은 브라우저 안에만 두고 GitHub·Supabase·로그·분석 도구로 보내지 않습니다.
+- **계정·개인자료:** 학교 계정/암호/SSO·대리 로그인·학교 학적·개인 성적표·성적/이수 원장 파일을 취급하지 않습니다. 현재 존재하는 직접 입력 프로필 값은 브라우저 안에만 두고 GitHub·Supabase·로그·분석 도구로 보내지 않습니다. 학점 산술 UI는 미제공이며 학교 성적·이수 원장 파일을 취급하지 않습니다.
 - **학교 확인 경로:** 공지 및 허용 공개 자료의 공식 원문 URL은 정확한 학교 페이지로 연결하되, 학칙·졸업요건의 **원문 링크까지 금지**합니다. 학교 공식 문의처 경로는 별도로 제공합니다.
 - **실제 코드와 출시:** `js/academic/`의 RulePack·FAQ·예측 모듈과 구형 REST `payload`의 존재는 기술 자산의 잔존이지 허용된 운영 기능의 증거가 아닙니다. `READY`는 기술적 유효 상태이지 학교 승인·학사 판단을 뜻하지 않습니다.
 
@@ -164,7 +164,7 @@ data/academic-source-config.json → mode: disabled(유지)
 ### 4.4 달력·공식 학사 상담·FAQ 전환
 
 - **달력:** 브라우저의 빈 달력·사용자 개인 메모 등 학교 자료 비의존 UI만 유지할 수 있습니다. 학교 공지의 허용 범위 밖인 학사행사 데이터의 별도 구조화·일정/신청 마감 자동 판정은 하지 않습니다. 공식 일정은 확인 가능한 학교 채널로 안내하고 자체 예상일을 공식 D-day로 표기하지 않습니다.
-- **학사 FAQ:** 학교 제도·절차에 대한 질문의 자체 답변 생성·인용·요약·검색 근거 노출을 **출시 범위에서 제외**합니다. `html/academic-faq.html`은 공식 학사 문의처/담당 부서 안내로 전환하고, 질문을 학교 대신 판단하지 않습니다. 기존 BM25·FAQ guard·근거형 답변 코어는 **합성 내부 시험용**으로만 구분합니다.
+- **학사 FAQ:** 학교 제도·절차에 대한 질문의 자체 답변 생성·인용·요약·검색 근거 노출을 **출시 범위에서 제외**합니다. `html/academic-faq.html`은 삭제됐으며 학교 문의처 링크 안내는 `html/academic-support.html`에서 제공합니다. 학교 제도·절차 질문에 직접 답변하지 않습니다. 기존 BM25·FAQ guard·근거형 답변 코어는 **합성 내부 시험용**으로만 구분합니다.
 - **학칙:** FAQ·달력·진학/교환학생 보조 기능을 포함한 **어느 경로에서도 학칙·졸업요건 링크/인용·요약·표·자동확인 금지**. 학교의 학사 판단이 필요한 경우 공식 채널 이용을 안내합니다.
 - **상담:** 운영 중인 공식 문의처의 공개 연락 경로로 연결하되 학교 명의로 답변·예약/자격·검증을 대행하지 않습니다. 부서/연락처의 최신성은 공식 사이트에서 확인합니다.
 
@@ -314,16 +314,18 @@ BASIC 오른쪽 아래 **돌발상황**은 `RECONNECT`(1회 가상 404)와 `CAPA
 
 ## 10. 미결·전환 작업 (정책 변경에 따른 우선순위)
 
+**2026-11-23 이슈 동기화:** GitHub의 일반 이슈 **총 74건, 열림 24건, 닫힘 50건**을 확인했습니다. [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)은 서면 범위 설계 완료로 종결됐으며, 불허/미허용 학생용 기능 [#43](https://github.com/ot4562-glitch/Hanmo_develop/issues/43)·[#47](https://github.com/ot4562-glitch/Hanmo_develop/issues/47)·[#54](https://github.com/ot4562-glitch/Hanmo_develop/issues/54)·[#55](https://github.com/ot4562-glitch/Hanmo_develop/issues/55)·[#56](https://github.com/ot4562-glitch/Hanmo_develop/issues/56)·[#60](https://github.com/ot4562-glitch/Hanmo_develop/issues/60)·[#61](https://github.com/ot4562-glitch/Hanmo_develop/issues/61)·[#63](https://github.com/ot4562-glitch/Hanmo_develop/issues/63)은 **`not_planned`로 종료**했습니다. 실제 코어/브라우저/수집/권리 검증은 열린 이슈를 따릅니다. 최신 현황표는 [이슈 색인](pending-issues.md)에 있습니다.
+
 | 우선순위 | 변경 및 영향 | 검증/추적 |
 |---|---|---|
 | **P0** | 직접 확인한 `img/hufs_logo.png` 제거·웹 비공식 안내 반영. **남은 과제:** 공식 유사 디자인/문구·파비콘·구형 SVG 전수 감사 및 PC 브라우저 가시성 검증 | [#39](https://github.com/ot4562-glitch/Hanmo_develop/issues/39) · [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
-| **P0** | 졸업요건·학사 FAQ 페이지·메뉴 삭제 완료. **남은 과제:** 학칙/FAQ 코어의 공개 호출 경로 차단·미사용 산술 UI 정책 검증, 구형 REST payload 필드 제거 | [#63](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
+| **P0** | 졸업요건·학사 FAQ 페이지·메뉴 삭제 완료. **남은 과제:** 학칙/FAQ 코어의 공개 호출 경로 차단·미사용 산술 UI 정책 검증, 구형 REST payload 필드 제거 | [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) |
 | **P0** | 학사 FAQ 답변/근거 표시 중단; 학사 문의 공식 채널 연결. NLP 코어의 학생 배포 차단 | [#40](https://github.com/ot4562-glitch/Hanmo_develop/issues/40) · [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) |
 | **P0** | 학교 자료 크롤러 기본 OFF, §0.1 제한·금지기간·User-Agent·오류 당일 중단·전역 카운터·긴급 차단을 합성 검증 | [#27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27) · [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66) |
 | **P1** | 허용된 공지 링크·비식별 집계·비공식 전망만 재설계. 교수명·수강 정보 및 개별 분반/과목 필드의 사용 범위는 **추가 서면 확인 전 보류** | [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41) · [#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42) · [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) |
 | **P1** | Supabase Draft #93의 금지 필드·FAQ·규정 테이블/공개 payload를 재설계하거나 정적 스냅샷 대안 채택 | [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)–[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
-| **P1** | 고지·출처·정정·철회·학생 오인/접근성·Windows PC 브라우저 실검증, 원본 시뮬레이터 회귀 | [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) · [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) · [#74](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) |
+| **P1** | 고지·출처·정정·철회·학생 오인/접근성·Windows PC 브라우저 실검증, 원본 시뮬레이터 회귀 | [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) · [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) · [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/74) |
 
-**문서 전환 원칙:** [학업 코어](academic-core.md), [학생 데이터 소스 인계](student-data-source-handoff.md), [수명주기 운영](academic-data-lifecycle-operations.md)의 **구형 설계/운영 payload**는 이 §0 및 §7과 충돌하는 범위에서 무효입니다. 이를 근거로 금지 필드 수집·저장·서비스 배포를 진행하지 않습니다. 관련 이슈/PR은 이번 사용 범위 변경에 맞춰 개별 스코프를 정리해야 하며, 문서 변경 자체가 이슈 완료나 코드 검증을 뜻하지 않습니다.
+**문서 전환 원칙:** [학업 코어](academic-core.md), [학생 데이터 소스 인계](student-data-source-handoff.md), [수명주기 운영](academic-data-lifecycle-operations.md)의 **구형 설계/운영 payload**는 이 §0 및 §7과 충돌하는 범위에서 무효입니다. 이를 근거로 금지 필드 수집·저장·서비스 배포를 진행하지 않습니다. GitHub 일반 이슈 74건을 점검하고 불일치가 확인된 이슈의 제목·본문·상태를 직접 수정했습니다. **이슈 편집은 코드 검증이나 데이터/배포 인수 완료를 뜻하지 않습니다.** 현행 목록은 [이슈 색인](pending-issues.md)을 참조합니다.
 
 **판단 미완료:** 서면의 “수강 관련 정보 제외”가 허용 개설 통계의 어느 필드까지 미치는지, 공지 메타데이터의 상세 저장/재배포 경계, 학사일정 공개 데이터의 별도 구조화 범위는 정보처 서면 확인 전까지 좁게 적용합니다. 대면 상담의 넓은 표현을 근거로 확대하지 않습니다. 더 제한적인 학교 후속 통지가 오면 즉시 설계와 운영을 변경합니다.
