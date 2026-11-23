@@ -1,4 +1,6 @@
-# 미니멀 UI 개선 검토
+# 미니멀 UI 개선 검토 · 역사적 스냅샷
+
+> **현행화 주의(2026-11-23):** 아래는 당시 기준 커밋의 UI 검토 기록입니다. 독립 `academic-calendar.html`·`academic-support.html`은 **현재 삭제**됐고, 학사정보는 공지/달력 통합 탭입니다. PC 진단·반응속도·전략 실험(가상 정원 **1~300**)과 결과 PNG 제거 등 현행 동작은 [아키텍처](architecture.md)·[학생 웹 현황](academic-core.md)·[공동 QA #134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)를 확인하세요. 과거 테스트의 결과는 현행 UI 검증을 대신하지 않습니다.
 
 ## 범위와 판단 기준
 

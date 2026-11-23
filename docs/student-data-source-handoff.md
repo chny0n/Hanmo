@@ -4,7 +4,7 @@
 
 **운영자 해석 변경:** 정보처 직원 두 명이 대면으로 공개정보 활용·가공이 가능하다는 취지로 말했다는 보고에 따라, 서면의 **명시적 금지**를 제외한 공식 공개 메타데이터 검색·비복제 가공·강좌 개설 관측/행사 일정 통합을 **필드 검수할 차기 계약 후보**로 포함합니다. 자동 수집 제한은 서면 그대로이며, '수강 관련 정보'의 충돌 가능성과 이메일의 '열거 외 이용 불허' 문구를 [운영 방침](public-data-operating-decision.md)에 명시했습니다. 현재 구형 `faq`/`instructor` payload는 운영 대상이 아니며 실자료 연결은 OFF입니다.
 
-**`main` 기준(2026-11-23):** 학생 화면의 과거 참고 공지·합성 강좌 데이터는 제거했습니다. `data/academic-source-config.json`은 `schemaVersion: 1`, `mode: disabled`입니다. 승인 학교 자료와 Supabase 연결은 없습니다. 이 문서는 [브라우저 읽기 계약](architecture.md)을 설명하며 운영 DB 설치 지침이 아닙니다.
+**`main` 기준(2026-11-23):** 학생 화면의 과거 참고 공지·합성 강좌 데이터는 제거했고, **공지·달력은 `html/academic-timeline.html` 탭에 통합, 독립 문의처 페이지는 삭제**했습니다. `data/academic-source-config.json`은 `schemaVersion: 1`, `mode: disabled`입니다. 승인 학교 자료와 Supabase 연결은 없습니다. 이 문서는 [브라우저 읽기 계약](architecture.md)을 설명하며 운영 DB 설치 지침이 아닙니다.
 
 **정책 판본에 관한 인수 주의:** 운영자에 따르면 정보처의 이메일과 두 직원의 대면 설명은 **모두 학교의 확정된 공식 정책이 아닌 직원 안내**로, 학사정보 데이터 범위는 향후 확대·축소될 수 있습니다. 현재의 서면 명시 금지 및 자동 수집 수치·기간은 내부 운영 기준으로 유지합니다. 김채윤의 3차 자료 검수·Supabase 인수에는 향후 `scopePolicyVersion`, 근거 출처의 공식성 확인 상태, 변경 전후 필드 차이, 축소 시 철회/확대 시 재검수를 포함합니다. **정책 버전 자동화나 실 DB 연결은 아직 미구현**이며 [운영 방침](public-data-operating-decision.md)을 참조합니다.
 
@@ -16,9 +16,9 @@
 
 브라우저 어댑터의 **향후 Supabase 모드**는 공개 Data API의 `public.hanmo_public_snapshots`에서 `is_active=true` 행 최대 2개를 조회하도록 구현돼 있지만, **기본값 disabled라 현재 실호출은 하지 않습니다.** 모드를 활성화한 경우에는 snapshot_id, schema_version, manifest_sha256, source_checked_at, published_at, expires_at, revoked_at, is_active, payload 메타데이터를 확인합니다. RLS가 존재해도 Data API 공개 설정과 익명 SELECT 권한을 별도로 검증해야 합니다. 클라이언트의 해시 형식/기한 검증은 독립 해시 재계산·검수·승인·RLS의 대체물이 아닙니다.
 
-## 공개 payload v1 (승인·정규화 후 발행 계약)
+## 폐기 예정 공개 payload v1 (구형 코드 해석용 · **운영 계약 아님**)
 
-payload는 notices, offerings, faq 세 배열이어야 합니다. 공지에는 id, title, type, 학교 공식 HTTPS sourceUrl, 선택 publishedDate(YYYY-MM-DD)가 필요합니다. source.url/source.publishedDate도 지원합니다. 강의에는 courseId(또는 rawCode), title, term(또는 academicTerm), campus(SEOUL 또는 GLOBAL), 학교 공식 HTTPS sourceUrl, 선택 credits 및 instructor가 필요합니다. FAQ는 승인 인덱스 검증 이후 별도로 UI에 노출합니다. 필드 계약에 맞지 않는 레코드가 섞이면 전체 결과를 INVALID로 보류합니다.
+아래는 **현재 코드의 구형 파서가 기대하는 형식일 뿐 새로운 학생 공개 API의 명세가 아닙니다.** 재사용 권한이 없는 FAQ·교수 등 금지 필드가 포함돼 있으므로 이 형식 자체를 운영에서 켜지 않습니다. 구형 payload는 notices, offerings, faq 세 배열을 기대합니다. 공지에는 id, title, type, 학교 공식 HTTPS sourceUrl, 선택 publishedDate(YYYY-MM-DD)가 필요합니다. source.url/source.publishedDate도 지원합니다. 강의에는 courseId(또는 rawCode), title, term(또는 academicTerm), campus(SEOUL 또는 GLOBAL), 학교 공식 HTTPS sourceUrl, 선택 credits 및 instructor가 필요합니다. FAQ를 학생 UI에 노출한다는 기존 계획은 **폐기**됐습니다. 새 공개 DTO는 서면 금지·필드 검수·권리/철회 검증 후 별도 정의해야 합니다. 필드 계약에 맞지 않는 레코드가 섞이면 전체 결과를 INVALID로 보류합니다.
 
 ## 학생 화면 구분
 
@@ -30,7 +30,7 @@ payload는 notices, offerings, faq 세 배열이어야 합니다. 공지에는 i
 | INVALID | 철회/만료/구조·출처 검증 실패. 위험 자료는 표시하지 않음 |
 | READY | 유효한 공개판본의 공지·강좌만 표시. 실제 개인 적용과 미래 개설 확정은 원문 확인 |
 
-오류 시 과거 미검수 정적 자료를 자동으로 사용하지 않습니다. 학생의 브라우저 로컬 내정보·학점 입력과 기존 BASIC/TIME/SELECT는 오류 상황에도 독립적으로 작동해야 합니다.
+오류 시 과거 미검수 정적 자료를 자동으로 사용하지 않습니다. 학생의 브라우저 로컬 내정보·반응속도 프로필 및 BASIC/TIME/SELECT 합성 연습은 학교 데이터 연결 장애와 독립적으로 작동해야 합니다.
 
 ## 검증
 
