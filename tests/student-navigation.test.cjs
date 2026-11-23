@@ -140,7 +140,7 @@ test('home restores the original mock registration layout without the academic-e
  const bar=home.match(/<nav class="hanmo-topbar"[\s\S]*?<\/nav>/)?.[0];
  assert.ok(bar);
  assert.doesNotMatch(bar,/<a[^>]*href=['"]\.\/html\/vsugang\.html['"][^>]*>/,'상단 바에 연습 진입을 중복하지 않습니다.');
- const allowed=['./index.html','./html/academic-timeline.html',
+ const allowed=['./index.html','./html/readiness.html','./html/strategy-lab.html','./html/academic-timeline.html',
    './html/catalog.html','./html/academic-calendar.html',
    './html/academic-support.html','./html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
