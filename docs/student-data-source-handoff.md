@@ -2,6 +2,8 @@
 
 > **2026-11-23 정보처 서면 회신 이후 현재 운영 불가:** [원문](sources/2026-11-23-hufs-information-office-reply.txt) · [아키텍처 §0·§7](architecture.md). 아래의 `notices/offerings/faq`, `instructor`, 원문 기반 근거/학교 규정·개별 강좌 payload 계약은 **옛 설계 및 현행 코드의 설명**일 뿐 허용된 운영 API 계약이 아닙니다. **교수명·수강 관련 정보/FAQ·학칙·졸업요건 금지, 공지 원문/첨부 복제 금지**를 우선 적용하고, 실제 연결 설정은 계속 `mode: disabled`로 유지합니다. 향후 새 데이터 계약/수집 제한/RLS·운영 검증이 완료되어야 수정·교체할 수 있습니다.
 
+**운영자 해석 변경:** 정보처 직원 두 명이 대면으로 공개정보 활용·가공이 가능하다는 취지로 말했다는 보고에 따라, 서면의 **명시적 금지**를 제외한 공식 공개 메타데이터 검색·비복제 가공·강좌 개설 관측/행사 일정 통합을 **필드 검수할 차기 계약 후보**로 포함합니다. 자동 수집 제한은 서면 그대로이며, '수강 관련 정보'의 충돌 가능성과 이메일의 '열거 외 이용 불허' 문구를 [운영 방침](public-data-operating-decision.md)에 명시했습니다. 현재 구형 `faq`/`instructor` payload는 운영 대상이 아니며 실자료 연결은 OFF입니다.
+
 **`main` 기준(2026-11-23):** 학생 화면의 과거 참고 공지·합성 강좌 데이터는 제거했습니다. `data/academic-source-config.json`은 `schemaVersion: 1`, `mode: disabled`입니다. 승인 학교 자료와 Supabase 연결은 없습니다. 이 문서는 [브라우저 읽기 계약](architecture.md)을 설명하며 운영 DB 설치 지침이 아닙니다.
 
 ## Supabase Free 실제 연결 전제

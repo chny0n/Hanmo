@@ -2,7 +2,7 @@
 
 > **설계 정본:** [docs/architecture.md §7.1](architecture.md)의 데이터 경계·수명주기 계약. 이 문서는 운영자용 절차이며, 설계를 독립적으로 변경하거나 학교의 자료 이용 허가를 대신하지 않습니다.
 >
-> **상태 (2026-11-23):** `main`에는 실제 Supabase DB 연결, 학교 자료 반입, 자동 보존·정리 기능이 없습니다. [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 SQL은 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했으나 운영 설치·API·권한 인수를 마치지 않았습니다. 이미 종결된 [서면 회신 기록 #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)의 조건과 [운영 결정 및 긴급 철회](public-data-operating-decision.md)를 별도로 지켜야 하며, 실자료 수집·재배포는 현재 OFF입니다.
+> **상태 (2026-11-23):** `main`에는 실제 Supabase DB 연결, 학교 자료 반입, 자동 보존·정리 기능이 없습니다. [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 SQL은 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했으나 운영 설치·API·권한 인수를 마치지 않았습니다. 이미 종결된 [서면 회신 기록 #27](https://github.com/ot4562-glitch/Hanmo_develop/issues/27)의 **명시 금지·자동 수집 조건**과 [두 정보처 직원의 대면 공개정보 가공 설명에 대한 운영자 해석·긴급 철회](public-data-operating-decision.md)를 함께 기록합니다. 현재 실자료 수집·학생 공개는 OFF입니다. 아래 구형 `CURRENT_SECTION`/RulePack/FAQ/90일 보존 표는 정책 적용 전의 **역사적 설계 메모**로, 현행 데이터 수집·운영 계약이 아닙니다.
 
 ## 1. 자료 등급과 보존 정책
 
@@ -71,6 +71,6 @@
 
 ## 7. 운영자 공개정보 활용 개발 결정과 긴급 철회
 
-2026-11-23 운영자는 추가 학교 문의 없이 로그인 없는 공개자료 기반 기능 **알고리즘·UX·합성 실험 개발**을 폭넓게 허용했습니다. 구두 설명이 서면의 학교 자료 제한을 자동으로 해제하지는 않습니다. 실제 학교 자료는 §0의 접근/필드/수집 제한과 권리·독립 검수를 거치며 미확정 세부 이용은 연결하지 않습니다. [운영 결정·긴급 철회 런북](public-data-operating-decision.md)을 공통 기준으로 사용합니다.
+2026-11-23 운영자는 두 직원의 대면 설명을 **공개자료 활용과 검색·집계·가공도 가능한 취지**로 재확인했습니다. **서면 명시 금지사항은 제외, 자동 수집의 빈도·시간/오류 제한은 서면 그대로, 그 밖의 공개 메타데이터 가공은 내부 운영 판단에 포함**합니다. 다만 이메일 말미의 열거 외 이용 불허 문구와 해석 충돌이 있으므로 학교의 공식 포괄 승인으로 표시하지 않으며, 필드별 금지 충돌/권리·정정·철회 검수는 생략하지 않습니다. [운영 결정·긴급 철회 런북](public-data-operating-decision.md)을 공통 기준으로 사용합니다.
 
 **긴급 중단은 데이터 수집 OFF → API/정적 공개 OFF → GitHub Pages/배포 파일·CDN/브라우저 캐시·이전 릴리스·인덱스 확인 → 익명 검증 → 재개 별도 검수**까지 끝나야 합니다. 현재 라이브 학교 데이터는 없고 통합 킬 스위치/캐시 철회 자동화도 미구현이므로 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에서 실제 중단 훈련을 완료하기 전에는 운영 완성을 주장하지 않습니다. 3차 Supabase 관련 역할은 김채윤에게 있으며 최종 원개발자 인수 #125에 포함합니다.
