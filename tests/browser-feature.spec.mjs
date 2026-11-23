@@ -710,29 +710,22 @@ test('최신 원본 한모의 2칸 예·아니오 선택을 SETTING과 돌발상
  await expect(page.locator('input[name="incident-CAPACITY"][value="yes"]')).toBeChecked();
 });
 
-test('학사공지·강의검색의 안내와 버튼은 검색 입력란 왼쪽에 맞춘다',async({page})=>{
+test('학사공지·강의검색은 학교 링크 제거 뒤에도 안내·상태의 왼쪽 선을 맞춘다',async({page})=>{
  for(const width of [1440,1980]){
   await page.setViewportSize({width,height:1080});
   for(const route of ['/html/academic-timeline.html','/html/catalog.html']){
    await page.goto(route);
    const info=await page.evaluate(()=>{
-    const r=selector=>document.querySelector(selector).getBoundingClientRect();
-    const input=r('.hanmo-search-controls input');
-    const notice=r('#notice-status,#catalog-status');
-    const action=Array.from(document.querySelectorAll('.hanmo-actions > *'))
-      .find(element=>element.getBoundingClientRect().width>0);
-    const actions=action?.getBoundingClientRect();
-    const status=document.querySelector('#notice-status');
-    const statusLeft=status?
-      status.getBoundingClientRect().left+parseFloat(getComputedStyle(status).paddingLeft):null;
-    return {inputLeft:input.left,textLeft:notice.left,buttonLeft:actions?.left,statusLeft};
+    const rect=selector=>document.querySelector(selector).getBoundingClientRect();
+    const input=rect('.hanmo-search-controls input');
+    const status=rect('#notice-status,#catalog-status');
+    const actions=rect('.hanmo-actions');
+    return {inputLeft:input.left,statusLeft:status.left,actionsLeft:actions.left};
    });
-   expect(info.buttonLeft,route+' 보이는 대체 경로').not.toBeUndefined();
-   expect(Math.abs(info.inputLeft-info.textLeft),route+' info at '+width).toBeLessThanOrEqual(1);
-   expect(Math.abs(info.inputLeft-info.buttonLeft),route+' actions at '+width).toBeLessThanOrEqual(1);
-   if(info.statusLeft!==null){
-    expect(Math.abs(info.inputLeft-info.statusLeft),route+' notice at '+width).toBeLessThanOrEqual(1);
-   }
+   expect(Math.abs(info.inputLeft-info.statusLeft),route+' status at '+width).toBeLessThanOrEqual(1);
+   expect(Math.abs(info.inputLeft-info.actionsLeft),route+' actions at '+width).toBeLessThanOrEqual(1);
+   await expect(page.locator('.hanmo-actions a')).toHaveCount(0);
+   await expect(page.locator('.hanmo-actions button')).toBeHidden();
   }
  }
 });
