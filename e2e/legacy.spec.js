@@ -3,6 +3,19 @@ import {test,expect} from '@playwright/test';
 
 const safeDate=new Date('2026-11-19T12:00:00+09:00');
 
+test('SETTING에 흰색 굵은 대기조건 제목이 두 선택칸 위에 표시된다',async({page})=>{
+  await page.goto('/html/vsugang.html');
+  await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+  const title=page.getByText('대기조건',{exact:true});
+  await expect(title).toBeVisible();
+  await expect(title).toHaveCSS('color','rgb(255, 255, 255)');
+  await expect(title).toHaveCSS('font-weight','700');
+  const firstGroup=page.getByRole('group',{name:'강의 신청에 적용할까요?'});
+  const titleBox=await title.boundingBox();
+  const firstBox=await firstGroup.boundingBox();
+  expect(titleBox.y+titleBox.height).toBeLessThanOrEqual(firstBox.y);
+});
+
 /** @param {import('@playwright/test').Page} page */
 async function setPracticeOptions(page){
   await page.goto('/html/vsugang.html');

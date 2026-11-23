@@ -1,6 +1,8 @@
 // @ts-check
 // 학교 서버와 무관한 현재 탭·한모 정적 CDN의 관측값만 측정합니다.
 import {readProfile} from './reaction-profile.mjs';
+const HEAD_REQUESTS=5;
+const DOWNLOAD_REQUESTS=2;
 export function percentile(samples,ratio){
   if(!Array.isArray(samples)||!samples.length||samples.some(v=>!Number.isFinite(v)||v<0)||
     !Number.isFinite(ratio)||ratio<0||ratio>1)throw new RangeError('측정 표본이 올바르지 않습니다.');
@@ -14,19 +16,25 @@ export function summarizeFrames(samples){
     interruptions:samples.filter(v=>v>=threshold).length,samples:samples.length};
 }
 export function networkStats(latencies,downloadSamples,failures){
-  const valid=latencies.filter(n=>Number.isFinite(n)&&n>=0);
-  const adjacent=valid.slice(1).map((v,i)=>Math.abs(v-valid[i]));
+  const valid=latencies.filter(Number.isFinite);
+  const adjacent=[];
+  for(let i=1;i<latencies.length;i++){
+    if(Number.isFinite(latencies[i-1])&&Number.isFinite(latencies[i])){
+      adjacent.push(Math.abs(latencies[i]-latencies[i-1]));
+    }
+  }
   return {
     median:valid.length?percentile(valid,.5):null,
-    p95:valid.length?percentile(valid,.95):null,
     jitter:adjacent.length?percentile(adjacent,.5):null,
     mbps:downloadSamples.length?percentile(downloadSamples,.5):null,
-    failures,
+    failures,latencyCount:valid.length,downloadCount:downloadSamples.length,
+    excluded:latencies.length+DOWNLOAD_REQUESTS-valid.length-downloadSamples.length-failures,
   };
 }
 export function findings({frame,longTasks,network,drift}){
   const result=[];
   if(frame.interruptions>=3)result.push('화면 갱신이 여러 번 끊겼습니다.');
+  if(frame.median>=30)result.push('이 탭의 화면 갱신 간격이 길었습니다.');
   if(longTasks!==null&&longTasks>=3)result.push('브라우저 긴 작업이 반복되었습니다.');
   if(network&&network.failures>=2)result.push('한모 정적 파일 요청에서 반복 오류가 발생했습니다.');
   if(drift!==null&&drift>=100)result.push('브라우저 타이머가 크게 지연되었습니다.');
@@ -34,42 +42,57 @@ export function findings({frame,longTasks,network,drift}){
   return result;
 }
 const text=(value)=>typeof value==='number'?value.toFixed(1):'측정 불가';
-const within95Percent=(value)=>'측정값의 95% 이상이 '+text(value)+'ms 이하';
 const guard=(condition,message)=>{if(condition)throw new Error(message);};
-async function fetchWithTimeout(url,options,signal){
+export function networkSample(timing,method){
+  if(!timing||timing.transferSize<=0||timing.deliveryType==='cache'||timing.workerStart>0)return null;
+  const ms=timing.responseEnd-timing.startTime;
+  if(ms<=0)return null;
+  if(method==='HEAD')return ms;
+  const bytes=timing.encodedBodySize;
+  return bytes>0&&timing.transferSize>bytes?bytes*8/ms/1000:null;
+}
+const PROBE_BYTES=262216;
+async function fetchWithTimeout(url,method,signal){
   const controller=new AbortController();
   const onAbort=()=>controller.abort();
   signal.addEventListener('abort',onAbort,{once:true});
   const timeout=setTimeout(()=>controller.abort(),5000);
   try{
-    const from=performance.now();
-    const response=await fetch(url,{...options,signal:controller.signal,cache:'no-store',credentials:'omit'});
-    if(!response.ok)throw new Error('HTTP '+response.status);
-    const bytes=options.method==='HEAD'?0:(await response.arrayBuffer()).byteLength;
-    return {ms:Math.max(.1,performance.now()-from),bytes};
+    const response=await fetch(url,{method,signal:controller.signal,cache:'no-store',
+      credentials:'omit',mode:'same-origin',redirect:'error'});
+    if(response.status!==200)throw new Error('HTTP '+response.status);
+    // HEAD도 응답 소비를 마쳐야 브라우저가 Resource Timing 항목을 게시합니다.
+    const bytes=(await response.arrayBuffer()).byteLength;
+    if(method==='GET'){
+      // Windows 체크아웃에서는 마지막 줄바꿈이 1바이트 더 길 수 있습니다.
+      guard(bytes!==PROBE_BYTES&&bytes!==PROBE_BYTES+1,'시험 파일이 불완전합니다.');
+    }
+    const timing=performance.getEntriesByName(url.href,'resource').at(-1);
+    return networkSample(timing,method);
   }finally{
     clearTimeout(timeout);signal.removeEventListener('abort',onAbort);
   }
 }
 async function measureNetwork(signal,progress){
-  const latency=[],speed=[];let failures=0;
-  for(let i=0;i<5;i++){
+  const latency=[],speed=[];
+  let failures=0;
+  const runId=crypto.randomUUID?.()??String(performance.now());
+  for(let i=0;i<HEAD_REQUESTS;i++){
     guard(signal.aborted,'검사가 중단되었습니다.');
-    progress('연결 응답시간 검사 '+(i+1)+'/5');
+    progress('연결 응답시간 검사 '+(i+1)+'/'+HEAD_REQUESTS);
     const url=new URL('../img/favicon-purple.svg',import.meta.url);
-    url.searchParams.set('probe','head-'+i+'-'+Date.now());
-    try{latency.push((await fetchWithTimeout(url,{method:'HEAD'},signal)).ms);}
-    catch(e){if(signal.aborted)throw e;failures++;}
+    url.searchParams.set('probe','head-'+i+'-'+runId);
+    try{latency.push(await fetchWithTimeout(url,'HEAD',signal));}
+    catch(e){if(signal.aborted)throw e;failures++;latency.push(null);}
   }
-  for(let i=0;i<2;i++){
+  for(let i=0;i<DOWNLOAD_REQUESTS;i++){
     guard(signal.aborted,'검사가 중단되었습니다.');
-    progress('다운로드 처리량 검사 '+(i+1)+'/2');
+    progress('다운로드 처리량 검사 '+(i+1)+'/'+DOWNLOAD_REQUESTS);
     const url=new URL('../data/network-probe.txt',import.meta.url);
-    url.searchParams.set('probe','download-'+i+'-'+Date.now());
+    url.searchParams.set('probe','download-'+i+'-'+runId);
     try{
-      const r=await fetchWithTimeout(url,{method:'GET'},signal);
-      if(r.bytes<100000)throw new Error('시험 파일이 불완전합니다.');
-      speed.push(r.bytes*8/(r.ms/1000)/1000000);
+      const sample=await fetchWithTimeout(url,'GET',signal);
+      if(sample!==null)speed.push(sample);
     }catch(e){if(signal.aborted)throw e;failures++;}
   }
   return networkStats(latency,speed,failures);
@@ -79,24 +102,29 @@ function frames(signal){
     const samples=[],drifts=[];
     let last=null,raf=0,observer=null,longTasks=null,finished=false;
     const start=performance.now(),warm=start+500,end=warm+3000;
-    let intended=start+100;
-    const loop=setInterval(()=>{
-      const actual=performance.now();
-      if(actual>=warm)drifts.push(Math.max(0,actual-intended));
-      intended=actual+100;
-    },100);
+    let timer=0;
+    function scheduleTimer(){
+      const intended=performance.now()+100;
+      timer=setTimeout(()=>{
+        const actual=performance.now();
+        if(intended>=warm&&intended<end)drifts.push(Math.max(0,actual-intended));
+        scheduleTimer();
+      },100);
+    }
+    scheduleTimer();
+    const countTasks=entries=>{
+      for(const item of entries)if(item.startTime>=warm&&item.startTime<end)longTasks++;
+    };
     if(typeof PerformanceObserver!=='undefined'&&PerformanceObserver.supportedEntryTypes?.includes('longtask')){
       try{
         longTasks=0;
-        observer=new PerformanceObserver(list=>{
-          for(const item of list.getEntries())if(item.startTime>=warm)longTasks++;
-        });
+        observer=new PerformanceObserver(list=>countTasks(list.getEntries()));
         observer.observe({entryTypes:['longtask']});
       }catch{longTasks=null;}
     }
     function cleanup(){
       if(finished)return false;
-      finished=true;cancelAnimationFrame(raf);clearInterval(loop);
+      finished=true;cancelAnimationFrame(raf);clearTimeout(timer);
       observer?.disconnect();signal.removeEventListener('abort',abort);
       return true;
     }
@@ -104,12 +132,13 @@ function frames(signal){
     function sample(time){
       if(finished)return;
       if(signal.aborted||document.hidden){abort();return;}
-      if(last!==null&&last>=warm)samples.push(time-last);
+      if(last!==null&&last>=warm&&time>last)samples.push(time-last);
       last=time;
       if(time>=end){
+        if(longTasks!==null&&observer)countTasks(observer.takeRecords());
         if(cleanup()){
           if(samples.length<25)reject(new Error('유효한 프레임 표본이 부족합니다.'));
-          else resolve({frame:summarizeFrames(samples),longTasks,
+          else resolve({frame:summarizeFrames(samples),longTasks,timerCount:drifts.length,
             drift:drifts.length?percentile(drifts,.95):null});
         }
       }else raf=requestAnimationFrame(sample);
@@ -135,7 +164,7 @@ if(typeof document!=='undefined'){
       if(document.hidden)abort('탭이 숨겨져 측정이 중단되었습니다.');
     });
     cancel.addEventListener('click',()=>abort('사용자가 진단을 취소했습니다.'));
-    redo.addEventListener('click',()=>{result.hidden=true;inputs.hidden=false;});
+    redo.addEventListener('click',()=>{result.hidden=true;inputs.hidden=false;start.focus();});
     start.addEventListener('click',async()=>{
       if(controller)return;
       controller=new AbortController();const signal=controller.signal;
@@ -143,19 +172,20 @@ if(typeof document!=='undefined'){
       try{
         guard(!('requestAnimationFrame' in window),'프레임 측정을 지원하지 않는 브라우저입니다.');
         status.textContent='현재 화면의 프레임과 이벤트 루프를 3초간 관측합니다.';
-        const {frame,longTasks,drift}=await frames(signal);
+        const {frame,longTasks,drift,timerCount}=await frames(signal);
         let network=null;
         if(networkEnabled.checked)network=await measureNetwork(signal,message=>{status.textContent=message;});
         guard(signal.aborted,'진단 취소');
         const alerts=findings({frame,longTasks,network,drift});
         summary.textContent=alerts.join(' ');
-        value('readiness-frame-value','중앙값 '+text(frame.median)+'ms · '+within95Percent(frame.p95)+' · 끊김 '+frame.interruptions+'회');
+        value('readiness-frame-value',text(1000/frame.median)+'fps 관측 · 프레임 간격 중앙값 '+
+          text(frame.median)+'ms · 95백분위수 '+text(frame.p95)+'ms · 끊김 '+frame.interruptions+'회');
         value('readiness-task-value',longTasks===null?'지원되지 않음':longTasks+'회 (50ms 이상)');
-        value('readiness-drift-value',drift===null?'측정 불가':within95Percent(drift));
-        value('readiness-latency-value',network?.median===null||!network?'미측정':'중앙값 '+text(network.median)+'ms · '+within95Percent(network.p95));
-        value('readiness-jitter-value',network?.jitter===null||!network?'미측정':text(network.jitter)+'ms');
-        value('readiness-speed-value',network?.mbps===null||!network?'미측정':text(network.mbps)+'Mbps (한모 CDN 한정)');
-        value('readiness-error-value',network?network.failures+'/7회':'미측정');
+        value('readiness-drift-value',drift===null?'측정 불가':'95백분위수 '+text(drift)+'ms · '+timerCount+'개');
+        value('readiness-latency-value',network?.median==null?'미측정':'중앙값 '+text(network.median)+'ms · '+network.latencyCount+'/'+HEAD_REQUESTS+'개');
+        value('readiness-jitter-value',network?.jitter==null?'미측정':text(network.jitter)+'ms');
+        value('readiness-speed-value',network?.mbps==null?'미측정':text(network.mbps)+'Mbps · '+network.downloadCount+'/'+DOWNLOAD_REQUESTS+'개');
+        value('readiness-error-value',network?network.failures+'/'+(HEAD_REQUESTS+DOWNLOAD_REQUESTS)+'회 실패 · '+network.excluded+'회 제외':'미측정');
         const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
         value('readiness-connection-value',connection?.effectiveType??'브라우저 미지원');
         value('readiness-threads-value',
@@ -165,6 +195,7 @@ if(typeof document!=='undefined'){
         const profile=readProfile();
         value('readiness-reaction-value',profile?profile.medianMs+'ms (반응 테스트에서 읽음)':'미측정 · 반응 테스트 이용');
         result.hidden=false;inputs.hidden=true;
+        redo.focus({preventScroll:true});
         status.textContent='완료 · 본 결과는 브라우저 및 한모 정적 배포 서버에 대한 관측값입니다.';
       }catch(error){
         status.textContent=signal.aborted?interruption:

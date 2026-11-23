@@ -51,3 +51,44 @@ test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
   limit.courses[0].capacity=301;
   assert.throws(()=>validateScenario(limit),{name:'RangeError',message:'정원 입력값을 확인하세요.'});
 });
+test('행동시간이 고정이고 정원이 1이면 선착순 성공 확률을 해석식과 비교할 수 있다',()=>{
+  const s={...input(),startDelayMs:0,actionMs:500,jitterMs:0};
+  s.courses=s.courses.slice(0,2);
+  s.courses.forEach((course,i)=>Object.assign(course,{capacity:1,rivals:i+2}));
+  const result=simulate(s);
+  const exponent=result.ranks.reduce((sum,rank,slot)=>
+    sum+syntheticRate(rank-1)*s.courses[rank-1].rivals*(slot+1)*.5,0);
+  assert.ok(Math.abs(result.allRate-100*Math.exp(-exponent))<1e-9);
+  assert.ok(Math.abs(result.sensitivity.faster-100*Math.exp(-1.25*exponent))<1e-9);
+  assert.ok(Math.abs(result.sensitivity.slower-100*Math.exp(-.75*exponent))<1e-9);
+});
+test('가상 정원이 증가할수록 최적 기대점수가 높아지며 경쟁자가 증가하면 낮아진다',()=>{
+  const s=input();
+  s.courses[0].rivals=200;
+  let previous=-1;
+  for(const capacity of [1,50,51,200,201,300]){
+    s.courses[0].capacity=capacity;
+    const {meanScore}=simulate(s);
+    assert.ok(meanScore>=previous-1e-10);
+    previous=meanScore;
+  }
+  s.courses[0].capacity=1;
+  assert.ok(simulate(s).meanScore<previous);
+  s.courses[0].rivals=0;
+  assert.ok(Math.abs(simulate(s).meanScore-previous)<1e-10);
+});
+test('DP 점수를 세 과목의 모든 신청 순서와 비교한다',()=>{
+  const weights=[3,2,1];
+  const probability=[[.95,.91,.85],[.97,.6,.1],[1,.7,.5]];
+  const orders=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  const score=order=>order.reduce((total,i,slot)=>total+weights[i]*probability[i][slot],0);
+  assert.equal(score(bestOrder(weights,probability)),Math.max(...orders.map(score)));
+});
+test('순위 범위와 잘못된 시간·시드를 거부한다',()=>{
+  const s=input();
+  s.courses[0].rank=4;
+  assert.throws(()=>validateScenario(s),/중요 순위/);
+  for(const invalid of [{seed:-1},{seed:2**32},{actionMs:NaN},{startDelayMs:5001},{jitterMs:1501}]){
+    assert.throws(()=>validateScenario({...input(),...invalid}),RangeError);
+  }
+});

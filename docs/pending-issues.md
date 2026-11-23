@@ -5,7 +5,7 @@
 ## 이번 확인·결정
 
 - 전략 실험 가상 정원 **1~300명**(300 허용, 301 거부 테스트), 경쟁자 0~200; 실제 학교 정원/확률과 무관. 코드 수정 [d7d87f7](https://github.com/ot4562-glitch/Hanmo_develop/commit/d7d87f7eaa1056ecb59d8cfb91927255d3a78792).
-- **[#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134) (신설):** PC 진단·8회 반응속도 테스트·가상 전략 실험 고도화/신뢰성 공동 담당 **이의상(`uisang2004-maker`) + 김채윤(`qamarrchae`)**. 두 계정 모두 Assignees로 지정했습니다.
+- **[#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134):** PC 진단·8회 반응속도 테스트·가상 전략 실험의 측정 신뢰성과 Windows 실기기 인수를 공동 검증합니다. 담당자는 이의상(`uisang2004-maker`)과 김채윤(`qamarrchae`)입니다.
 - **[#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) (closed/not_planned):** 독립 학교 문의처 학생 페이지 제거. **[#132](https://github.com/ot4562-glitch/Hanmo_develop/issues/132)·[#133](https://github.com/ot4562-glitch/Hanmo_develop/issues/133) (closed):** 결과 PNG 공유/기록 등급/순위·부가 제안은 현행 구현 대상 아님.
 - 학사 공지·달력은 `html/academic-timeline.html` 단일 화면의 탭이고, 강의 검색은 `html/catalog.html`에만 남았습니다. 실제 학교 공지·개설·행사 자료는 `mode: disabled`이며 크롤러·Supabase 미연결입니다.
 - 실기기 Windows Chrome/Edge·200%/NVDA 원본 인수는 여전히 **미완료**이며 Node/Chromium CI 성공과 구별합니다.

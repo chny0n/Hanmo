@@ -1,7 +1,7 @@
 // @ts-check
 // 학생이 직접 넣는 정보는 가상 과목 4개 항목뿐입니다.
 import {validateScenario} from './strategy-engine.mjs';
-import {readProfile,deriveActionTimes,automaticSeed} from './reaction-profile.mjs';
+import {REACTION_KEY,readProfile,deriveActionTimes,automaticSeed} from './reaction-profile.mjs';
 const form=document.getElementById('strategy-form');
 if(form){
   const body=document.getElementById('strategy-courses');
@@ -83,6 +83,12 @@ if(form){
   const displayed=automaticSeed();
   clock.textContent=displayed.label;
   refreshProfile();
+  window.addEventListener('storage',event=>{
+    if(event.key===REACTION_KEY||event.key===null)refreshProfile();
+  });
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden)refreshProfile();
+  });
   add.addEventListener('click',()=>{
     const items=readRows();if(items.length>=8)return;
     const id='ABCDEFGH'.split('').find(c=>!items.some(row=>row.id===c));
@@ -97,6 +103,7 @@ if(form){
   });
   redo.addEventListener('click',()=>{
     result.hidden=true;inputPanel.hidden=false;refreshProfile();
+    form.querySelector('input').focus();
   });
   form.addEventListener('submit',event=>{
     event.preventDefault();if(worker)return;
@@ -118,10 +125,13 @@ if(form){
       active.terminate();worker=null;busy(false);
       if(message.type==='error'){status.textContent=message.message;return;}
       const r=message.result;
-      recommendation.textContent='신청 순서는 '+r.order.join(' → ')+
-        ' 순으로 하는 게 좋고, 모든 과목 성공 확률은 '+r.allRate.toFixed(1)+'%입니다.';
-      setup.textContent='반응속도 측정 자동 반영 · 합성 도착률 가정 · 1,000회 반복';
+      const percent=value=>value.toFixed(1)+'%';
+      recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
+        ' · 모형에서 전체 성공 추정 '+percent(r.allRate);
+      setup.textContent='이 순서에서 경쟁자 도착률을 기준보다 25% 높이거나 낮추면 전체 성공 추정은 '+
+        percent(r.sensitivity.faster)+'~'+percent(r.sensitivity.slower)+'입니다. 실험 시드 '+r.seed+'.';
       result.hidden=false;inputPanel.hidden=true;
+      redo.focus({preventScroll:true});
     });
     active.addEventListener('error',()=>{
       if(worker!==active)return;
