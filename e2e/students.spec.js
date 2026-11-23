@@ -35,8 +35,7 @@ test('학사자료 OFF에서 공지·달력과 강의 검색은 외부 자료를
     offOrigin.push(url);
     return route.abort();
   });
-  await page.goto('/index.html');
-  await page.getByRole('link',{name:'학사 정보'}).click();
+  await page.goto('/html/academic-timeline.html');
   await expect(page.locator('#notice-status')).toContainText('공지 자료 연결 전');
   await expect(page.locator('#notice-query')).toBeDisabled();
   await page.getByRole('tab',{name:'학사 달력'}).click();
