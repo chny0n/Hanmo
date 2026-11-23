@@ -714,10 +714,12 @@ test('홈 NOTICE는 원본 한모의 두 문구를 5초마다 세로 순환한�
 test('학교 원문은 학사 달력의 링크를 선택할 때만 새 탭에서 열린다',async({page,context})=>{
  const schedule='https://academic.hufs.ac.kr/academic/index.do';
  const visits=[];
- await context.route(schedule,route=>{
-   visits.push(route.request().url());
-   return route.fulfill({contentType:'text/plain; charset=utf-8',body:'학사일정 원문 링크 검증'});
+ context.on('request',request=>{
+   if(request.url()===schedule)visits.push(request.url());
  });
+ await context.route(schedule,route=>route.fulfill({
+   contentType:'text/plain; charset=utf-8',body:'학사일정 원문 링크 검증',
+ }));
  for(const slug of ['academic-timeline','catalog']){
    await page.goto('/html/'+slug+'.html');
    await expect(page.getByRole('link',{name:'학교 홈페이지'})).toHaveCount(0);
