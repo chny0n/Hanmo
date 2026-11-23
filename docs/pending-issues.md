@@ -10,7 +10,7 @@
 
 **운영자 추가 결정:** 정보처에 추가 문의 없이 진행하되 **서면 명시 금지·자동 수집 조건을 우선**하고, 그 밖의 **공개자료 활용·가공은 대면 설명을 근거로 제품 설계 및 자료 필드 검수 범위**에 포함합니다. 자동 실수집/노출은 아직 OFF입니다. 서면의 열거 외 이용 불허 문구와 운영자 해석의 차이·긴급 내리기 절차는 [공개자료 운영 결정](public-data-operating-decision.md)과 [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에 기록합니다.
 
-## 현재 열려 있는 실행·검증 이슈 (27건)
+## 현재 열려 있는 실행·검증 이슈 (27건, 2026-11-23 기준)
 
 ### 공개 공지·집계 및 안전한 검색
 
@@ -24,7 +24,7 @@
 | [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48) | [구현][1차][P0][데이터] 공개 강의 개설 이력·추세 비교·비공식 전망 백테스트 | open |
 | [#51](https://github.com/ot4562-glitch/Hanmo_develop/issues/51) | [구현][1차][P1][NLP] 공개 공지 최소 주제 분류·정정/보류 표시 (개인화 제외) | open |
 | [#52](https://github.com/ot4562-glitch/Hanmo_develop/issues/52) | [검증][1차][P2][NLP] 합성 행사 날짜 코어 유효성·백테스트 검증 (서비스 연결 보류) | open |
-| [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53) | [구현][1차][P1][NLP] 학사공지 메타 고급검색·오타·정정 중복·관련도 개선 | open |
+| [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53) | [구현][1차][P1][NLP] 학사공지 메타 정밀검색·필터·오타·관련도 개선 | open |
 
 ### 학생 웹·로컬 프로필
 
@@ -35,7 +35,7 @@
 | [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | [구현][1차][P0][통합] 비공식 모의연습→공지 원문 링크·개설 집계 안내 흐름 완성 | open |
 | [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58) | [검증][1차][P1][통합] 비공식 달력·학교 일정 링크·마감 오인 방지 QA | open |
 | [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) | [구현][1차][P1][통합] 공개 공식 문의처 정밀 탐색·업무/캠퍼스 비교·링크 최신성 | open |
-| [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) | [구현][1차][P1][통합] 공개 학사일정 메타데이터 통합·중복 제거·변경 비교 엔진 | open |
+| [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) | [구현][1차][P2][통합] 검수된 공개 일정 달력 표시·원문 탐색 (선택 확장) | open |
 
 ### 정적 최소 스냅샷·선택적 Supabase
 
