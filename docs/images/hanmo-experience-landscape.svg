@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="800" viewBox="0 0 1440 800" role="img" aria-labelledby="title desc">
 <title id="title">한모의 현재 경험: 비공식 모의수강신청과 공식 원문 링크 안내</title>
-<desc id="desc">왼쪽은 BASIC TIME SELECT 및 기본 OFF인 가상 404·정원 마감, 오른쪽은 학교 공개 공지 링크, 비식별 개설 전망, 달력·학교 문의처를 보여 줍니다. 학교 공식 자료와 Supabase는 아직 연결되지 않았습니다.</desc>
+<desc id="desc">왼쪽은 BASIC TIME SELECT 및 기본 OFF인 가상 404·정원 마감, 오른쪽은 학교 공개 공지 링크, 비식별 개설 전망, 학사 달력를 보여 줍니다. 학교 공식 자료와 Supabase는 아직 연결되지 않았습니다.</desc>
 <defs>
   <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#06131E"/><stop offset=".57" stop-color="#09263A"/><stop offset="1" stop-color="#11384B"/></linearGradient>
   <linearGradient id="left" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#103A4E"/><stop offset="1" stop-color="#082332"/></linearGradient>
@@ -52,7 +52,7 @@
 <rect x="776" y="557" width="565" height="70" rx="13" fill="#102D40" stroke="#315A72" stroke-width="1"/>
 <rect x="794" y="575" width="31" height="31" rx="10" fill="#163E51" stroke="#4C91A4" stroke-width="1"/>
 <path d="M803 590h13m-13 7h13" stroke="#8AD0D8" stroke-width="2" stroke-linecap="round"/>
-<text x="844" y="598" fill="#EAF6FC" font-size="24" font-weight="700" >달력 · 학교 문의처</text>
+<text x="844" y="598" fill="#EAF6FC" font-size="24" font-weight="700" >학사 달력</text>
 <rect x="1144" y="578" width="175" height="38" rx="19" fill="#2C302D" stroke="#747452" stroke-width="1"/>
 <text x="1231" y="603" fill="#F6D797" font-size="19" font-weight="650" text-anchor="middle">링크 안내</text>
 <text x="778" y="664" fill="#BCD6E3" font-size="18" font-weight="510" >내정보는 로컬 저장 · 학교 자료는 아직 미연결</text>

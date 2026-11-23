@@ -22,7 +22,7 @@
 | [#52](https://github.com/ot4562-glitch/Hanmo_develop/issues/52) | [검증][1차][P2][NLP] 합성 행사 날짜 코어 유효성·백테스트 검증 (서비스 연결 보류) | open |
 | [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53) | [구현][1차][P1][NLP] 허용 공지 링크 검색의 오타·띄어쓰기·안전 랭킹 연결 | open |
 
-### 학생 웹·로컬 프로필·공식 문의처
+### 학생 웹·로컬 프로필
 
 | 이슈 | 현재 제목 | 상태 |
 |---|---|---|
@@ -30,7 +30,6 @@
 | [#45](https://github.com/ot4562-glitch/Hanmo_develop/issues/45) | [구현][1차][P1][데이터] 내정보 직접 입력의 로컬 저장·삭제·손상 복구 검증 | open |
 | [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | [구현][1차][P0][통합] 비공식 모의연습→공지 원문 링크·개설 집계 안내 흐름 완성 | open |
 | [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58) | [검증][1차][P1][통합] 비공식 달력·학교 일정 링크·마감 오인 방지 QA | open |
-| [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) | [구현][1차][P1][통합] 학교 문의처 링크 안내·연락처 최신성·접근성 확인 | open |
 
 ### 정적 최소 스냅샷·선택적 Supabase
 
@@ -81,7 +80,7 @@
 | `HMD-006` | [#12](https://github.com/ot4562-glitch/Hanmo_develop/issues/12) | [설계][1차][P1][데이터] WIS 강좌·분반·교수 수동 HTML/CSV 계획 폐기 기록 (HMD-006) | closed |
 | `HMD-007` | [#13](https://github.com/ot4562-glitch/Hanmo_develop/issues/13) | [설계][1차][P1][데이터] 비식별 개설 전망 관측·보류 원칙(행사 전망 보류) (HMD-007) | closed |
 | `HMD-008` | [#14](https://github.com/ot4562-glitch/Hanmo_develop/issues/14) | [설계][1차][P0][데이터] 개인별 학사공지 마감·2건 고정 설계 폐기 기록 (HMD-008) | closed |
-| `HMD-009` | [#15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) | [설계][1차][P1][NLP] 학사 FAQ 근거 검색 설계 폐기·공식 문의처로 대체 (HMD-009) | closed |
+| `HMD-009` | [#15](https://github.com/ot4562-glitch/Hanmo_develop/issues/15) | [설계][1차][P1][NLP] 학사 FAQ 근거 검색 설계 폐기 (HMD-009) | closed |
 | `HMD-010` | [#16](https://github.com/ot4562-glitch/Hanmo_develop/issues/16) | [설계][1차][P2][통합] 교환·국제학생 학사 안내 확장 설계 폐기 기록 (HMD-010) | closed |
 | `HMD-011` | [#17](https://github.com/ot4562-glitch/Hanmo_develop/issues/17) | [설계][1차][P0][데이터] 로컬 환경설정·연습 상태 격리(학생 원장 폐기) (HMD-011) | closed |
 | `HMD-012` | [#18](https://github.com/ot4562-glitch/Hanmo_develop/issues/18) | [설계][2차][P0][통합] 원개발자 포크 개발 동의·시나리오 확장 범위 (HMD-012) | closed |
@@ -125,7 +124,7 @@
 
 ## 사실과 미완료 인수 구분
 
-- **실제로 유지되는 웹:** 홈·BASIC/TIME/SELECT 합성 연습(가상 RECONNECT·CAPACITY 각각 기본 OFF), 학사공지 링크/미연결, 개설 전망/미연결, 달력/공식 원문 링크, 학교 문의처, 내정보/직접 입력. **졸업 준비·학사 FAQ HTML/JS/CSS·학교 로고 파일은 삭제**. Windows Chrome/Edge/NVDA 실기기와 상징물·SVG 전수 감사는 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72), [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73)에서 계속 검증해야 합니다.
+- **실제로 유지되는 웹:** 홈·BASIC/TIME/SELECT 합성 연습(가상 RECONNECT·CAPACITY 각각 기본 OFF), 학사공지 링크/미연결, 개설 전망/미연결, 달력/공식 원문 링크, 내정보/직접 입력. **졸업 준비·학사 FAQ HTML/JS/CSS·학교 로고 파일은 삭제**. Windows Chrome/Edge/NVDA 실기기와 상징물·SVG 전수 감사는 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72), [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73)에서 계속 검증해야 합니다.
 - **병합 확인:** [#117](https://github.com/ot4562-glitch/Hanmo_develop/pull/117) 통합 검색, [#119](https://github.com/ot4562-glitch/Hanmo_develop/pull/119) 공지 후보, [#122](https://github.com/ot4562-glitch/Hanmo_develop/pull/122) 합성 CAPACITY. 이는 실학사 자료 연결/학교 승인·정확도 근거가 아닙니다.
 - **미병합과 상충 범위:** [#118](https://github.com/ot4562-glitch/Hanmo_develop/pull/118) 학사 FAQ, [#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120) 날짜 계산, [#121](https://github.com/ot4562-glitch/Hanmo_develop/pull/121) 학칙 비교 및 Draft [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 운영에 포함되지 않으며, 특히 FAQ/학칙은 서면 범위상 학생 서비스 연결 금지입니다.
 - **코드 이관:** [#100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)·[#102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102)로 TS→JS/JSDoc 이관 완료. 3차 Supabase 실설치를 선행해야 한다는 옛 지시는 폐기, 최종 동등성/PC QA는 [#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101).
