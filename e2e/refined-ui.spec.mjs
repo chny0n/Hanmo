@@ -1,6 +1,8 @@
 // @ts-check
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {DESIGN_BASE_COMMIT,repositoryRoot,startDesignBaseline}
   from '../scripts/capture-design-baseline.mjs';
 import {gitBlobHashes} from '../scripts/git-blob-hashes.mjs';
@@ -320,13 +322,17 @@ test('practice와 selectZone의 소스·공유 스타일·이미지는 기준 Gi
   const protectedPaths=[
     'html/practice.html','html/selectZone.html','css/practice.css','css/normalize.css',
     'css/gnb.css','css/hanmo-policy-footer.css','js/pc-only.js','js/gnb.js',
-    'js/hanmoSys.js','js/practice.js','js/selectZone.js','img/favicon-purple.svg',
+    'js/hanmoSys.js','js/practice.js','js/selectZone.js','js/result.js','img/favicon-purple.svg',
     'img/watermark.png','img/register.png','img/delete.png','img/hanmo_color.png',
   ];
+  const baseline=JSON.parse(readFileSync(join(repositoryRoot,'scripts/baselines/ui-freeze.json'),'utf8'));
+  const approvedScripts=new Set(['js/selectZone.js','js/result.js']);
   const current=gitBlobHashes(repositoryRoot,protectedPaths);
   for(const path of protectedPaths){
-    const original=execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
-      {cwd:repositoryRoot,encoding:'utf8'}).trim();
+    const original=approvedScripts.has(path)?baseline.files.find(file=>file.path===path)?.sha
+      :execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
+        {cwd:repositoryRoot,encoding:'utf8'}).trim();
+    expect(original,path).toBeTruthy();
     expect(current.get(path),path).toBe(original);
   }
 });

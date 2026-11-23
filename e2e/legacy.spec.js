@@ -110,8 +110,11 @@ test('SELECT의 대기 취소 뒤 같은 과목을 Enter로 다시 신청할 수
   await page.locator('button.search').click();
   await expect(page.locator('.waitingCount')).toHaveText('501');
   await page.clock.runFor(4000);
-  const register=page.locator('button.register').first();
-  await register.click();
+  const register=page.getByRole('button',{name:'모의수강신청 과목1 신청'});
+  await page.keyboard.press('Tab');
+  await expect(register).toBeFocused();
+  await expect(register).not.toHaveCSS('outline-style','none');
+  await page.keyboard.press('Enter');
   await expect(page.locator('.waitingCloseBtn')).toBeVisible();
   await page.locator('.waitingCloseBtn').click();
   await expect(register).toBeFocused();
@@ -156,12 +159,13 @@ test('조작한 과목 수가 결과 화면에서 HTML로 해석되지 않는다
     localStorage.setItem('psubjectValue','<img src=x onerror=alert(1)>');
     localStorage.setItem('subjectValue','1');
     localStorage.setItem('TIMEtime','1.25');
-    localStorage.setItem('SELECTtime','2');
+    localStorage.setItem('SELECTtime','손상된 경과 시간');
     localStorage.setItem('SELECTWaitTime','0');
   });
   await page.clock.install({time:safeDate});
   await page.goto('/html/result.html');
   await expect(page.locator('.time p').first()).toContainText('연습한 과목 수 0개');
+  await expect(page.locator('.result p').first()).toContainText('1.250초');
   await expect(page.locator('.time img')).toHaveCount(0);
   await expect(page.locator('.result p span')).toContainText('초');
 });
