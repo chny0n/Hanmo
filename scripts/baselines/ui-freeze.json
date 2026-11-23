@@ -73,7 +73,7 @@
     },
     {
       "path": "html/academic-calendar.html",
-      "sha": "1524a0fc2d17bb51046ab10a27cfb264a3260566"
+      "sha": "5fd76281c8451ea89af73623ddea8d1812565469"
     },
     {
       "path": "html/academic-support.html",
@@ -81,19 +81,19 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "05a546405a2339b39e48eef8ec8e372fcce8b25e"
+      "sha": "6e9dc836e6e35bf0a49a3824fbf5c0d001d6dca4"
     },
     {
       "path": "html/catalog.html",
-      "sha": "866b743dc45229a5fdec8238f3a8cb6c01ac5284"
+      "sha": "538e10c2a4c428c18a731569710f2de2ecc394cc"
     },
     {
       "path": "html/developer.html",
-      "sha": "46135425ef0e5e64d10a768386d5d6e513a0b3b9"
+      "sha": "7a1de620b3a5128ff0d71f4790cfaef57d45458c"
     },
     {
       "path": "html/forecast.html",
-      "sha": "8020b436a91e84c1ffd275e2b996e517c36c9c3b"
+      "sha": "68a7842bf466f0c80efdf41fd276b4d408a679d8"
     },
     {
       "path": "html/incident-404.html",
@@ -105,7 +105,7 @@
     },
     {
       "path": "html/planner.html",
-      "sha": "ddfef41d37a4f7b25c5f41999b5a4f35a2bb687b"
+      "sha": "cf159e402c23a55d748b5985d4e9a69084a28526"
     },
     {
       "path": "html/practice.html",
@@ -113,7 +113,7 @@
     },
     {
       "path": "html/result.html",
-      "sha": "926ab82cc6347db4cac64146555278eb6d4015fd"
+      "sha": "6e46f7bc621ceaa8ebd227fc460a25a4323073a3"
     },
     {
       "path": "html/selectZone.html",
@@ -121,7 +121,7 @@
     },
     {
       "path": "html/vsugang.html",
-      "sha": "f1d9f68bbb5f348f51e1dfeb3db68699dd11d203"
+      "sha": "f5160d929d00a13fdd1cc3569269893bc2174cd7"
     },
     {
       "path": "img/background.svg",
@@ -165,7 +165,7 @@
     },
     {
       "path": "index.html",
-      "sha": "5040694da47c08d0beffdb291efdcff88f48e4dd"
+      "sha": "72b1c5c6569ad1b763387812bc9e525741f21041"
     },
     {
       "path": "js/academic-data-source.js",
