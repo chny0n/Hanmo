@@ -558,8 +558,14 @@ test('practice와 selectZone은 기존 황갈색 메뉴·청색 사용자 패널
  }
 });
 
-test('가상 404의 오류 설명은 적색으로 표시한다',async({page})=>{
+test('가상 404 연습 세션의 오류 설명은 적색으로 표시한다',async({page})=>{
+ await page.addInitScript(()=>{
+  sessionStorage.setItem('hanmo.synthetic404.transition.v3',JSON.stringify({
+   version:3,mode:1,phase:'error',errorAt:Date.now()
+  }));
+ });
  await page.goto('/html/incident-404.html');
+ await expect(page.locator('.hanmo-404-area h2')).toHaveText('404');
  const red=await page.evaluate(()=>[...document.querySelector('.hanmo-404-area').children]
   .map(x=>getComputedStyle(x).color));
  expect(red).toEqual(['rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)']);
