@@ -1,5 +1,7 @@
 # 한모 학생 화면 · 승인 데이터 연결 및 장애 처리 인계
 
+> **2026-11-23 정보처 서면 회신 이후 현재 운영 불가:** [원문](sources/2026-11-23-hufs-information-office-reply.txt) · [아키텍처 §0·§7](architecture.md). 아래의 `notices/offerings/faq`, `instructor`, 원문 기반 근거/학교 규정·개별 강좌 payload 계약은 **옛 설계 및 현행 코드의 설명**일 뿐 허용된 운영 API 계약이 아닙니다. **교수명·수강 관련 정보/FAQ·학칙·졸업요건 금지, 공지 원문/첨부 복제 금지**를 우선 적용하고, 실제 연결 설정은 계속 `mode: disabled`로 유지합니다. 향후 새 데이터 계약/수집 제한/RLS·운영 검증이 완료되어야 수정·교체할 수 있습니다.
+
 **`main` 기준(2026-11-23):** 학생 화면의 과거 참고 공지·합성 강좌 데이터는 제거했습니다. `data/academic-source-config.json`은 `schemaVersion: 1`, `mode: disabled`입니다. 승인 학교 자료와 Supabase 연결은 없습니다. 이 문서는 [브라우저 읽기 계약](architecture.md)을 설명하며 운영 DB 설치 지침이 아닙니다.
 
 ## Supabase Free 실제 연결 전제
