@@ -63,8 +63,8 @@ function getSettingValue(){
 
 function openSettingPanel(){
   settingSection.style.display='flex';
-  psugangInput.value=localStorage.getItem('psubjectValue');
-  vsugangInput.value=localStorage.getItem('subjectValue');
+  psugangInput.value=localStorage.getItem('psubjectValue')??'';
+  vsugangInput.value=localStorage.getItem('subjectValue')??'';
   // 저장된 사용자 선택을 복원하며, 최초 방문은 HTML의 기본값(예/아니오)을 사용한다.
   const storedCourse=localStorage.getItem('waitingValue');
   const storedEntry=localStorage.getItem('waitingEntryValue');
@@ -76,6 +76,10 @@ function openSettingPanel(){
     const choice=document.querySelector('input[name="waitingEntryYN"][value="'+storedEntry+'"]');
     if(choice)choice.checked=true;
   }
+}
+
+function closeSettingPanel(){
+  settingSection.style.display='none';
 }
 
 setValue();

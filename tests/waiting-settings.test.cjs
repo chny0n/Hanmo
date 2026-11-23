@@ -231,3 +231,19 @@ test('접속 대기만 예여도 결과 시간에서 접속 대기 초를 제외
   assert.match(disabled.time,/접속 대기 여부 NO/);
   assert.match(disabled.result,/24\.000초/);
 });
+
+test('원본 설정창의 정수 입력·닫기 동작을 두 대기 옵션과 함께 유지한다',()=>{
+  const html=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
+  assert.match(html,/class='textbox psugangVal' type='number' min='1' max='15' step='1'/);
+  assert.match(html,/class='textbox vsugangVal' type='number' min='1' max='15' step='1'/);
+  assert.match(html,/onsubmit='getSettingValue\(\); return false;'/);
+  assert.match(html,/onclick='closeSettingPanel\(\)'/);
+  const h=settingHarness();
+  h.context.openSettingPanel();
+  h.context.closeSettingPanel();
+  assert.equal(h.widgets.settingSection.style.display,'none');
+  h.widgets.psugangVal.value='1.5';
+  h.context.getSettingValue();
+  assert.equal(h.alerts.length,1);
+  assert.equal(h.localStorage.getItem('psubjectValue'),null);
+});

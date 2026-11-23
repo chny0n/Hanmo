@@ -51,7 +51,7 @@ function renderPracticeCourses(){
       +'<td>'+index+'</td>'
       +'<td><button class="register" onClick="registerClick('+index+')" tabIndex="-1"></button></td>'
       +'<td>연습</td><td>H00000000</td><td></td>'
-      +'<td>한국외국어대학교 모의수강신청'+index+'</td>'
+      +'<td>모의수강신청 과목'+index+'</td>'
       +'<td>1</td><td>1</td>'
       +'<td>Hankuk University of F.S. Professor '+index+'</td>'
       +'<td>월 1 2 3 ( )</td><td>0 / 100</td>'
@@ -232,7 +232,7 @@ function makeRegisteredRow(courseId,position){
   row.setAttribute('id',String(position));
   const texts=[
     String(position),'','연습','H00000000','',
-    syntheticNames.get(courseId)??'한국외국어대학교 모의수강신청'+courseId,'1','1',
+    syntheticNames.get(courseId)??'모의수강신청 과목'+courseId,'1','1',
     'Hankuk University of F.S. Professor '+courseId,
     '월 1 2 3 ( )','0 / 100','','',
   ];
@@ -265,7 +265,7 @@ function done(courseId){
 function saveSugang(courseId){
   showWaiting(false);
   if(rc[courseId-1]===true){
-    alert('201 : 이미 신청된 교과목을 신청하였습니다.\n 다시확인하시고 신청해 주십시오.');
+    alert('이미 신청된 교과목을 신청하였습니다.\n다시 확인하시고 신청해 주십시오.');
     return;
   }
   if(closedCourses.has(courseId))return;
@@ -279,7 +279,7 @@ function saveSugang(courseId){
 /** 인라인 HTML에서 호출된다. 대기열이 진행 중일 때 중복 신청을 막는다. */
 function registerClick(courseId){
   if(closedCourses.has(courseId)||processingRegistrations.has(courseId))return;
-  if(!confirm('한국외국어대학교 모의수강신청'+courseId+'과목을 수강신청 하시겠습니까?'))return;
+  if(!confirm('모의수강신청 과목'+courseId+'을 수강신청 하시겠습니까?'))return;
 
   processingRegistrations.add(courseId);
   if(waitingValue==='yes'){

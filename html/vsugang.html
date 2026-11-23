@@ -14,9 +14,9 @@
 		<title>한모 - 메뉴</title>
 		<meta charset='UTF-8'>
 		<meta name="description" content="학교 공식 서비스가 아닌 한모 수강신청 모의연습">
-		<meta name="keyword" content="한모, 한국외국어대학교 모의수강신청, HUFS, HUFS수강연습, 외대수강연습, HUFS연습, 외대연습, 수강연습, 한국외대, 한국외대 수강신청, 한국외대 수강신청 연습, 수강신청 연습, 한국외국어대학교, 외대, 외대 수강신청, 외대 수강신청 연습, 수강신청, 수강신청 모의연습, 한국외대 수강신청 모의연습, 한국외대 수강신청 연습, 외대 수강신청 모의연습, sugangpractice, vsugangpractice, 한국외국어대학교 수강신청 모의연습">
+		<meta name="keyword" content="한모, HUFS, HUFS수강연습, 외대수강연습, HUFS연습, 외대연습, 수강연습, 한국외대, 한국외대 수강신청, 한국외대 수강신청 연습, 수강신청 연습, 한국외국어대학교, 외대, 외대 수강신청, 외대 수강신청 연습, 수강신청, 수강신청 모의연습, 한국외대 수강신청 모의연습, 한국외대 수강신청 연습, 외대 수강신청 모의연습, sugangpractice, vsugangpractice, 한국외국어대학교 수강신청 모의연습">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-		<link href="../img/hanmo_color.png" rel="shortcut icon" type="image/x-icon">
+		<link href="../img/hanmo_color.png" rel="icon" type="image/png">
 		<link href="../css/gnb.css" rel="stylesheet" type="text/css">
 		<link href="../css/vsugang.css" rel="stylesheet" type="text/css">
 		<link href="../css/layout.css" rel="stylesheet" type="text/css">
@@ -66,32 +66,36 @@
 		<main>
     
 			<section class='settingSection'>
-				<div class='settingPanel'>
-					<ul>
-						관심강좌에 담은 과목 개수
-						<li><input class='textbox psugangVal' type='textbox'></li>
-						수강신청할 과목 개수
-						<li><input class='textbox vsugangVal' type='textbox'></li>
-						'접속 대기 시간' 활성화 여부
-						<li class='waiting-setting-groups'>
-							<fieldset class='waiting-setting-group'>
-								<legend>강의 신청에 적용할까요?</legend>
-								<label><input type='radio' name='waitingCourseYN' value='yes' checked /> 예</label>
-								<label><input type='radio' name='waitingCourseYN' value='no' /> 아니오</label>
-							</fieldset>
-							<fieldset class='waiting-setting-group'>
-								<legend>수강신청 페이지 접속 시에 적용할까요?</legend>
-								<label><input type='radio' name='waitingEntryYN' value='yes' /> 예</label>
-								<label><input type='radio' name='waitingEntryYN' value='no' checked /> 아니오</label>
-							</fieldset>
-						</li>
-					</ul>
-					<button type='button' class='settingButton' onclick='getSettingValue()'>
-						확인
-					</button>
-				</div>
-			</section>
-			<section class='f-dirt-down'>
+        <form class='settingPanel' onsubmit='getSettingValue(); return false;' aria-labelledby='setting-title'>
+          <h2 id='setting-title' class='settingTitle'>연습 설정</h2>
+          <p class='settingDesc'>BASIC·SELECT 모드의 과목 수와 두 대기 조건을 설정합니다.</p>
+          <label class='settingField'>
+            <span class='settingLabel'>관심강좌에 담은 과목 개수</span>
+            <input class='textbox psugangVal' type='number' min='1' max='15' step='1' inputmode='numeric' required>
+          </label>
+          <label class='settingField'>
+            <span class='settingLabel'>수강신청할 과목 개수</span>
+            <input class='textbox vsugangVal' type='number' min='1' max='15' step='1' inputmode='numeric' required>
+          </label>
+          <div class='waiting-setting-groups'>
+            <fieldset class='waiting-setting-group'>
+              <legend>강의 신청에 적용할까요?</legend>
+              <label><input type='radio' name='waitingCourseYN' value='yes' checked /> 예</label>
+              <label><input type='radio' name='waitingCourseYN' value='no' /> 아니오</label>
+            </fieldset>
+            <fieldset class='waiting-setting-group'>
+              <legend>수강신청 페이지 접속 시에 적용할까요?</legend>
+              <label><input type='radio' name='waitingEntryYN' value='yes' /> 예</label>
+              <label><input type='radio' name='waitingEntryYN' value='no' checked /> 아니오</label>
+            </fieldset>
+          </div>
+          <div class='settingActions'>
+            <button type='button' class='settingCancel' onclick='closeSettingPanel()'>닫기</button>
+            <button type='submit' class='settingButton'>확인</button>
+          </div>
+        </form>
+      </section>
+      <section class='f-dirt-down'>
 				<section class='titleContainer' onclick='location.href='../index.html''>
 					<h1><span class='title'></span> 한모 · 비공식 모의수강신청</h1>
 					<div class='hanmo'>
@@ -163,12 +167,6 @@
   </form>
 </dialog>
 
-			<section class='f-dirt-up'>
-				<section class='adfit'>
-					<ins class="kakao_ad_area" style="display:none;" data-ad-unit = "DAN-b3RfXepcKF3cMeyf" data-ad-width = "728" data-ad-height = "90"></ins>
-					<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
-				</section>
-			</section>
 		</main>
 		<script src="../js/vsugang.js"></script>
 		<script src="../js/gnb.js"></script>

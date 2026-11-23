@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "현행 보호 UI 파일별 SHA. 2026-11-23 메뉴명·페이지 표제 일치, 학업 화면 공통 구분선 아래 여백 정렬, 공식 부서 연락처 안내 확대, Contributor 3명 추가를 사용자 요청에 맞춰 반영. 수집 OFF·학교 비공식 고지·모의신청 동작은 보호.",
+  "purpose": "현행 보호 UI 파일별 SHA. 원본 dlacked/Hanmo f02bdd2의 비공식 브랜딩·광고 제거·정수 입력 방식과 개발판 독립 대기·돌발상황을 선택적으로 통합. 별도 보호된 practice.html·css/vsugang.css는 유지하고 정책·회귀 검증을 적용.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -45,7 +45,7 @@
     },
     {
       "path": "css/home-fit.css",
-      "sha": "f8a48ace466de9849244b4fa0359f1f1d40666bc"
+      "sha": "55278509ba34cc5b9085eda4e299814e03942aab"
     },
     {
       "path": "css/incident-404.css",
@@ -53,7 +53,7 @@
     },
     {
       "path": "css/index.css",
-      "sha": "392c0a09571c5bc393ac3bd15c4fe4801aa02abf"
+      "sha": "920d9b86936a3e687c57dca56de3abfd1b2e8ee4"
     },
     {
       "path": "css/layout.css",
@@ -65,7 +65,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "a8e7c84689f43eee09e5e448f9ea032f382a80bc"
+      "sha": "0f564fe7b5c9d10d62520dfee316922f51da104d"
     },
     {
       "path": "css/result.css",
@@ -77,7 +77,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "6053e74db3c1d180d3b0d5b92d4a97637b4ccbf0"
+      "sha": "2334bd320203ddc3ac29547c73dc3e1bcf685b89"
     },
     {
       "path": "css/vsugang.css",
@@ -101,7 +101,7 @@
     },
     {
       "path": "html/developer.html",
-      "sha": "2c178ba7bf6282ef7ec1d64252480df19355b77f"
+      "sha": "45318be1575a9821e910585f722cd72bdd38ff7c"
     },
     {
       "path": "html/forecast.html",
@@ -125,19 +125,19 @@
     },
     {
       "path": "html/result.html",
-      "sha": "5dadba026ecf57f02182e1ff464f8c3579c27dc4"
+      "sha": "70355c7b505addce94d354c751ed7e879e0cc5ca"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "912aa80db2b6af388dc447d34d2330034d5b3d75"
+      "sha": "aee6e4907249d36c1f1c9c6b4b8c79572474b386"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "e94e0813810361cc1017d965a3464359cd7dff52"
+      "sha": "afee740eb1f0b64064b8b03d944fb06d12786354"
     },
     {
       "path": "img/background.svg",
-      "sha": "1812812bc0d1ffb1604c5db7aecb5e3796ab0bca"
+      "sha": "e140b96cd30dd19cde039c60f30bc744a9b0a0d7"
     },
     {
       "path": "img/delete.png",
@@ -157,7 +157,7 @@
     },
     {
       "path": "img/hanmo_color.png",
-      "sha": "baeb2dba7e23393844da368d51e6deb4b791fcb7"
+      "sha": "3c7c89224e277953f624750c26d4e03ec6ffd9b6"
     },
     {
       "path": "img/hanmo_white.svg",
@@ -173,11 +173,11 @@
     },
     {
       "path": "img/watermark.png",
-      "sha": "3ee0a229438e94ffeb8b4566af293c6105409765"
+      "sha": "f4b7483d69d58422d05592ce110603aa74bfc718"
     },
     {
       "path": "index.html",
-      "sha": "2795e37b880d1de564c72f1c540d89cee96004d4"
+      "sha": "a0aada028c70eb91cbbc3f5ce11201bde4a87325"
     },
     {
       "path": "js/academic-data-source.js",
@@ -201,7 +201,7 @@
     },
     {
       "path": "js/home-fit.js",
-      "sha": "ad8c8b40ce608798ea0ae3369822b7fbf2cd4375"
+      "sha": "4e5f2da707f8a9f45ae09ad10209be302178811f"
     },
     {
       "path": "js/incident-404.js",
@@ -209,7 +209,7 @@
     },
     {
       "path": "js/index.js",
-      "sha": "f543e39059e2e650ad5ccff39b11680f90164357"
+      "sha": "83961396f353ceebed45025cbed13a100ff86ace"
     },
     {
       "path": "js/pc-only.js",
@@ -229,7 +229,7 @@
     },
     {
       "path": "js/selectZone.js",
-      "sha": "42448419491c866ea43c6d11a084001bece87d78"
+      "sha": "7c8d4ca8c4f18f1159c19fb0d576dd3a3471c2f3"
     },
     {
       "path": "js/student-catalog.js",
@@ -249,11 +249,11 @@
     },
     {
       "path": "js/vsugang-fit.js",
-      "sha": "b757906ec1014393c5506185e6c46e0458a73d0a"
+      "sha": "85ab95d5d8f38f1ea2a3ad354e8dc07e2ef9ce52"
     },
     {
       "path": "js/vsugang.js",
-      "sha": "f1600cffd02276cc41d0a5c261d90fcec8088b3c"
+      "sha": "5353fb9251a2d8ac94585007d4c6cb8983afef22"
     }
   ],
   "policyRevision": "2026-11-23-hufs-written-restrictions"

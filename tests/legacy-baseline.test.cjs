@@ -289,7 +289,7 @@ test('registered row keeps 13 columns and safe display text',()=>{
   h.expr('registerClick(1)');
   assert.equal(h.get('done').children[0].children.length,13);
   assert.equal(h.get('done').children[0].children[5].textContent,
-    '한국외국어대학교 모의수강신청1');
+    '모의수강신청 과목1');
 });
 test('queue cancellation keeps a simulated course available for retry',async()=>{
   const h=createHarness({practiceSetter:3,psubjectValue:2,subjectValue:2,waitingValue:'yes'});
