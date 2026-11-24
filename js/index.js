@@ -5,9 +5,6 @@ const $GANEUNG = document.getElementsByClassName('ganeung')[0];
 const $JEHAN = document.getElementsByClassName('jehan')[0];
 const title = document.getElementsByClassName('title')[0];
 
-const $TITLECONTAINER = document.getElementsByClassName('titleContainer')[0];
-const $CONTAINER = document.getElementsByClassName('container')[0];
-const $PHONECONTAINER = document.getElementsByClassName('phoneContainer')[0];
 
 const nowTime = new Date();
 
@@ -31,13 +28,6 @@ const setNotice = setInterval(() => {
 }, 5000);
 
 check = () => {
-	if(localStorage.getItem('deviceInfo') === 'false'){
-		//다 안 보여주고 알림만 보여주기
-		$CONTAINER.style.display = 'none';
-		$TITLECONTAINER.style.display = 'none';
-		$PHONECONTAINER.style.display = 'flex';
-	} 
-	
 	//if(true){
 	//if ((nowTime.getHours() === 20 && nowTime.getMinutes() >= 58) || (nowTime.getHours() === 21 && nowTime.getMinutes() <= 10)){
 	if ((nowTime.getHours() === 9 && nowTime.getMinutes() >= 58) || (nowTime.getHours() === 10 && nowTime.getMinutes() <= 10)){

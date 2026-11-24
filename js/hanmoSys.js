@@ -1,10 +1,10 @@
-/*index.html은 index.js에서 환경 체킹함*/
 const now = new Date();
 
 const title = document.getElementsByClassName('title')[0];
 
 restrictHanmo = () => {
-	if (((now.getHours() === 9 && now.getMinutes() >= 58) || (now.getHours() === 10 && now.getMinutes() <= 10)) || localStorage.getItem('deviceInfo') === 'false'){
+	if (window.HANMO_EXITING) return; // 모바일 나가기 진행 중 (mobileExit.js)
+	if (((now.getHours() === 9 && now.getMinutes() >= 58) || (now.getHours() === 10 && now.getMinutes() <= 10))){
 		location.href = '/';
 	}
 }

@@ -42,26 +42,3 @@ header{
 li > span {
 	margin-right: 50px;
 }
-
-.deviceCheck{
-	top: -45px;
-	width: 100%;
-	background: #333333;
-	font-size: 18px;
-	height: 40px;
-	font-weight: bold;
-	transition: 1s;
-	overflow: hidden;
-}
-
-.deviceCheck ul {
-	position: relative;
-	height: 0px;
-	transition: 1s;
-	bottom: 106px;
-	text-align: center;
-}
-
-.deviceCheck ul li{
-	margin: 30px 0px;
-}
