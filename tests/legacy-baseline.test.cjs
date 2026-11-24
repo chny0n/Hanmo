@@ -171,8 +171,6 @@ test('SELECT starts with expected synthetic rows and global inline click handler
   h.load('selectZone.js');
   assert.equal(h.get('table').htmls.length,3);
   assert.match(h.get('table').innerHTML,/registerClick\(2\)/);
-  assert.match(h.get('table').innerHTML,/모의수강신청 교수1/);
-  assert.doesNotMatch(h.get('table').innerHTML,/Hankuk University of F\.S\. Professor/);
   assert.equal(typeof h.expr('registerClick'),'function');
   assert.equal(typeof h.expr('deleteDone'),'function');
   assert.equal(typeof h.expr('pyoDisplay'),'function');

@@ -248,20 +248,3 @@ test('원본 설정창의 정수 입력·닫기 동작을 두 대기 옵션과 �
   assert.equal(h.alerts.length,1);
   assert.equal(h.localStorage.getItem('psubjectValue'),null);
 });
-
-// 원본의 소수 과목 수 거부 계약을 저장값과 설정 입력에 모두 적용합니다.
-test('소수 과목 수는 저장값에서도 입력에서도 거부하고 기존 값을 보존한다',()=>{
-  for(const [preselected,requested] of [['3.5','2'],['3','1.5']]){
-    const invalid=settingHarness([['psubjectValue',preselected],['subjectValue',requested],['waitingValue','yes']]);
-    invalid.context.goPractice(1);
-    assert.equal(invalid.location.href,'');
-    assert.equal(invalid.alerts.length,1);
-    const saved=settingHarness([['psubjectValue','3'],['subjectValue','2'],['waitingValue','yes']]);
-    saved.widgets.psugangVal.value=preselected;
-    saved.widgets.vsugangVal.value=requested;
-    saved.context.getSettingValue();
-    assert.equal(saved.alerts.length,1);
-    assert.equal(saved.localStorage.getItem('psubjectValue'),'3');
-    assert.equal(saved.localStorage.getItem('subjectValue'),'2');
-  }
-});

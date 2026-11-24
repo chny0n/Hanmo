@@ -141,8 +141,6 @@
 
 ## 6. 기존 모의수강신청 계약 (2차)
 
-**원본 동기화 (2026-11-24):** [chny0n/Hanmo](https://github.com/chny0n/Hanmo)의 [비공식 UI 변경](https://github.com/chny0n/Hanmo/commit/f02bdd2d8e20ed022360f838df0ca17b4bafbbe1)과 [정수 과목 수 검증](https://github.com/chny0n/Hanmo/commit/90a511c86429b2971561c6b8fac512692b17cb7c)을 기준으로, 남색 메뉴·사용자 영역·연습 배지·새 로고/워터마크·가상 교수명 및 연습 광고 제거를 반영합니다. 원본의 깜빡이는 고지 대신 기존 포크의 단일 하단 고지와 상시 표시 배지를 사용하며 독립된 두 대기 설정, 포커스·고배율 보호를 유지합니다. [원본 사이트맵 갱신](https://github.com/chny0n/Hanmo/commit/7b694ea3161485951f127da559aaa8c71bc8a86f)은 원본 도메인 이전이며, 포크는 `https://ot4562-glitch.github.io/Hanmo_develop/` 전용 공개 대표 페이지 사이트맵을 유지합니다. 호환용 forecast 리다이렉트와 세션 화면은 제외하며 원본 CNAME을 가져오지 않습니다.
-
 - BASIC/TIME/SELECT의 핵심 연습/결과 흐름을 원작 기준으로 보호.
 - `RECONNECT`: BASIC에서 선택적으로 가상 404를 1회 띄우고 사용자의 **실제 브라우저 새로고침**으로 복구. 뒤로가기/학교 실서버 복구와 다름.
 - `CAPACITY`: BASIC의 가상 한 과목을 마감 처리하고 **합성** 전공/교양/기초 후보 검색 연습. 학교 정원·실수강·시간 충돌 데이터와 무관.

@@ -5,10 +5,10 @@ body.hanmo-synthetic-404 .navigation{flex-shrink:0}
 body.hanmo-synthetic-404 .navigation .navButton{pointer-events:none;user-select:none}
 body.hanmo-synthetic-404 .navigation button,
 body.hanmo-synthetic-404 .navigation button:hover{
-  background-color:#06111c;color:#fff;cursor:default;opacity:1
+  background-color:#977955;color:#fff;cursor:default;opacity:1
 }
 body.hanmo-synthetic-404 .navigation .noticeButton,
-body.hanmo-synthetic-404 .navigation .noticeButton:hover{background:#2a3644}
+body.hanmo-synthetic-404 .navigation .noticeButton:hover{background:#818181}
 body.hanmo-synthetic-404 .hanmo-404-area{
   display:flex;flex:1;min-width:0;flex-direction:column;
   justify-content:center;align-items:center;gap:16px;

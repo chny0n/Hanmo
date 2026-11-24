@@ -46,14 +46,13 @@
 			</section>
 		</header>
         <main class="half"> <!--메뉴(왼쪽)와 정보(오른쪽) 나눔(display: grid)-->
-            <section class="navigation"> <!--왼쪽 메뉴: 사용자 정보와 연습 탐색 메뉴-->
-                <div class="userInfo">
+            <section class="navigation"> <!--화면의 왼쪽 메뉴에 해당, HUFS Blue(위)과 HUFS GOLD(아래) 나눔(display: grid)-->
+                <div class="userInfo"> <!--HUFS Blue-->
 				<h1><span class='title'></span> 모의수강신청</h1>
                 
 					<p class='practiceMode'></p>
-                    <p class='practiceBadge'>모의수강신청 중<small>실제 수강신청 시스템이 아니에요</small></p>
                 </div>
-                <div class="navButton">
+                <div class="navButton"> <!--HUFS GOLD부분-->
                     <button onclick="location.href='vsugang.html'">메인 페이지</button>
                     <button class="noticeButton" onclick="location.href='#'">Notice</button>
                     <button class="sugang" onclick="location.href='selectZone.html'">수강신청 및 수정/삭제</button>
@@ -68,6 +67,13 @@
 						<div class = "timer"><span id="hours">--:--:--</span></div>
 					</div>
 					<p class='alert'>※이 화면은 실제 신청이 아닌 합성 연습입니다.</p>
+					<p class='alert'>※사용자 개인의 실수로 인해 발생한 문제는 개발자가 책임을 지지 않습니다.</p>
+				</section>
+				<section class='f-dirt-up'>
+					<div>
+						<ins class="kakao_ad_area" style="display:none;" data-ad-unit = "DAN-b3RfXepcKF3cMeyf" data-ad-width = "728" data-ad-height = "90"></ins>
+						<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+					</div>
 				</section>
             </section>
         </main>
