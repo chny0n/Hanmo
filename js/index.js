@@ -58,5 +58,21 @@ setSemester = () => {
 }
 
 
+/*훕또기 배너 노출 종료일 (이 날짜까지 보이고, 다음 날 0시부터 숨김)*/
+const BOO_BANNER_END = new Date(2026, 11, 31); // 2026-12-31 (월은 0부터 시작)
+
+setBooBanner = () => {
+	const $BOOBANNER = document.querySelector('.subNotice');
+	if (!$BOOBANNER) return;
+
+	const hideFrom = new Date(BOO_BANNER_END);
+	hideFrom.setDate(hideFrom.getDate() + 1);
+
+	if (nowTime >= hideFrom) {
+		$BOOBANNER.remove();
+	}
+}
+
 setSemester();
+setBooBanner();
 check();
