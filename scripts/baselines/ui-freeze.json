@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호.",
+  "purpose": "원본 chny0n/Hanmo의 비공식 연습 화면 색상·배지·로고·워터마크 동기화. 개발 버전의 기존 기능, 제목 구분선·독립 대기·하단 고지·모의신청 계산을 보호.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -57,7 +57,7 @@
     },
     {
       "path": "css/incident-404.css",
-      "sha": "627f42e67124d1f1f656c876265741259a7606e1"
+      "sha": "c681a96f8552cf6669de50b1bbbddf6ba3cd4f6f"
     },
     {
       "path": "css/index.css",
@@ -73,7 +73,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "a07e1630ffbd8fa7f67beaa9963b7eb81f57a2de"
+      "sha": "44c799081369fe29672a1b5ff00c9831ed07a254"
     },
     {
       "path": "css/result.css",
@@ -109,7 +109,7 @@
     },
     {
       "path": "html/incident-404.html",
-      "sha": "0d9837982d528694b2b465e543759f199a714eda"
+      "sha": "96d1ed2dc1e88f18f0d781e2215f7f9043aeb30e"
     },
     {
       "path": "html/pc-only.html",
@@ -121,7 +121,7 @@
     },
     {
       "path": "html/practice.html",
-      "sha": "d1e5dea37b110ca7002c95629463ab577f090023"
+      "sha": "6bc44c282e88ba4a2f31c9510986d40d90a1a548"
     },
     {
       "path": "html/reaction-test.html",
@@ -137,7 +137,7 @@
     },
     {
       "path": "html/selectZone.html",
-      "sha": "9c3497be93620f3fba62168d209ee3a7b3c07b60"
+      "sha": "ebdd01c3f08b8902eabc4979665a13f9448ec04e"
     },
     {
       "path": "html/strategy-lab.html",
@@ -160,20 +160,12 @@
       "sha": "0abea4990b3037494f11dbd8f7fca64522dfaffd"
     },
     {
-      "path": "img/dlacked.svg",
-      "sha": "20d966eda51b5652654f691650ae500190441b85"
-    },
-    {
-      "path": "img/dlackedLogo.svg",
-      "sha": "c5c65390cfe101bb8ce6fab39152800493c65838"
-    },
-    {
       "path": "img/favicon-purple.svg",
       "sha": "8b5c097a6bb8d2a76d8e1bac46d730ffd4919f7f"
     },
     {
       "path": "img/hanmo_color.png",
-      "sha": "baeb2dba7e23393844da368d51e6deb4b791fcb7"
+      "sha": "3c7c89224e277953f624750c26d4e03ec6ffd9b6"
     },
     {
       "path": "img/hanmo_purple.png",
@@ -213,7 +205,7 @@
     },
     {
       "path": "img/watermark.png",
-      "sha": "3ee0a229438e94ffeb8b4566af293c6105409765"
+      "sha": "f4b7483d69d58422d05592ce110603aa74bfc718"
     },
     {
       "path": "index.html",
@@ -269,7 +261,7 @@
     },
     {
       "path": "js/selectZone.js",
-      "sha": "671b6aeb56df29e41122658305663560efc36861"
+      "sha": "2e5b3fa613b0725e110fb0bcc65ed43912dd4746"
     },
     {
       "path": "js/student-catalog.js",
@@ -296,5 +288,5 @@
       "sha": "de143d3e416de633074530694f6507b9c4b8fdac"
     }
   ],
-  "policyRevision": "2026-11-23-hufs-written-restrictions"
+  "policyRevision": "2026-11-24-upstream-7b694ea"
 }

@@ -69,7 +69,7 @@ for(const name of [
  'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-forecast.js','js/student-entry.js','data/academic-source-config.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);
 for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
- 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','img/hufs_logo.png'])
+ 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','img/hufs_logo.png','img/dlacked.svg','img/dlackedLogo.svg'])
  if(await exists(join(dist,banned)))throw Error('Disallowed web artifact: '+banned);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into QA artifact');
 const rootEntries=await readdir(dist);

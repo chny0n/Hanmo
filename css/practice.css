@@ -18,7 +18,7 @@ body {
 .navigation {
 	display: flex;
 	flex-direction: column;
-	background-color: #977955;
+	background-color: #06111c;
 	height: 100%;
 	font-size: 13.4px;
 	letter-spacing: 0px;
@@ -28,7 +28,8 @@ body {
 }
 
 .userInfo {
-	background-color: #002d56;
+	background-color: #1c2d40;
+	color: #ffffff;
 	padding-left: 10px;
 	height: 218px;
 }
@@ -38,7 +39,7 @@ button {
   height: 35px;
   padding-left: 10px;
   text-align: left;
-  background-color: #977955;
+  background-color: #b8862b;
   color: white;
   border-style: hidden;
   font-family: 굴림;
@@ -47,7 +48,7 @@ button {
 }
 
 button:hover {
-  background-color: #826648;
+  background-color: #9c7124;
 }
 
 .noticeButton {
@@ -67,6 +68,36 @@ button:hover {
   /*좌측 메뉴 Notice버튼 hover*/
   background-color: #5d5d5d;
 }
+
+/* 원본의 비공식 연습 배지와 한모 색상으로 좌측 메뉴를 구분합니다. */
+.practiceBadge {
+  display: block;
+  width: fit-content;
+  margin: 8px auto 0;
+  position: relative;
+  left: -5px;
+  padding: 6px 12px;
+  border: 2px solid #ffd27a;
+  border-radius: 6px;
+  color: #ffd27a;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-align: center;
+}
+.practiceBadge small {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #ffffff;
+}
+/* 항상 읽을 수 있는 배지를 유지하고 기존 하단 고지를 가리지 않습니다. */
+.navButton button { background-color: #06111c; border-bottom: 1px solid #1b2a3a; }
+.navButton button:hover { background-color: #13263a; }
+.navButton .noticeButton { background-color: #2a3644; }
+.navButton .noticeButton:hover { background-color: #364352; }
+.navButton button:focus-visible { outline: 2px solid #ffd27a; outline-offset: -2px; }
 
 p {
   margin: 0;
@@ -298,10 +329,8 @@ th {
 }
 
 .waitingLogo {
-	width: 56px;
-	height: 56px;
-	border-radius: 50%;
-	object-fit: cover;
+	width: 44px;
+	height: auto;
 	margin-bottom: 10px;
 }
 
@@ -442,7 +471,7 @@ th {
  #course-mode-nav .menu-extra select{max-width:190px}
 }
 
-/* 원본의 황갈색 메뉴·파란색 사용자 영역은 그대로 두고 배치 회귀만 고칩니다. */
+/* 원본의 신청 표 배치와 검색 전후 좌표 계약을 유지합니다. */
 .course-warning-slot {
   box-sizing: border-box;
   display: flex;

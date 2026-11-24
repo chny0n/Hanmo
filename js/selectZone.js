@@ -54,7 +54,7 @@ function renderPracticeCourses(){
       +'<td>연습</td><td>H00000000</td><td></td>'
       +'<td>모의수강신청 과목'+index+'</td>'
       +'<td>1</td><td>1</td>'
-      +'<td>Hankuk University of F.S. Professor '+index+'</td>'
+      +'<td>모의수강신청 교수'+index+'</td>'
       +'<td>월 1 2 3 ( )</td><td>0 / 100</td>'
       +'<td><input type="checkbox"></td><td></td></tr>');
   }
@@ -235,7 +235,7 @@ function makeRegisteredRow(courseId,position){
   const texts=[
     String(position),'','연습','H00000000','',
     syntheticNames.get(courseId)??'모의수강신청 과목'+courseId,'1','1',
-    'Hankuk University of F.S. Professor '+courseId,
+    '모의수강신청 교수'+courseId,
     '월 1 2 3 ( )','0 / 100','','',
   ];
   for(let col=0;col<texts.length;col++){

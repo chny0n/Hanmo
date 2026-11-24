@@ -543,7 +543,7 @@ test('Search 버튼 실행 전후 안내·상단 바·신청 완료 표가 화�
  for(const key of Object.keys(before))expect(Math.abs(before[key]-general[key]),'general '+key).toBeLessThanOrEqual(1);
 });
 
-test('practice와 selectZone은 기존 황갈색 메뉴·청색 사용자 패널을 유지한다',async({page})=>{
+test('practice와 selectZone은 원본의 비공식 연습 색상과 배지를 사용한다',async({page})=>{
  for(const path of ['/html/practice.html','/html/selectZone.html']){
   await page.goto(path);
   const colors=await page.evaluate(()=>({
@@ -551,10 +551,12 @@ test('practice와 selectZone은 기존 황갈색 메뉴·청색 사용자 패널
    user:getComputedStyle(document.querySelector('.userInfo')).backgroundColor,
    button:getComputedStyle(document.querySelector('.navButton button')).backgroundColor
   }));
-  expect(colors.nav,path).toBe('rgb(151, 121, 85)');
-  expect(colors.user,path).toBe('rgb(0, 45, 86)');
-  expect(colors.button,path).toBe('rgb(151, 121, 85)');
-  await expect(page.locator('.practiceBadge')).toHaveCount(0);
+  expect(colors.nav,path).toBe('rgb(6, 17, 28)');
+  expect(colors.user,path).toBe('rgb(28, 45, 64)');
+  expect(colors.button,path).toBe('rgb(6, 17, 28)');
+  await expect(page.locator('.practiceBadge')).toBeVisible();
+  await expect(page.locator('.practiceBadge')).toContainText('실제 수강신청 시스템이 아니에요');
+  await expect(page.locator('.kakao_ad_area')).toHaveCount(0);
  }
 });
 
