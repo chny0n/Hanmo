@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,syntheticRate} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -9,24 +9,26 @@ const input=()=>({
     {id:'C',name:'가상 C',rank:3,capacity:20,rivals:30},
   ],
 });
-test('시드가 같으면 최적 신청 순서와 가상 성공 빈도가 같다',()=>{
+test('시드가 같으면 최적 신청 순서와 가상 성공 확률이 같다',()=>{
   assert.deepEqual(simulate(input()),simulate(input()));
 });
 test('가상 결과와 순서는 범위 및 과목 개수를 준수한다',()=>{
   const r=simulate(input());
   assert.equal(r.order.length,3);
-  assert.ok(r.allRate>=0&&r.allRate<=100);
+  assert.ok(Number.isInteger(r.allWins)&&r.allWins>=0&&r.allWins<=r.trials);
   assert.ok(r.meanScore>=0&&r.meanScore<=100);
   assert.equal(r.model,'SYNTHETIC_ONLY');
 });
-test('가상 정원이 충분하면 모든 과목 성공 빈도는 100%다',()=>{
+test('가상 정원이 충분하면 모든 과목 성공 확률은 100%다',()=>{
   const s=input();
   s.courses.forEach(c=>{c.capacity=50;c.rivals=1;});
-  assert.equal(simulate(s).allRate,100);
+  const result=simulate(s);
+  assert.equal(result.allWins,s.trials);
+  assert.equal(result.guaranteed,true);
 });
 test('경쟁자가 없으면 모든 과목에 성공한다',()=>{
   const s=input();s.courses.forEach(c=>{c.rivals=0;});
-  assert.equal(simulate(s).allRate,100);
+  assert.equal(simulate(s).allWins,s.trials);
 });
 test('1이 가장 높은 중요 순위이고 중복 순위를 거부한다',()=>{
   const s=input();s.courses[2].rank=1;
@@ -35,7 +37,6 @@ test('1이 가장 높은 중요 순위이고 중복 순위를 거부한다',()=>
 test('사용자 도착률/수동순서 입력 없이 유효한 전략을 계산한다',()=>{
   const s=input();
   assert.ok(s.courses.every(c=>!('rate' in c)&&!('manualOrder' in c)));
-  assert.ok(syntheticRate(0)>0);
   assert.equal(bestOrder([3,2],[[1,.5],[.8,.7]]).length,2);
 });
 test('정수·표본 범위 검증을 유지한다',()=>{
@@ -51,20 +52,36 @@ test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
   limit.courses[0].capacity=301;
   assert.throws(()=>validateScenario(limit),{name:'RangeError',message:'정원 입력값을 확인하세요.'});
 });
-test('행동시간이 고정이고 정원이 1이면 선착순 성공 확률을 해석식과 비교할 수 있다',()=>{
-  const s={...input(),startDelayMs:0,actionMs:500,jitterMs:0};
-  s.courses=s.courses.slice(0,2);
-  s.courses.forEach((course,i)=>Object.assign(course,{capacity:1,rivals:i+2}));
-  const result=simulate(s);
-  const exponent=result.ranks.reduce((sum,rank,slot)=>
-    sum+syntheticRate(rank-1)*s.courses[rank-1].rivals*(slot+1)*.5,0);
-  assert.ok(Math.abs(result.allRate-100*Math.exp(-exponent))<1e-9);
-  assert.ok(Math.abs(result.sensitivity.faster-100*Math.exp(-1.25*exponent))<1e-9);
-  assert.ok(Math.abs(result.sensitivity.slower-100*Math.exp(-.75*exponent))<1e-9);
+test('경쟁자는 입력 목록 밖의 과목을 먼저 신청할 수 있고 최대 8과목을 선택한다',()=>{
+  const draws=[.99,.4,.7,.9,.8,.7,.8,.7,.8];
+  const order=rivalOrder([0],[1],()=>draws.shift());
+  assert.equal(order.length,8);
+  assert.equal(order.at(-1).course,0);
+  assert.equal(order.filter(({course})=>course<0).length,7);
 });
-test('가상 정원이 증가할수록 최적 기대점수가 높아지며 경쟁자가 증가하면 낮아진다',()=>{
+test('같은 난수에서 정원 대비 경쟁자가 많아지면 해당 과목이 앞설 수 있다',()=>{
+  const order=capacity=>{
+    const weights=[urgencyWeight({capacity,rivals:50}),urgencyWeight({capacity:20,rivals:50})];
+    const draws=[0,.2,.5];
+    return rivalOrder([0,1],weights,()=>draws.shift()).map(({course})=>course);
+  };
+  assert.deepEqual(order(20),[1,0]);
+  assert.deepEqual(order(1),[0,1]);
+});
+test('같은 순서의 전체 성공 횟수는 입력 행 순서와 무관하고 경쟁자 중복 가정에 반응한다',()=>{
+  const s={...input(),trials:1000,startDelayMs:0,actionMs:580,jitterMs:60};
+  s.courses[2].rivals=50;
+  const result=simulate(s);
+  assert.equal(result.guaranteed,false);
+  assert.ok(result.allWins>0&&result.allWins<s.trials);
+  assert.notEqual(result.sensitivity.lessOverlap,result.sensitivity.moreOverlap);
+  assert.deepEqual(simulate({...s,courses:[...s.courses].reverse()}),result);
+});
+test('한 과목만 경합할 때 정원이 증가하면 최적 기대점수가 낮아지지 않는다',()=>{
   const s=input();
   s.courses[0].rivals=200;
+  s.courses[1].capacity=300;
+  s.courses[2].capacity=300;
   let previous=-1;
   for(const capacity of [1,50,51,200,201,300]){
     s.courses[0].capacity=capacity;

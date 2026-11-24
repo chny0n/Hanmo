@@ -125,11 +125,16 @@ if(form){
       active.terminate();worker=null;busy(false);
       if(message.type==='error'){status.textContent=message.message;return;}
       const r=message.result;
-      const percent=value=>value.toFixed(1)+'%';
+      const outcome=wins=>{
+        if(r.guaranteed)return '100%';
+        if(wins===0)return '성공 미관측';
+        if(wins===r.trials)return '실패 미관측';
+        return (100*wins/r.trials).toFixed(1)+'%';
+      };
       recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
-        ' · 모형에서 전체 성공 추정 '+percent(r.allRate);
-      setup.textContent='이 순서에서 경쟁자 도착률을 기준보다 25% 높이거나 낮추면 전체 성공 추정은 '+
-        percent(r.sensitivity.faster)+'~'+percent(r.sensitivity.slower)+'입니다. 실험 시드 '+r.seed+'.';
+        ' · 전체 성공률 '+outcome(r.allWins)+' (경쟁자 중복 기준)';
+      setup.textContent='같은 순서에서 경쟁자 중복이 적을 때 '+outcome(r.sensitivity.lessOverlap)+
+        ' · 많을 때 '+outcome(r.sensitivity.moreOverlap)+' · 실험 시드 '+r.seed;
       result.hidden=false;inputPanel.hidden=true;
       redo.focus({preventScroll:true});
     });

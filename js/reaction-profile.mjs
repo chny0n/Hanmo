@@ -2,6 +2,7 @@
 // 시각 신호 뒤의 사용자 반응시간만 저장하며 개인식별값이나 학교 자료는 처리하지 않습니다.
 export const REACTION_KEY='hanmo.reaction.profile.v1';
 export const REACTION_COUNT=8;
+export const DIRECT_SUBMIT_MS=380;
 export function percentile(values,ratio){
   if(!Array.isArray(values)||!values.length||values.some(x=>!Number.isFinite(x)||x<0))throw new RangeError('반응 표본이 잘못되었습니다.');
   const sorted=[...values].sort((a,b)=>a-b);
@@ -32,8 +33,8 @@ export function deriveActionTimes(profile){
   if(!profile)throw new RangeError('반응속도 측정을 먼저 완료하세요.');
   // 반응 시간에서 가상 선택·확인 동작에 필요한 여유를 더합니다. 실제 서버 지연 추정은 아닙니다.
   return {
-    startDelayMs:Math.round(Math.min(5000,Math.max(0,profile.medianMs*.6))),
-    actionMs:Math.round(Math.min(3000,Math.max(300,profile.medianMs+380))),
+    startDelayMs:0,
+    actionMs:Math.min(3000,profile.medianMs+DIRECT_SUBMIT_MS),
     jitterMs:Math.round(Math.min(1500,Math.max(40,profile.variationMs))),
   };
 }
