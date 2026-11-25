@@ -27,10 +27,68 @@ export function networkStats(latencies,downloadSamples,failures){
     median:valid.length?percentile(valid,.5):null,
     jitter:adjacent.length?percentile(adjacent,.5):null,
     mbps:downloadSamples.length?percentile(downloadSamples,.5):null,
-    failures,latencyCount:valid.length,downloadCount:downloadSamples.length,
+    failures,latencyCount:valid.length,jitterCount:adjacent.length,downloadCount:downloadSamples.length,
     excluded:latencies.length+DOWNLOAD_REQUESTS-valid.length-downloadSamples.length-failures,
   };
 }
+/** @typedef {'A'|'B'|'C'|'D'|'F'} ReadinessGrade */
+/** @typedef {{grade:ReadinessGrade|null,note:string}} GradeResult */
+/** @type {ReadinessGrade[]} */
+const GRADES=['A','B','C','D','F'];
+const GRADE_LABELS={A:'매우 양호',B:'양호',C:'보통',D:'개선 권장',F:'불량'};
+/** @param {number|null|undefined} value @param {number[]} limits @param {boolean} [higher] @returns {ReadinessGrade|null} */
+function thresholdGrade(value,limits,higher=false){
+  if(typeof value!=='number'||!Number.isFinite(value)||value<0)return null;
+  const index=limits.findIndex(limit=>higher?value>=limit:value<=limit);
+  return GRADES[index<0?4:index];
+}
+/**
+ * 수강신청용 참고 등급입니다. 공식 벤치마크나 실제 학교 서버의 성능 등급이 아닙니다.
+ * @param {{frame:{median:number,p95:number,interruptions:number,samples:number}|null,longTasks:number|null,drift:number|null,timerCount:number,
+ * network:ReturnType<typeof networkStats>|null,connectionType?:string,threads?:number,memory?:number,reactionMs?:number}} measurement
+ * @returns {Record<string,GradeResult>}
+ */
+export function gradeReadiness({frame,longTasks,drift,timerCount,network,connectionType,threads,memory,reactionMs}){
+  /** @param {ReadinessGrade|null} grade @param {string} [note] @returns {GradeResult} */
+  const rated=(grade,note='')=>({grade,note:grade===null?(note||'판정 보류'):note});
+  const pending=note=>rated(null,note);
+  const sampled=(value,limits,count,min,higher=false)=>{
+    if(value===null)return pending('미측정');
+    if(count<min)return pending('표본 부족 · 판정 보류');
+    return rated(thresholdGrade(value,limits,higher));
+  };
+  // 역수의 부동소수점 반올림으로 30fps 경계가 달라지지 않도록 간격과 직접 비교합니다.
+  const frameGrades=frame&&frame.samples>=25&&frame.median>0?[
+    thresholdGrade(frame.median,[20,25,1000/30,50]),
+    thresholdGrade(frame.p95,[25,40,60,100]),
+    thresholdGrade(frame.interruptions,[0,1,2,4]),
+  ]:null;
+  const frameGrade=frameGrades&&frameGrades.every(g=>g!==null)
+    ?GRADES[Math.max(...frameGrades.map(g=>GRADES.indexOf(g)))]:null;
+  const driftGrade=drift!==null&&timerCount>=15?
+    (drift>=100?'F':thresholdGrade(drift,[5,15,30,100])):null;
+  const connectionGrades={'4g':'A','3g':'C','2g':'D','slow-2g':'F'};
+  const error=network?(network.excluded===7?pending('유효 표본 없음 · 판정 보류'):
+    rated(thresholdGrade(network.failures,[0,1,2,4]),network.excluded>0?'표본 제외 있음 · 잠정 등급':'')):pending('미측정');
+  return {
+    frame:rated(frameGrade,frameGrade===null?'표본 부족 · 판정 보류':'FPS·프레임 간격·끊김 중 최저 등급'),
+    task:longTasks===null?pending('브라우저 미지원'):rated(thresholdGrade(longTasks,[0,1,2,4])),
+    drift:rated(driftGrade,driftGrade===null?(drift===null?'미측정':'표본 부족 · 판정 보류'):''),
+    latency:network?sampled(network.median,[40,80,150,300],network.latencyCount,3):pending('미측정'),
+    jitter:network?sampled(network.jitter,[5,15,30,60],network.jitterCount,2):pending('미측정'),
+    speed:network?sampled(network.mbps,[10,5,2,.5],network.downloadCount,2,true):pending('미측정'),
+    error,
+    connection:connectionType&&Object.hasOwn(connectionGrades,connectionType)?
+      rated(connectionGrades[connectionType],'브라우저 추정 유형 · 참고 등급'):pending('브라우저 미지원 또는 유형 미확인'),
+    threads:typeof threads==='number'&&threads>=1?
+      rated(thresholdGrade(threads,[8,6,4,2],true),'하드웨어 참고 등급'):pending('브라우저 미지원'),
+    memory:typeof memory==='number'&&memory>0?
+      rated(thresholdGrade(memory,[8,4,2,1],true),'브라우저 근삿값 · 참고 등급'):pending('브라우저 미지원'),
+    reaction:typeof reactionMs==='number'&&reactionMs>=80&&reactionMs<=3000?
+      rated(thresholdGrade(reactionMs,[200,250,300,400])):pending('유효한 반응 측정 없음'),
+  };
+}
+
 /**
  * 기존 이상 판정과 조치 안내를 한 곳에서 산출합니다.
  * @param {{frame:{interruptions:number,median:number},longTasks:number|null,network:{failures:number,excluded?:number}|null,drift?:number|null}} measurement
@@ -177,7 +235,29 @@ if(typeof document!=='undefined'){
     const networkEnabled=document.getElementById('readiness-network');
     const redo=document.getElementById('readiness-back');
     let controller=null,interruption='진단이 취소되었습니다.';
-    const value=(id,content)=>{document.getElementById(id).textContent=content;};
+    // 값·세부 설명·등급을 분리하되 원래 관측값은 모두 보존합니다.
+    const value=(id,content,detail='')=>{
+      const node=document.getElementById(id);
+      const main=document.createElement('span');main.className='readiness-metric-main';main.textContent=content;
+      node.replaceChildren(main);
+      if(detail){
+        const extra=document.createElement('span');extra.className='readiness-metric-detail';extra.textContent=detail;
+        node.append(' ',extra);
+      }
+    };
+    /** @param {Record<string,GradeResult>} grades */
+    function renderGrades(grades){
+      for(const [key,{grade,note}] of Object.entries(grades)){
+        const badge=result.querySelector('[data-metric-grade="'+key+'"]');
+        const detail=result.querySelector('[data-grade-note="'+key+'"]');
+        badge.dataset.grade=grade??'none';
+        badge.textContent=grade??'—';
+        const label=grade?grade+' 등급 · '+GRADE_LABELS[grade]:'판정 보류';
+        badge.setAttribute('aria-label',label);
+        badge.title=label+(note?' · '+note:'');
+        detail.textContent=note;detail.hidden=!note;
+      }
+    }
     const abort=(reason)=>{if(controller){interruption=reason;controller.abort();}};
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden)abort('탭이 숨겨져 측정이 중단되었습니다.');
@@ -203,14 +283,14 @@ if(typeof document!=='undefined'){
           return item;
         }));
         advice.hidden=assessment.actions.length===0;
-        value('readiness-frame-value',text(1000/frame.median)+'fps 관측 · 프레임 간격 중앙값 '+
+        value('readiness-frame-value',text(1000/frame.median)+'fps 관측','· 프레임 간격 중앙값 '+
           text(frame.median)+'ms · 95백분위수 '+text(frame.p95)+'ms · 끊김 '+frame.interruptions+'회');
         value('readiness-task-value',longTasks===null?'지원되지 않음':longTasks+'회 (50ms 이상)');
-        value('readiness-drift-value',drift===null?'측정 불가':'95백분위수 '+text(drift)+'ms · '+timerCount+'개');
-        value('readiness-latency-value',network?.median==null?'미측정':'중앙값 '+text(network.median)+'ms · '+network.latencyCount+'/'+HEAD_REQUESTS+'개');
+        value('readiness-drift-value',drift===null?'측정 불가':'95백분위수 '+text(drift)+'ms',drift===null?'':'· '+timerCount+'개');
+        value('readiness-latency-value',network?.median==null?'미측정':'중앙값 '+text(network.median)+'ms',network?.median==null?'':'· '+network.latencyCount+'/'+HEAD_REQUESTS+'개');
         value('readiness-jitter-value',network?.jitter==null?'미측정':text(network.jitter)+'ms');
-        value('readiness-speed-value',network?.mbps==null?'미측정':text(network.mbps)+'Mbps · '+network.downloadCount+'/'+DOWNLOAD_REQUESTS+'개');
-        value('readiness-error-value',network?network.failures+'/'+(HEAD_REQUESTS+DOWNLOAD_REQUESTS)+'회 실패 · '+network.excluded+'회 제외':'미측정');
+        value('readiness-speed-value',network?.mbps==null?'미측정':text(network.mbps)+'Mbps',network?.mbps==null?'':'· '+network.downloadCount+'/'+DOWNLOAD_REQUESTS+'개');
+        value('readiness-error-value',network?network.failures+'/'+(HEAD_REQUESTS+DOWNLOAD_REQUESTS)+'회 실패':'미측정',network?'· '+network.excluded+'회 제외':'');
         const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
         value('readiness-connection-value',connection?.effectiveType??'브라우저 미지원');
         value('readiness-threads-value',
@@ -218,7 +298,15 @@ if(typeof document!=='undefined'){
         value('readiness-memory-value',
           navigator.deviceMemory?navigator.deviceMemory+'GB (대략값)':'브라우저 미지원');
         const profile=readProfile();
-        value('readiness-reaction-value',profile?profile.medianMs+'ms (반응 테스트에서 읽음)':'미측정 · 반응 테스트 이용');
+        value('readiness-reaction-value',profile?profile.medianMs+'ms':'미측정',profile?'(반응 테스트에서 읽음)':'· 반응 테스트 이용');
+        const grades=gradeReadiness({frame,longTasks,drift,timerCount,network,
+          connectionType:connection?.effectiveType,threads:navigator.hardwareConcurrency,
+          memory:navigator.deviceMemory,reactionMs:profile?.medianMs});
+        renderGrades(grades);
+        // 기존 이상 기준과 새로운 참고 등급이 서로 모순되어 보이지 않도록 구분합니다.
+        const low=Object.values(grades).some(item=>item.grade==='D'||item.grade==='F');
+        if(low&&assessment.messages[0]==='이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.')summary.textContent='참고 기준에서 개선이 필요한 항목이 있습니다. 항목별 등급과 관측값을 확인하세요.';
+        document.getElementById('readiness-grade-criteria').open=false;
         result.hidden=false;inputs.hidden=true;
         // 길어진 결과를 처음부터 읽고 키보드로 스크롤할 수 있도록 합니다.
         result.scrollTop=0;

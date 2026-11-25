@@ -36,7 +36,7 @@ if(start){
     state=step.state;
     switch(step.outcome){
       case 'STARTED':case 'WAITING':return waitForSignal();
-      case 'SIGNAL':target.dataset.phase='go';target.textContent='지금 누르세요!';return;
+      case 'SIGNAL':target.dataset.phase='go';target.textContent='지금 누르세요! · 클릭 / Space / Enter';return;
       case 'SAMPLE':
         status.textContent='최근 반응 '+step.sample+'ms · 남은 횟수 '+(REACTION_COUNT-state.samples.length);
         target.dataset.phase='break';target.textContent=step.sample+'ms';
@@ -49,7 +49,7 @@ if(start){
   }
   function waitForSignal(){
     target.dataset.phase='waiting';
-    target.textContent='초록색으로 바뀌면 Space 또는 클릭';tally.textContent=(state.samples.length+1)+' / '+REACTION_COUNT;
+    target.textContent='초록색으로 바뀌면 클릭 / Space / Enter';tally.textContent=(state.samples.length+1)+' / '+REACTION_COUNT;
     const delay=900+Math.floor(Math.random()*1400);
     timer=setTimeout(()=>{
       frame=requestAnimationFrame(()=>dispatch({type:'signal',at:performance.now()}));
@@ -77,7 +77,7 @@ if(start){
     if(event.detail===0)respond(event);
   });
   target.addEventListener('keydown',event=>{
-    if(event.code!=='Space'&&event.key!=='Enter')return;
+    if(event.code!=='Space'&&event.key!=='Enter'&&event.code!=='NumpadEnter')return;
     event.preventDefault();
     respond(event);
   });
@@ -85,7 +85,7 @@ if(start){
     result.hidden=true;
     start.disabled=true;target.disabled=false;reset.hidden=false;
     target.focus({preventScroll:true});
-    status.textContent='화면 색이 바뀔 때만 누르세요. 빠른 입력은 무효입니다.';
+    status.textContent='화면 색이 바뀔 때 클릭·Space·Enter로 입력하세요. 빠른 입력은 무효입니다.';
     dispatch({type:'start'});
   });
   reset.addEventListener('click',()=>dispatch({type:'cancel'}));

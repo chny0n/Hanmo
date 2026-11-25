@@ -10,9 +10,8 @@ if(form){
   const status=document.getElementById('strategy-status');
   const result=document.getElementById('strategy-result');
   const inputPanel=document.getElementById('strategy-input');
-  const recommendation=document.getElementById('strategy-recommendation');
-  const setup=document.getElementById('strategy-setup');
-  const expectedSummary=document.getElementById('strategy-expected-summary');
+  const orderList=document.getElementById('strategy-order');
+  const courseResults=document.getElementById('strategy-course-results');
   const waitSummary=document.getElementById('strategy-wait-summary');
   const formulas=document.getElementById('strategy-formulas');
   const formulaValues=document.getElementById('strategy-formula-values');
@@ -137,17 +136,42 @@ if(form){
       };
       /** @param {number} x 0~1 비율 */
       const pct=x=>(100*x).toFixed(1)+'%';
-      // 표본 오차 범위는 같은 가정에서 반복 수가 유한해 생기는 오차뿐입니다. 가정이 바뀔 때의 변화는 아래 가정별 범위로 따로 보여 줍니다.
-      const sampling=r.guaranteed?'':' (반복 실험 오차 95% 범위 '+pct(r.uncertainty.allWins[0])+'~'+pct(r.uncertainty.allWins[1])+')';
-      recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
-        ' · 가상 전체 성공률 '+outcome(r.allWins)+sampling;
-      setup.textContent=(r.guaranteed?'':'경쟁 가정에 따라 가상 전체 성공률 '+pct(r.uncertainty.assumptionRange.min)+'~'+
-        pct(r.uncertainty.assumptionRange.max)+' · ')+
-        '같은 순서에서 경쟁자가 여러 과목을 신청하는 정도가 낮을 때 '+outcome(r.sensitivity.lessOverlap)+
-        ' · 높을 때 '+outcome(r.sensitivity.moreOverlap)+
-        ' · 경쟁자 전원 동시 시작 '+outcome(r.sensitivity.synchronized)+' · 실험 시드 '+r.seed;
-      expectedSummary.textContent='기대 성공 과목 수 '+r.expectedCourses.toFixed(2)+' / '+r.order.length+'개 · 과목별 성공률 '+
-        r.order.map((name,slot)=>name+' '+outcome(Math.round(r.courseSuccess[slot]*r.trials))).join(' / ');
+      // 기존 엔진의 추천 순서·관측 횟수·표본 오차를 서로 다른 표시 영역에 배치합니다.
+      const set=(id,value)=>{document.getElementById(id).textContent=value;};
+      orderList.replaceChildren(...r.order.map((name,slot)=>{
+        const item=document.createElement('li');
+        const rank=document.createElement('span');rank.className='strategy-order-rank';rank.textContent=(slot+1)+'번째';
+        const course=document.createElement('strong');course.textContent=name;
+        item.append(rank,course);
+        return item;
+      }));
+      set('strategy-overall-value',outcome(r.allWins));
+      set('strategy-sampling',r.guaranteed?'모든 과목의 정원이 경쟁자보다 많음':
+        '반복 실험 오차 95% 범위 '+pct(r.uncertainty.allWins[0])+'~'+pct(r.uncertainty.allWins[1]));
+      set('strategy-expected-value',r.expectedCourses.toFixed(2)+' / '+r.order.length+'개');
+      set('strategy-completion-value',(r.timing.meanCompletionMs/1000).toFixed(1)+'초');
+      set('strategy-wait-value',(r.timing.meanWaitMs/1000).toFixed(1)+'초');
+      set('strategy-queue-value','혼잡 대기 '+(r.timing.meanQueueWaitMs/1000).toFixed(1)+'초 포함');
+      courseResults.replaceChildren(...r.order.map((name,slot)=>{
+        const item=document.createElement('li');
+        const header=document.createElement('div');header.className='strategy-course-header';
+        const course=document.createElement('strong');course.textContent=(slot+1)+'. '+name;
+        const rate=document.createElement('span');rate.className='strategy-course-rate';
+        rate.textContent=outcome(Math.round(r.courseSuccess[slot]*r.trials));
+        header.append(course,rate);
+        const bar=document.createElement('div');bar.className='strategy-course-track';bar.setAttribute('aria-hidden','true');
+        const fill=document.createElement('span');
+        // 막대는 미관측 빈도를 포함한 관측 비율이며 학교의 성공 확률이 아닙니다.
+        fill.style.width=pct(r.courseSuccess[slot]);bar.append(fill);
+        item.append(header,bar);
+        return item;
+      }));
+      set('strategy-low-overlap',outcome(r.sensitivity.lessOverlap));
+      set('strategy-baseline-value',outcome(r.allWins));
+      set('strategy-high-overlap',outcome(r.sensitivity.moreOverlap));
+      set('strategy-synchronized',outcome(r.sensitivity.synchronized));
+      set('strategy-assumption-range','경쟁 가정별 관측 범위 '+pct(r.uncertainty.assumptionRange.min)+'~'+pct(r.uncertainty.assumptionRange.max));
+      set('strategy-run-info','조건별 독립 평가 '+r.trials.toLocaleString('ko-KR')+'회 · 실험 시드 '+r.seed+' · 실제 수강신청 예측 아님');
       waitSummary.textContent='평균 누적 대기시간 '+(r.timing.meanWaitMs/1000).toFixed(1)+
         '초 (혼잡 대기 '+(r.timing.meanQueueWaitMs/1000).toFixed(1)+
         '초 포함) · 전체 신청 시도 평균 소요시간 '+(r.timing.meanCompletionMs/1000).toFixed(1)+'초';

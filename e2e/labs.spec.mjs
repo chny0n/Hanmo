@@ -22,7 +22,8 @@ test('홈과 각 화면에서 새로운 공통 상단 바를 사용한다',async
   }
 });
 
-test('PC 진단은 실행 전 요청이 없고 다운로드 처리량을 측정한다',async({page})=>{
+test('PC 진단은 실행 전 요청이 없고 11개 독립 등급과 다운로드 처리량을 표시한다',async({page})=>{
+  await seedProfile(page);
   const requests=[];
   page.on('request',request=>requests.push(request.url()));
   await page.goto('/html/readiness.html');
@@ -40,20 +41,43 @@ test('PC 진단은 실행 전 요청이 없고 다운로드 처리량을 측정�
   await expect(page.locator('#readiness-latency-value')).toContainText('ms');
   await expect(page.locator('#readiness-jitter-value')).toContainText('ms');
   await expect(page.locator('#readiness-error-value')).toHaveText('0/7회 실패 · 0회 제외');
+  const grades=page.locator('[data-metric-grade]');
+  await expect(grades).toHaveCount(11);
+  expect(await grades.evaluateAll(nodes=>nodes.every(node=>['A','B','C','D','F','none'].includes(node.getAttribute('data-grade'))))).toBe(true);
+  await expect(page.locator('[data-metric-grade="error"]')).toHaveAttribute('data-grade','A');
+  await expect(page.locator('[data-metric-grade="reaction"]')).toHaveAttribute('data-grade','B');
+  for(const [grade,rgb] of [['A','34, 197, 94'],['B','249, 115, 22'],['C','234, 179, 8'],['D','146, 64, 14'],['F','220, 38, 38']]){
+    await expect(page.locator('.readiness-grade-legend [data-grade="'+grade+'"]')).toHaveCSS('background-color','rgb('+rgb+')');
+  }
+  const criteria=page.locator('#readiness-grade-criteria');
+  await expect(criteria).toHaveJSProperty('open',false);
+  await criteria.locator('summary').click();
+  await expect(criteria).toHaveJSProperty('open',true);
+  await expect(criteria).toContainText('미측정·미지원은 F가 아닙니다.');
+  await criteria.locator('summary').click();
   await expect(page.locator('#readiness-share')).toHaveCount(0);
   expect(requests.filter(u=>u.includes('network-probe.txt')).length).toBe(2);
   expect(requests.some(u=>/hufs\.ac\.kr/.test(u))).toBe(false);
 });
 
-test('클릭과 Space로 반응속도 8회를 완료하면 브라우저에 저장된다',async({page})=>{
+test('클릭·Space·Enter·숫자패드 Enter로 반응속도 8회를 완료하면 저장된다',async({page})=>{
   test.setTimeout(65_000);
   await page.goto('/html/reaction-test.html');
+  await expect(page.locator('.reaction-input-guide')).toContainText('Space · Enter');
   await page.locator('#reaction-start').click();
+  await expect(page.locator('#reaction-target')).toContainText('Enter');
   for(let i=0;i<8;i++){
-    await expect(page.locator('#reaction-target')).toHaveAttribute('data-phase','go',{timeout:5000});
+    const target=page.locator('#reaction-target');
+    await expect(target).toHaveAttribute('data-phase','go',{timeout:5000});
+    await expect(target).toContainText('Enter');
     await page.waitForTimeout(120);
-    if(i%2===0)await page.locator('#reaction-target').click();
-    else await page.keyboard.press('Space');
+    // 반복 키 입력은 유효한 표본을 소비하지 않습니다.
+    if(i===2){
+      await target.dispatchEvent('keydown',{key:'Enter',code:'Enter',repeat:true});
+      await expect(target).toHaveAttribute('data-phase','go');
+    }
+    if(i%4===0)await target.click();
+    else await page.keyboard.press(['','Space','Enter','NumpadEnter'][i%4]);
   }
   await expect(page.locator('#reaction-result')).toBeVisible();
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('hanmo.reaction.profile.v1')));
@@ -70,6 +94,8 @@ test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 �
   await expect(page.locator('#readiness-frame-value')).toContainText('fps 관측');
   await expect(page.locator('#readiness-speed-value')).toHaveText('미측정');
   await expect(page.locator('#readiness-error-value')).toContainText('2/7회 실패');
+  await expect(page.locator('[data-metric-grade="speed"]')).toHaveAttribute('data-grade','none');
+  await expect(page.locator('[data-metric-grade="error"]')).toHaveAttribute('data-grade','C');
   const advice=page.locator('#readiness-advice');
   await expect(advice).toBeVisible();
   await expect(advice).toContainText('유선 연결');
@@ -82,6 +108,9 @@ test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 �
   await page.locator('#readiness-start').click();
   await expect(page.locator('#readiness-result')).toBeVisible();
   await expect(page.locator('#readiness-error-value')).toHaveText('미측정');
+  for(const key of ['latency','jitter','speed','error']){
+    await expect(page.locator('[data-metric-grade="'+key+'"]')).toHaveAttribute('data-grade','none');
+  }
   await expect(advice).not.toContainText('한모 연결:');
 });
 
@@ -91,6 +120,7 @@ test('긴 작업이 미지원이면 다른 PC 진단 결과를 계속 표시한�
   await page.locator('#readiness-network').uncheck();
   await page.locator('#readiness-start').click();
   await expect(page.locator('#readiness-task-value')).toHaveText('지원되지 않음');
+  await expect(page.locator('[data-metric-grade="task"]')).toHaveAttribute('data-grade','none');
   await expect(page.locator('#readiness-frame-value')).toContainText('fps 관측');
   await expect(page.locator('#readiness-latency-value')).toHaveText('미측정');
 });
@@ -98,7 +128,7 @@ test('긴 작업이 미지원이면 다른 PC 진단 결과를 계속 표시한�
 test('신호 전 입력과 탭 숨김은 반응 표본을 저장하지 않는다',async({page})=>{
   await page.goto('/html/reaction-test.html');
   await page.locator('#reaction-start').click();
-  await page.keyboard.press('Space');
+  await page.keyboard.press('Enter');
   await expect(page.locator('#reaction-status')).toContainText('너무 빨리');
   await page.locator('#reaction-start').click();
   await page.evaluate(()=>{
@@ -150,8 +180,16 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-recommendation')).toContainText('추천 신청 순서');
   await expect(page.locator('#strategy-recommendation')).toContainText('전체 성공률');
   await expect(page.locator('#strategy-recommendation')).not.toContainText('(기본 가정)');
-  await expect(page.locator('#strategy-setup')).toContainText(/경쟁자가 여러 과목을 신청하는 정도가 낮을 때.*높을 때.*경쟁자 전원 동시 시작.*실험 시드/);
-  await expect(page.locator('#strategy-expected-summary')).toContainText(/기대 성공 과목 수 \d+\.\d{2} \/ 3개 · 과목별 성공률/);
+  await expect(page.locator('#strategy-order li')).toHaveCount(3);
+  await expect(page.locator('#strategy-course-results li')).toHaveCount(3);
+  await expect(page.locator('#strategy-setup tbody tr')).toHaveCount(4);
+  await expect(page.locator('#strategy-setup')).toContainText(/낮은 경쟁 중복도.*높은 경쟁 중복도.*경쟁자 전원 동시 시작.*실험 시드/);
+  await expect(page.locator('#strategy-expected-value')).toHaveText(/\d+\.\d{2} \/ 3개/);
+  await expect(page.locator('#strategy-completion-value')).toHaveText(/\d+\.\d초/);
+  await expect(page.locator('#strategy-wait-value')).toHaveText(/\d+\.\d초/);
+  await expect(page.locator('#strategy-sampling')).toContainText('반복 실험 오차 95% 범위');
+  await expect(page.locator('#strategy-assumption-range')).toContainText('경쟁 가정별 관측 범위');
+  expect(await page.locator('.strategy-course-track span').evaluateAll(nodes=>nodes.every(node=>parseFloat(node.style.width)>=0&&parseFloat(node.style.width)<=100))).toBe(true);
   await expect(page.getByRole('heading',{name:'경쟁자 가정',exact:true})).toBeVisible();
   await expect(page.locator('#strategy-result')).toContainText('경쟁자의 전체 신청량은 본인이 입력한 과목 수와 별도로 5~8과목에서 추출합니다. 목록 밖 과목도 같은 경쟁률 가중치 분포와 개인별 선호를 적용합니다.');
   await expect(page.getByRole('heading',{name:'대기시간 가정',exact:true})).toBeVisible();
@@ -370,4 +408,26 @@ test('1280×720에서 최대 8개 과목 입력과 모든 핵심 동작이 가�
   await check('#strategy-courses tr:last-child');
   await check('#strategy-run');
   await check('#strategy-status');
+});
+
+test('8과목 결과의 추천 순서와 성공률은 좁은 화면에서도 가로 스크롤 없이 표시된다',async({page})=>{
+  await seedProfile(page);
+  await page.goto('/html/strategy-lab.html');
+  for(let i=3;i<8;i++)await page.locator('#strategy-add').click();
+  for(const id of 'ABCDEFGH'){
+    await page.getByRole('spinbutton',{name:id+' 경쟁자',exact:true}).fill('0');
+    await page.getByRole('textbox',{name:id+' 과목 이름',exact:true}).fill('매우 긴 과목 이름 '+id+' '.repeat(2)+'테스트 과목명');
+  }
+  await page.locator('#strategy-run').click();
+  await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
+  await expect(page.locator('#strategy-order li')).toHaveCount(8);
+  await expect(page.locator('#strategy-course-results li')).toHaveCount(8);
+  await expect(page.locator('#strategy-overall-value')).toHaveText('100%');
+  await expect(page.locator('#strategy-expected-value')).toHaveText('8.00 / 8개');
+  for(const width of [1440,1200,800,400]){
+    await page.setViewportSize({width,height:800});
+    const overflow=await page.locator('#strategy-order, #strategy-order li, .strategy-result-metrics, .strategy-result-metrics>div, .strategy-course-results, .strategy-course-results li, .strategy-conditions').evaluateAll(nodes=>
+      nodes.filter(node=>node.scrollWidth>node.clientWidth+1).map(node=>node.className||node.tagName));
+    expect(overflow).toEqual([]);
+  }
 });

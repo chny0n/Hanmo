@@ -175,3 +175,57 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-math-line{margin:8px 0;padding:3px 0;min-width:0;overflow:visible}
 .hanmo-strategy .strategy-math-line math{font-size:clamp(13px,1.5vw,20px);font-size:clamp(12px,3.3cqi,20px);color:var(--lab-text);margin-inline:0}
 .hanmo-strategy .strategy-formula-list dd>.lab-footnote{margin:8px 0 14px}
+
+/* 진단 등급은 측정값과 별도로 표시하며 색과 문자 모두로 의미를 전달합니다. */
+.hanmo-readiness .readiness-grade-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:8px 0 12px;color:var(--lab-muted);font-size:12px}
+.hanmo-readiness .readiness-grade-legend>span{display:inline-flex;gap:5px;align-items:center}
+.hanmo-readiness .readiness-grade{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:26px;height:26px;border-radius:5px;padding:0 4px;font-size:14px;font-weight:750;line-height:1;color:#111827}
+.hanmo-readiness .readiness-grade[data-grade="A"]{background:#22c55e}
+.hanmo-readiness .readiness-grade[data-grade="B"]{background:#f97316}
+.hanmo-readiness .readiness-grade[data-grade="C"]{background:#eab308}
+.hanmo-readiness .readiness-grade[data-grade="D"]{background:#92400e;color:#fff}
+.hanmo-readiness .readiness-grade[data-grade="F"]{background:#dc2626;color:#fff}
+.hanmo-readiness .readiness-grade[data-grade="none"]{background:#64748b;color:#fff}
+.hanmo-readiness .readiness-grade-legend .readiness-grade{min-width:20px;height:20px;font-size:12px}
+.hanmo-readiness .readiness-grade-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:0 0 10px}
+.hanmo-readiness .readiness-grade-grid>div{min-width:0;display:block;border:1px solid var(--lab-border);border-radius:6px;background:#102c3d;padding:10px 12px}
+.hanmo-readiness .readiness-grade-grid dt{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;overflow-wrap:anywhere;margin-bottom:4px}
+.hanmo-readiness .readiness-metric-main{display:block;font-size:clamp(16px,1.7vw,21px);line-height:1.35;color:var(--lab-text);font-weight:700;overflow-wrap:anywhere}
+.hanmo-readiness .readiness-metric-detail,.hanmo-readiness .readiness-grade-grid .readiness-grade-note{display:block;font-size:11px;font-weight:400;line-height:1.5;color:var(--lab-muted);overflow-wrap:anywhere}
+.hanmo-readiness .readiness-grade-criteria{border-block:1px solid var(--lab-border);padding:8px 0;margin:8px 0}
+.hanmo-readiness .readiness-grade-criteria summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--lab-text)}
+.hanmo-readiness .readiness-criteria-list{padding-inline-start:18px;margin:6px 0;font-size:12px;line-height:1.65;color:var(--lab-muted);overflow-wrap:anywhere}
+.hanmo-reaction .reaction-input-guide{margin:6px 0;font-size:13px;color:var(--lab-muted);text-align:center}
+.hanmo-reaction .lab-reaction-target{padding:12px;text-align:center;overflow-wrap:anywhere}
+/* 추천 순서와 네 개의 요약 지표, 과목별 관측 비율, 가정별 비교를 구분합니다. */
+.hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{min-width:0;margin:0 0 12px}
+.hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:8px 0;font-size:15px;font-weight:650;color:var(--lab-text)}
+.hanmo-strategy .strategy-order{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,128px),1fr));gap:8px;margin:0 0 10px;padding:0}
+.hanmo-strategy .strategy-order li{min-width:0;padding:8px 10px;border:1px solid var(--lab-border);border-radius:6px;background:#102c3d;text-align:center;display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-order-rank{font-size:11px;color:var(--lab-muted)}
+.hanmo-strategy .strategy-order strong{font-size:15px;color:var(--lab-text)}
+.hanmo-strategy .strategy-result-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:0}
+.hanmo-strategy .strategy-result-metrics>div{min-width:0;border:1px solid var(--lab-border);border-radius:6px;padding:10px 12px}
+.hanmo-strategy .strategy-result-metrics dt{font-size:12px;color:var(--lab-muted);margin-bottom:4px}
+.hanmo-strategy .strategy-result-metrics dd{margin:0;font-size:clamp(16px,2vw,24px);line-height:1.4;color:var(--lab-text);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-result-metrics #strategy-overall-value{color:#f4d394}
+.hanmo-strategy .strategy-result-metrics .strategy-metric-note{font-size:11px;font-weight:400;color:var(--lab-muted);line-height:1.55;margin-top:3px}
+.hanmo-strategy .strategy-result-block{border-top:1px solid var(--lab-border);padding-top:3px}
+.hanmo-strategy .strategy-course-results{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.hanmo-strategy .strategy-course-header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
+.hanmo-strategy .strategy-course-header strong{min-width:0;overflow-wrap:anywhere;font-weight:600}
+.hanmo-strategy .strategy-course-rate{color:var(--lab-text);font-variant-numeric:tabular-nums;font-weight:600;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-course-track{height:8px;border-radius:4px;background:#294557;overflow:hidden;margin-top:4px}
+.hanmo-strategy .strategy-course-track span{display:block;height:100%;border-radius:4px;background:#8b5cf6}
+.hanmo-strategy .strategy-conditions{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px}
+.hanmo-strategy .strategy-conditions th,.hanmo-strategy .strategy-conditions td{padding:6px 8px;border-bottom:1px solid #294557;text-align:left;overflow-wrap:anywhere;vertical-align:top}
+.hanmo-strategy .strategy-conditions thead th{color:var(--lab-muted);font-size:11px}
+.hanmo-strategy .strategy-conditions tbody th{font-weight:500;color:var(--lab-text)}
+.hanmo-strategy .strategy-conditions th:last-child,.hanmo-strategy .strategy-conditions td{text-align:right;font-variant-numeric:tabular-nums}
+.hanmo-strategy .strategy-conditions .strategy-baseline{background:#102c3d}
+.hanmo-strategy .strategy-conditions .strategy-baseline td{font-weight:700;color:#f4d394}
+.hanmo-strategy #strategy-setup .lab-footnote{max-width:none;margin:5px 0}
+@media(max-width:640px){
+  .hanmo-readiness .readiness-grade-grid,.hanmo-strategy .strategy-result-metrics{grid-template-columns:1fr}
+  .hanmo-strategy .strategy-order{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

@@ -29,7 +29,7 @@
     },
     {
       "path": "css/hanmo-labs.css",
-      "sha": "a12037803d844de2c78a5021a4ee9dc332af04d3"
+      "sha": "24c9fa15c948cefd8fa46525509229e90a380229"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -125,11 +125,11 @@
     },
     {
       "path": "html/reaction-test.html",
-      "sha": "3f2d6626a139ed54a3db142f7e26c946d87af779"
+      "sha": "c303745d810bb825fc40ec80e074ca2f732fa6b7"
     },
     {
       "path": "html/readiness.html",
-      "sha": "e6abb1e92cdf20e92afee85d7c05b95f9f65401c"
+      "sha": "174c8497d44ded82f8cf55b3d9698b512cd5bbb8"
     },
     {
       "path": "html/result.html",
@@ -141,7 +141,7 @@
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "a8aa29d6f106a46ac0e73c7ce4532dd9877b5c25"
+      "sha": "f7787cf7257faec2bf8fadf5913229a743544dc1"
     },
     {
       "path": "html/vsugang.html",

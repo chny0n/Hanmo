@@ -54,19 +54,45 @@
     <section class="lab-panel lab-result-panel" id="readiness-result" aria-labelledby="readiness-result-heading" tabindex="0" hidden>
       <div class="lab-section-heading"><h2 id="readiness-result-heading">진단 결과</h2><span class="lab-minor">현재 브라우저 관측값</span></div>
       <p id="readiness-summary" class="lab-summary"></p>
-      <dl class="lab-stats lab-stats-grid">
-        <div><dt>화면 프레임</dt><dd id="readiness-frame-value">—</dd></div>
-        <div><dt>긴 작업</dt><dd id="readiness-task-value">—</dd></div>
-        <div><dt>타이머 지연</dt><dd id="readiness-drift-value">—</dd></div>
-        <div><dt>한모 HTTP 응답시간</dt><dd id="readiness-latency-value">—</dd></div>
-        <div><dt>연결 지터</dt><dd id="readiness-jitter-value">—</dd></div>
-        <div><dt>다운로드 처리량</dt><dd id="readiness-speed-value">—</dd></div>
-        <div><dt>요청 실패·표본 제외</dt><dd id="readiness-error-value">—</dd></div>
-        <div><dt>네트워크 유형 추정</dt><dd id="readiness-connection-value">—</dd></div>
-        <div><dt>논리 코어</dt><dd id="readiness-threads-value">—</dd></div>
-        <div><dt>기기 메모리 대략값</dt><dd id="readiness-memory-value">—</dd></div>
-        <div><dt>반응속도 테스트</dt><dd id="readiness-reaction-value">—</dd></div>
+      <div class="readiness-grade-legend" aria-label="참고 등급 의미">
+        <span><b class="readiness-grade" data-grade="A">A</b>매우 양호</span>
+        <span><b class="readiness-grade" data-grade="B">B</b>양호</span>
+        <span><b class="readiness-grade" data-grade="C">C</b>보통</span>
+        <span><b class="readiness-grade" data-grade="D">D</b>개선 권장</span>
+        <span><b class="readiness-grade" data-grade="F">F</b>불량</span>
+        <span><b class="readiness-grade" data-grade="none">—</b>판정 보류</span>
+      </div>
+      <dl class="lab-stats lab-stats-grid readiness-grade-grid">
+        <div class="readiness-metric"><dt><span>화면 프레임</span><span class="readiness-grade" role="img" data-metric-grade="frame" data-grade="none">—</span></dt><dd id="readiness-frame-value">—</dd><dd class="readiness-grade-note" data-grade-note="frame" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>긴 작업</span><span class="readiness-grade" role="img" data-metric-grade="task" data-grade="none">—</span></dt><dd id="readiness-task-value">—</dd><dd class="readiness-grade-note" data-grade-note="task" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>타이머 지연</span><span class="readiness-grade" role="img" data-metric-grade="drift" data-grade="none">—</span></dt><dd id="readiness-drift-value">—</dd><dd class="readiness-grade-note" data-grade-note="drift" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>한모 HTTP 응답시간</span><span class="readiness-grade" role="img" data-metric-grade="latency" data-grade="none">—</span></dt><dd id="readiness-latency-value">—</dd><dd class="readiness-grade-note" data-grade-note="latency" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>연결 지터</span><span class="readiness-grade" role="img" data-metric-grade="jitter" data-grade="none">—</span></dt><dd id="readiness-jitter-value">—</dd><dd class="readiness-grade-note" data-grade-note="jitter" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>다운로드 처리량</span><span class="readiness-grade" role="img" data-metric-grade="speed" data-grade="none">—</span></dt><dd id="readiness-speed-value">—</dd><dd class="readiness-grade-note" data-grade-note="speed" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>요청 실패·표본 제외</span><span class="readiness-grade" role="img" data-metric-grade="error" data-grade="none">—</span></dt><dd id="readiness-error-value">—</dd><dd class="readiness-grade-note" data-grade-note="error" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>네트워크 유형 추정</span><span class="readiness-grade" role="img" data-metric-grade="connection" data-grade="none">—</span></dt><dd id="readiness-connection-value">—</dd><dd class="readiness-grade-note" data-grade-note="connection" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>논리 코어</span><span class="readiness-grade" role="img" data-metric-grade="threads" data-grade="none">—</span></dt><dd id="readiness-threads-value">—</dd><dd class="readiness-grade-note" data-grade-note="threads" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>기기 메모리 대략값</span><span class="readiness-grade" role="img" data-metric-grade="memory" data-grade="none">—</span></dt><dd id="readiness-memory-value">—</dd><dd class="readiness-grade-note" data-grade-note="memory" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>반응속도 테스트</span><span class="readiness-grade" role="img" data-metric-grade="reaction" data-grade="none">—</span></dt><dd id="readiness-reaction-value">—</dd><dd class="readiness-grade-note" data-grade-note="reaction" hidden></dd></div>
       </dl>
+      <details id="readiness-grade-criteria" class="readiness-grade-criteria">
+        <summary>등급 기준 보기</summary>
+        <p class="lab-footnote">A → B → C → D → F 순서로 처음 충족하는 기준을 적용합니다. 한모의 참고 기준이며 실제 학교 서버·공식 하드웨어 벤치마크 또는 수강신청 성공률이 아닙니다.</p>
+        <ul class="readiness-criteria-list">
+          <li>화면 프레임: FPS 50·40·30·20 이상 / 미만, 95백분위수 25·40·60·100ms 이하 / 초과, 끊김 0·1·2·3~4·5회 이상 중 최저 등급</li>
+          <li>긴 작업(50ms 이상): 0·1·2·3~4·5회 이상</li>
+          <li>타이머 지연: 5·15·30ms 이하, 100ms 미만, 100ms 이상</li>
+          <li>HTTP 응답시간: 40·80·150·300ms 이하 / 초과</li>
+          <li>연결 지터: 5·15·30·60ms 이하 / 초과</li>
+          <li>다운로드 처리량: 10·5·2·0.5Mbps 이상 / 미만</li>
+          <li>요청 실패(7회 중): 0·1·2·3~4·5회 이상</li>
+          <li>네트워크 유형 추정: 4g(A), 3g(C), 2g(D), slow-2g(F)</li>
+          <li>논리 코어: 8·6·4·2개 이상 / 미만</li>
+          <li>기기 메모리 대략값: 8·4·2·1GB 이상 / 미만</li>
+          <li>반응속도 중앙값: 200·250·300·400ms 이하 / 초과</li>
+        </ul>
+        <p class="lab-footnote">타이머 표본 15개, HTTP 표본 3개, 연속 지터 차이 2개, 다운로드 표본 2개 미만이면 해당 등급을 보류합니다. 전부 제외된 요청은 판정 보류, 일부 제외는 실패 횟수의 잠정 등급입니다. 미측정·미지원은 F가 아닙니다.</p>
+      </details>
       <section id="readiness-advice" aria-labelledby="readiness-advice-heading" hidden>
         <h3 id="readiness-advice-heading">권장 조치</h3>
         <ul id="readiness-advice-list"></ul>

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {percentile,summarizeFrames,findings,assessReadiness,networkSample,networkStats} from '../js/readiness.mjs';
+import {percentile,summarizeFrames,findings,assessReadiness,networkSample,networkStats,gradeReadiness} from '../js/readiness.mjs';
 test('분위수는 입력 순서와 무관하고 입력을 변경하지 않는다',()=>{
   const values=[30,10,20];
   assert.equal(percentile(values,0.5),20);
@@ -39,7 +39,7 @@ test('다운로드는 압축된 본문 크기와 전체 요청 시간으로 계�
 });
 test('지터는 실패 또는 제외된 요청을 건너뛰어 비교하지 않는다',()=>{
   assert.deepEqual(networkStats([10,null,70,75,null],[5],1),
-    {median:70,jitter:5,mbps:5,failures:1,latencyCount:3,downloadCount:1,excluded:2});
+    {median:70,jitter:5,mbps:5,failures:1,latencyCount:3,jitterCount:1,downloadCount:1,excluded:2});
 });
 
 test('모든 이상 기준을 만족하면 기존 판정 5개와 중복 없는 조치 3개를 표시한다',()=>{
@@ -79,4 +79,48 @@ test('미지원·미실시 지표는 이상으로 처리하지 않고 불완전�
     assert.equal(limited.actions.length,1);
     assert.match(limited.actions[0],/^연결 측정 제한:/);
   }
+});
+
+const goodNetwork={median:40,jitter:5,mbps:10,failures:0,latencyCount:5,jitterCount:4,downloadCount:2,excluded:0};
+const goodMeasurement={frame:{median:20,p95:25,interruptions:0,samples:150},longTasks:0,drift:5,timerCount:30,
+  network:goodNetwork,connectionType:'4g',threads:8,memory:8,reactionMs:200};
+test('11개 지표는 독립 등급이며 전체 종합 등급을 생성하지 않는다',()=>{
+  const grades=gradeReadiness(goodMeasurement);
+  assert.equal(Object.keys(grades).length,11);
+  assert.ok(Object.values(grades).every(x=>x.grade==='A'));
+});
+test('작을수록 좋은 수치와 클수록 좋은 수치의 등급 경계를 모두 검증한다',()=>{
+  const cases=[
+    ['task','longTasks',[0,1,2,4,5]],['drift','drift',[5,15,30,99.99,100]],
+    ['reaction','reactionMs',[200,250,300,400,401]],['threads','threads',[8,6,4,2,1]],
+    ['memory','memory',[8,4,2,1,.5]],
+  ];
+  for(const [key,field,values] of cases){
+    assert.deepEqual(values.map(v=>gradeReadiness({...goodMeasurement,[field]:v})[key].grade),['A','B','C','D','F']);
+  }
+  for(const [key,field,values] of [
+    ['latency','median',[40,80,150,300,301]],['jitter','jitter',[5,15,30,60,61]],
+    ['speed','mbps',[10,5,2,.5,.49]],['error','failures',[0,1,2,4,7]],
+  ]){
+    assert.deepEqual(values.map(v=>gradeReadiness({...goodMeasurement,network:{...goodNetwork,[field]:v}})[key].grade),['A','B','C','D','F']);
+  }
+  assert.deepEqual(['4g','3g','2g','slow-2g','unknown'].map(connectionType=>
+    gradeReadiness({...goodMeasurement,connectionType}).connection.grade),['A','C','D','F',null]);
+});
+test('프레임은 FPS·95백분위수·끊김 중 최저 등급으로 판정한다',()=>{
+  const frame=goodMeasurement.frame;
+  for(const [field,values] of [['median',[20,25,1000/30,50,51]],['p95',[25,40,60,100,101]],['interruptions',[0,1,2,4,5]]]){
+    assert.deepEqual(values.map(value=>gradeReadiness({...goodMeasurement,frame:{...frame,[field]:value}}).frame.grade),['A','B','C','D','F']);
+  }
+  assert.equal(gradeReadiness({...goodMeasurement,frame:{...frame,median:8,interruptions:5}}).frame.grade,'F');
+});
+test('누락·미지원·표본 부족은 F가 아니며 제외와 실패를 구분한다',()=>{
+  const no=gradeReadiness({frame:null,longTasks:null,drift:null,timerCount:0,network:null});
+  assert.ok(Object.values(no).every(x=>x.grade===null));
+  const small=gradeReadiness({...goodMeasurement,timerCount:14,network:{...goodNetwork,latencyCount:2,jitterCount:1,downloadCount:1,excluded:4}});
+  for(const key of ['drift','latency','jitter','speed'])assert.equal(small[key].grade,null);
+  assert.equal(small.error.grade,'A');
+  assert.match(small.error.note,/잠정/);
+  const allExcluded=gradeReadiness({...goodMeasurement,network:{...goodNetwork,median:null,jitter:null,mbps:null,latencyCount:0,jitterCount:0,downloadCount:0,excluded:7}});
+  assert.equal(allExcluded.error.grade,null);
 });
