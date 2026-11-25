@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS,rivalGroupMeanMs,rivalReactionMs,rivalActionMs,rivalActionTimes} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -184,4 +184,31 @@ test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평�
   assert.equal(g.allWins,g.trials);
   assert.ok(g.timing.meanQueueWaitMs>0);
   assert.ok(Math.abs(g.timing.meanWaitMs-r.timing.meanWaitMs-g.timing.meanQueueWaitMs)<=1);
+});
+
+test('회차별 경쟁 집단 평균은 시드로 재현되고 240~300ms 범위에서 중심이 270ms인 균등분포를 사용한다',()=>{
+  const seed=123456789;
+  const means=Array.from({length:2000},(_,b)=>rivalGroupMeanMs(seed,b));
+  assert.deepEqual(means,means.map((_,b)=>rivalGroupMeanMs(seed,b)));
+  assert.ok(means.every(x=>x>=240&&x<=300));
+  assert.ok(Math.min(...means)<241&&Math.max(...means)>299);
+  const average=means.reduce((a,b)=>a+b,0)/means.length;
+  assert.ok(Math.abs(average-270)<2);
+  assert.notEqual(rivalGroupMeanMs(seed,0),rivalGroupMeanMs(seed,1));
+});
+test('개인 감마분포는 집단 평균의 이동을 반영하고 매 신청에서 같은 개인 속도를 유지한다',()=>{
+  const draw=()=>Math.exp(-1);
+  assert.ok(Math.abs(rivalReactionMs(240,draw)-240)<1e-9);
+  assert.ok(Math.abs(rivalReactionMs(300,draw)-300)<1e-9);
+  assert.equal(rivalActionMs(270,0),650);
+  assert.equal(rivalActionMs(270,1),675);
+  assert.equal(rivalActionMs(270,-1),625);
+  assert.equal(rivalActionMs(80,-10),460);
+  const fast=rivalActionTimes(123456789,1,12,240,8);
+  const slow=rivalActionTimes(123456789,1,12,300,8);
+  assert.deepEqual(fast,rivalActionTimes(123456789,1,12,240,8));
+  assert.deepEqual(fast.slice(0,3),rivalActionTimes(123456789,1,12,240,3));
+  assert.ok(new Set(fast).size>1);
+  assert.ok(fast.every((a,i)=>a>=460&&slow[i]>=a&&Math.abs(slow[i]-a-60)<1e-9));
+  assert.notDeepEqual(fast,rivalActionTimes(123456789,1,13,240,8));
 });

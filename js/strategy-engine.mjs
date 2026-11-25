@@ -28,9 +28,11 @@ export function validateScenario(input){
   return input;
 }
 const MAX_COURSES=8;
-const RIVAL_REACTION_MEAN_MS=270;
-const REACTION_SHAPE=20;
-const RIVAL_STEP_MS=RIVAL_REACTION_MEAN_MS+DIRECT_SUBMIT_MS;
+// 합성 모형의 초기 가정이며 관측 데이터에서 추정한 모수가 아닙니다.
+export const RIVAL_REACTION_MEAN_MS=270;
+export const RIVAL_GROUP_SHIFT_MS=30;
+export const RIVAL_REACTION_SHAPE=20;
+export const RIVAL_ACTION_JITTER_MS=25;
 const OVERLAP={less:1,baseline:2,more:4};
 // 전략 실험 전용 1~3초(양 끝 포함)의 가상 대기 범위입니다. 실제 학교 서버 측정값이 아닙니다.
 export const REQUEST_WAIT_MIN_MS=1000;
@@ -91,21 +93,48 @@ export function runSharedQueue(agents,onProcessed){
     down(0);
   }
 }
+/** @param {number} seed 난수 시드 @param {number} trial 회차 @param {number} stream 난수 계열 @param {number} slot 신청 순번 */
+function normal01(seed,trial,stream,slot){
+  const u1=random01(seed,trial,stream,slot*2),u2=random01(seed,trial,stream,slot*2+1);
+  return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+}
 function userAgent(s,trial,id){
   const actions=[],delays=[];
   for(let slot=0;slot<s.courses.length;slot++){
-    const u1=random01(s.seed,trial,100,slot*2),u2=random01(s.seed,trial,100,slot*2+1);
-    const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    const z=normal01(s.seed,trial,100,slot);
     actions.push(Math.max(DIRECT_SUBMIT_MS+80,s.actionMs+s.jitterMs*z));
     delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)));
   }
   return {id,startMs:s.startDelayMs,actions,delays,courses:[]};
 }
 
-function rivalReaction(draw){
+/** 같은 회차에서는 모든 경쟁자 및 세 후보군 가정이 동일한 집단 평균을 사용합니다.
+ * @param {number} seed 실험 시드
+ * @param {number} trial 회차
+ */
+export function rivalGroupMeanMs(seed,trial){
+  return RIVAL_REACTION_MEAN_MS+RIVAL_GROUP_SHIFT_MS*(2*random01(seed^0x6a09e667,trial,0,0)-1);
+}
+/** 집단 평균을 조건으로 개인별 기본 반응시간을 한 번만 추출합니다.
+ * @param {number} groupMeanMs 회차별 집단 평균
+ * @param {()=>number} draw 균등 난수 생성기
+ */
+export function rivalReactionMs(groupMeanMs,draw){
   let product=1;
-  for(let i=0;i<REACTION_SHAPE;i++)product*=draw();
-  return -Math.log(product)*RIVAL_REACTION_MEAN_MS/REACTION_SHAPE;
+  for(let i=0;i<RIVAL_REACTION_SHAPE;i++)product*=draw();
+  return -Math.log(product)*groupMeanMs/RIVAL_REACTION_SHAPE;
+}
+/** 개인 고유 반응속도를 모든 신청에 유지하고 순번마다 독립 변동을 더합니다.
+ * @param {number} personalMs 개인의 기본 반응시간
+ * @param {number} z 표준 정규 난수
+ */
+export function rivalActionMs(personalMs,z){
+  return DIRECT_SUBMIT_MS+Math.max(80,personalMs+RIVAL_ACTION_JITTER_MS*z);
+}
+/** @param {number} seed 실험 시드 @param {number} trial 회차 @param {number} rival 경쟁자 ID @param {number} personalMs 개인 반응시간 @param {number} count 신청 횟수 */
+export function rivalActionTimes(seed,trial,rival,personalMs,count){
+  return Array.from({length:count},(_,slot)=>
+    rivalActionMs(personalMs,normal01(seed^0x3c6ef372,trial,rival,slot)));
 }
 
 /** @param {{capacity:number,rivals:number}} course 가상 과목 */
@@ -140,13 +169,14 @@ function simulateTrial(s,urgency,population,trial){
   const agents=[player];
   const portfolios=assignCourses(s.courses,population,s.seed,trial);
   const timingSeed=s.seed^0x729ab44d;
+  const groupMean=rivalGroupMeanMs(s.seed,trial);
   for(const [rival,known] of portfolios.entries()){
     if(!known.length)continue;
     let count=0;
     const draw=()=>random01(timingSeed,trial,rival,count++);
-    const first=DIRECT_SUBMIT_MS+rivalReaction(draw);
+    const personalMs=rivalReactionMs(groupMean,draw);
     const courses=rivalOrder(known,urgency,draw).map(({course})=>course);
-    const actions=courses.map((_,slot)=>slot===0?first:RIVAL_STEP_MS);
+    const actions=rivalActionTimes(s.seed,trial,rival,personalMs,courses.length);
     const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)));
     agents.push({id:rival,startMs:0,actions,delays,courses});
   }

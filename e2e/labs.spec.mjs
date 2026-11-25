@@ -170,8 +170,9 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-formula-values')).toContainText('N = 3 · M = 1000 · a = 630ms · σ = 170ms · t₀ = 0ms');
   await expect(page.locator('#strategy-formula-values')).toContainText('τ = 10ms');
   await expect(formulas.locator('code')).toHaveCount(0);
-  await expect(formulas.locator('math')).toHaveCount(24);
-  for(const id of ['base-delay','queue-start','queue-end','queue-wait','objective','all-success']){
+  await expect(formulas.locator('math')).toHaveCount(26);
+  await expect(page.locator('#strategy-result')).toContainText('240~300ms 사이에서 변합니다');
+  for(const id of ['rival-group','rival-reaction','rival-jitter','rival-action','base-delay','queue-start','queue-end','queue-wait','objective','all-success']){
     await expect(formulas.locator('math[data-formula="'+id+'"]')).toBeVisible();
   }
   const math=formulas.locator('math[data-formula="urgency"]');
