@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,requestTimeline,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -117,15 +117,50 @@ test('전략 실험 전용 모의 대기시간은 1000~3000ms의 양 끝을 포�
   assert.equal(requestWaitMs(.5),2000);
   assert.equal(requestWaitMs(.999999),3000);
 });
-test('먼저 요청한 순서는 유지하고 다음 신청에 이전 대기가 누적되며 마지막 대기도 소요시간에 포함한다',()=>{
-  const arrivals=[];
-  const result=requestTimeline(100,3,()=>600,slot=>[1000,2000,3000][slot],at=>arrivals.push(at));
-  assert.deepEqual(arrivals,[700,2300,4900]);
-  assert.deepEqual(result,{totalWaitMs:6000,completionMs:7900});
-  const withoutWait=[];
-  requestTimeline(100,3,()=>600,()=>0,at=>withoutWait.push(at));
-  assert.deepEqual(withoutWait,[700,1300,1900]);
-  assert.equal(arrivals[0],withoutWait[0]);
+test('동시에 도착한 요청과 이후 요청은 공통 서버에서 순차 처리되고 응답 후 다음 요청이 도착한다',()=>{
+  assert.equal(SERVER_SERVICE_MS,10);
+  const agents=[
+    {id:2,startMs:0,actions:[100,50],delays:[1000,1000],courses:[]},
+    {id:0,startMs:0,actions:[105],delays:[3000],courses:[-1]},
+    {id:1,startMs:0,actions:[100,50],delays:[1000,1000],courses:[0,1]},
+  ];
+  const original=structuredClone(agents);
+  const events=[];
+  runSharedQueue(agents,(agent,slot,arrival,start,processed,reply)=>events.push([agent.id,slot,arrival,start,processed,reply]));
+  assert.deepEqual(events,[
+    [1,0,100,100,110,1100],
+    [2,0,100,110,120,1110],
+    [0,0,105,120,130,3120],
+    [1,1,1150,1150,1160,2150],
+    [2,1,1160,1160,1170,2160],
+  ]);
+  assert.deepEqual(agents,original);
+  assert.equal(events[1][5]-events[1][2],1010);
+  assert.equal(events[2][5]-events[2][2],3015);
+});
+test('최소 힙 대기열은 독립적인 정렬 기반 FCFS 기준 구현과 일치한다',()=>{
+  const agents=Array.from({length:23},(_,id)=>({
+    id,startMs:id%3,actions:Array.from({length:1+id%8},(_,slot)=>460+(id*17+slot*47)%280),
+    delays:Array.from({length:1+id%8},(_,slot)=>1000+(id*197+slot*397)%2001),courses:[],
+  }));
+  const actual=[];
+  runSharedQueue(agents,(agent,slot,arrival,start,processed,reply)=>actual.push([agent.id,slot,arrival,start,processed,reply]));
+  const pending=agents.map(agent=>({agent,slot:0,arrival:agent.startMs+agent.actions[0]}));
+  const expected=[];
+  let available=0;
+  while(pending.length){
+    pending.sort((a,b)=>a.arrival-b.arrival||a.agent.id-b.agent.id);
+    const {agent,slot,arrival}=pending.shift();
+    const start=Math.max(arrival,available);
+    available=start+SERVER_SERVICE_MS;
+    const reply=start+agent.delays[slot];
+    expected.push([agent.id,slot,arrival,start,available,reply]);
+    if(slot+1<agent.actions.length)pending.push({agent,slot:slot+1,arrival:reply+agent.actions[slot+1]});
+  }
+  assert.deepEqual(actual,expected);
+  const reversed=[];
+  runSharedQueue([...agents].reverse(),(agent,slot,arrival,start,processed,reply)=>reversed.push([agent.id,slot,arrival,start,processed,reply]));
+  assert.deepEqual(reversed,expected);
 });
 test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평균 소요시간에 포함한다',()=>{
   const s=input();
@@ -136,8 +171,17 @@ test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평�
   assert.ok(r.timing.meanWaitMs>=s.courses.length*1000);
   assert.ok(r.timing.meanWaitMs<=s.courses.length*3000);
   assert.ok(r.timing.meanCompletionMs>=r.timing.meanWaitMs+s.startDelayMs+s.courses.length*460);
+  assert.equal(r.timing.meanQueueWaitMs,0);
+  assert.equal(r.serverServiceMs,10);
   assert.deepEqual(r.timing,simulate(s).timing);
   const contested=simulate(input());
-  // 대기 자체는 경쟁 집단의 구성과 무관하며 접수 성공과 별개로 모든 시도에서 발생합니다.
-  assert.deepEqual(contested.timing,r.timing);
+  assert.ok(contested.timing.meanQueueWaitMs>0);
+  // 같은 사용자 난수를 쓰므로 차이는 공통 대기열에서 추가된 혼잡 대기입니다.
+  assert.ok(Math.abs(contested.timing.meanWaitMs-r.timing.meanWaitMs-contested.timing.meanQueueWaitMs)<=1);
+  assert.ok(Math.abs(contested.timing.meanCompletionMs-r.timing.meanCompletionMs-contested.timing.meanQueueWaitMs)<=1);
+  const guaranteed={...input(),courses:input().courses.map(c=>({...c,capacity:300}))};
+  const g=simulate(guaranteed);
+  assert.equal(g.allWins,g.trials);
+  assert.ok(g.timing.meanQueueWaitMs>0);
+  assert.ok(Math.abs(g.timing.meanWaitMs-r.timing.meanWaitMs-g.timing.meanQueueWaitMs)<=1);
 });

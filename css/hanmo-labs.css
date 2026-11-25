@@ -172,4 +172,6 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-formula-list{margin:0}
 .hanmo-strategy .strategy-formula-list dt{font-size:14px;font-weight:600;color:var(--lab-text);margin:12px 0 4px}
 .hanmo-strategy .strategy-formula-list dd{margin:0}
-.hanmo-strategy .strategy-formula-list code{display:block;white-space:normal;font-size:13px;line-height:1.65;color:var(--lab-text);font-variant-numeric:tabular-nums}
+.hanmo-strategy .strategy-math-line{overflow-x:auto;margin:8px 0;padding:3px 0}
+.hanmo-strategy .strategy-math-line math{font-size:clamp(16px,1.5vw,20px);color:var(--lab-text);margin-inline:0}
+.hanmo-strategy .strategy-formula-list dd>.lab-footnote{margin:8px 0 14px}

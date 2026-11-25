@@ -35,6 +35,8 @@ const OVERLAP={less:1,baseline:2,more:4};
 // 전략 실험 전용 1~3초(양 끝 포함)의 가상 대기 범위입니다. 실제 학교 서버 측정값이 아닙니다.
 export const REQUEST_WAIT_MIN_MS=1000;
 export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=3001;
+// 단일 논리적 서버는 가상 처리율 초당 100건으로 순차 처리합니다.
+export const SERVER_SERVICE_MS=10;
 function random01(seed,trial,stream,draw){
   let x=(seed^Math.imul(trial+1,0x9e3779b9)^
     Math.imul(stream+3,0x85ebca6b)^Math.imul(draw+17,0xc2b2ae35))>>>0;
@@ -47,32 +49,57 @@ export function requestWaitMs(unit){
   return REQUEST_WAIT_MIN_MS+Math.floor(unit*(REQUEST_WAIT_MAX_EXCLUSIVE_MS-REQUEST_WAIT_MIN_MS));
 }
 /**
- * 요청 시각에 선착순 우선순위를 얻고 대기 종료 이후 다음 동작을 시작합니다.
- * @param {number} startDelayMs 시작 지연
- * @param {number} count 신청 시도 횟수
- * @param {(slot:number)=>number} actionForSlot 각 시도의 행동시간
- * @param {(slot:number)=>number} waitForSlot 각 시도의 대기시간
- * @param {(at:number,slot:number)=>void} onRequest 접수 시각 기록
+ * 참가자별 다음 요청만 최소 힙에 유지하는 공통 FCFS 이산사건 모형입니다.
+ * 응답 기본시간에는 서버 처리시간을 포함합니다. 응답 대기가 서버를 점유하지 않습니다.
+ * @param {{id:number,startMs:number,actions:number[],delays:number[],courses:number[]}[]} agents 참가자별 행동·기본 응답시간
+ * @param {(agent:typeof agents[number],slot:number,arrival:number,start:number,processed:number,reply:number)=>void} onProcessed 처리된 요청
  */
-export function requestTimeline(startDelayMs,count,actionForSlot,waitForSlot,onRequest){
-  let elapsed=startDelayMs,totalWaitMs=0;
-  for(let slot=0;slot<count;slot++){
-    elapsed+=actionForSlot(slot);
-    onRequest(elapsed,slot);
-    const wait=waitForSlot(slot);
-    totalWaitMs+=wait;
-    elapsed+=wait;
+export function runSharedQueue(agents,onProcessed){
+  const heap=agents.filter(agent=>agent.actions.length).map(agent=>({
+    agent,slot:0,arrival:agent.startMs+agent.actions[0],
+  }));
+  // 요청 도착시각이 같으면 고정 참가자 ID 순서를 사용합니다. 본인 ID는 가장 큽니다.
+  const earlier=(a,b)=>a.arrival<b.arrival||(a.arrival===b.arrival&&a.agent.id<b.agent.id);
+  function down(i){
+    const node=heap[i];
+    while(i*2+1<heap.length){
+      let child=i*2+1;
+      if(child+1<heap.length&&earlier(heap[child+1],heap[child]))child++;
+      if(!earlier(heap[child],node))break;
+      heap[i]=heap[child];i=child;
+    }
+    heap[i]=node;
   }
-  return {totalWaitMs,completionMs:elapsed};
+  for(let i=(heap.length>>1)-1;i>=0;i--)down(i);
+  let available=0;
+  while(heap.length){
+    const node=heap[0],{agent,slot,arrival}=node;
+    const start=Math.max(arrival,available);
+    const processed=start+SERVER_SERVICE_MS;
+    const reply=start+agent.delays[slot];
+    available=processed;
+    onProcessed(agent,slot,arrival,start,processed,reply);
+    // 같은 참가자의 다음 요청은 응답 완료 후에만 대기열에 들어옵니다.
+    node.slot++;
+    if(node.slot<agent.actions.length){
+      node.arrival=reply+agent.actions[node.slot];
+    }else{
+      const last=heap.pop();
+      if(!heap.length)break;
+      heap[0]=last;
+    }
+    down(0);
+  }
 }
-function actionTimes(s,trial){
-  const times=[];
-  const timing=requestTimeline(s.startDelayMs,s.courses.length,slot=>{
+function userAgent(s,trial,id){
+  const actions=[],delays=[];
+  for(let slot=0;slot<s.courses.length;slot++){
     const u1=random01(s.seed,trial,100,slot*2),u2=random01(s.seed,trial,100,slot*2+1);
     const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
-    return Math.max(DIRECT_SUBMIT_MS+80,s.actionMs+s.jitterMs*z);
-  },slot=>requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)),at=>times.push(at));
-  return {times,...timing};
+    actions.push(Math.max(DIRECT_SUBMIT_MS+80,s.actionMs+s.jitterMs*z));
+    delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)));
+  }
+  return {id,startMs:s.startDelayMs,actions,delays,courses:[]};
 }
 
 function rivalReaction(draw){
@@ -108,8 +135,9 @@ export function rivalOrder(known,urgency,draw){
   return entries.sort((a,b)=>a.key-b.key);
 }
 
-function closingTimes(s,urgency,population,trial){
-  const arrivals=s.courses.map(()=>[]);
+function simulateTrial(s,urgency,population,trial){
+  const player=userAgent(s,trial,population);
+  const agents=[player];
   const portfolios=assignCourses(s.courses,population,s.seed,trial);
   const timingSeed=s.seed^0x729ab44d;
   for(const [rival,known] of portfolios.entries()){
@@ -117,17 +145,27 @@ function closingTimes(s,urgency,population,trial){
     let count=0;
     const draw=()=>random01(timingSeed,trial,rival,count++);
     const first=DIRECT_SUBMIT_MS+rivalReaction(draw);
-    const order=rivalOrder(known,urgency,draw);
-    // 경쟁자도 목록 밖 과목을 포함해 매 요청의 대기가 끝날 때까지 다음 과목을 신청하지 못합니다.
-    requestTimeline(0,order.length,slot=>slot===0?first:RIVAL_STEP_MS,
-      slot=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)),(at,slot)=>{
-        const {course}=order[slot];
-        if(course>=0)arrivals[course].push(at);
-      });
+    const courses=rivalOrder(known,urgency,draw).map(({course})=>course);
+    const actions=courses.map((_,slot)=>slot===0?first:RIVAL_STEP_MS);
+    const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)));
+    agents.push({id:rival,startMs:0,actions,delays,courses});
   }
-  return s.courses.map(({capacity,rivals},i)=>capacity>rivals
-    ?Infinity
-    :arrivals[i].sort((a,b)=>a-b)[capacity-1]);
+  const times=[],closing=s.courses.map(()=>Infinity),counts=new Uint16Array(s.courses.length);
+  let totalWaitMs=0,queueWaitMs=0,completionMs=0;
+  // 과목 종류·신청 성공 여부와 무관하게 모든 요청이 동일한 서버 처리시간을 사용합니다.
+  // 따라서 본인의 과목 순서를 바꾸더라도 신청 순번별 처리시각은 동일하여 기존 DP를 사용할 수 있습니다.
+  runSharedQueue(agents,(agent,slot,arrival,start,processed,reply)=>{
+    if(agent===player){
+      times.push(processed);
+      totalWaitMs+=reply-arrival;
+      queueWaitMs+=start-arrival;
+      completionMs=reply;
+    }else{
+      const course=agent.courses[slot];
+      if(course>=0&&++counts[course]===s.courses[course].capacity)closing[course]=processed;
+    }
+  });
+  return {times,closing,totalWaitMs,queueWaitMs,completionMs};
 }
 
 /** 비트마스크 DP로 8개 과목의 기대 가중 점수를 최대화합니다. */
@@ -166,9 +204,9 @@ export function simulate(raw){
   const guaranteed=s.courses.every(course=>course.capacity>course.rivals);
   const success=Array.from({length:n},()=>new Float64Array(n));
   const baseline=population(OVERLAP.baseline);
-  for(let trial=0;trial<s.trials;trial++){
-    const {times}=actionTimes(s,trial);
-    const closing=guaranteed?s.courses.map(()=>Infinity):closingTimes(s,urgency,baseline,trial);
+  if(guaranteed)for(const row of success)row.fill(s.trials);
+  else for(let trial=0;trial<s.trials;trial++){
+    const {times,closing}=simulateTrial(s,urgency,baseline,trial);
     for(let j=0;j<n;j++){
       for(let slot=0;slot<n;slot++){
         if(times[slot]<closing[j])success[j][slot]++;
@@ -180,31 +218,35 @@ export function simulate(raw){
   const order=bestOrder(weights,probability);
   const sum=weights.reduce((a,b)=>a+b,0);
   const meanScore=order.reduce((score,j,slot)=>score+weights[j]*probability[j][slot],0)*100/sum;
-  // 추천 순서를 고른 표본과 분리한 평가 표본을 세 가정에서 공통으로 사용합니다.
-  const samples=Array.from({length:s.trials},(_,i)=>actionTimes(s,s.trials+i));
-  const meanWaitMs=Math.round(samples.reduce((sum,item)=>sum+item.totalWaitMs,0)/s.trials);
-  const meanCompletionMs=Math.round(samples.reduce((sum,item)=>sum+item.completionMs,0)/s.trials);
+  // 별도 평가 회차에서도 공통 서버를 재실행합니다. 후보군 크기가 같은 경우에만 결과를 재사용합니다.
   const evaluated=new Map();
-  function allWins(overlap){
-    if(guaranteed)return s.trials;
-    const size=population(overlap);
+  function evaluate(size){
     if(evaluated.has(size))return evaluated.get(size);
-    let wins=0;
-    // 추천 순서를 고른 회차와 전체 성공을 확인하는 회차는 서로 다릅니다.
+    let wins=0,totalWaitMs=0,queueWaitMs=0,completionMs=0;
     for(let trial=s.trials;trial<2*s.trials;trial++){
-      const {times}=samples[trial-s.trials];
-      const closing=closingTimes(s,urgency,size,trial);
-      if(order.every((j,slot)=>times[slot]<closing[j]))wins++;
+      const sample=simulateTrial(s,urgency,size,trial);
+      if(order.every((j,slot)=>sample.times[slot]<sample.closing[j]))wins++;
+      totalWaitMs+=sample.totalWaitMs;
+      queueWaitMs+=sample.queueWaitMs;
+      completionMs+=sample.completionMs;
     }
-    evaluated.set(size,wins);
-    return wins;
+    const value={wins,timing:{
+      meanWaitMs:Math.round(totalWaitMs/s.trials),
+      meanQueueWaitMs:Math.round(queueWaitMs/s.trials),
+      meanCompletionMs:Math.round(completionMs/s.trials),
+    }};
+    evaluated.set(size,value);
+    return value;
   }
+  const base=evaluate(baseline);
+  const allWins=overlap=>guaranteed?s.trials:evaluate(population(overlap)).wins;
   return {
     seed:s.seed,trials:s.trials,order:order.map(index=>s.courses[index].name),
     ranks:order.map(index=>s.courses[index].rank),
-    allWins:allWins(OVERLAP.baseline),meanScore,
+    allWins:base.wins,meanScore,
     sensitivity:{lessOverlap:allWins(OVERLAP.less),moreOverlap:allWins(OVERLAP.more)},
-    timing:{meanWaitMs,meanCompletionMs},
+    timing:base.timing,
+    serverServiceMs:SERVER_SERVICE_MS,
     guaranteed,
     model:'SYNTHETIC_ONLY',
   };
