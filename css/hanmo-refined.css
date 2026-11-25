@@ -375,3 +375,12 @@ body.hanmo-refined .hanmo-topbar .hanmo-profile-summary{
  body.hanmo-home.hanmo-refined>main{padding-top:10px;padding-bottom:10px;}
  body.hanmo-policy-legacy.hanmo-refined>main{padding-top:8px;padding-bottom:8px;}
 }
+
+/* 배너가 있는 홈은 남은 화면의 중앙이 아니라 배너 아래부터 본문을 배치합니다. */
+body.hanmo-home.hanmo-refined > .home-banners:not([hidden]) + main {
+  justify-content: flex-start;
+  padding-top: 36px;
+}
+@media (max-height: 650px) {
+  body.hanmo-home.hanmo-refined > .home-banners:not([hidden]) + main { padding-top: 28px; }
+}

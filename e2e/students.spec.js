@@ -212,7 +212,9 @@ test.describe('홈 교내 서비스 배너',()=>{
       const title=await page.locator('.titleContainer').boundingBox();
       expect(box.y).toBeGreaterThanOrEqual(bar.y+bar.height);
       expect(box.y+box.height).toBeLessThan(title.y);
-      expect(box.y-(bar.y+bar.height)).toBeLessThan(title.y-(box.y+box.height));
+      const titleGap=title.y-(box.y+box.height);
+      expect(box.y-(bar.y+bar.height)).toBeLessThan(titleGap);
+      expect(titleGap).toBeCloseTo(36,0);
       expect(box.width).toBeCloseTo(702,0);
       await expect(page.locator('.buttonContainer')).toBeInViewport({ratio:1});
     }
