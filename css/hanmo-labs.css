@@ -167,6 +167,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-formulas{margin:10px 0 12px;border-block:1px solid var(--lab-border);padding:6px 0}
 .hanmo-strategy .strategy-formulas summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:13px;padding:6px 0}
 .hanmo-strategy .strategy-formulas summary:focus-visible{outline:2px solid #f4c76c;outline-offset:2px}
+.hanmo-strategy #strategy-assumptions:not([open])>.strategy-assumptions{display:none}
 .hanmo-strategy .strategy-formula-body{padding:0 0 6px;overflow-wrap:anywhere;container-type:inline-size;min-width:0}
 .hanmo-strategy .strategy-formula-body .lab-footnote{max-width:none;margin:5px 0 10px}
 .hanmo-strategy .strategy-formula-list{margin:0}
@@ -201,9 +202,12 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{min-width:0;margin:0 0 12px}
 .hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:8px 0;font-size:15px;font-weight:650;color:var(--lab-text)}
 .hanmo-strategy .strategy-order{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,128px),1fr));gap:8px;margin:0 0 10px;padding:0}
-.hanmo-strategy .strategy-order li{min-width:0;padding:8px 10px;border:1px solid var(--lab-border);border-radius:6px;background:#102c3d;text-align:center;display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere}
-.hanmo-strategy .strategy-order-rank{font-size:11px;color:var(--lab-muted)}
-.hanmo-strategy .strategy-order strong{font-size:15px;color:var(--lab-text)}
+.hanmo-strategy .strategy-order li{min-inline-size:0;padding:10px 12px;border:1px solid var(--lab-border);border-radius:8px;background:#102c3d;display:flex;flex-direction:column;gap:6px;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-order li:first-child{border-color:#d9ab59}
+.hanmo-strategy .strategy-card-head{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:4px 8px}
+.hanmo-strategy .strategy-order-rank{padding:2px 7px;border-radius:5px;background:#294557;color:var(--lab-text);font-size:15px;font-weight:750;white-space:nowrap}
+.hanmo-strategy .strategy-order li:first-child .strategy-order-rank{background:#f4d394;color:#162334}
+.hanmo-strategy .strategy-order strong{font-size:18px;line-height:1.35;color:var(--lab-text)}
 .hanmo-strategy .strategy-result-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:0}
 .hanmo-strategy .strategy-result-metrics>div{min-width:0;border:1px solid var(--lab-border);border-radius:6px;padding:10px 12px}
 .hanmo-strategy .strategy-result-metrics dt{font-size:12px;color:var(--lab-muted);margin-bottom:4px}
@@ -211,8 +215,8 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-result-metrics #strategy-overall-value{color:#f4d394}
 .hanmo-strategy .strategy-result-metrics .strategy-metric-note{font-size:11px;font-weight:400;color:var(--lab-muted);line-height:1.55;margin-top:3px}
 .hanmo-strategy .strategy-result-block{border-top:1px solid var(--lab-border);padding-top:3px}
-.hanmo-strategy .strategy-course-rate{color:var(--lab-text);font-variant-numeric:tabular-nums;font-weight:600;overflow-wrap:anywhere}
-.hanmo-strategy .strategy-course-track{height:8px;border-radius:4px;background:#294557;overflow:hidden;margin-top:4px}
+.hanmo-strategy .strategy-course-rate{color:#f4d394;font-size:18px;line-height:1.25;font-variant-numeric:tabular-nums;font-weight:750;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-course-track{height:6px;border-radius:4px;background:#294557;overflow:hidden;margin-top:auto}
 .hanmo-strategy .strategy-course-track span{display:block;height:100%;border-radius:4px;background:#8b5cf6}
 .hanmo-strategy .strategy-conditions{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px}
 .hanmo-strategy .strategy-conditions th,.hanmo-strategy .strategy-conditions td{padding:6px 8px;border-bottom:1px solid #294557;text-align:left;overflow-wrap:anywhere;vertical-align:top}
@@ -230,9 +234,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 /* 일반 PC에서는 스크롤을 숨겨 잘라내지 않고 실제 내용의 높이를 맞춥니다. */
 .hanmo-strategy .strategy-result-comparison,.hanmo-strategy .strategy-assumptions{min-width:0;display:grid;gap:12px 20px}
 .hanmo-strategy .strategy-order-heading h2{margin:0;font-size:20px}
-.hanmo-strategy .strategy-order-heading h3{margin:4px 0}
-.hanmo-strategy .strategy-order li{gap:2px}
-.hanmo-strategy .strategy-order .strategy-course-rate{font-size:12px}
+.hanmo-strategy .strategy-result-overview .strategy-order-heading h3{margin:4px 0 8px;font-size:18px}
 .hanmo-strategy .strategy-order .strategy-course-track{width:100%;margin-top:2px}
 @media(min-width:1100px) and (min-height:680px){
  .hanmo-readiness #readiness-result,.hanmo-strategy #strategy-result{padding:6px 0}
@@ -256,17 +258,11 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  /* 등급 기준은 별도의 읽기 단계입니다. 펼치면 결과를 가리지 않고 기준 화면으로 전환합니다. */
  .hanmo-readiness #readiness-result:has(#readiness-grade-criteria[open])>:is(.lab-summary,.readiness-grade-legend,.readiness-grade-grid,#readiness-advice,.lab-footnote){display:none}
  .hanmo-readiness #readiness-grade-criteria[open] .lab-footnote{max-width:none}
- .hanmo-strategy .strategy-result-comparison{grid-template-columns:minmax(0,1fr) minmax(0,2.6fr);grid-template-areas:"heading order" "conditions order";grid-template-rows:auto 1fr;align-items:start;gap:5px 16px}
- .hanmo-strategy .strategy-order-heading{grid-area:heading}
- .hanmo-strategy .strategy-result-comparison>.strategy-order{grid-area:order;min-inline-size:0}
- .hanmo-strategy #strategy-setup{grid-area:conditions}
+ .hanmo-strategy .strategy-result-comparison{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:start;gap:5px 16px}
  .hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{margin:0 0 5px}
  .hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:3px 0 4px;font-size:14px;line-height:1.4}
  .hanmo-strategy .strategy-order{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:0 0 5px}
- .hanmo-strategy .strategy-order li{padding:4px 6px;text-align:left}
- .hanmo-strategy .strategy-order strong{font-size:13px;line-height:1.35}
- .hanmo-strategy .strategy-order-rank{font-size:11px;line-height:1.2}
- .hanmo-strategy .strategy-order .strategy-course-rate{font-size:11px;line-height:1.3}
+ .hanmo-strategy .strategy-order li{padding:7px 9px}
  .hanmo-strategy .strategy-order .strategy-course-track{height:5px}
  .hanmo-strategy .strategy-result-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px 8px}
  .hanmo-strategy .strategy-result-metrics>div{padding:5px 8px}
@@ -307,7 +303,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{margin-bottom:3px}
  .hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:1px 0 3px}
  .hanmo-strategy .strategy-order{gap:4px;margin-bottom:3px}
- .hanmo-strategy .strategy-order li{padding:3px 5px;gap:1px}
+ .hanmo-strategy .strategy-order li{padding:6px 8px;gap:4px}
  .hanmo-strategy .strategy-result-metrics>div{padding:4px 7px}
  .hanmo-strategy .strategy-result-metrics dt{margin-bottom:1px}
  .hanmo-strategy .strategy-result-metrics .strategy-metric-note{margin-top:1px}
@@ -317,4 +313,6 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-strategy .strategy-assumption h3{margin:2px 0 1px}
  .hanmo-strategy .strategy-assumption .lab-footnote{margin:1px 0}
  .hanmo-strategy .strategy-formulas{margin:2px 0 3px}
+ .hanmo-strategy #strategy-result:not(:has(details[open]))>.strategy-formulas{display:inline-block;vertical-align:middle;margin-inline-end:14px}
+ .hanmo-strategy #strategy-result:has(#strategy-assumptions[open]) .strategy-result-comparison{display:none}
 }

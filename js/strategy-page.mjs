@@ -12,6 +12,7 @@ if(form){
   const inputPanel=document.getElementById('strategy-input');
   const orderList=document.getElementById('strategy-order');
   const waitSummary=document.getElementById('strategy-wait-summary');
+  const assumptions=document.getElementById('strategy-assumptions');
   const formulas=document.getElementById('strategy-formulas');
   const formulaValues=document.getElementById('strategy-formula-values');
   const redo=document.getElementById('strategy-back');
@@ -127,10 +128,12 @@ if(form){
       active.terminate();worker=null;busy(false);
       if(message.type==='error'){status.textContent=message.message;return;}
       const r=message.result;
-      const outcome=(wins,guaranteed=r.guaranteed)=>{
+      const outcome=(wins,guaranteed=r.guaranteed,showCount=true)=>{
         if(guaranteed)return '100%';
-        if(wins===0)return '성공 미관측 (0/'+r.trials+'회)';
-        if(wins===r.trials)return '실패 미관측 ('+r.trials+'/'+r.trials+'회)';
+        if(wins===0||wins===r.trials){
+          const label=wins===0?'성공 미관측':'실패 미관측';
+          return showCount?label+' ('+wins+'/'+r.trials+'회)':label;
+        }
         return (100*wins/r.trials).toFixed(1)+'%';
       };
       /** @param {number} x 0~1 비율 */
@@ -142,12 +145,16 @@ if(form){
         const rank=document.createElement('span');rank.className='strategy-order-rank';rank.textContent=(slot+1)+'번째';
         const course=document.createElement('strong');course.textContent=name;
         const rate=document.createElement('span');rate.className='strategy-course-rate';
-        rate.textContent=outcome(Math.round(r.courseSuccess[slot]*r.trials),r.courseGuaranteed[slot]);
+        const wins=Math.round(r.courseSuccess[slot]*r.trials);
+        rate.textContent=outcome(wins,r.courseGuaranteed[slot],false);
+        rate.title=outcome(wins,r.courseGuaranteed[slot]);
         const bar=document.createElement('div');bar.className='strategy-course-track';bar.setAttribute('aria-hidden','true');
         const fill=document.createElement('span');
         // 추천 순서와 관측 성공률을 같은 카드에서 확인합니다.
         fill.style.width=pct(r.courseSuccess[slot]);bar.append(fill);
-        item.append(rank,course,rate,bar);
+        const headline=document.createElement('div');headline.className='strategy-card-head';
+        headline.append(rank,rate);
+        item.append(headline,course,bar);
         return item;
       }));
       set('strategy-overall-value',outcome(r.allWins));
@@ -170,6 +177,7 @@ if(form){
       formulaValues.textContent='N = '+input.courses.length+' · M = '+r.trials+' · a = '+input.actionMs+
         'ms · σ = '+input.jitterMs+'ms · t₀ = '+input.startDelayMs+'ms · τ_min = '+r.serverServiceMs+'ms · 실험 시드 '+r.seed;
       formulas.open=false;
+      assumptions.open=false;
       result.hidden=false;inputPanel.hidden=true;
       result.scrollTop=0;
       result.focus({preventScroll:true});
