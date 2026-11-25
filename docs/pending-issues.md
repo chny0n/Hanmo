@@ -1,11 +1,16 @@
 # 한모 · 현행 이슈와 PR 검토 상태
 
-> **2026-11-23 실제 GitHub 열린 일반 이슈 기준:** **27건 open**. 실행/권리/제품 정본은 [현행 아키텍처](architecture.md), [에이전트 규칙](../agent.md)이고, 각 이슈의 최신 제목·본문·담당자가 세부 구현 계약입니다. 기존의 닫힌 HMD 설계·사용자 반려 제안은 **과거 기록**이며 신규 구현 지시가 아닙니다.
+> **2026-11-25 실제 GitHub 열린 일반 이슈 기준:** **27건 open**. 실행/권리/제품 정본은 [현행 아키텍처](architecture.md), [에이전트 규칙](../agent.md)이고, 각 이슈의 최신 제목·본문·담당자가 세부 구현 계약입니다. 기존의 닫힌 HMD 설계·사용자 반려 제안은 **과거 기록**이며 신규 구현 지시가 아닙니다.
 
 ## 이번 확인·결정
 
+- 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a) (2026-11-25): [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**. `tests/browser-feature.spec.mjs:135`에서 역할 접미사가 추가된 Contributor의 `strong` 전체 문자열을 예전 이름만으로 비교하여 실패합니다. 전략 엔진 실패가 아니며 전체 기능 QA 통과로 기록하지 않습니다.
+- 전략 실험은 합성 몬테카를로 기반 개인 신청 전략 도구로 현재 기능 구성을 유지하고 안정화·재현성·설명 가능성·민감도 검증을 우선합니다. 실제 학생 선호·진입·경쟁 중복·신청량·서버 처리율은 미보정입니다. 성공률을 높이기 위한 임의 모수 조정이나 추가 분포·제도 비교·실학교 예측을 당장 개발하지 않습니다.
+- 2016년 신진이·이상원 논문 원문 검토를 반영했습니다. 전공별 과목 선호는 연구 후보이고 논문 소스코드·모수 보정 근거는 미확보입니다. [아키텍처](architecture.md) §5.
+- #135는 이미 병합되었습니다. 이전 Windows 검증 기록은 유지하고 최신 기능/물리 입력 인수는 미완료로 관리합니다.
+
 - 전략 실험 가상 정원 **1~300명**(300 허용, 301 거부 테스트), 경쟁자 0~200; 실제 학교 정원/확률과 무관. 코드 수정 [d7d87f7](https://github.com/ot4562-glitch/Hanmo_develop/commit/d7d87f7eaa1056ecb59d8cfb91927255d3a78792).
-- **[#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134):** PC 진단·8회 반응속도 테스트·가상 전략 실험의 측정 신뢰성과 Windows 실기기 인수를 공동 검증합니다. 담당자는 이의상(`uisang2004-maker`)과 김채윤(`qamarrchae`)입니다.
+- **[#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134):** PC 진단·8회 반응속도 테스트·가상 전략 실험의 안정화, 측정/계산 신뢰성과 Windows 실기기 인수를 공동 검증합니다. 담당자는 이의상(`uisang2004-maker`)과 김채윤(`qamarrchae`)입니다.
 - **[#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) (closed/not_planned):** 독립 학교 문의처 학생 페이지 제거. **[#132](https://github.com/ot4562-glitch/Hanmo_develop/issues/132)·[#133](https://github.com/ot4562-glitch/Hanmo_develop/issues/133) (closed):** 결과 PNG 공유/기록 등급/순위·부가 제안은 현행 구현 대상 아님.
 - 학사 공지·달력은 `html/academic-timeline.html` 단일 화면의 탭이고, 강의 검색은 `html/catalog.html`에만 남았습니다. 실제 학교 공지·개설·행사 자료는 `mode: disabled`이며 크롤러·Supabase 미연결입니다.
 - 실기기 Windows Chrome/Edge·200%/NVDA 원본 인수는 여전히 **미완료**이며 Node/Chromium CI 성공과 구별합니다.

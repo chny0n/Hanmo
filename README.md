@@ -110,7 +110,7 @@ flowchart LR
 | **내정보** · [열기](html/planner.html) | 캠퍼스·전공·입학년도 직접 입력과 로컬 저장 | **직접 입력 가능** · 학교 학적 미연동 |
 | **PC 진단** · [열기](html/readiness.html) | 프레임·타이머 지연과 한모 정적 CDN 응답시간·다운로드 처리량 관측 | **브라우저 관측 가능** · 브라우저 캐시와 확인할 수 없는 전송 표본 제외 |
 | **반응속도 테스트** · [열기](html/reaction-test.html) | 시각 신호에 대한 8회 반응 측정, 중앙값 로컬 저장 | **측정 가능** · 전략 실험에 자동 적용 |
-| **전략 실험** · [열기](html/strategy-lab.html) | 가상 과목의 중요 순위·정원·경쟁자와 1,000개 행동시간 표본으로 추천 순서 계산 | **가상 실험 가능** · 가정한 경쟁자 도착률에 따른 추정 범위 표시 |
+| **전략 실험** · [열기](html/strategy-lab.html) | 가상 과목 2~8개(정원 1~300·경쟁자 0~200), 계층적 반응·개인 선호·공통 FCFS 대기열, 1,000회 학습과 별도 조건별 1,000회 평가 | **합성 전략 실험** · 전체/과목별 성공 빈도·기대 성공 과목 수·전원 동시 시작 민감도; 실제 예측 미검증 |
 | **학사 정보** · [열기](html/academic-timeline.html) | **공지·월간 달력 탭 통합**, 학교 공식 일정·원문 확인 경로 | 실제 공지·행사 스냅샷 **미연결** · 공식 확정/개인별 마감 판정 아님 |
 | **강의 검색** · [열기](html/catalog.html) | 허용·검수된 개설 관측/비식별 집계의 자체 전망 표시를 준비 | **데이터 미연결** · 교수명/수강 관련 정보 제외, [이전 전망 경로](html/forecast.html)는 여기로 이동 |
 
@@ -180,7 +180,11 @@ flowchart TB
 
 Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install chromium` → `npm run test:e2e` 순서로 확인합니다. GitHub Actions의 자동 검사 통과는 Windows Chrome/Edge·NVDA·고배율 실기기 인수나 운영 배포 승인과는 별개입니다.
 
-**현행 협업 과제:** [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 **이의상(`uisang2004-maker`)·김채윤(`qamarrchae`)**이 PC 진단·반응속도·전략 실험의 고도화와 측정 신뢰성을 공동 검증합니다. 원본 연습 결과의 PNG 저장 버튼은 제거했습니다. 열린 협업 PR #120·#130·#131은 수정 요청 상태이고, 본인 Draft #93은 병합하지 않습니다.
+**현재 개발 기준(2026-11-25):** 전략 실험은 합성 몬테카를로 기반 개인 신청 전략 도구로 현재 기능 구성을 유지하고 안정화·재현성·설명 가능성·민감도 검증을 우선합니다. 실제 학생 선호·진입·경쟁 중복·신청량·서버 처리율은 미보정입니다. 성공률을 높이기 위한 임의 모수 조정이나 추가 분포·제도 비교·실학교 예측을 당장 개발하지 않습니다. 수식 보기에는 39개 MathML 수식과 가정을 표시합니다. 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a) (2026-11-25): [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**. `tests/browser-feature.spec.mjs:135`에서 역할 접미사가 추가된 Contributor의 `strong` 전체 문자열을 예전 이름만으로 비교하여 실패합니다. 전략 엔진 실패가 아니며 전체 기능 QA 통과로 기록하지 않습니다.
+
+**개발 역할:** 심민성(`ot4562-glitch`) — 한모(2026) 업데이트 총괄; 이의상(`uisang2004-maker`) — 업데이트 nlp 담당; 김채윤(`qamarrchae`) — 업데이트 데이터 및 품질 보증 담당. 개발자 소개 페이지의 기존 소속·이름을 유지하고 역할을 작은 글씨로 표시합니다.
+
+**현행 협업 과제:** [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 **이의상(`uisang2004-maker`)·김채윤(`qamarrchae`)**이 PC 진단·반응속도·전략 실험의 안정화와 측정·계산 신뢰성을 공동 검증합니다. 원본 연습 결과의 PNG 저장 버튼은 제거했습니다. 열린 협업 PR #120·#130·#131은 수정 요청 상태이고, 본인 Draft #93은 병합하지 않습니다.
 
 **단계·인수 계획:** 2차 모의신청 Windows 실기기 QA([#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71))가 끝난 다음, 3차 담당 **김채윤(`qamarrchae`)**이 선택적 Supabase Free를 **직접 설치·RLS/권한·백업/복구 실습**합니다([#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)). 현재 실제 데이터 연결은 OFF이고 정적 최소 자료가 우선입니다. 전체 프로젝트 완성 후에만 원개발자 **[dlacked/Hanmo](https://github.com/dlacked/Hanmo)**에게 결과물을 전달하고 명시적으로 인수 수락을 확인합니다([#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)). 실기기·자료/운영 인수는 아직 완료되지 않았습니다.
 
