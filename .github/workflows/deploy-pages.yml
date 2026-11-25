@@ -2,21 +2,8 @@ name: Publish Hanmo QA preview to GitHub Pages
 
 on:
   push:
+    # 최신 main만 배포할 수 있으므로 테스트·문서만 수정한 후속 커밋도 배포 후보로 등록합니다.
     branches: [main]
-    paths:
-      - 'data/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'jsconfig.json'
-      - 'index.html'
-      - 'sitemap.xml'
-      - 'tests/**'
-      - 'html/**'
-      - 'js/**'
-      - 'css/**'
-      - 'img/**'
-      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
 permissions:

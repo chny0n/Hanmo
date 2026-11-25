@@ -110,7 +110,7 @@
 
 `index.html` / `html/*.html` / `css/*.css` / `js/*.js|*.mjs`의 정적 PC 웹. Node.js 22에서 `npm ci`, `npm run check`, `npx playwright install chromium`, `npm run test:e2e`로 개발/검증합니다. `scripts/stage-static.mjs`이 웹 자산과 번들, 비공식 메타를 `dist/`로 만듭니다. GitHub Pages는 정적 미리보기이며 학교 공식 서비스/실 DB가 아닙니다.
 
-공개 QA의 `dist/data/`에는 비활성 연결 설정과 검증된 합성 네트워크 파일만 둡니다. 빌드에 포함된 외부 패키지의 라이선스와 저장소 `LICENSE`는 정적 산출물에 포함합니다. Pages는 배포 직전에 원격 `main`과 후보 SHA의 일치를 확인합니다. 구판 파일이나 외부 캐시 철회는 [운영 런북](public-data-operating-decision.md)에 따릅니다.
+공개 QA의 `dist/data/`에는 비활성 연결 설정과 검증된 합성 네트워크 파일만 둡니다. 빌드에 포함된 외부 패키지의 라이선스와 저장소 `LICENSE`는 정적 산출물에 포함합니다. Pages는 배포 직전에 원격 `main`과 후보 SHA의 일치를 확인합니다. 이 검사가 후속 테스트·문서 커밋으로 이전 후보를 차단해도 최신 후보가 누락되지 않도록 모든 `main` push에서 Pages 워크플로를 실행합니다. 수동 실행, 원본 도메인 보호, `npm run check`, 산출물 검증 및 최신 SHA 차단은 유지합니다. 구판 파일이나 외부 캐시 철회는 [운영 런북](public-data-operating-decision.md)에 따릅니다.
 
 - **연습 원본 보호:** `practice.html`·`selectZone.html`/연결 JS의 BASIC/TIME/SELECT 상태·기본 SETTING·키보드/Enter·시간 측정을 보호하고, `scripts/baselines/ui-freeze.json`과 관련 CI로 승인 변경만 허용.
 - **독립 실험:** `js/readiness.mjs`, `js/reaction-page.mjs`, `js/reaction-profile.mjs`, `js/strategy-page.mjs`, `js/strategy-worker.mjs`, `js/strategy-engine.mjs`. 실제 학교 데이터 어댑터로 가상 입력을 보내지 않습니다.
