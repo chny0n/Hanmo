@@ -12,6 +12,7 @@ if(form){
   const inputPanel=document.getElementById('strategy-input');
   const recommendation=document.getElementById('strategy-recommendation');
   const setup=document.getElementById('strategy-setup');
+  const expectedSummary=document.getElementById('strategy-expected-summary');
   const waitSummary=document.getElementById('strategy-wait-summary');
   const formulas=document.getElementById('strategy-formulas');
   const formulaValues=document.getElementById('strategy-formula-values');
@@ -130,14 +131,17 @@ if(form){
       const r=message.result;
       const outcome=wins=>{
         if(r.guaranteed)return '100%';
-        if(wins===0)return '성공 미관측';
-        if(wins===r.trials)return '실패 미관측';
+        if(wins===0)return '성공 미관측 (0/'+r.trials+'회)';
+        if(wins===r.trials)return '실패 미관측 ('+r.trials+'/'+r.trials+'회)';
         return (100*wins/r.trials).toFixed(1)+'%';
       };
       recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
         ' · 전체 성공률 '+outcome(r.allWins);
       setup.textContent='같은 순서에서 경쟁자가 여러 과목을 신청하는 정도가 낮을 때 '+outcome(r.sensitivity.lessOverlap)+
-        ' · 높을 때 '+outcome(r.sensitivity.moreOverlap)+' · 실험 시드 '+r.seed;
+        ' · 높을 때 '+outcome(r.sensitivity.moreOverlap)+
+        ' · 경쟁자 전원 동시 시작 '+outcome(r.sensitivity.synchronized)+' · 실험 시드 '+r.seed;
+      expectedSummary.textContent='기대 성공 과목 수 '+r.expectedCourses.toFixed(2)+' / '+r.order.length+'개 · 과목별 성공률 '+
+        r.order.map((name,slot)=>name+' '+outcome(Math.round(r.courseSuccess[slot]*r.trials))).join(' / ');
       waitSummary.textContent='평균 누적 대기시간 '+(r.timing.meanWaitMs/1000).toFixed(1)+
         '초 (혼잡 대기 '+(r.timing.meanQueueWaitMs/1000).toFixed(1)+
         '초 포함) · 전체 신청 시도 평균 소요시간 '+(r.timing.meanCompletionMs/1000).toFixed(1)+'초';

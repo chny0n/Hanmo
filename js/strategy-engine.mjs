@@ -40,7 +40,18 @@ const TARGET_WIDTH_PX=60;
 const TARGET_DISTANCE_MIN_PX=80;
 const TARGET_DISTANCE_SPAN_PX=400;
 const FITTS_SLOPE_MS=110;
-const OVERLAP={less:1,baseline:2,more:4};
+// 가장 경쟁자가 많은 과목을 신청할 조건부 중복 확률의 합성 시나리오입니다.
+const OVERLAP={less:0.25,baseline:0.5,more:0.75};
+// 모집단 진입의 혼합분포 및 과목 수는 실측 보정값이 아닙니다.
+const READY_SHARE=0.75;
+const LATE_ENTRY_MS=30000;
+const MIN_RIVAL_COURSES=5;
+export function competitorPopulation(maxRivals,overlap){
+  return Math.ceil(maxRivals/overlap);
+}
+export function rivalStartMs(unit,readyShare=READY_SHARE){
+  return unit<readyShare?0:LATE_ENTRY_MS*(unit-readyShare)/(1-readyShare);
+}
 // 전략 실험 전용 1~3초(양 끝 포함)의 가상 대기 범위입니다. 실제 학교 서버 측정값이 아닙니다.
 export const REQUEST_WAIT_MIN_MS=1000;
 export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=3001;
@@ -87,7 +98,7 @@ export function requestWaitMs(unit){
  * 참가자별 다음 요청만 최소 힙에 유지하는 공통 FCFS 이산사건 모형입니다.
  * 응답 기본시간에는 서버 처리시간을 포함합니다. 응답 대기가 서버를 점유하지 않습니다.
  * @param {{id:number,startMs:number,actions:number[],delays:number[],courses:number[]}[]} agents 참가자별 행동·기본 응답시간
- * @param {(agent:typeof agents[number],slot:number,arrival:number,start:number,processed:number,reply:number)=>void} onProcessed 처리된 요청
+ * @param {(agent:typeof agents[number],slot:number,arrival:number,start:number,processed:number,reply:number)=>void|boolean|number} onProcessed 처리된 요청 (false면 이후 요청 처리 중단)
  */
 export function runSharedQueue(agents,onProcessed){
   const heap=agents.filter(agent=>agent.actions.length).map(agent=>({
@@ -113,7 +124,7 @@ export function runSharedQueue(agents,onProcessed){
     const processed=serviceFinishMs(start);
     const reply=Math.max(processed,start+agent.delays[slot]);
     available=processed;
-    onProcessed(agent,slot,arrival,start,processed,reply);
+    if(onProcessed(agent,slot,arrival,start,processed,reply)===false)return;
     // 같은 참가자의 다음 요청은 응답 완료 후에만 대기열에 들어옵니다.
     node.slot++;
     if(node.slot<agent.actions.length){
@@ -189,14 +200,19 @@ function assignCourses(courses,population,seed,trial){
 }
 
 export function rivalOrder(known,urgency,draw,preference){
-  const size=known.length+Math.floor(draw()*(MAX_COURSES-known.length+1));
+  // 개인의 전체 신청량은 입력 목록에 속한 과목 수와 별도로 뽑고 배정 수 이상을 보장합니다.
+  const size=Math.max(known.length,MIN_RIVAL_COURSES+Math.floor(draw()*(MAX_COURSES-MIN_RIVAL_COURSES+1)));
   // 지수 경주로 개인별 가중 Plackett–Luce 순열을 생성합니다.
   const entries=known.map((course,index)=>({course,key:-Math.log(draw())/(urgency[course]*preference(index))}));
-  while(entries.length<size)entries.push({course:-1,key:-Math.log(draw())/preference(entries.length)});
+  // 기타 과목에도 입력 과목의 가상 경쟁률 분포를 적용하여 입력 여부에 따른 편향을 줄입니다.
+  while(entries.length<size){
+    const backgroundWeight=urgency[Math.floor(draw()*urgency.length)];
+    entries.push({course:-1,key:-Math.log(draw())/(backgroundWeight*preference(entries.length))});
+  }
   return entries.sort((a,b)=>a.key-b.key).map(({course})=>course);
 }
 
-function simulateTrial(s,urgency,population,trial){
+function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE){
   const player=userAgent(s,trial,population);
   const agents=[player];
   const portfolios=assignCourses(s.courses,population,s.seed,trial);
@@ -215,7 +231,8 @@ function simulateTrial(s,urgency,population,trial){
       movementMs(s.seed^0x1a9b42f3,trial,rival,slot),
     ));
     const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)));
-    agents.push({id:rival,startMs:0,actions,delays,courses});
+    const startMs=rivalStartMs(random01(s.seed^0x42cefe21,trial,rival,0),readyShare);
+    agents.push({id:rival,startMs,actions,delays,courses});
   }
   const times=[],closing=s.courses.map(()=>Infinity),counts=new Uint16Array(s.courses.length);
   let totalWaitMs=0,queueWaitMs=0,completionMs=0;
@@ -227,6 +244,8 @@ function simulateTrial(s,urgency,population,trial){
       totalWaitMs+=reply-arrival;
       queueWaitMs+=start-arrival;
       completionMs=reply;
+      // 마지막 본인 요청 이후의 마감은 모든 본인 처리시각보다 늦으므로 생략할 수 있습니다.
+      if(slot===player.actions.length-1)return false;
     }else{
       const course=agent.courses[slot];
       if(course>=0&&++counts[course]===s.courses[course].capacity)closing[course]=processed;
@@ -265,9 +284,9 @@ export function simulate(raw){
   const s={...raw,courses:[...raw.courses].sort((a,b)=>a.id<b.id?-1:1)};
   const n=s.courses.length;
   const urgency=s.courses.map(urgencyWeight);
-  const demand=s.courses.reduce((total,c)=>total+c.rivals,0);
   const mostRivals=Math.max(...s.courses.map(c=>c.rivals));
-  const population=overlap=>Math.max(mostRivals,Math.ceil(demand/overlap));
+  // 과목을 더 입력했다고 후보군이 자동으로 커지지 않도록 최대 수요로 규모를 고정합니다.
+  const population=overlap=>competitorPopulation(mostRivals,overlap);
   const guaranteed=s.courses.every(course=>course.capacity>course.rivals);
   const success=Array.from({length:n},()=>new Float64Array(n));
   const baseline=population(OVERLAP.baseline);
@@ -285,24 +304,34 @@ export function simulate(raw){
   const order=bestOrder(weights,probability);
   const sum=weights.reduce((a,b)=>a+b,0);
   const meanScore=order.reduce((score,j,slot)=>score+weights[j]*probability[j][slot],0)*100/sum;
-  // 별도 평가 회차에서도 공통 서버를 재실행합니다. 후보군 크기가 같은 경우에만 결과를 재사용합니다.
+  // 평가 표본과 추천 순서 선택 표본을 분리합니다. 규모와 진입 조건이 같은 경우에만 재사용합니다.
   const evaluated=new Map();
-  function evaluate(size){
-    if(evaluated.has(size))return evaluated.get(size);
+  function evaluate(size,readyShare=READY_SHARE){
+    const key=size+':'+readyShare;
+    if(evaluated.has(key))return evaluated.get(key);
     let wins=0,totalWaitMs=0,queueWaitMs=0,completionMs=0;
+    const courseWins=new Uint32Array(n);
     for(let trial=s.trials;trial<2*s.trials;trial++){
-      const sample=simulateTrial(s,urgency,size,trial);
-      if(order.every((j,slot)=>sample.times[slot]<sample.closing[j]))wins++;
+      const sample=simulateTrial(s,urgency,size,trial,readyShare);
+      let won=0;
+      for(let slot=0;slot<n;slot++){
+        if(sample.times[slot]<sample.closing[order[slot]]){
+          courseWins[slot]++;
+          won++;
+        }
+      }
+      if(won===n)wins++;
       totalWaitMs+=sample.totalWaitMs;
       queueWaitMs+=sample.queueWaitMs;
       completionMs+=sample.completionMs;
     }
-    const value={wins,timing:{
+    const courseSuccess=Array.from(courseWins,count=>count/s.trials);
+    const value={wins,courseSuccess,expectedCourses:courseSuccess.reduce((a,b)=>a+b,0),timing:{
       meanWaitMs:Math.round(totalWaitMs/s.trials),
       meanQueueWaitMs:Math.round(queueWaitMs/s.trials),
       meanCompletionMs:Math.round(completionMs/s.trials),
     }};
-    evaluated.set(size,value);
+    evaluated.set(key,value);
     return value;
   }
   const base=evaluate(baseline);
@@ -311,7 +340,9 @@ export function simulate(raw){
     seed:s.seed,trials:s.trials,order:order.map(index=>s.courses[index].name),
     ranks:order.map(index=>s.courses[index].rank),
     allWins:base.wins,meanScore,
-    sensitivity:{lessOverlap:allWins(OVERLAP.less),moreOverlap:allWins(OVERLAP.more)},
+    courseSuccess:base.courseSuccess,expectedCourses:base.expectedCourses,
+    sensitivity:{lessOverlap:allWins(OVERLAP.less),moreOverlap:allWins(OVERLAP.more),
+      synchronized:guaranteed?s.trials:evaluate(baseline,1).wins},
     timing:base.timing,
     serverServiceMs:SERVER_SERVICE_MS,
     guaranteed,

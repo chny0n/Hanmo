@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS,rivalGroupMeanMs,rivalReactionMs,rivalActionMs,fittsTimeMs,serviceFinishMs} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS,rivalGroupMeanMs,rivalReactionMs,rivalActionMs,fittsTimeMs,serviceFinishMs,competitorPopulation,rivalStartMs} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -18,6 +18,11 @@ test('가상 결과와 순서는 범위 및 과목 개수를 준수한다',()=>{
   assert.ok(Number.isInteger(r.allWins)&&r.allWins>=0&&r.allWins<=r.trials);
   assert.ok(r.meanScore>=0&&r.meanScore<=100);
   assert.equal(r.model,'SYNTHETIC_ONLY');
+  assert.equal(r.courseSuccess.length,3);
+  assert.ok(r.courseSuccess.every(p=>p>=0&&p<=1));
+  assert.ok(Math.abs(r.expectedCourses-r.courseSuccess.reduce((a,b)=>a+b,0))<1e-12);
+  assert.ok(r.courseSuccess.every(p=>p>=r.allWins/r.trials));
+  assert.ok(Number.isInteger(r.sensitivity.synchronized)&&r.sensitivity.synchronized>=0&&r.sensitivity.synchronized<=r.trials);
 });
 test('가상 정원이 충분하면 모든 과목 성공 확률은 100%다',()=>{
   const s=input();
@@ -25,6 +30,9 @@ test('가상 정원이 충분하면 모든 과목 성공 확률은 100%다',()=>
   const result=simulate(s);
   assert.equal(result.allWins,s.trials);
   assert.equal(result.guaranteed,true);
+  assert.equal(result.sensitivity.synchronized,s.trials);
+  assert.equal(result.expectedCourses,s.courses.length);
+  assert.deepEqual(result.courseSuccess,[1,1,1]);
 });
 test('경쟁자가 없으면 모든 과목에 성공한다',()=>{
   const s=input();s.courses.forEach(c=>{c.rivals=0;});
@@ -53,8 +61,8 @@ test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
   assert.throws(()=>validateScenario(limit),{name:'RangeError',message:'정원 입력값을 확인하세요.'});
 });
 test('경쟁자는 입력 목록 밖의 과목을 먼저 신청할 수 있고 최대 8과목을 선택한다',()=>{
-  const draws=[.99,.4,.7,.9,.8,.7,.8,.7,.8];
-  const order=rivalOrder([0],[1],()=>draws.shift(),()=>1);
+  const draws=[.99,.4];
+  const order=rivalOrder([0],[1],()=>draws.shift()??.9,()=>1);
   assert.equal(order.length,8);
   assert.equal(order.at(-1),0);
   assert.equal(order.filter(course=>course<0).length,7);
@@ -63,7 +71,7 @@ test('같은 난수에서 정원 대비 경쟁자가 많아지면 해당 과목�
   const order=capacity=>{
     const weights=[urgencyWeight({capacity,rivals:50}),urgencyWeight({capacity:20,rivals:50})];
     const draws=[0,.2,.5];
-    return rivalOrder([0,1],weights,()=>draws.shift(),()=>1);
+    return rivalOrder([0,1],weights,()=>draws.shift()??.01,()=>1).filter(course=>course>=0);
   };
   assert.deepEqual(order(20),[1,0]);
   assert.deepEqual(order(1),[0,1]);
@@ -231,8 +239,54 @@ test('비정상 대기열은 시간대 경계에서 남은 작업량을 정확�
 test('개인별 선호가 같으면 기존 가중 선택으로 환원되고 선호가 다르면 순서가 바뀐다',()=>{
   const pick=preference=>{
     const draws=[0,.5,.5];
-    return rivalOrder([0,1],[1,1],()=>draws.shift(),preference);
+    return rivalOrder([0,1],[1,1],()=>draws.shift()??.01,preference).filter(course=>course>=0);
   };
   assert.deepEqual(pick(()=>1),[0,1]);
   assert.deepEqual(pick(i=>i===1?4:1),[1,0]);
+});
+
+test('후보군 규모는 과목 수의 합계가 아니라 최대 수요와 중복 확률에 의해 결정된다',()=>{
+  assert.equal(competitorPopulation(0,.5),0);
+  assert.equal(competitorPopulation(50,.25),200);
+  assert.equal(competitorPopulation(50,.5),100);
+  assert.equal(competitorPopulation(50,.75),67);
+  assert.equal(competitorPopulation(51,.75),68);
+});
+test('진입 혼합분포는 즉시 시작과 지연 시작을 구분하고 동시 시작 조건을 지원한다',()=>{
+  assert.equal(rivalStartMs(.5),0);
+  assert.equal(rivalStartMs(.75),0);
+  assert.equal(rivalStartMs(.875),15000);
+  assert.ok(rivalStartMs(.9999)>29900);
+  assert.equal(rivalStartMs(.9999,1),0);
+});
+test('전체 신청량은 입력 과목 수에만 의존하지 않으며 모든 배정 과목을 보존한다',()=>{
+  for(let n=1;n<=8;n++){
+    const known=Array.from({length:n},(_,i)=>i);
+    const selected=rivalOrder(known,Array(n).fill(1),()=>.01,()=>1);
+    assert.equal(selected.length,Math.max(5,n));
+    assert.deepEqual(selected.filter(i=>i>=0).sort((a,b)=>a-b),known);
+  }
+});
+test('목록 밖 과목과 입력 과목의 경쟁 가중치가 같은 비율로 변하면 선택 순서가 유지된다',()=>{
+  const pick=w=>{
+    const draws=[.99,.2,.8,.1,.65,.4,.3,.2,.7,.9,.6,.3,.6,.2,.8];
+    return rivalOrder([0,1],[w,w],()=>draws.shift()??.7,()=>1);
+  };
+  assert.deepEqual(pick(1),pick(4));
+});
+test('마지막 본인 요청 이후 처리 생략은 대기열의 해당 시점까지의 결과를 바꾸지 않는다',()=>{
+  const agents=[
+    {id:0,startMs:0,actions:[600,600],delays:[1000,1000],courses:[0,1]},
+    {id:1,startMs:0,actions:[650,650],delays:[2000,2000],courses:[]},
+    {id:2,startMs:30000,actions:[500],delays:[1000],courses:[0]},
+  ];
+  const all=[],prefix=[];
+  runSharedQueue(agents,(agent,slot,arrival,start,end,reply)=>all.push([agent.id,slot,arrival,start,end,reply]));
+  runSharedQueue(agents,(agent,slot,arrival,start,end,reply)=>{
+    prefix.push([agent.id,slot,arrival,start,end,reply]);
+    if(agent.id===1&&slot===1)return false;
+  });
+  const last=all.findIndex(event=>event[0]===1&&event[1]===1);
+  assert.deepEqual(prefix,all.slice(0,last+1));
+  assert.ok(all.length>prefix.length);
 });
