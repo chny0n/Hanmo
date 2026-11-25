@@ -12,4 +12,4 @@
 
 ## Windows 브라우저 및 실기기 인수
 
-[Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 설치된 Chrome·Edge 채널에서 두 자동 브라우저 묶음을 실행하고 실제 OS/버전/SHA 및 캡처를 보관합니다. [#71·#72 실기기 인수 체크리스트](qa/windows-acceptance.md)에 따라 물리 키보드, 실제 브라우저 확대 200%, NVDA와 최대 표·긴 내정보의 배치를 별도로 검증합니다.
+[Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 설치된 Chrome·Edge 채널에서 두 자동 브라우저 묶음을 실행하고 OS·버전·SHA와 캡처를 보관합니다. [QA 결과 보고서](qa/2026-11-25-full-qa.md)에는 자동화 결과와 미실시 항목이 별도로 기록되어 있습니다.
