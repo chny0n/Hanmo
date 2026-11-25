@@ -228,7 +228,7 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
   await page.goto('/html/selectZone.html');
   const info=page.locator('.practice-profile');
   await expect(info).toBeVisible();
-  await expect(info).toHaveText(practiceText);
+  await expect(info).toHaveText(practiceText,{useInnerText:true});
   expect(await page.locator('.userInfo').boundingBox()).toEqual(practiceBox);
   await expect(info).toContainText('2023년');
   await expect(info).toContainText('서울캠퍼스');

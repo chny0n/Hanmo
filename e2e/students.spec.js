@@ -138,3 +138,53 @@ test('모바일 사용자 환경은 별도의 PC 안내로 이동한다',async({
     await expect(page.getByRole('heading',{name:'PC에서 이용해 주세요'})).toBeVisible();
   }finally{await context.close();}
 });
+
+test('입력한 내정보는 상단 바에서 입학년도까지 잘림 없이 표시된다',async({page,baseURL})=>{
+  const origin=new URL(baseURL).origin;
+  await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  await page.setViewportSize({width:1280,height:720});
+  await page.goto('/html/planner.html');
+  await page.locator('#planner-campus').selectOption('SEOUL');
+  const major='가상 국제경제 및 데이터분석 전공';
+  const second='가상 통계 및 컴퓨터공학 전공';
+  await page.locator('#planner-major').fill(major);
+  await page.locator('#planner-secondary-kind').selectOption('DOUBLE');
+  await page.locator('#planner-double').fill(second);
+  await page.locator('#planner-cohort').fill('2024');
+  await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
+  const expected='서울캠퍼스 · '+major+' · 이중전공 '+second+' · 2024학번';
+  const verify=async()=>{
+    const summary=page.locator('[data-profile-summary]');
+    await expect(summary).toBeVisible();
+    await expect(summary).toHaveText(expected);
+    await expect(summary).toHaveCSS('text-overflow','clip');
+    await expect(summary).toHaveCSS('white-space','normal');
+    const layout=await summary.evaluate(el=>{
+      const rect=el.getBoundingClientRect();
+      const bar=el.closest('.hanmo-topbar');
+      const links=Array.from(bar.querySelectorAll('a')).map(link=>link.getBoundingClientRect());
+      const range=document.createRange();
+      range.selectNodeContents(el);
+      const lines=Array.from(range.getClientRects());
+      return {
+        width:el.clientWidth,scrollWidth:el.scrollWidth,height:el.clientHeight,scrollHeight:el.scrollHeight,
+        visible:lines.length>0&&lines.every(r=>r.left>=rect.left-1&&r.right<=rect.right+1&&r.top>=rect.top-1&&r.bottom<=rect.bottom+1),
+        linksFit:links.every(r=>r.left>=-1&&r.right<=window.innerWidth+1),
+        noOverlap:links.every(r=>r.right<=rect.left+1||r.left>=rect.right-1||r.bottom<=rect.top+1||r.top>=rect.bottom-1),
+      };
+    });
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width+1);
+    expect(layout.scrollHeight).toBeLessThanOrEqual(layout.height+1);
+    expect(layout.visible).toBe(true);
+    expect(layout.linksFit).toBe(true);
+    expect(layout.noOverlap).toBe(true);
+  };
+  await verify();
+  for(const viewport of [{width:1920,height:1080},{width:1280,height:720},{width:1024,height:768},{width:700,height:768}]){
+    await page.setViewportSize(viewport);
+    for(const path of ['/index.html','/html/readiness.html','/html/vsugang.html']){
+      await page.goto(path);
+      await verify();
+    }
+  }
+});
