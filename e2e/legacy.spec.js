@@ -201,7 +201,7 @@ test('조작한 과목 수가 결과 화면에서 HTML로 해석되지 않는다
   await expect(page.locator('.result p span')).toContainText('초');
 });
 
-test('신청 화면은 내정보를 표시하고 두 표의 제한된 크기와 검색 전후 위치를 유지한다',async({page,baseURL})=>{
+test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테두리 없이 제한된 크기를 유지한다',async({page,baseURL})=>{
   await page.route(url=>url.origin!==new URL(baseURL).origin,route=>route.abort());
   await page.clock.install({time:safeDate});
   await page.setViewportSize({width:1753,height:832});
@@ -216,8 +216,20 @@ test('신청 화면은 내정보를 표시하고 두 표의 제한된 크기와 
       campus:'SEOUL',major:'가상전공 A',secondaryKind:'DOUBLE',doubleMajor:'가상전공 B',cohort:2023,
     }));
   });
+  await page.goto('/html/practice.html');
+  const practiceInfo=page.locator('.practice-profile');
+  await expect(practiceInfo).toBeVisible();
+  await expect(practiceInfo.locator('[data-practice-field="cohort"]')).toHaveText('2023년');
+  await expect(practiceInfo.locator('[data-practice-field="campus"]')).toHaveText('서울캠퍼스');
+  await expect(practiceInfo.locator('[data-practice-field="major"]')).toHaveText('가상전공 A');
+  await expect(practiceInfo.locator('[data-practice-field="secondary"]')).toHaveText('가상전공 B');
+  const practiceText=await practiceInfo.innerText();
+  const practiceBox=await page.locator('.userInfo').boundingBox();
   await page.goto('/html/selectZone.html');
   const info=page.locator('.practice-profile');
+  await expect(info).toBeVisible();
+  await expect(info).toHaveText(practiceText);
+  expect(await page.locator('.userInfo').boundingBox()).toEqual(practiceBox);
   await expect(info).toContainText('2023년');
   await expect(info).toContainText('서울캠퍼스');
   await expect(info).toContainText('가상전공 A');
@@ -232,6 +244,12 @@ test('신청 화면은 내정보를 표시하고 두 표의 제한된 크기와 
     return {main:rect('.selectZone_mainArea'),available:rect('.vsugangTable'),
       done:rect('.vsugangedTable'),footer:rect('body > .hanmo-policy-footer')};
   });
+  for(const selector of ['.vsugangTable','.vsugangedTable']){
+    const panel=page.locator(selector);
+    for(const side of ['top','right','bottom','left']){
+      await expect(panel).toHaveCSS('border-'+side+'-width','0px');
+    }
+  }
   const before=await geometry();
   expect(before.available.width/before.main.width).toBeCloseTo(.953,2);
   expect(before.available.height/832).toBeCloseTo(.46,2);

@@ -40,8 +40,6 @@ test('PC 진단은 실행 전 요청이 없고 다운로드 처리량을 측정�
   await expect(page.locator('#readiness-latency-value')).toContainText('ms');
   await expect(page.locator('#readiness-jitter-value')).toContainText('ms');
   await expect(page.locator('#readiness-error-value')).toHaveText('0/7회 실패 · 0회 제외');
-  await expect(page.locator('#readiness-advice')).toBeVisible();
-  await expect(page.locator('#readiness-advice')).toContainText('웹 페이지를 열 때마다');
   await expect(page.locator('#readiness-share')).toHaveCount(0);
   expect(requests.filter(u=>u.includes('network-probe.txt')).length).toBe(2);
   expect(requests.some(u=>/hufs\.ac\.kr/.test(u))).toBe(false);
@@ -85,8 +83,6 @@ test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 �
   await expect(page.locator('#readiness-result')).toBeVisible();
   await expect(page.locator('#readiness-error-value')).toHaveText('미측정');
   await expect(advice).not.toContainText('한모 연결:');
-  await expect(advice).toBeVisible();
-  await expect(advice).toContainText('유의사항 4번');
 });
 
 test('긴 작업이 미지원이면 다른 PC 진단 결과를 계속 표시한다',async({page})=>{

@@ -42,22 +42,19 @@ test('지터는 실패 또는 제외된 요청을 건너뛰어 비교하지 않�
     {median:70,jitter:5,mbps:5,failures:1,latencyCount:3,downloadCount:1,excluded:2});
 });
 
-test('모든 이상 기준을 만족하면 기존 판정 5개와 조치 3개 및 공통 브라우저 안내를 표시한다',()=>{
+test('모든 이상 기준을 만족하면 기존 판정 5개와 중복 없는 조치 3개를 표시한다',()=>{
   const measurement={frame:{interruptions:3,median:30},longTasks:3,network:{failures:2,excluded:0},drift:100};
   const assessment=assessReadiness(measurement);
   assert.equal(assessment.messages.length,5);
   assert.deepEqual(assessment.messages,findings(measurement));
-  assert.equal(assessment.actions.length,4);
+  assert.equal(assessment.actions.length,3);
   assert.match(assessment.actions[0],/주사율/);
   assert.match(assessment.actions[1],/작업 관리자/);
   assert.match(assessment.actions[2],/유선 연결/);
-  assert.match(assessment.actions[3],/유의사항 4번.*웹 페이지를 열 때마다.*지원이 종료/);
 });
 test('개별 판정은 해당 조치만 제공하고 중복된 브라우저 조치를 만들지 않는다',()=>{
   const normal={frame:{interruptions:2,median:29.9},longTasks:2,network:null,drift:99.9};
-  const common=assessReadiness(normal).actions;
-  assert.equal(common.length,1);
-  assert.match(common[0],/유의사항 4번.*웹 페이지를 열 때마다/);
+  assert.deepEqual(assessReadiness(normal).actions,[]);
   for(const [change,expected] of [
     [{frame:{interruptions:3,median:16}},/^화면 갱신:/],
     [{frame:{interruptions:0,median:30}},/^화면 갱신:/],
@@ -67,22 +64,19 @@ test('개별 판정은 해당 조치만 제공하고 중복된 브라우저 조�
   ]){
     const assessment=assessReadiness({...normal,...change});
     assert.equal(assessment.messages.length,1);
-    assert.equal(assessment.actions.length,2);
+    assert.equal(assessment.actions.length,1);
     assert.match(assessment.actions[0],expected);
-    assert.equal(assessment.actions[1],common[0]);
   }
 });
 test('미지원·미실시 지표는 이상으로 처리하지 않고 불완전한 연결 표본은 재측정만 안내한다',()=>{
   const measurement={frame:{interruptions:0,median:16},longTasks:null,network:null,drift:null};
   const normal=assessReadiness(measurement);
   assert.match(normal.messages[0],/뚜렷한 이상을 발견하지 못했습니다/);
-  assert.equal(normal.actions.length,1);
-  assert.match(normal.actions[0],/유의사항 4번.*웹 페이지를 열 때마다/);
+  assert.deepEqual(normal.actions,[]);
   for(const network of [{failures:1,excluded:0},{failures:0,excluded:2}]){
     const limited=assessReadiness({...measurement,network});
     assert.deepEqual(limited.messages,normal.messages);
-    assert.equal(limited.actions.length,2);
+    assert.equal(limited.actions.length,1);
     assert.match(limited.actions[0],/^연결 측정 제한:/);
-    assert.equal(limited.actions[1],normal.actions[0]);
   }
 });
