@@ -53,6 +53,8 @@ export function assessReadiness({frame,longTasks,network,drift}){
   if(busy||delayed)actions.push('브라우저 부하: 사용하지 않는 탭·프로그램을 닫고 작업 관리자에서 CPU·메모리 사용량을 확인한 뒤 현재 탭을 활성화한 상태로 다시 검사하세요.');
   if(failed)actions.push('한모 연결: 대용량 다운로드를 멈추고 안정적인 Wi-Fi 또는 유선 연결에서 재검사하세요. 계속 실패하면 한모 서비스 상태도 확인하세요.');
   else if(network&&(network.failures>0||(network.excluded??0)>0))actions.push('연결 측정 제한: 일부 표본을 확인하지 못했습니다. 안정적인 연결에서 다시 검사해 보세요.');
+  // 사용자가 제공한 학교 유의사항 4번의 구형 브라우저 안내는 이상 유무와 관계없이 표시합니다.
+  actions.push('브라우저 설정 확인(학교 수강신청 유의사항 4번): Internet Explorer 기준으로 도구(Alt+X) → 인터넷 옵션 → 일반 → 검색 기록 설정 → 임시 인터넷 파일에서 웹 페이지를 열 때마다 확인하도록 설정하는 안내입니다. IE는 지원이 종료된 브라우저이며, Chrome·Edge에서는 동일 메뉴를 찾거나 IE를 설치할 필요 없이 학교의 최신 안내를 확인하세요.');
   return {messages,actions};
 }
 export function findings(measurement){

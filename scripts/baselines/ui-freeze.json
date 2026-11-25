@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤.",
+  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤. 신청 화면 내정보 표시 및 두 표의 제한된 스크롤 규격 반영. PC 진단 공통 브라우저 안내.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -33,7 +33,7 @@
     },
     {
       "path": "css/hanmo-policy-footer.css",
-      "sha": "4d8a6331659bfe385fcd3cf7ec49c64895eed009"
+      "sha": "9a7f3b31cba96a613e77a347d8fa6b83ae45f9a8"
     },
     {
       "path": "css/hanmo-refined.css",
@@ -73,7 +73,7 @@
     },
     {
       "path": "css/practice.css",
-      "sha": "a07e1630ffbd8fa7f67beaa9963b7eb81f57a2de"
+      "sha": "8646cbdb7905bbb5c805479ea9dacd297d3155d9"
     },
     {
       "path": "css/result.css",
@@ -137,7 +137,7 @@
     },
     {
       "path": "html/selectZone.html",
-      "sha": "9c3497be93620f3fba62168d209ee3a7b3c07b60"
+      "sha": "989dad1fc7628aac304fd72219810ae7b2e4e24c"
     },
     {
       "path": "html/strategy-lab.html",
@@ -285,7 +285,7 @@
     },
     {
       "path": "js/student-profile-bar.js",
-      "sha": "70ac52364d854b85422a711238f16752fc546bac"
+      "sha": "b4d144468e8ccce729be1af5820a9259e1004895"
     },
     {
       "path": "js/vsugang-fit.js",

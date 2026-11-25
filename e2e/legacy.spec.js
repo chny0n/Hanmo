@@ -200,3 +200,59 @@ test('조작한 과목 수가 결과 화면에서 HTML로 해석되지 않는다
   await expect(page.locator('.time img')).toHaveCount(0);
   await expect(page.locator('.result p span')).toContainText('초');
 });
+
+test('신청 화면은 내정보를 표시하고 두 표의 제한된 크기와 검색 전후 위치를 유지한다',async({page,baseURL})=>{
+  await page.route(url=>url.origin!==new URL(baseURL).origin,route=>route.abort());
+  await page.clock.install({time:safeDate});
+  await page.setViewportSize({width:1753,height:832});
+  await page.addInitScript(()=>{
+    localStorage.setItem('deviceInfo','true');
+    localStorage.setItem('practiceSetter','3');
+    localStorage.setItem('psubjectValue','15');
+    localStorage.setItem('subjectValue','15');
+    localStorage.setItem('waitingValue','no');
+    localStorage.setItem('waitingEntryValue','no');
+    localStorage.setItem('hanmo:student-planner:profile:v1',JSON.stringify({
+      campus:'SEOUL',major:'가상전공 A',secondaryKind:'DOUBLE',doubleMajor:'가상전공 B',cohort:2023,
+    }));
+  });
+  await page.goto('/html/selectZone.html');
+  const info=page.locator('.practice-profile');
+  await expect(info).toContainText('2023년');
+  await expect(info).toContainText('서울캠퍼스');
+  await expect(info).toContainText('가상전공 A');
+  await expect(info).toContainText('가상전공 B');
+  await expect(page.locator('.practice-profile-note')).toContainText('학교 로그인 아님');
+  const geometry=()=>page.evaluate(()=>{
+    const rect=selector=>{
+      const el=document.querySelector(selector);
+      const r=el.getBoundingClientRect();
+      return {left:r.left,top:r.top,width:r.width,height:r.height,bottom:r.bottom};
+    };
+    return {main:rect('.selectZone_mainArea'),available:rect('.vsugangTable'),
+      done:rect('.vsugangedTable'),footer:rect('body > .hanmo-policy-footer')};
+  });
+  const before=await geometry();
+  expect(before.available.width/before.main.width).toBeCloseTo(.953,2);
+  expect(before.available.height/832).toBeCloseTo(.46,2);
+  expect(Math.abs(before.available.left-before.done.left)).toBeLessThanOrEqual(1);
+  expect(Math.abs(before.available.width-before.done.width)).toBeLessThanOrEqual(1);
+  expect(before.done.top-before.available.bottom).toBeGreaterThanOrEqual(15);
+  expect(before.done.bottom).toBeLessThanOrEqual(before.footer.top+1);
+  await page.locator('button.search').click();
+  await expect(page.locator('.table')).toBeVisible();
+  expect(await geometry()).toEqual(before);
+  const scroll=await page.locator('.vsugangTable').evaluate(el=>{
+    el.scrollTop=el.scrollHeight;
+    return {top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight};
+  });
+  expect(scroll.height).toBeGreaterThan(scroll.client);
+  expect(scroll.top).toBeGreaterThan(0);
+  expect(await geometry()).toEqual(before);
+  await page.evaluate(()=>{
+    localStorage.removeItem('hanmo:student-planner:profile:v1');
+    window.dispatchEvent(new Event('hanmo:profile-changed'));
+  });
+  await expect(info.locator('[data-practice-field="major"]')).toHaveText('미입력');
+  await expect(info.locator('[data-practice-field="cohort"]')).toHaveText('미입력');
+});
