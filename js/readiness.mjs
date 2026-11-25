@@ -45,7 +45,7 @@ function thresholdGrade(value,limits,higher=false){
 /**
  * 수강신청용 참고 등급입니다. 공식 벤치마크나 실제 학교 서버의 성능 등급이 아닙니다.
  * @param {{frame:{median:number,p95:number,interruptions:number,samples:number}|null,longTasks:number|null,drift:number|null,timerCount:number,
- * network:ReturnType<typeof networkStats>|null,connectionType?:string,threads?:number,memory?:number,reactionMs?:number}} measurement
+ * network:ReturnType<typeof networkStats>|null,connectionType?:string,threads?:number,memory?:number,reactionMs?:number}} measurement 관측값과 유효 표본 수
  * @returns {Record<string,GradeResult>}
  */
 export function gradeReadiness({frame,longTasks,drift,timerCount,network,connectionType,threads,memory,reactionMs}){
