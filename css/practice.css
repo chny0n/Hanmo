@@ -480,14 +480,15 @@ th {
 /* 연습 및 신청 화면에 동일한 로컬 내정보를 기존 좌측 영역에 표시합니다. */
 .hanmo-practice-layout .navigation:has(.practice-profile){overflow-y:auto}
 .hanmo-practice-layout .userInfo:has(.practice-profile){
-  box-sizing:border-box;flex:0 0 218px;min-height:0;overflow-y:auto;padding:5px 10px 8px;
+  /* 보통 길이의 내정보는 기존 218px 안에 배치하고, 매우 긴 입력만 높이를 늘립니다. */
+  box-sizing:border-box;flex:0 0 auto;height:auto;min-height:218px;overflow:visible;padding:5px 10px 8px;
   display:flex;flex-direction:column;
 }
-.hanmo-practice-layout .userInfo:has(.practice-profile) h1{margin:0 0 10px}
-.hanmo-practice-layout .userInfo:has(.practice-profile) .practiceMode{margin:0 0 9px}
-.hanmo-practice-layout .practice-profile-note{margin:0 0 6px;font-size:11px;line-height:1.4}
+.hanmo-practice-layout .userInfo:has(.practice-profile) h1{margin:0 0 4px}
+.hanmo-practice-layout .userInfo:has(.practice-profile) .practiceMode{margin:0 0 4px}
+.hanmo-practice-layout .practice-profile-note{margin:0 0 3px;font-size:11px;line-height:1.3}
 .hanmo-practice-layout .practice-profile{
-  margin:0;font-size:12px;line-height:1.45;min-height:0;overflow-y:auto;flex:0 1 auto;
+  margin:0 0 4px;font-size:12px;line-height:1.3;min-height:0;overflow:visible;flex:0 0 auto;
 }
 .hanmo-practice-layout .userInfo:has(.practice-profile) :is(h1,.practiceMode,.practice-profile-note){flex:0 0 auto}
 /* 참고 경고 표지의 검정 머리글·노란 본문·사선 띠를 CSS로 구현합니다. */
@@ -508,7 +509,7 @@ th {
   background:repeating-linear-gradient(135deg,#080808 0 9px,#f6c32c 9px 18px);
 }
 .hanmo-practice-layout .practice-profile>div{
-  display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px;margin:0 0 5px;align-items:start;
+  display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px;margin:0 0 2px;align-items:start;
 }
 .hanmo-practice-layout .practice-profile dt::after{content:" :"}
 .hanmo-practice-layout .practice-profile dd{margin:0;min-width:0;overflow-wrap:anywhere}

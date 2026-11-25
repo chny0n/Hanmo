@@ -227,10 +227,18 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
       const box=el.getBoundingClientRect();
       const panel=el.closest('.userInfo').getBoundingClientRect();
       const profile=el.previousElementSibling.getBoundingClientRect();
+      const info=el.previousElementSibling;
+      const user=el.closest('.userInfo');
+      const rows=Array.from(info.children).map(row=>row.getBoundingClientRect());
       return {inside:box.bottom<=panel.bottom+1&&box.left>=panel.left&&box.right<=panel.right,
-        below:box.top>=profile.bottom-1};
+        below:box.top>=profile.bottom-1,
+        profileFits:info.scrollHeight<=info.clientHeight+1,
+        panelFits:user.scrollHeight<=user.clientHeight+1,
+        allRowsVisible:rows.every(r=>r.top>=panel.top&&r.bottom<=box.top+1),
+        panelHeight:panel.height,
+        overflow:getComputedStyle(info).overflowY};
     });
-    expect(position).toEqual({inside:true,below:true});
+    expect(position).toEqual({inside:true,below:true,profileFits:true,panelFits:true,allRowsVisible:true,panelHeight:218,overflow:'visible'});
   };
   const practiceInfo=page.locator('.practice-profile');
   await expect(practiceInfo).toBeVisible();
@@ -290,4 +298,21 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
   });
   await expect(info.locator('[data-practice-field="major"]')).toHaveText('미입력');
   await expect(info.locator('[data-practice-field="cohort"]')).toHaveText('미입력');
+  // 긴 전공명도 내부 스크롤이나 말줄임으로 감추지 않고 필요한 높이를 확보합니다.
+  await page.evaluate(()=>{
+    localStorage.setItem('hanmo:student-planner:profile:v1',JSON.stringify({
+      campus:'GLOBAL',major:'가상전공'.repeat(20),secondaryKind:'DOUBLE',doubleMajor:'가상부전공'.repeat(20),cohort:2024,
+    }));
+    window.dispatchEvent(new Event('hanmo:profile-changed'));
+  });
+  await expect(info.locator('[data-practice-field="cohort"]')).toHaveText('2024년');
+  const longProfile=await info.evaluate(el=>{
+    const panel=el.closest('.userInfo');
+    const warning=panel.querySelector('.practice-warning');
+    return {height:panel.getBoundingClientRect().height,overflow:getComputedStyle(el).overflowY,
+      profileFits:el.scrollHeight<=el.clientHeight+1,panelFits:panel.scrollHeight<=panel.clientHeight+1,
+      below:warning.getBoundingClientRect().top>=el.getBoundingClientRect().bottom-1};
+  });
+  expect(longProfile.height).toBeGreaterThan(218);
+  expect(longProfile).toMatchObject({overflow:'visible',profileFits:true,panelFits:true,below:true});
 });
