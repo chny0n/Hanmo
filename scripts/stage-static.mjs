@@ -1,6 +1,7 @@
-import {copyFile,cp,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
-import {extname,resolve,join,relative} from 'node:path';
+import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
+import {resolve,join,dirname} from 'node:path';
 import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe} from './preview-data.mjs';
+import {assertStudentBundleMeta,readPublicAssets} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
@@ -14,7 +15,12 @@ const config=await readFile(join(root,'data','academic-source-config.json'),'utf
 const probe=await readFile(join(root,'data','network-probe.txt'),'utf8');
 assertDisabledPreviewConfig(config);
 assertSyntheticNetworkProbe(probe);
-const {outputs}=JSON.parse(await readFile(join(build,'bundle-meta.json'),'utf8'));
+const meta=JSON.parse(await readFile(join(build,'bundle-meta.json'),'utf8'));
+assertStudentBundleMeta(meta);
+const {outputs}=meta;
+const publicAssets=await readPublicAssets(root);
+for(const path of publicAssets)
+  if(!(await lstat(join(root,path))).isFile())throw Error('정적 공개 파일이 일반 파일이 아닙니다: '+path);
 const bundledPackages=new Set();
 for(const output of Object.values(outputs)){
   for(const [path,{bytesInOutput}] of Object.entries(output.inputs)){
@@ -38,17 +44,11 @@ await copyFile(join(root,'index.html'),join(dist,'index.html'));
 await copyFile(join(root,'sitemap.xml'),join(dist,'sitemap.xml'));
 await copyFile(join(root,'LICENSE'),join(dist,'LICENSE'));
 await writeFile(join(dist,'THIRD-PARTY-NOTICES.txt'),notices.join('\n\n---\n\n')+'\n');
-const extensions={css:new Set(['.css']),js:new Set(['.js','.mjs']),
-  html:new Set(['.html']),img:new Set(['.png','.jpg','.svg'])};
-for(const [directory,allowed] of Object.entries(extensions)){
-  const sourceDir=join(root,directory);
-  await cp(sourceDir,join(dist,directory),{recursive:true,filter:async source=>{
-    const path=relative(sourceDir,source).replaceAll('\\','/');
-    if(path===''||(directory==='img'&&path==='lucide'))return (await lstat(source)).isDirectory();
-    if(path.includes('/')&&!(directory==='img'&&path.startsWith('lucide/')))return false;
-    if(!allowed.has(extname(path))&&!(directory==='img'&&path==='lucide/LICENSE'))return false;
-    return (await lstat(source)).isFile();
-  }});
+// 새 파일은 허용 목록에 명시하기 전에는 공개 산출물에 복사되지 않는다.
+for(const path of publicAssets){
+  const target=join(dist,path);
+  await mkdir(dirname(target),{recursive:true});
+  await copyFile(join(root,path),target);
 }
 await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(build,'academic-calendar.css'),join(dist,'css','academic-calendar-vendor.css'));

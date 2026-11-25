@@ -34,12 +34,12 @@ jobs:
       - name: Use Node.js 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
           cache: npm
       - name: Install browser-only planner dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Run repository checks and build the preview
-        run: npm run check
+        run: npm run check:student
       - name: Protect the original site's custom domain
         run: |
           test ! -e CNAME

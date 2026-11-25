@@ -21,3 +21,7 @@
 - UI 기준은 [화면 동결 목록](../scripts/baselines/ui-freeze.json)의 **현행 blob SHA**입니다. 역사적인 기준 커밋 `da30a875` 자체가 이후 사용자 승인 변경을 막는 것은 아니며, 기존 BASIC/TIME/SELECT 원본 파일 보호와 PC 브라우저 QA는 별도입니다.
 - 3차 [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 PostgreSQL 16 격리 시험은 학생용 Supabase 구축이 아닙니다. **4차 최종 제품 인수**에는 학교 권리·실DB·PC/접근성·운영자 검증이 필요합니다. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)–[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
 - 새 코드·테스트는 JavaScript/JSDoc, 자연어 주석은 한국어로 작성합니다. 생성 번들, 미허용 React/Fastify·학교 인증·개인정보 원본은 이식하지 않습니다.
+
+## 학생 배포 경계
+
+개설 전망 계약은 `js/academic/contracts/forecast/offering.js`에 분리합니다. 기존 `contracts/index.js` 내보내기는 연구 코드 호환을 위해 유지하지만 학생 번들에는 허용하지 않습니다. 학생 빌드의 명시적 입력·정적 자산 허용 목록과 연구 테스트 분리는 [ADR](adr/2026-11-25-student-build-boundary.md)에 따릅니다. 연구 소스 보존은 운영 승인이나 실제 학사자료 연결이 아닙니다.

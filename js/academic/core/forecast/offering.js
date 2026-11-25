@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import("../../contracts/index.js").OfferingOutlookVNext} OfferingOutlookVNext */
+/** @typedef {import("../../contracts/forecast/offering.js").OfferingOutlookVNext} OfferingOutlookVNext */
 /** @typedef {{ term:string; state:'OFFERED'|'CONFIRMED_NOT_OFFERED'|'UNKNOWN'; coverage:'COMPLETE_TERM_CATALOG'|'PARTIAL'|'NOTICE_ONLY'; sourceRef:string; publishedAt:string; verifiedAt:string; courseIdentity?:ObservationCourseIdentity; }} OfferingObservation */
 /** @typedef {| {state:'RESOLVED'; revisionRef:string; checkedAt:string} | {state:'EQUIVALENCE_UNVERIFIED'}} ObservationCourseIdentity */
 /** @typedef {'RESOLVED'|'EQUIVALENCE_UNVERIFIED'} TargetCourseIdentity */
@@ -10,7 +10,7 @@
 /** @typedef {{ asOf:string; items:OfferingOutlookVNext[]; status:'READY'|'INSUFFICIENT_DATA'; }} ForecastOfferingsResult */
 /** @typedef {{ publishedAt:string; verifiedAt:string; sourceRef:string; }} Timed */
 /** @typedef {{ signal:OfferingOutlookVNext['signal']; caveat:string; evidenceRefs:string[]; sourcePublishedAt?:string; }} Decision */
-import { OfferingOutlookVNextSchema } from '../../contracts/index.js';
+import { OfferingOutlookVNextSchema } from '../../contracts/forecast/offering.js';
 /**
  * 한 과목·대상 학기의 개설 전망 계산이다.
  * asOf는 호출자가 지정하며 시계·네트워크·난수에 의존하지 않는다.

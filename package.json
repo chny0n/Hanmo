@@ -8,14 +8,17 @@
     "smoke": "node --test tests/strategy-engine.test.mjs tests/readiness-metrics.test.mjs tests/reaction-profile.test.mjs && node scripts/check-static-pages.mjs && node --test tests/academic-data-source.test.cjs tests/student-navigation.test.cjs tests/policy-footer.test.cjs tests/student-profile.test.cjs tests/home-fit.test.cjs tests/vsugang-fit.test.cjs && node --test tests/collection-window.test.mjs tests/preview-data.test.mjs tests/preview-withdrawal.test.mjs",
     "collection:status": "node scripts/check-collection-window.mjs",
     "collection:gate": "node scripts/check-collection-window.mjs --enforce",
-    "check": "npm run check:boundaries && npm run check:syntax && npm run check:types && npm run test && npm run check:legacy && npm run build && npm run smoke",
+    "check": "npm run check:student && npm run test:research",
     "check:legacy": "node --test tests/device-gate.test.cjs tests/legacy-baseline.test.cjs tests/scenario-settings.test.cjs tests/incident-404.test.cjs tests/waiting-settings.test.cjs",
     "check:protected": "node scripts/assert-protected.mjs",
-    "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs && node scripts/assert-korean-comments.mjs && node --test tests/korean-comment-policy.test.cjs",
+    "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs && node scripts/assert-korean-comments.mjs && node --test tests/korean-comment-policy.test.cjs && node scripts/assert-action-pins.mjs && node --test tests/student-boundary.test.mjs",
     "check:syntax": "node scripts/check-js-syntax.mjs",
     "check:types": "tsc -p jsconfig.json",
     "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "test:student": "vitest run js/academic/core/forecast/offering.test.js js/academic/views/forecast-student-input.test.js js/academic/views/student-entry.test.js",
+    "test:research": "vitest run js/academic/core js/academic/views --exclude js/academic/core/forecast/offering.test.js --exclude js/academic/views/forecast-student-input.test.js --exclude js/academic/views/student-entry.test.js",
+    "check:student": "npm run check:boundaries && npm run check:syntax && npm run check:types && npm run test:student && npm run check:legacy && npm run build && npm run smoke"
   },
   "dependencies": {
     "papaparse": "5.7.0",
@@ -31,5 +34,8 @@
     "typescript": "5.9.3",
     "vitest": "5.1.1",
     "@playwright/test": "1.65.1"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

@@ -16,10 +16,12 @@ on:
       - 'docs/architecture.md'
       - 'package.json'
       - 'package-lock.json'
+      - '.nvmrc'
+      - '.npmrc'
       - 'playwright.config.mjs'
       - 'e2e/**'
       - 'jsconfig.json'
-      - '.github/workflows/academic-ci.yml'
+      - '.github/workflows/**'
 permissions:
   contents: read
 concurrency:
@@ -36,12 +38,12 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
           cache: npm
       - run: node scripts/assert-protected.mjs
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hanmo-root-static-preview
           path: dist
@@ -50,7 +52,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run Chromium end-to-end scenarios
         run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ !cancelled() }}
         with:
           name: hanmo-playwright-report

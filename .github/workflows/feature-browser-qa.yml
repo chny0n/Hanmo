@@ -5,17 +5,18 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'html/selectZone.html'
-      - 'js/selectZone.js'
-      - 'html/academic-progress.html'
-      - 'js/academic/app/degree-preparation.js'
-      - 'js/academic/app/academic-calendar.js'
-      - 'css/academic-calendar.css'
+      - 'index.html'
+      - 'html/**'
+      - 'css/**'
+      - 'js/**'
+      - 'img/**'
+      - 'data/**'
+      - 'scripts/**'
+      - 'tests/**'
       - 'package.json'
-      - 'tests/browser-feature.spec.mjs'
-      - 'tests/playwright-feature.config.mjs'
-      - 'scripts/serve-feature-preview.mjs'
-      - 'scripts/serve-static.mjs'
+      - 'package-lock.json'
+      - '.nvmrc'
+      - '.npmrc'
       - '.github/workflows/feature-browser-qa.yml'
 permissions:
   contents: read
@@ -29,18 +30,17 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
-      - name: Install site dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Install pinned browser test runner for isolated QA
-        run: npm install --no-save --ignore-scripts --no-audit --no-fund @playwright/test@1.65.1
+          node-version-file: '.nvmrc'
+          cache: npm
+      - name: Install locked site dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Build static site
         run: npm run build
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Test real browser flows and capture four radio states
         run: npx playwright test --config tests/playwright-feature.config.mjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ !cancelled() }}
         with:
           name: hanmo-feature-browser-qa

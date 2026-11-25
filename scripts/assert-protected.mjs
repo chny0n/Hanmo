@@ -52,7 +52,7 @@ const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith
  ||p.startsWith('img/lucide/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
  '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml',
- 'package-lock.json','playwright.config.mjs'].includes(p);
+ 'package-lock.json','playwright.config.mjs','.nvmrc','.npmrc'].includes(p);
 const unexpected=changed.filter(p=>!allowed(p));
 if(unexpected.length)throw Error('Unexpected files:\n'+unexpected.join('\n'));
 console.log('Original HUFS registration imitation preserved; '+changed.length+' scoped changes.');

@@ -31,7 +31,7 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
     mkdir(join(workspace,'data')),
   ]);
   await Promise.all([
-    ...['preview-data.mjs','stage-static.mjs','serve-static.mjs'].map(name=>
+    ...['preview-data.mjs','stage-static.mjs','serve-static.mjs','student-boundary.mjs','public-assets.json'].map(name=>
       cp(join(root,'scripts',name),join(workspace,'scripts',name))),
     ...['academic-source-config.json','network-probe.txt'].map(name=>
       cp(join(root,'data',name),join(workspace,'data',name))),
@@ -60,7 +60,9 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   assert.deepEqual(await stale.json(),obsoleteBody);
 
   const stage=()=>run(process.execPath,['scripts/stage-static.mjs'],{cwd:workspace,timeout:15000});
+  await writeFile(join(workspace,'js','unapproved-research.js'),'console.log("synthetic");');
   await stage();
+  assert.equal((await fetch(base+'/js/unapproved-research.js')).status,404);
   assert.deepEqual(JSON.parse(await readFile(join(workspace,'data',obsolete),'utf8')),obsoleteBody);
   await assertPreviewData(dist);
   const priorConfig=join(workspace,'data','academic-source-config.json');
