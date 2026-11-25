@@ -183,7 +183,10 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-order li')).toHaveCount(3);
   await expect(page.locator('#strategy-course-results li')).toHaveCount(3);
   await expect(page.locator('#strategy-setup tbody tr')).toHaveCount(4);
-  await expect(page.locator('#strategy-setup')).toContainText(/낮은 경쟁 중복도.*높은 경쟁 중복도.*경쟁자 전원 동시 시작.*실험 시드/);
+  for(const name of ['낮은 경쟁 중복도','기본 조건','높은 경쟁 중복도','경쟁자 전원 동시 시작']){
+    await expect(page.locator('#strategy-setup tbody')).toContainText(name);
+  }
+  await expect(page.locator('#strategy-run-info')).toContainText('실험 시드');
   await expect(page.locator('#strategy-expected-value')).toHaveText(/\d+\.\d{2} \/ 3개/);
   await expect(page.locator('#strategy-completion-value')).toHaveText(/\d+\.\d초/);
   await expect(page.locator('#strategy-wait-value')).toHaveText(/\d+\.\d초/);
