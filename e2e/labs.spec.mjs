@@ -7,6 +7,33 @@ const seedProfile=async page=>{
   },profile);
 };
 
+
+// scrollIntoView를 호출하지 않고 화면 안에 실제 배치됐는지 검사합니다.
+const expectOneScreen=async(page,selector)=>{
+  const geometry=await page.locator(selector).evaluate(root=>{
+    const footer=document.querySelector('body > .hanmo-policy-footer')?.getBoundingClientRect();
+    const main=document.querySelector('main')?.getBoundingClientRect();
+    const limit=Math.min(footer?.top??innerHeight,main?.bottom??innerHeight);
+    const bounds=root.getBoundingClientRect();
+    const clipped=[];
+    for(const node of [root,...root.querySelectorAll('*')]){
+      const style=getComputedStyle(node),rect=node.getBoundingClientRect();
+      if(!node.getClientRects().length||!rect.width||!rect.height||style.visibility!=='visible')continue;
+      if(node.closest('.strategy-formula-body,#notice-list,#catalog-results'))continue;
+      if(rect.top<bounds.top-1||rect.bottom>limit+1||rect.left< -1||rect.right>innerWidth+1||
+        (['auto','scroll','hidden','clip'].includes(style.overflowY)&&node.clientHeight&&node.scrollHeight>node.clientHeight+2)){
+        clipped.push({tag:node.id||node.className?.baseVal||node.className||node.tagName,top:rect.top,bottom:rect.bottom});
+      }
+    }
+    return {clipped,limit,bottom:bounds.bottom,scrollHeight:root.scrollHeight,clientHeight:root.clientHeight,
+      document:document.documentElement.scrollHeight,viewport:innerHeight};
+  });
+  expect(geometry.clipped,selector+' '+JSON.stringify(geometry)).toEqual([]);
+  expect(geometry.bottom,selector).toBeLessThanOrEqual(geometry.limit+1);
+  expect(geometry.scrollHeight,selector).toBeLessThanOrEqual(geometry.clientHeight+2);
+  expect(geometry.document,selector).toBeLessThanOrEqual(geometry.viewport+2);
+};
+
 test('홈과 각 화면에서 새로운 공통 상단 바를 사용한다',async({page})=>{
   const pages=['/index.html','/html/vsugang.html','/html/result.html',
     '/html/readiness.html','/html/reaction-test.html',
@@ -54,7 +81,18 @@ test('PC 진단은 실행 전 요청이 없고 11개 독립 등급과 다운로�
   await criteria.locator('summary').click();
   await expect(criteria).toHaveJSProperty('open',true);
   await expect(criteria).toContainText('미측정·미지원은 F가 아닙니다.');
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
+    await page.setViewportSize(viewport);
+    await expectOneScreen(page,'#readiness-result');
+    await expect(page.locator('.readiness-criteria-list li').last()).toBeInViewport({ratio:1});
+  }
   await criteria.locator('summary').click();
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
+    await page.setViewportSize(viewport);
+    await expectOneScreen(page,'#readiness-result');
+    await expect(page.locator('[data-metric-grade="reaction"]')).toBeInViewport({ratio:1});
+    await expect(page.locator('#readiness-back')).toBeInViewport({ratio:1});
+  }
   await expect(page.locator('#readiness-share')).toHaveCount(0);
   expect(requests.filter(u=>u.includes('network-probe.txt')).length).toBe(2);
   expect(requests.some(u=>/hufs\.ac\.kr/.test(u))).toBe(false);
@@ -99,8 +137,8 @@ test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 �
   const advice=page.locator('#readiness-advice');
   await expect(advice).toBeVisible();
   await expect(advice).toContainText('유선 연결');
-  await page.locator('#readiness-advice-heading').scrollIntoViewIfNeeded();
-  await expect(page.locator('#readiness-advice-heading')).toBeInViewport();
+  await expectOneScreen(page,'#readiness-result');
+  await expect(page.locator('#readiness-advice-heading')).toBeInViewport({ratio:1});
   await expect(page.locator('#readiness-back')).toBeEnabled();
   await page.locator('#readiness-back').click();
   await expect(advice).toBeHidden();
@@ -181,7 +219,7 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-recommendation')).toContainText('전체 성공률');
   await expect(page.locator('#strategy-recommendation')).not.toContainText('(기본 가정)');
   await expect(page.locator('#strategy-order li')).toHaveCount(3);
-  await expect(page.locator('#strategy-course-results li')).toHaveCount(3);
+  await expect(page.locator('#strategy-order .strategy-course-rate')).toHaveCount(3);
   await expect(page.locator('#strategy-setup tbody tr')).toHaveCount(4);
   for(const name of ['낮은 경쟁 중복도','기본 조건','높은 경쟁 중복도','경쟁자 전원 동시 시작']){
     await expect(page.locator('#strategy-setup tbody')).toContainText(name);
@@ -206,9 +244,16 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(summary).toHaveText('수식 보기');
   await expect(formulas).toHaveJSProperty('open',false);
   await expect(formulas.locator('.strategy-formula-body')).toBeHidden();
+  await page.setViewportSize({width:1280,height:720});
+  await expectOneScreen(page,'#strategy-result');
   await summary.click();
   await expect(formulas).toHaveJSProperty('open',true);
   await expect(formulas.locator('.strategy-formula-body')).toBeVisible();
+  await expect(page.locator('#strategy-recommendation')).toBeHidden();
+  await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
+  const formulaScroll=await formulas.locator('.strategy-formula-body').evaluate(el=>({client:el.clientHeight,scroll:el.scrollHeight,overflow:getComputedStyle(el).overflowY}));
+  expect(formulaScroll.overflow).toBe('auto');
+  expect(formulaScroll.scroll).toBeGreaterThan(formulaScroll.client);
   await expect(page.locator('#strategy-formula-values')).toContainText('N = 3 · M = 1000 · a = 630ms · σ = 170ms · t₀ = 0ms');
   await expect(page.locator('#strategy-formula-values')).toContainText('τ_min = 10ms');
   await expect(formulas.locator('code')).toHaveCount(0);
@@ -424,13 +469,45 @@ test('8과목 결과의 추천 순서와 성공률은 좁은 화면에서도 가
   await page.locator('#strategy-run').click();
   await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
   await expect(page.locator('#strategy-order li')).toHaveCount(8);
-  await expect(page.locator('#strategy-course-results li')).toHaveCount(8);
+  await expect(page.locator('#strategy-order .strategy-course-rate')).toHaveCount(8);
   await expect(page.locator('#strategy-overall-value')).toHaveText('100%');
   await expect(page.locator('#strategy-expected-value')).toHaveText('8.00 / 8개');
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
+    await page.setViewportSize(viewport);
+    await expectOneScreen(page,'#strategy-result');
+    await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
+  }
   for(const width of [1440,1200,800,400]){
     await page.setViewportSize({width,height:800});
-    const overflow=await page.locator('#strategy-order, #strategy-order li, .strategy-result-metrics, .strategy-result-metrics>div, .strategy-course-results, .strategy-course-results li, .strategy-conditions').evaluateAll(nodes=>
+    const overflow=await page.locator('#strategy-order, #strategy-order li, .strategy-result-metrics, .strategy-result-metrics>div, .strategy-conditions').evaluateAll(nodes=>
       nodes.filter(node=>node.scrollWidth>node.clientWidth+1).map(node=>node.className||node.tagName));
     expect(overflow).toEqual([]);
   }
+});
+
+test('학사정보와 강의 검색은 결과 목록만 세로 스크롤 예외로 둔다',async({page})=>{
+  await page.setViewportSize({width:1280,height:720});
+  for(const [route,id] of [['academic-timeline','notice-list'],['catalog','catalog-results']]){
+    await page.goto('/html/'+route+'.html');
+    const list=page.locator('#'+id);
+    await expect(list).toHaveAttribute('tabindex','0');
+    await expect(list).toHaveCSS('overflow-y','auto');
+    // 실자료 연결 없이 긴 합성 목록의 레이아웃만 검증합니다.
+    await list.evaluate(el=>{
+      el.replaceChildren(...Array.from({length:40},(_,index)=>{
+        const item=document.createElement('article');item.className='hanmo-item';
+        const heading=document.createElement('h3');heading.textContent='합성 결과 '+(index+1);
+        const text=document.createElement('p');text.textContent='화면 배치 시험용 가상 검색 결과';
+        item.append(heading,text);return item;
+      }));
+    });
+    const sizes=await list.evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight}));
+    expect(sizes.height).toBeGreaterThan(0);
+    expect(sizes.scroll).toBeGreaterThan(sizes.height);
+    await expect(page.locator('body > footer')).toBeInViewport({ratio:1});
+    expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBeLessThanOrEqual(722);
+  }
+  await page.goto('/html/academic-timeline.html');
+  await page.getByRole('tab',{name:'학사 달력'}).click();
+  await expectOneScreen(page,'#academic-calendar-panel');
 });

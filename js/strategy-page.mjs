@@ -11,7 +11,6 @@ if(form){
   const result=document.getElementById('strategy-result');
   const inputPanel=document.getElementById('strategy-input');
   const orderList=document.getElementById('strategy-order');
-  const courseResults=document.getElementById('strategy-course-results');
   const waitSummary=document.getElementById('strategy-wait-summary');
   const formulas=document.getElementById('strategy-formulas');
   const formulaValues=document.getElementById('strategy-formula-values');
@@ -142,7 +141,13 @@ if(form){
         const item=document.createElement('li');
         const rank=document.createElement('span');rank.className='strategy-order-rank';rank.textContent=(slot+1)+'번째';
         const course=document.createElement('strong');course.textContent=name;
-        item.append(rank,course);
+        const rate=document.createElement('span');rate.className='strategy-course-rate';
+        rate.textContent=outcome(Math.round(r.courseSuccess[slot]*r.trials));
+        const bar=document.createElement('div');bar.className='strategy-course-track';bar.setAttribute('aria-hidden','true');
+        const fill=document.createElement('span');
+        // 추천 순서와 관측 성공률을 같은 카드에서 확인합니다.
+        fill.style.width=pct(r.courseSuccess[slot]);bar.append(fill);
+        item.append(rank,course,rate,bar);
         return item;
       }));
       set('strategy-overall-value',outcome(r.allWins));
@@ -152,20 +157,6 @@ if(form){
       set('strategy-completion-value',(r.timing.meanCompletionMs/1000).toFixed(1)+'초');
       set('strategy-wait-value',(r.timing.meanWaitMs/1000).toFixed(1)+'초');
       set('strategy-queue-value','혼잡 대기 '+(r.timing.meanQueueWaitMs/1000).toFixed(1)+'초 포함');
-      courseResults.replaceChildren(...r.order.map((name,slot)=>{
-        const item=document.createElement('li');
-        const header=document.createElement('div');header.className='strategy-course-header';
-        const course=document.createElement('strong');course.textContent=(slot+1)+'. '+name;
-        const rate=document.createElement('span');rate.className='strategy-course-rate';
-        rate.textContent=outcome(Math.round(r.courseSuccess[slot]*r.trials));
-        header.append(course,rate);
-        const bar=document.createElement('div');bar.className='strategy-course-track';bar.setAttribute('aria-hidden','true');
-        const fill=document.createElement('span');
-        // 막대는 미관측 빈도를 포함한 관측 비율이며 학교의 성공 확률이 아닙니다.
-        fill.style.width=pct(r.courseSuccess[slot]);bar.append(fill);
-        item.append(header,bar);
-        return item;
-      }));
       set('strategy-low-overlap',outcome(r.sensitivity.lessOverlap));
       set('strategy-baseline-value',outcome(r.allWins));
       set('strategy-high-overlap',outcome(r.sensitivity.moreOverlap));

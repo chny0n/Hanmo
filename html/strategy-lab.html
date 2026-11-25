@@ -61,20 +61,12 @@
     <section id="strategy-result" class="lab-panel lab-result-panel" aria-labelledby="strategy-results-heading" tabindex="0" hidden>
       <div class="lab-section-heading"><h2 id="strategy-results-heading">전략 비교 결과</h2><span class="lab-minor">실험 결과 · 실제 예측 아님</span></div>
       <section id="strategy-recommendation" class="strategy-result-overview" aria-labelledby="strategy-order-heading">
-        <h3 id="strategy-order-heading">추천 신청 순서</h3>
-        <ol id="strategy-order" class="strategy-order"></ol>
-        <dl class="strategy-result-metrics">
-          <div><dt>가상 전체 성공률</dt><dd id="strategy-overall-value"></dd><dd id="strategy-sampling" class="strategy-metric-note"></dd></div>
-          <div id="strategy-expected-summary"><dt>기대 성공 과목 수</dt><dd id="strategy-expected-value"></dd><dd class="strategy-metric-note">평균 성공 과목 수</dd></div>
-          <div><dt>전체 신청 소요시간</dt><dd id="strategy-completion-value"></dd><dd class="strategy-metric-note">마지막 응답까지의 평균</dd></div>
-          <div><dt>평균 누적 대기시간</dt><dd id="strategy-wait-value"></dd><dd id="strategy-queue-value" class="strategy-metric-note"></dd></div>
-        </dl>
-      </section>
-      <section class="strategy-result-block" aria-labelledby="strategy-course-heading">
-        <h3 id="strategy-course-heading">과목별 성공률</h3>
-        <ol id="strategy-course-results" class="strategy-course-results"></ol>
-      </section>
-      <section id="strategy-setup" class="strategy-result-block" aria-labelledby="strategy-conditions-heading">
+        <div class="strategy-result-comparison">
+          <div class="strategy-order-block">
+            <h3 id="strategy-order-heading">추천 신청 순서 · 과목별 성공률</h3>
+            <ol id="strategy-order" class="strategy-order"></ol>
+          </div>
+          <section id="strategy-setup" class="strategy-result-block" aria-labelledby="strategy-conditions-heading">
         <h3 id="strategy-conditions-heading">경쟁 환경별 전체 성공률</h3>
         <table class="strategy-conditions">
           <thead><tr><th scope="col">경쟁 환경</th><th scope="col">가상 전체 성공률</th></tr></thead>
@@ -88,6 +80,15 @@
         <p id="strategy-assumption-range" class="lab-footnote"></p>
         <p id="strategy-run-info" class="lab-footnote"></p>
       </section>
+        </div>
+        <dl class="strategy-result-metrics">
+          <div><dt>가상 전체 성공률</dt><dd id="strategy-overall-value"></dd><dd id="strategy-sampling" class="strategy-metric-note"></dd></div>
+          <div id="strategy-expected-summary"><dt>기대 성공 과목 수</dt><dd id="strategy-expected-value"></dd><dd class="strategy-metric-note">평균 성공 과목 수</dd></div>
+          <div><dt>전체 신청 소요시간</dt><dd id="strategy-completion-value"></dd><dd class="strategy-metric-note">마지막 응답까지의 평균</dd></div>
+          <div><dt>평균 누적 대기시간</dt><dd id="strategy-wait-value"></dd><dd id="strategy-queue-value" class="strategy-metric-note"></dd></div>
+        </dl>
+      </section>
+      <div class="strategy-assumptions">
       <section class="strategy-assumption" aria-labelledby="strategy-rival-heading">
         <h3 id="strategy-rival-heading">경쟁자 가정</h3>
         <p class="lab-footnote">경쟁자의 전체 신청량은 본인이 입력한 과목 수와 별도로 5~8과목에서 추출합니다. 목록 밖 과목도 같은 경쟁률 가중치 분포와 개인별 선호를 적용합니다.</p>
@@ -99,9 +100,10 @@
         <p id="strategy-wait-summary" class="lab-footnote"></p>
         <p class="lab-footnote">본인과 경쟁자의 모든 신청 요청은 하나의 공통 대기열에서 선착순으로 처리됩니다. 가상 처리율은 시작 후 2초까지 초당 50건, 5초까지 80건, 이후 100건이며 혼잡이 없는 기본 응답시간은 1~3초입니다. 요청이 몰리면 대기가 추가되어 3초를 넘을 수 있으며, 응답 후 다음 과목을 신청합니다. 실제 학교 서버의 대기시간을 측정한 값은 아닙니다.</p>
       </section>
+      </div>
       <details id="strategy-formulas" class="strategy-formulas">
         <summary>수식 보기</summary>
-        <div class="strategy-formula-body">
+        <div class="strategy-formula-body" tabindex="0" role="region" aria-label="전략 실험 수식과 함수 설명">
           <p id="strategy-formula-values" class="lab-footnote"></p>
           <p class="lab-footnote">N: 입력 과목 수, Cᵢ: 정원, Dᵢ: 경쟁자 수(본인 제외), rᵢ: 중요 순위, s: 개인별 신청 순번, b: 반복 실험 번호, M: 반복 수, π(s): s번째 신청 과목. 시간 단위는 ms입니다. 아래의 대기열 식에서는 회차 번호 b를 생략합니다.</p>
           <dl class="strategy-formula-list">

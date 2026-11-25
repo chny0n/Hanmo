@@ -29,7 +29,7 @@
     },
     {
       "path": "css/hanmo-labs.css",
-      "sha": "24c9fa15c948cefd8fa46525509229e90a380229"
+      "sha": "009a46d20b280039a81add1e5c4a37d4262c7fd7"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -37,7 +37,7 @@
     },
     {
       "path": "css/hanmo-refined.css",
-      "sha": "2786425619b4c9fdb21b68e110beeeeb7aec4a74"
+      "sha": "686e91d426116f4fb73da33e290ed8b7ad77ba37"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -85,7 +85,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "102b0a523dd17741bba85beb562763830977c942"
+      "sha": "db225028b0dc840e1c9b3f9ab315993047f661e9"
     },
     {
       "path": "css/vsugang.css",
@@ -93,11 +93,11 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "f5a210bc759917cfb2f361d09ece7af2a7b65031"
+      "sha": "8ce5b8e7b6e1ee89ef99df7f8542b82f4183130e"
     },
     {
       "path": "html/catalog.html",
-      "sha": "3d241b6ea4ec36285d9221b8f64203f824b32953"
+      "sha": "e460056759ee277fe06880e143d59b670d68e3cd"
     },
     {
       "path": "html/developer.html",
@@ -129,7 +129,7 @@
     },
     {
       "path": "html/readiness.html",
-      "sha": "174c8497d44ded82f8cf55b3d9698b512cd5bbb8"
+      "sha": "97f3a0b3be9232aae02c8ebe628d05582f479ff6"
     },
     {
       "path": "html/result.html",
@@ -141,7 +141,7 @@
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "f7787cf7257faec2bf8fadf5913229a743544dc1"
+      "sha": "16cd67db098a554fc282bc2fd7a273ed73aa261b"
     },
     {
       "path": "html/vsugang.html",

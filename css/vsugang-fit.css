@@ -219,3 +219,15 @@ body.hanmo-vsugang .grid > .setting { display: flex; flex-direction: column; ali
 body.hanmo-vsugang .grid > .setting > h2 { flex: 0 0 auto; }
 body.hanmo-vsugang #incident-options { justify-content: flex-start; }
 body.hanmo-vsugang #incident-options .mode-tile-title { display: block; }
+
+/* 일반 PC에서는 설정·돌발상황도 한 화면에 표시합니다. 작은 화면과 확대의 접근성 스크롤은 유지합니다. */
+@media(min-width:1100px) and (min-height:680px){
+ body.hanmo-vsugang :is(.settingSection,#scenario-settings){overflow:visible;padding:16px}
+ body.hanmo-vsugang .settingPanel{width:min(760px,100%);max-height:none;overflow:visible;padding:18px 24px;gap:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+ body.hanmo-vsugang .settingPanel>:is(.settingTitle,.settingDesc,.waiting-setting-groups,.settingActions){grid-column:1/-1}
+ body.hanmo-vsugang .settingPanel .waiting-setting-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
+ body.hanmo-vsugang .settingPanel .waiting-setting-title{grid-column:1/-1}
+ body.hanmo-vsugang .settingPanel .waiting-setting-group{padding:8px 10px;gap:5px 10px}
+ body.hanmo-vsugang .settingPanel .settingButton{margin-top:0}
+ body.hanmo-vsugang .settingPanel .textbox{box-sizing:border-box;width:100%;min-width:0}
+}

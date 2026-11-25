@@ -384,3 +384,14 @@ body.hanmo-home.hanmo-refined > .home-banners:not([hidden]) + main {
 @media (max-height: 650px) {
   body.hanmo-home.hanmo-refined > .home-banners:not([hidden]) + main { padding-top: 28px; }
 }
+
+/* 보통 PC에서 검색 결과 목록만 독립 스크롤하고 필터·탭·안내·푸터는 고정합니다. */
+@media(min-width:1100px) and (min-height:680px){
+ body.hanmo-refined.hanmo-search-page>main:has(>#catalog-results),
+ body.hanmo-refined.hanmo-academic-unified>main{display:flex;flex-direction:column;min-height:0}
+ body.hanmo-refined.hanmo-search-page>main:has(>#catalog-results)>:not(#catalog-results),
+ body.hanmo-refined.hanmo-academic-unified>main>:not(#academic-notice-panel){flex-shrink:0}
+ body.hanmo-refined.hanmo-academic-unified #academic-notice-panel:not([hidden]){display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+ body.hanmo-refined.hanmo-academic-unified #academic-notice-panel>:not(#notice-list){flex-shrink:0}
+ body.hanmo-refined :is(#notice-list,#catalog-results){flex:0 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;align-content:start}
+}
