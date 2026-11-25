@@ -2,7 +2,11 @@
 import {test,expect} from '@playwright/test';
 import {mkdirSync} from 'node:fs';
 
+test.use({timezoneId:'Asia/Seoul'});
+
 test.beforeEach(async({page})=>{
+  // 원본 이용 제한을 다른 화면 검사에 섞지 않되 타이머와 시간의 흐름은 유지한다.
+  await page.clock.install({time:new Date('2026-11-23T12:00:00+09:00')});
   await page.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:4174/')
     ?route.continue():route.abort());
 });
@@ -24,7 +28,7 @@ test('정보처 서면 이후 금지된 페이지와 메뉴가 보이지 않고 
 });
 
 
-test('모든 화면에서 비공식 안내는 화면 안의 최하단에 나타난다',async({page})=>{
+test('모든 화면에서 비공식 안내는 화면 안의 최하단에 나타난다',async({page,baseURL})=>{
  const paths=['/index.html','/html/vsugang.html','/html/practice.html',
    '/html/selectZone.html','/html/result.html','/html/developer.html',
    '/html/academic-timeline.html','/html/catalog.html','/html/readiness.html','/html/reaction-test.html','/html/strategy-lab.html',
@@ -32,6 +36,7 @@ test('모든 화면에서 비공식 안내는 화면 안의 최하단에 나타�
  const exact='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.';
  for(const path of paths){
   await page.goto(path);
+  await expect(page).toHaveURL(new URL(path,baseURL).href);
   const footer=page.locator('body > footer.hanmo-policy-footer');
   await expect(footer,'footer missing: '+path).toHaveCount(1);
   await expect(footer.locator('strong')).toHaveText(exact);
@@ -85,7 +90,7 @@ test('페이지 제목 아래 한모 구분 장식의 선·로고가 잘 보인�
 });
 
 
-test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은 유지된다',async({page})=>{
+test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은 유지된다',async({page,baseURL})=>{
   const headerPages=['/index.html','/html/vsugang.html','/html/developer.html',
     '/html/result.html','/html/academic-timeline.html','/html/catalog.html',
     '/html/readiness.html','/html/reaction-test.html','/html/strategy-lab.html','/html/planner.html'];
@@ -106,6 +111,7 @@ test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은
   await expect(page.locator('#notice-list')).toHaveCount(1);
   for(const path of ['/html/practice.html','/html/selectZone.html']){
     await page.goto(path);
+    await expect(page).toHaveURL(new URL(path,baseURL).href);
     await expect(page.locator('.hanmo-title-divider')).toHaveCount(0);
   }
 });
@@ -353,7 +359,7 @@ test('학사 달력과 미연결 강의 전망이 안전하게 작동한다',asy
   await expect(page).toHaveURL(/\/html\/catalog\.html$/);
 });
 
-test('1980x1080에서 모든 공개 페이지가 스크롤 없이 화면 안에 나타난다',async({page})=>{
+test('1980x1080에서 모든 공개 페이지가 스크롤 없이 화면 안에 나타난다',async({page,baseURL})=>{
  const viewport={width:1980,height:1080};
  await page.setViewportSize(viewport);
  await page.addInitScript(()=>{
@@ -370,6 +376,8 @@ test('1980x1080에서 모든 공개 페이지가 스크롤 없이 화면 안에 
    '/html/pc-only.html','/html/incident-404.html'];
  for(const path of paths){
    await page.goto(path);
+   if(path==='/html/practice.html'||path==='/html/selectZone.html')
+     await expect(page).toHaveURL(new URL(path,baseURL).href);
    await page.evaluate(()=>document.fonts.ready);
    const g=await page.evaluate(()=>{
      const main=document.querySelector('main,.hanmo-main,.half');
@@ -677,7 +685,7 @@ test('학사공지·강의검색은 학교 링크 제거 뒤에도 안내·상�
 
 test('홈 NOTICE는 원본 한모의 두 문구를 5초마다 세로 순환한다',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('deviceInfo','true'));
-  await page.clock.install({time:new Date('2026-11-23T14:00:00+09:00')});
+  await page.clock.setSystemTime(new Date('2026-11-23T14:00:00+09:00'));
   await page.goto('/index.html');
   await expect(page.locator('main h1')).toHaveText('2026-2학기 한모 비공식 모의수강신청 서비스');
   const list=page.locator('.noticeList');

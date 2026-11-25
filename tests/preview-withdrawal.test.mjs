@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {test} from 'node:test';
 import {promisify} from 'node:util';
-import {assertPreviewData} from '../scripts/preview-data.mjs';
+import {assertPreviewData,stripPreviewPhotoExif} from '../scripts/preview-data.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const run=promisify(execFile);
@@ -61,7 +61,12 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
 
   const stage=()=>run(process.execPath,['scripts/stage-static.mjs'],{cwd:workspace,timeout:15000});
   await writeFile(join(workspace,'js','unapproved-research.js'),'console.log("synthetic");');
+  const originalPhoto=await readFile(join(workspace,'img','developer.jpg'));
   await stage();
+  const publicPhoto=await fetch(base+'/img/developer.jpg');
+  assert.equal(publicPhoto.status,200);
+  assert.deepEqual(Buffer.from(await publicPhoto.arrayBuffer()),stripPreviewPhotoExif(originalPhoto));
+  assert.deepEqual(await readFile(join(workspace,'img','developer.jpg')),originalPhoto);
   assert.equal((await fetch(base+'/js/unapproved-research.js')).status,404);
   assert.deepEqual(JSON.parse(await readFile(join(workspace,'data',obsolete),'utf8')),obsoleteBody);
   await assertPreviewData(dist);

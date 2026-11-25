@@ -424,22 +424,54 @@ test('통합 학사정보 탭과 삭제된 문의처를 검증한다',async({pag
   expect((await page.request.get('/html/academic-support.html')).status()).toBe(404);
 });
 
-test('개발자 소개의 업데이트 역할은 이름보다 작게 표시하고 줄바꿈을 허용한다',async({page})=>{
+test('개발자 소개의 이름·소속·역할은 정확하며 역할은 세 PC 크기에서 작게 표시된다',async({page},info)=>{
   await preparePage(page);
-  for(const width of [1440,1280,800]){
-    await page.setViewportSize({width,height:900});
+  for(const viewport of [{width:1440,height:900},{width:1280,height:720},{width:800,height:900}]){
+    await page.setViewportSize(viewport);
     await visit(page,'/html/developer.html');
-    const roles=page.locator('.hanmo-contributor-role');
+    const entries=page.locator('.hanmo-contributor-list > li');
+    const names=entries.locator(':scope > strong');
+    const roles=entries.locator('.hanmo-contributor-role');
+    const affiliations=entries.locator(':scope > span');
+    await expect(entries).toHaveCount(4);
+    await expect(affiliations).toHaveText([
+      '한국외국어대학교 컴퓨터전자시스템공학부',
+      "한국외국어대학교 경제학전공 '24",
+      "한국외국어대학교 ELLT '23",
+      "한국외국어대학교 아랍어과 '23",
+    ]);
     await expect(roles).toHaveText([
       '· 한모(2026) 업데이트 총괄',
       '· 한모(2026) 업데이트 nlp 담당',
       '· 한모(2026) 업데이트 데이터 및 품질 보증 담당',
     ]);
-    const sizes=await roles.evaluateAll(elements=>elements.map(element=>({
-      role:parseFloat(getComputedStyle(element).fontSize),
-      name:parseFloat(getComputedStyle(element.parentElement).fontSize),
-      fits:element.closest('li').scrollWidth<=element.closest('li').clientWidth+1,
+    const nameTypography=await names.evaluateAll(nodes=>nodes.map(node=>({
+      name:[...node.childNodes].filter(child=>child.nodeType===Node.TEXT_NODE)
+        .map(child=>child.textContent).join('').trim(),
+      size:getComputedStyle(node).fontSize,weight:getComputedStyle(node).fontWeight,
     })));
-    expect(sizes.every(item=>item.role<item.name&&item.fits)).toBe(true);
+    expect(nameTypography).toEqual(['ZetBe','심민성','이의상','김채윤']
+      .map(name=>({name,size:'16px',weight:'700'})));
+    const roleTypography=await roles.evaluateAll(nodes=>nodes.map(node=>({
+      size:getComputedStyle(node).fontSize,weight:getComputedStyle(node).fontWeight,
+    })));
+    expect(roleTypography).toEqual(Array.from({length:3},()=>({size:'12px',weight:'400'})));
+
+    // 줄바꿈 조각의 실제 좌표를 확인해 내부 행이 여전히 맞아 보이는 잘림을 놓치지 않는다.
+    const geometry=await entries.evaluateAll(rows=>rows.map(row=>{
+      const boundary=row.getBoundingClientRect();
+      const outOfBounds=[...row.querySelectorAll('strong, small, span')].some(node=>
+        [...node.getClientRects()].some(rect=>rect.width>0&&rect.height>0&&
+          (rect.left<boundary.left-1||rect.right>boundary.right+1||
+           rect.top<boundary.top-1||rect.bottom>boundary.bottom+1||
+           rect.left< -1||rect.right>innerWidth+1)));
+      return {scrollWidth:row.scrollWidth,clientWidth:row.clientWidth,outOfBounds};
+    }));
+    const hasDocumentOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
+    await info.attach('contributors-'+viewport.width+'x'+viewport.height+'.json',{body:Buffer.from(JSON.stringify({
+      viewport,nameTypography,roleTypography,geometry,hasDocumentOverflow,
+    })),contentType:'application/json'});
+    expect(geometry.every(row=>row.scrollWidth<=row.clientWidth+1&&!row.outOfBounds)).toBe(true);
+    expect(hasDocumentOverflow).toBe(false);
   }
 });

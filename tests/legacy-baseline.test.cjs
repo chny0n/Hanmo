@@ -433,6 +433,20 @@ test('mode-selection page stays reachable during restricted time while practice 
   assert.equal(practice.location.href,'/');
 });
 
+test('일일 이용 제한의 양 끝 시각에도 모드 선택을 막지 않고 신청 페이지에만 적용한다',()=>{
+  const routes=['/html/vsugang.html','/html/practice.html','/html/selectZone.html'];
+  const boundaries=[['09:57:59',false],['09:58:00',true],['10:10:59',true],['10:11:00',false]];
+  for(const [time,restricted] of boundaries){
+    for(const route of routes){
+      const h=createHarness({deviceInfo:true});
+      h.now('2026-11-19T'+time+'+09:00');
+      h.location.href=route;
+      h.load('hanmoSys.js');
+      assert.equal(h.location.href,restricted&&route!==routes[0]?'/':route,time+' '+route);
+    }
+  }
+});
+
 test('홈의 배너별 노출 종료일은 해당 날짜를 포함하고 나머지 배너에는 영향을 주지 않는다',()=>{
   const h=createHarness({deviceInfo:true});
   h.now('2026-12-31T23:59:59+09:00');

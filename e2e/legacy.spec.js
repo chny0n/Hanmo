@@ -2,6 +2,7 @@
 import {test,expect} from '@playwright/test';
 
 const safeDate=new Date('2026-11-19T12:00:00+09:00');
+test.use({timezoneId:'Asia/Seoul'});
 
 test('SETTING에 흰색 굵은 대기조건 제목이 두 선택칸 위에 표시된다',async({page})=>{
   await page.goto('/html/vsugang.html');
@@ -321,6 +322,7 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
 
 test('최대 15과목 모의신청·삭제의 이름과 실제 표 배치 증거를 남긴다',async({page},info)=>{
   test.setTimeout(60_000);
+  await page.clock.install({time:safeDate});
   await page.setViewportSize({width:1280,height:720});
   await page.addInitScript(()=>{
     localStorage.setItem('deviceInfo','true');

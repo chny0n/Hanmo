@@ -1,6 +1,6 @@
 import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
-import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe} from './preview-data.mjs';
+import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,stripPreviewPhotoExif} from './preview-data.mjs';
 import {assertStudentBundleMeta,readPublicAssets} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
@@ -48,7 +48,9 @@ await writeFile(join(dist,'THIRD-PARTY-NOTICES.txt'),notices.join('\n\n---\n\n')
 for(const path of publicAssets){
   const target=join(dist,path);
   await mkdir(dirname(target),{recursive:true});
-  await copyFile(join(root,path),target);
+  const source=join(root,path);
+  if(path==='img/developer.jpg')await writeFile(target,stripPreviewPhotoExif(await readFile(source)));
+  else await copyFile(source,target);
 }
 await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(build,'academic-calendar.css'),join(dist,'css','academic-calendar-vendor.css'));
