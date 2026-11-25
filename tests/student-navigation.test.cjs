@@ -431,12 +431,13 @@ test('학사공지·강의검색 안내·링크 버튼은 검색 영역과 같�
 });
 
 test('3차 김채윤 담당과 최종 원개발자 인수가 문서에서 일관되게 별도 게이트로 표시된다',()=>{
- for(const name of ['README.md','agent.md','docs/architecture.md','docs/pending-issues.md']){
+ for(const name of ['README.md','AGENTS.md','docs/architecture.md','docs/pending-issues.md']){
   const content=fs.readFileSync(path.join(ROOT,name),'utf8');
   assert.match(content,/qamarrchae|김채윤/,name);
   assert.match(content,/#125/,name);
   assert.match(content,/2차|#71/,name);
  }
+ assert.match(fs.readFileSync(path.join(ROOT,'agent.md'),'utf8'),/\[AGENTS\.md\]\(AGENTS\.md\)/);
  assert.match(fs.readFileSync(path.join(ROOT,'README.md'),'utf8'),/<div align="center">/);
 });
 
