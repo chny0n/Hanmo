@@ -52,7 +52,7 @@ npm run check
 
 ### 검증한 기준과 재현
 
-**2026-11-25 후보 상태:** 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a)의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**(개발자 역할 표기 기대값 불일치). 아래 PR #135 증거는 역사적 검증 SHA의 자료이며 이후 변경을 포함한 최신 후보의 검증 및 물리 입력·최종 수락을 대체하지 않습니다. 전략 모델의 연구 근거·가정·성공 횟수 및 실측 미보정 한계를 [아키텍처](architecture.md) §5와 #134를 통해 인계합니다. 학교 자료 연결은 OFF로 유지합니다.
+**2026-11-25 후보 상태:** 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a)의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**(개발자 역할 표기 기대값 불일치). 아래 PR #135 증거는 역사적 검증 SHA의 자료이며 이후 변경을 포함한 최신 후보의 검증 및 물리 입력·최종 수락을 대체하지 않습니다. 전략 모델의 연구 근거·가정·성공 횟수 및 실측 미보정 한계를 [아키텍처](architecture.md) §5와 #134를 통해 인계합니다. 학교 자료 연결은 OFF로 유지합니다. 최신 인수 시 [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 브라우저 QA 복구 및 [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 전략 모형 검증 결과를 포함합니다. [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140)은 선택적 연구 설계이며 필수 인수 조건이 아닙니다.
 
 | 항목 | 인계에 첨부할 증거 |
 |---|---|

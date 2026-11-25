@@ -184,7 +184,7 @@ Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install ch
 
 **개발 역할:** 심민성(`ot4562-glitch`) — 한모(2026) 업데이트 총괄; 이의상(`uisang2004-maker`) — 업데이트 nlp 담당; 김채윤(`qamarrchae`) — 업데이트 데이터 및 품질 보증 담당. 개발자 소개 페이지의 기존 소속·이름을 유지하고 역할을 작은 글씨로 표시합니다.
 
-**현행 협업 과제:** [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 **이의상(`uisang2004-maker`)·김채윤(`qamarrchae`)**이 PC 진단·반응속도·전략 실험의 안정화와 측정·계산 신뢰성을 공동 검증합니다. 원본 연습 결과의 PNG 저장 버튼은 제거했습니다. 열린 협업 PR #120·#130·#131은 수정 요청 상태이고, 본인 Draft #93은 병합하지 않습니다.
+**현행 협업 과제:** [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 **이의상(`uisang2004-maker`)·김채윤(`qamarrchae`)**이 PC 진단·반응속도·전략 실험의 안정화와 측정·계산 신뢰성을 공동 검증합니다. 세부 후속 과제: [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 브라우저 QA 회귀 복구(P0), [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 고정 전략 모형 합성·민감도·성능 검증(P1), [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140) 동의 기반 모의연습 및 보정 연구 설계(P2, 별도 승인 전 수집 없음·인수 필수 아님). 원본 연습 결과의 PNG 저장 버튼은 제거했습니다. 열린 협업 PR #120·#130·#131은 수정 요청 상태이고, 본인 Draft #93은 병합하지 않습니다.
 
 **단계·인수 계획:** 2차 모의신청 Windows 실기기 QA([#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71))가 끝난 다음, 3차 담당 **김채윤(`qamarrchae`)**이 선택적 Supabase Free를 **직접 설치·RLS/권한·백업/복구 실습**합니다([#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)). 현재 실제 데이터 연결은 OFF이고 정적 최소 자료가 우선입니다. 전체 프로젝트 완성 후에만 원개발자 **[dlacked/Hanmo](https://github.com/dlacked/Hanmo)**에게 결과물을 전달하고 명시적으로 인수 수락을 확인합니다([#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)). 실기기·자료/운영 인수는 아직 완료되지 않았습니다.
 

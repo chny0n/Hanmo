@@ -1,6 +1,6 @@
 # 한모 · 현행 이슈와 PR 검토 상태
 
-> **2026-11-25 실제 GitHub 열린 일반 이슈 기준:** **27건 open**. 실행/권리/제품 정본은 [현행 아키텍처](architecture.md), [에이전트 규칙](../agent.md)이고, 각 이슈의 최신 제목·본문·담당자가 세부 구현 계약입니다. 기존의 닫힌 HMD 설계·사용자 반려 제안은 **과거 기록**이며 신규 구현 지시가 아닙니다.
+> **2026-11-25 실제 GitHub 열린 일반 이슈 기준:** **30건 open**. 실행/권리/제품 정본은 [현행 아키텍처](architecture.md), [에이전트 규칙](../agent.md)이고, 각 이슈의 최신 제목·본문·담당자가 세부 구현 계약입니다. 기존의 닫힌 HMD 설계·사용자 반려 제안은 **과거 기록**이며 신규 구현 지시가 아닙니다.
 
 ## 이번 확인·결정
 
@@ -15,7 +15,7 @@
 - 학사 공지·달력은 `html/academic-timeline.html` 단일 화면의 탭이고, 강의 검색은 `html/catalog.html`에만 남았습니다. 실제 학교 공지·개설·행사 자료는 `mode: disabled`이며 크롤러·Supabase 미연결입니다.
 - 실기기 Windows Chrome/Edge·200%/NVDA 원본 인수는 여전히 **미완료**이며 Node/Chromium CI 성공과 구별합니다.
 
-## 현재 열린 이슈 (27건)
+## 현재 열린 이슈 (30건)
 
 ### 학생 UI·합성 연습·신뢰성
 
@@ -29,7 +29,10 @@
 | [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) | [검증][2차][P0][통합] BASIC/TIME/SELECT·두 돌발상황 OFF·접속대기 Windows 실기기 QA | `ot4562-glitch` | open |
 | [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) | [검증][공통][P1][통합] PC 접근성·비공식 고지·지원 기기·삭제 UI 전체 QA | `ot4562-glitch` | open |
 | [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) | [구현][1차][P2][통합] 검수된 공개 일정 달력 표시·원문 탐색 (선택 확장) | `uisang2004-maker` | open |
-| [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134) | [구현][2차][P1][통합] PC 진단·반응속도 테스트·전략 실험 고도화 및 신뢰성 증대 | `qamarrchae`, `uisang2004-maker` | open |
+| [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134) | [검증][2차][P1][통합] PC 진단·반응속도 테스트·전략 실험 안정화 및 신뢰성 인수 | `qamarrchae`, `uisang2004-maker` | open |
+| [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) | [검증][공통][P0][통합] 개발자 역할 표기 변경 후 Feature browser QA 회귀 복구 | `ot4562-glitch` | open |
+| [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) | [검증][2차][P1][통합] 전략 실험 고정 모형의 합성 검증·민감도·성능 회귀 | `qamarrchae`, `uisang2004-maker` | open |
+| [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140) | [설계][2차][P2][데이터] 동의 기반 모의연습 검증 및 모수 보정 연구 계획 | `qamarrchae`, `uisang2004-maker` | open |
 
 ### 공지·개설 관측·안전한 검색
 
@@ -63,6 +66,13 @@
 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73) | [검증][공통][P0][통합] 학교 서면 이용 경계·공식 오인·공개 산출물·GPL 출시 감사 | `ot4562-glitch` | open |
 | [#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101) | [검증][공통][P0][통합] JS/JSDoc 이관 후 허용 웹·타입·원본 동등성 최종 인수 | `ot4562-glitch` | open |
 | [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125) | [검증][4차][P0][인수] 전체 개발 완료 후 원개발자 dlacked에게 소스·운영 인계 | `ot4562-glitch` | open |
+
+## 후속 실행 순서
+
+1. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 기능 QA의 기존 기대값 불일치를 우선 복구합니다. 승인된 역할 표시·소속·원본 화면을 보존하며 테스트 우회 없이 최신 CI를 검증합니다.
+2. [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)의 공동 PC 도구 안정화 및 [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 전략 엔진 검증을 진행합니다. 기존 구조 유지, 고정 시드·민감도·과목별/전체 성공·Worker/성능·MathML 가시성을 검증합니다.
+3. [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140)은 별도 승인 이전에는 계획만 수립하는 P2 선택 연구이며 인수 필수 조건이 아닙니다. 학교 데이터 OFF와 수집 제한은 동일합니다.
+4. #71·#72·#101·#73·#126 등 미완료 인수 게이트와 #125를 최신 SHA 기준으로 유지합니다. 이번 정리에서 완료·닫힘 처리한 기존 일반 이슈는 없습니다.
 
 ## 열려 있는 PR과 의존성
 

@@ -1,6 +1,6 @@
 # 한모 문서 안내
 
-> 2026-11-25 검토: 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a). 전략 실험의 현행 모형 유지와 세부 가정·연구 근거는 [아키텍처](architecture.md) §5, CI/인수는 §9, 실행 과제는 [미결 이슈](pending-issues.md)를 확인합니다. 기존 원문·권리 정책·자료 미연결 상태는 바꾸지 않습니다.
+> 2026-11-25 검토: 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a). 전략 실험의 현행 모형 유지와 세부 가정·연구 근거는 [아키텍처](architecture.md) §5, CI/인수는 §9, 실행 과제는 [미결 이슈](pending-issues.md)를 확인합니다. 후속 과제는 [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 브라우저 QA 회귀 복구(P0), [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 고정 전략 모형 합성·민감도·성능 검증(P1), [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140) 동의 기반 모의연습 및 보정 연구 설계(P2, 별도 승인 전 수집 없음·인수 필수 아님)입니다. 기존 원문·권리 정책·자료 미연결 상태는 바꾸지 않습니다.
 
 [프로젝트 README](../README.md)에서 제품과 디자인을, [아키텍처](architecture.md)에서 현재 화면, 기술 설계, 자료 이용 경계를 확인합니다. README의 SVG는 설계 구성도입니다.
 

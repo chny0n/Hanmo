@@ -157,6 +157,8 @@
 - **실증 검토:** 과목 수·선호·시작 시각·반복 조작·응답 지연·집단 중복에 대한 관측이 필요하나, 기존 로컬 합성 연습만으로 실학교의 경쟁 환경을 추정할 수 없습니다. 자발적·동의 기반 비식별 모의연습 검증은 별도 설계·승인 후에만 가능하며, 학교 실제 서버·계정·성적·수강 이력·원격 텔레메트리는 수집하지 않습니다. 표본 외 성능 비교 전에는 모형 변경을 우선하지 않습니다.
 - **유지 범위:** 현행 계산 엔진·39개 MathML 수식·Worker 취소·학교 자료 OFF. 전공별 잠재 집단/동적 신청 정책/다른 배분 제도·ABC는 연구 후보이지 현행 구현 또는 예정 필수 작업이 아닙니다.
 
+실행 추적: [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134) 통합 안정화·실기기 인수, [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 합성 검증과 성능/민감도, [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140) 선택적 연구 설계. 새로운 관측 자료의 수집·모형 변경은 별도 승인 없이는 시작하지 않습니다.
+
 ### 5.2 적용한 모형의 연구 근거 및 검증 한계
 
 - 신진이·이상원(2016), 「시뮬레이션을 통한 선착순 수강신청 시스템 개선」, 한국정보과학회 한국컴퓨터종합학술대회 논문집, 1736–1738쪽: 제공된 3쪽 원문을 검토했습니다. C++ 시뮬레이션으로 선착순·마일리지·추첨·타임티켓을 비교하고 5개 전공과 교양, 전공별 과목 인기, 학생 인터넷 속도 X~N(3,1), 우선순위 큐, 트래픽 오류/지연 없음, 과목 종류·선호에 따른 만족도를 가정합니다. 마일리지의 만족도 향상은 10%p 이하로 보고했으며 나머지 세 방식의 만족도 차이는 크지 않았습니다. 소스코드와 재현에 충분한 상세 알고리즘·실험 규모/모수는 제시되지 않습니다. 한모는 개인 전략 목적이며 Fitts/계층적 반응/공통 대기열을 별도로 구현합니다. 전공별 선호 구조는 연구 후보로만 남기며 논문 수치를 보정값으로 전용하지 않습니다. 원문 PDF는 재배포하지 않습니다.
@@ -209,7 +211,7 @@ Draft [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 SQL·Post
 ## 9. 품질 검증·보호·전달
 
 - **로컬/CI:** Node 22 `npm ci` → `npm run check` → Chromium Playwright. 기본 연습, 5개 기능 페이지의 제목·`i`·한모 구분선 좌표, 탭 전환·결과 PNG 버튼 제거, 전략 경계(300 허용/301 거부), 반응 프로필·Worker/정적 빌드·문서 링크를 검증합니다.
-- **최신 자동 검증:** 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a) (2026-11-25): [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**. `tests/browser-feature.spec.mjs:135`에서 역할 접미사가 추가된 Contributor의 `strong` 전체 문자열을 예전 이름만으로 비교하여 실패합니다. 전략 엔진 실패가 아니며 전체 기능 QA 통과로 기록하지 않습니다. 전략 엔진 회귀 테스트 28개와 39개 MathML 구조/현행 수식 표시 관련 검증을 유지합니다.
+- **최신 자동 검증:** 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a) (2026-11-25): [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**. `tests/browser-feature.spec.mjs:135`에서 역할 접미사가 추가된 Contributor의 `strong` 전체 문자열을 예전 이름만으로 비교하여 실패합니다. 전략 엔진 실패가 아니며 전체 기능 QA 통과로 기록하지 않습니다. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)에서 테스트를 실제 역할 표시와 맞춰 복구합니다. 전략 엔진 회귀 테스트 28개와 39개 MathML 구조/현행 수식 표시 관련 검증을 유지합니다.
 - **이전 Windows 근거:** 병합된 [PR #135](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)에는 과거 Chrome·Edge E2E, 실제 200% 확대, NVDA 26개 낭독 및 철회 회귀 기록이 있습니다. 이전 검증 SHA의 증거이지 최신 모델/화면 및 물리 입력 인수 완료가 아닙니다.
 - **실기기 인수 미완료:** 최신 Windows Chrome/Edge, 60·120Hz, 키보드·NVDA·200% 확대, 한 화면 조작·측정 중 탭 전환/오류, 학교 자료 OFF·비공식 고지·원작 회귀 #71·#72·#134. CI 성공과 구분합니다.
 - **설치 브라우저 자동 검증:** PowerShell에서 `$env:HANMO_BROWSER_CHANNEL='chrome'` 또는 `'msedge'`를 설정한 뒤 `npm run test:e2e`와 `npx playwright test --config tests/playwright-feature.config.mjs`를 실행합니다. 이 결과에는 브라우저 버전과 검사한 SHA를 기록합니다. NVDA·물리 입력·브라우저 실제 확대율은 별도 인수에서 확인합니다.
