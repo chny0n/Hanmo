@@ -52,9 +52,11 @@ npm run check
 
 ### 검증한 기준과 재현
 
+**2026-11-25 후보 상태:** 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a)의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**(개발자 역할 표기 기대값 불일치). 아래 PR #135 증거는 역사적 검증 SHA의 자료이며 이후 변경을 포함한 최신 후보의 검증 및 물리 입력·최종 수락을 대체하지 않습니다. 전략 모델의 연구 근거·가정·성공 횟수 및 실측 미보정 한계를 [아키텍처](architecture.md) §5와 #134를 통해 인계합니다. 학교 자료 연결은 OFF로 유지합니다.
+
 | 항목 | 인계에 첨부할 증거 |
 |---|---|
-| 소스 | 2026-11-24에 [Draft PR #135](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)의 [`d90d5d5`](https://github.com/ot4562-glitch/Hanmo_develop/commit/d90d5d544be452b309fda4fb413513be98022e77)를 검증했습니다. 당시 비교 기준 `main`은 `512f2985a06e0dc2787e837764ae24bfa339fdb9`입니다. 최종 인계 시 승인된 `main` SHA와 실제 배포 SHA를 기록합니다. |
+| 소스 | 2026-11-24에 [이후 병합된 PR #135](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)의 [`d90d5d5`](https://github.com/ot4562-glitch/Hanmo_develop/commit/d90d5d544be452b309fda4fb413513be98022e77)를 검증했습니다. 당시 비교 기준 `main`은 `512f2985a06e0dc2787e837764ae24bfa339fdb9`입니다. 최종 인계 시 승인된 `main` SHA와 실제 배포 SHA를 기록합니다. |
 | 빌드와 QA | `d90d5d5`의 [저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45269797707/job/138026253576)와 [브라우저 QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45269797742/job/138026252855)가 통과했습니다. `hanmo-root-static-preview` 보관 기간은 3일입니다. 인계할 `dist/`와 생성 SHA, 파일별 SHA-256을 함께 보관합니다. |
 | Windows 접근성 | [PR 검증 기록](https://github.com/ot4562-glitch/Hanmo_develop/pull/135)에 Chrome·Edge 자동 E2E, 실제 브라우저 200% 확대, NVDA 2026.3.1의 26개 낭독 결과가 있습니다. 확대 시험은 `6ad1494`와 `49cad16`, NVDA 시험은 `75c5e41`을 기준으로 했습니다. 물리 키보드 인수는 남아 있습니다. |
 | 정적 철회 | [철회 런북](public-data-operating-decision.md#5-긴급-철회-런북--언제든-내리기는-검증해야-함)의 로컬 훈련에서 재빌드 후 합성 구판 URL은 404였고, 활성 설정 복원은 거부됐습니다. `d90d5d5`의 Chrome·Edge 시험에서는 새로고침과 재시도 후 철회 판본이 표시되지 않았습니다. [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)에서 운영 CDN·API·DB의 철회와 복구를 확인해야 합니다. |

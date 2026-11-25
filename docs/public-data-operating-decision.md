@@ -38,7 +38,7 @@
 
 **제품 우선순위:** PC 전용 기능 차별화(공지 정밀 검색 [#53](https://github.com/ot4562-glitch/Hanmo_develop/issues/53), 과거 개설 분석 [#48](https://github.com/ot4562-glitch/Hanmo_develop/issues/48), 검수된 일정 달력 표시(후순위 P2) [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127), 문의처 독립 학생 기능 **폐기** [#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59))이며 개인 메모·알림 중심 UX는 우선하지 않습니다. 검색의 포괄성은 학교의 엄격한 수집 한도에 따라 제한될 수 있습니다.
 
-**2026-11-23 기능 우선순위 보강:** PC 진단·반응속도 테스트·합성 전략 실험의 고도화/신뢰성 검증은 두 협업자 공동 [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 수행하며 학교 자료 사용 허가와 무관합니다.
+**2026-11-25 기능 우선순위 재확인:** PC 진단·반응속도 테스트·합성 전략 실험의 현행 구성 유지·안정화/신뢰성 검증은 두 협업자 공동 [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 수행하며 학교 자료 사용 허가와 무관합니다. 실증 보정을 위한 학교 서버 접속·수강 관련 정보 수집이나 원격 텔레메트리 활성화는 승인된 개발 범위가 아닙니다.
 
 ## 3. 자동 수집 조건(서면 그대로 적용)
 
