@@ -31,7 +31,7 @@ export async function startDesignBaseline(){
     const archive=execFileSync('git',['archive','--format=tar',DESIGN_BASE_COMMIT],
       {cwd:repositoryRoot,maxBuffer:128*1024*1024});
     execFileSync('tar',['-x','-C',checkout],{input:archive});
-    await symlink(join(repositoryRoot,'node_modules'),join(checkout,'node_modules'),'dir');
+    await symlink(join(repositoryRoot,'node_modules'),join(checkout,'node_modules'),process.platform==='win32'?'junction':'dir');
     await build({
       absWorkingDir:checkout,
       entryPoints:['js/academic/app/student-forecast.js','js/academic/app/student-entry.js',

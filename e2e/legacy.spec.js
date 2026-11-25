@@ -147,7 +147,9 @@ test('SELECT에서 중복 Enter를 차단하고 대기 취소와 삭제 뒤 같�
   const registered=page.locator('.done tr');
   await expect(registered).toHaveCount(1);
   await expect(registered.first()).toContainText('모의수강신청 과목1');
-  await registered.first().locator('button.delete').click();
+  await expect(page.getByRole('checkbox',{name:'모의수강신청 과목1 재수강',exact:true})).toBeVisible();
+  await expect(registered.first().getByRole('checkbox',{name:'모의수강신청 과목1 신청 내역 재수강'})).toBeVisible();
+  await registered.first().getByRole('button',{name:'모의수강신청 과목1 삭제'}).click();
   await expect(registered).toHaveCount(0);
   await register.press('Enter');
   await page.clock.runFor(4000);
@@ -315,4 +317,49 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
   });
   expect(longProfile.height).toBeGreaterThan(218);
   expect(longProfile).toMatchObject({overflow:'visible',profileFits:true,panelFits:true,below:true});
+});
+
+test('최대 15과목 모의신청·삭제의 이름과 실제 표 배치 증거를 남긴다',async({page},info)=>{
+  test.setTimeout(60_000);
+  await page.setViewportSize({width:1280,height:720});
+  await page.addInitScript(()=>{
+    localStorage.setItem('deviceInfo','true');
+    localStorage.setItem('practiceSetter','3');
+    localStorage.setItem('psubjectValue','15');
+    localStorage.setItem('subjectValue','15');
+    localStorage.setItem('waitingValue','no');
+    localStorage.setItem('waitingEntryValue','no');
+  });
+  page.on('dialog',dialog=>{void dialog.accept();});
+  await page.goto('/html/selectZone.html');
+  await page.locator('button.search').press('Enter');
+  await expect(page.locator('button.register')).toHaveCount(15);
+  for(let index=1;index<=14;index++)
+    await page.getByRole('button',{name:'모의수강신청 과목'+index+' 신청',exact:true}).press('Enter');
+  await expect(page.locator('.done tr')).toHaveCount(14);
+  for(let index=1;index<=14;index++)
+    await expect(page.getByRole('button',{name:'모의수강신청 과목'+index+' 삭제',exact:true})).toHaveCount(1);
+  // 원작 표의 승인된 스크롤 규격은 변경하지 않고 실제 수치를 인수 증거로 기록한다.
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900},{width:1920,height:1080}]){
+    await page.setViewportSize(viewport);
+    const geometry=await page.evaluate(()=>{
+      const rect=selector=>{
+        const el=document.querySelector(selector);
+        const box=el.getBoundingClientRect();
+        return {top:box.top,bottom:box.bottom,height:box.height,clientHeight:el.clientHeight,scrollHeight:el.scrollHeight,scrollTop:el.scrollTop};
+      };
+      return {viewport:{width:innerWidth,height:innerHeight},documentHeight:document.documentElement.scrollHeight,
+        available:rect('.vsugangTable'),registered:rect('.vsugangedTable'),tableZone:rect('.tableZone'),footer:rect('body > footer')};
+    });
+    const label=viewport.width+'x'+viewport.height;
+    await info.attach('legacy-max-'+label+'.json',{body:Buffer.from(JSON.stringify(geometry,null,2)),contentType:'application/json'});
+    await info.attach('legacy-max-'+label+'.png',{body:await page.screenshot({fullPage:false}),contentType:'image/png'});
+  }
+  await page.getByRole('button',{name:'모의수강신청 과목14 삭제',exact:true}).press('Enter');
+  await expect(page.locator('.done tr')).toHaveCount(13);
+  await page.getByRole('button',{name:'모의수강신청 과목14 신청',exact:true}).press('Enter');
+  await expect(page.locator('.done tr')).toHaveCount(14);
+  await page.getByRole('button',{name:'모의수강신청 과목15 신청',exact:true}).press('Enter');
+  await expect(page).toHaveURL(/\/html\/result\.html$/);
+  await expect(page.locator('.result')).toBeVisible();
 });

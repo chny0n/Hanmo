@@ -212,6 +212,8 @@
 - **정책·라이선스/인계:** 공식 로고/오인·학교 자료 라이선스·GPL-3.0/출처를 감사[#73]. JS/JSDoc 이관 자체는 완료됐으나 전체 기능의 동등성/운영 인수[#101]는 미완료. 원작자 `dlacked`에게 전달할 증거와 수락 조건은 [최종 인계 기록](student-data-source-handoff.md#최종-인계-기록)에 있습니다. [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)의 명시적 수락 전 제품 완성 선언 금지.
 - **SVG:** `docs/images/hanmo-01~04`, `hanmo-hero-hufs.svg`, `hanmo-experience-landscape.svg`, `hanmo-feature-preview.svg`, `hanmo-trust-flow.svg`는 현재 5페이지·합성/자료 OFF·4단계 인수 상태에 맞춰 갱신. 이미 정확한 BASIC 합성 분기 그림은 원래 버전 유지.
 
+- **Windows 브라우저 검증:** [Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 Chrome/Edge 자동화 및 브라우저 환경·SHA·최대 표 배치 증거를 수집합니다. [실기기 인수 체크리스트](qa/windows-acceptance.md)의 물리 입력·실제 200% 확대·NVDA 및 보호 표 규격 충돌은 별도입니다.
+
 ## 10. 협업 PR·이슈 운영 규칙 (2026-11-23 현행 사용자 지시)
 
 [AGENTS.md](../AGENTS.md)가 작업·승인·이슈 분류의 단일 정본입니다. PR 진행·담당·우선순위와 과거 검증 증거는 [미결 이슈](pending-issues.md) 및 GitHub 최신 상태를 교차 확인합니다. 연구 코드는 학생 번들 및 공개 자산 허용 목록에서 제외하며 원작 보호·독립 자료 검수·실기기 인수 조건은 변경하지 않습니다.

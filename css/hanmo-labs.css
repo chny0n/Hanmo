@@ -290,3 +290,26 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 
 .hanmo-readiness .readiness-criteria-open,.hanmo-readiness #readiness-grade-criteria[open] .readiness-criteria-closed{display:none}
 .hanmo-readiness #readiness-grade-criteria[open] .readiness-criteria-open{display:inline}
+
+/* 닫힌 등급 기준은 접근성 트리와 화면 배치에서 제외하고, 펼치면 전체 내용을 복원합니다. */
+.hanmo-readiness #readiness-grade-criteria:not([open])>:not(summary){display:none}
+
+/* 8과목 긴 이름에서도 재실험 버튼까지 푸터 위에 배치합니다. */
+@media(min-width:1100px) and (min-height:680px) and (max-height:820px){
+ .hanmo-strategy #strategy-result{padding-block:3px}
+ .hanmo-strategy #strategy-result .lab-section-heading{margin-bottom:2px}
+ .hanmo-strategy .strategy-result-comparison{grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:6px 12px}
+ .hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{margin-bottom:3px}
+ .hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:1px 0 3px}
+ .hanmo-strategy .strategy-order{gap:4px;margin-bottom:3px}
+ .hanmo-strategy .strategy-order li{padding:3px 5px;gap:1px}
+ .hanmo-strategy .strategy-result-metrics>div{padding:4px 7px}
+ .hanmo-strategy .strategy-result-metrics dt{margin-bottom:1px}
+ .hanmo-strategy .strategy-result-metrics .strategy-metric-note{margin-top:1px}
+ .hanmo-strategy .strategy-conditions th,.hanmo-strategy .strategy-conditions td{padding:2px 5px}
+ .hanmo-strategy #strategy-setup .lab-footnote{margin:1px 0}
+ .hanmo-strategy .strategy-assumptions{gap:6px 12px}
+ .hanmo-strategy .strategy-assumption h3{margin:2px 0 1px}
+ .hanmo-strategy .strategy-assumption .lab-footnote{margin:1px 0}
+ .hanmo-strategy .strategy-formulas{margin:2px 0 3px}
+}

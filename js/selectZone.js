@@ -56,7 +56,7 @@ function renderPracticeCourses(){
       +'<td>1</td><td>1</td>'
       +'<td>Hankuk University of F.S. Professor '+index+'</td>'
       +'<td>월 1 2 3 ( )</td><td>0 / 100</td>'
-      +'<td><input type="checkbox"></td><td></td></tr>');
+      +'<td><input type="checkbox" aria-label="모의수강신청 과목'+index+' 재수강"></td><td></td></tr>');
   }
 }
 
@@ -136,7 +136,9 @@ function renderCourseMode(){
         td.append(button);
       }else if(index===11){
         const checkbox=document.createElement('input');
-        checkbox.type='checkbox';td.append(checkbox);
+        checkbox.type='checkbox';
+        checkbox.setAttribute('aria-label',syntheticNames.get(courseId)+' 재수강');
+        td.append(checkbox);
       }else td.textContent=value;
       tr.append(td);
     }
@@ -243,11 +245,14 @@ function makeRegisteredRow(courseId,position){
     if(col===1){
       const button=document.createElement('button');
       button.setAttribute('class','delete');
+      button.setAttribute('type','button');
+      button.setAttribute('aria-label',texts[5]+' 삭제');
       button.setAttribute('onClick','deleteDone('+position+')');
       cell.appendChild(button);
     }else if(col===11){
       const input=document.createElement('input');
       input.setAttribute('type','checkbox');
+      input.setAttribute('aria-label',texts[5]+' 신청 내역 재수강');
       cell.appendChild(input);
     }else{
       cell.textContent=texts[col];

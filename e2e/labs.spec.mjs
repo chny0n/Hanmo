@@ -20,6 +20,11 @@ const expectOneScreen=async(page,selector)=>{
       const style=getComputedStyle(node),rect=node.getBoundingClientRect();
       if(!node.getClientRects().length||!rect.width||!rect.height||style.visibility!=='visible')continue;
       if(node.closest('.strategy-formula-body,#notice-list,#catalog-results'))continue;
+      // 달력의 1px 보조 텍스트는 화면에 그리지 않고 접근성 트리에만 남긴다. 실제 날짜와 조작은 계속 검사한다.
+      const interactive='button,a[href],input,select,textarea,[tabindex],[contenteditable="true"]';
+      if(node.closest('#calendar-view')&&style.position==='absolute'&&rect.width<=1.1&&rect.height<=1.1&&
+         (style.clip!=='auto'||style.clipPath!=='none'||style.overflow==='hidden')&&
+         !node.matches(interactive)&&!node.querySelector(interactive))continue;
       if(rect.top<bounds.top-1||rect.bottom>limit+1||rect.left< -1||rect.right>innerWidth+1||
         (['auto','scroll','hidden','clip'].includes(style.overflowY)&&node.clientHeight&&node.scrollHeight>node.clientHeight+2)){
         clipped.push({tag:node.id||node.className?.baseVal||node.className||node.tagName,top:rect.top,bottom:rect.bottom});
@@ -87,6 +92,7 @@ test('PC 진단은 실행 전 요청이 없고 11개 독립 등급과 다운로�
     await expect(page.locator('.readiness-criteria-list li').last()).toBeInViewport({ratio:1});
   }
   await criteria.locator('summary').click();
+  await expect(criteria.locator('.readiness-criteria-list')).toBeHidden();
   for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
     await page.setViewportSize(viewport);
     await expectOneScreen(page,'#readiness-result');
@@ -510,4 +516,8 @@ test('학사정보와 강의 검색은 결과 목록만 세로 스크롤 예외�
   await page.goto('/html/academic-timeline.html');
   await page.getByRole('tab',{name:'학사 달력'}).click();
   await expectOneScreen(page,'#academic-calendar-panel');
+  const dates=page.locator('#calendar-view [role="cell"][data-date] .hanmo-calendar-date');
+  expect(await dates.count()).toBeGreaterThanOrEqual(28);
+  for(const date of await dates.all())await expect(date).toBeInViewport({ratio:1});
+  for(const name of ['이전','다음','오늘'])await expect(page.locator('#calendar-view').getByRole('button',{name,exact:true})).toBeInViewport({ratio:1});
 });

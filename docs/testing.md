@@ -9,3 +9,7 @@
 - Windows 실제 Chrome/Edge, NVDA, 200% 확대, 물리 입력, 실제 자료 권리·독립 검수·운영 인수는 별도입니다. 검사 결과를 기록할 때 검사한 SHA와 실행 환경을 명시합니다.
 
 [아키텍처 §9](architecture.md) · [미결 이슈](pending-issues.md) · [Actions](https://github.com/ot4562-glitch/Hanmo_develop/actions)
+
+## Windows 브라우저 및 실기기 인수
+
+[Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 설치된 Chrome·Edge 채널에서 두 자동 브라우저 묶음을 실행하고 실제 OS/버전/SHA 및 캡처를 보관합니다. [#71·#72 실기기 인수 체크리스트](qa/windows-acceptance.md)에 따라 물리 키보드, 실제 브라우저 확대 200%, NVDA와 최대 표·긴 내정보의 배치를 별도로 검증합니다.
