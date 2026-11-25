@@ -32,9 +32,9 @@ const RIVAL_REACTION_MEAN_MS=270;
 const REACTION_SHAPE=20;
 const RIVAL_STEP_MS=RIVAL_REACTION_MEAN_MS+DIRECT_SUBMIT_MS;
 const OVERLAP={less:1,baseline:2,more:4};
-// 기존 모의신청 대기창과 같은 명목 범위이며 실제 학교 서버의 측정값은 아닙니다.
+// 전략 실험 전용 1~3초(양 끝 포함)의 가상 대기 범위입니다. 실제 학교 서버 측정값이 아닙니다.
 export const REQUEST_WAIT_MIN_MS=1000;
-export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=11000;
+export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=3001;
 function random01(seed,trial,stream,draw){
   let x=(seed^Math.imul(trial+1,0x9e3779b9)^
     Math.imul(stream+3,0x85ebca6b)^Math.imul(draw+17,0xc2b2ae35))>>>0;

@@ -110,12 +110,12 @@ test('순위 범위와 잘못된 시간·시드를 거부한다',()=>{
   }
 });
 
-test('모의 대기시간은 원본 대기창의 명목 범위 1000~10999ms를 유지한다',()=>{
+test('전략 실험 전용 모의 대기시간은 1000~3000ms의 양 끝을 포함한다',()=>{
   assert.equal(REQUEST_WAIT_MIN_MS,1000);
-  assert.equal(REQUEST_WAIT_MAX_EXCLUSIVE_MS,11000);
+  assert.equal(REQUEST_WAIT_MAX_EXCLUSIVE_MS,3001);
   assert.equal(requestWaitMs(0),1000);
-  assert.equal(requestWaitMs(.5),6000);
-  assert.equal(requestWaitMs(.999999),10999);
+  assert.equal(requestWaitMs(.5),2000);
+  assert.equal(requestWaitMs(.999999),3000);
 });
 test('먼저 요청한 순서는 유지하고 다음 신청에 이전 대기가 누적되며 마지막 대기도 소요시간에 포함한다',()=>{
   const arrivals=[];
@@ -134,7 +134,7 @@ test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평�
   assert.equal(r.guaranteed,true);
   assert.equal(r.allWins,s.trials);
   assert.ok(r.timing.meanWaitMs>=s.courses.length*1000);
-  assert.ok(r.timing.meanWaitMs<s.courses.length*11000);
+  assert.ok(r.timing.meanWaitMs<=s.courses.length*3000);
   assert.ok(r.timing.meanCompletionMs>=r.timing.meanWaitMs+s.startDelayMs+s.courses.length*460);
   assert.deepEqual(r.timing,simulate(s).timing);
   const contested=simulate(input());

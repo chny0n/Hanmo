@@ -13,6 +13,8 @@ if(form){
   const recommendation=document.getElementById('strategy-recommendation');
   const setup=document.getElementById('strategy-setup');
   const waitSummary=document.getElementById('strategy-wait-summary');
+  const formulas=document.getElementById('strategy-formulas');
+  const formulaValues=document.getElementById('strategy-formula-values');
   const redo=document.getElementById('strategy-back');
   const clock=document.getElementById('strategy-clock');
   const reaction=document.getElementById('strategy-reaction');
@@ -133,11 +135,15 @@ if(form){
         return (100*wins/r.trials).toFixed(1)+'%';
       };
       recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
-        ' · 전체 성공률 '+outcome(r.allWins)+' (기본 가정)';
+        ' · 전체 성공률 '+outcome(r.allWins);
       setup.textContent='같은 순서에서 경쟁자가 여러 과목을 신청하는 정도가 낮을 때 '+outcome(r.sensitivity.lessOverlap)+
         ' · 높을 때 '+outcome(r.sensitivity.moreOverlap)+' · 실험 시드 '+r.seed;
       waitSummary.textContent='평균 누적 대기시간 '+(r.timing.meanWaitMs/1000).toFixed(1)+
         '초 · 전체 신청 시도 평균 소요시간 '+(r.timing.meanCompletionMs/1000).toFixed(1)+'초';
+      // 현재 실행에 사용된 값을 표시하며 재실험 결과는 항상 접힌 상태에서 시작합니다.
+      formulaValues.textContent='N = '+input.courses.length+' · M = '+r.trials+' · a = '+input.actionMs+
+        'ms · σ = '+input.jitterMs+'ms · t₀ = '+input.startDelayMs+'ms · seed = '+r.seed;
+      formulas.open=false;
       result.hidden=false;inputPanel.hidden=true;
       result.scrollTop=0;
       result.focus({preventScroll:true});

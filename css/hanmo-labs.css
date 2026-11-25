@@ -162,3 +162,14 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 @media(min-width:1100px) and (min-height:680px){
  .hanmo-strategy #strategy-result{flex:0 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-inline-end:8px}
 }
+
+/* 수식은 기본 접힘으로 유지하고 펼쳤을 때만 상세한 모형을 표시합니다. */
+.hanmo-strategy .strategy-formulas{margin:10px 0 12px;border-block:1px solid var(--lab-border);padding:6px 0}
+.hanmo-strategy .strategy-formulas summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:13px;padding:6px 0}
+.hanmo-strategy .strategy-formulas summary:focus-visible{outline:2px solid #f4c76c;outline-offset:2px}
+.hanmo-strategy .strategy-formula-body{padding:0 0 6px;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-formula-body .lab-footnote{max-width:none;margin:5px 0 10px}
+.hanmo-strategy .strategy-formula-list{margin:0}
+.hanmo-strategy .strategy-formula-list dt{font-size:14px;font-weight:600;color:var(--lab-text);margin:12px 0 4px}
+.hanmo-strategy .strategy-formula-list dd{margin:0}
+.hanmo-strategy .strategy-formula-list code{display:block;white-space:normal;font-size:13px;line-height:1.65;color:var(--lab-text);font-variant-numeric:tabular-nums}
