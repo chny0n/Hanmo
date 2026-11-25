@@ -423,3 +423,23 @@ test('통합 학사정보 탭과 삭제된 문의처를 검증한다',async({pag
   await expect(page.locator('#notice-filter')).toBeVisible();
   expect((await page.request.get('/html/academic-support.html')).status()).toBe(404);
 });
+
+test('개발자 소개의 업데이트 역할은 이름보다 작게 표시하고 줄바꿈을 허용한다',async({page})=>{
+  await preparePage(page);
+  for(const width of [1440,1280,800]){
+    await page.setViewportSize({width,height:900});
+    await visit(page,'/html/developer.html');
+    const roles=page.locator('.hanmo-contributor-role');
+    await expect(roles).toHaveText([
+      '· 한모(2026) 업데이트 총괄',
+      '· 한모(2026) 업데이트 nlp 담당',
+      '· 한모(2026) 업데이트 데이터 및 품질 보증 담당',
+    ]);
+    const sizes=await roles.evaluateAll(elements=>elements.map(element=>({
+      role:parseFloat(getComputedStyle(element).fontSize),
+      name:parseFloat(getComputedStyle(element.parentElement).fontSize),
+      fits:element.closest('li').scrollWidth<=element.closest('li').clientWidth+1,
+    })));
+    expect(sizes.every(item=>item.role<item.name&&item.fits)).toBe(true);
+  }
+});

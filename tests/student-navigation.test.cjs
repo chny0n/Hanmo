@@ -374,8 +374,10 @@ test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정
  const html=fs.readFileSync(path.join(ROOT,'html/developer.html'),'utf8');
  const body=html.match(/<ul class="hanmo-contributor-list">([\s\S]*?)<\/ul>/)?.[1];
  assert.ok(body);
- const names=[...body.matchAll(/<li><strong>([^<]+)<\/strong>/g)].map(x=>x[1]);
+ const names=[...body.matchAll(/<li><strong>([^<]+)/g)].map(x=>x[1].trim());
  assert.deepEqual(names,['ZetBe','심민성','이의상','김채윤']);
+ const roles=[...body.matchAll(/<small class="hanmo-contributor-role">([^<]+)<\/small>/g)].map(x=>x[1]);
+ assert.deepEqual(roles,['· 한모(2026) 업데이트 총괄','· 한모(2026) 업데이트 nlp 담당','· 한모(2026) 업데이트 데이터 및 품질 보증 담당']);
  for(const affiliation of ['한국외국어대학교 컴퓨터전자시스템공학부',"한국외국어대학교 경제학전공 '24","한국외국어대학교 ELLT '23","한국외국어대학교 아랍어과 '23"]){
   assert.ok(body.includes(affiliation),affiliation);
  }
