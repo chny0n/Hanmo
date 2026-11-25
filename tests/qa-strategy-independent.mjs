@@ -96,11 +96,11 @@ const store={value:JSON.stringify(reaction),getItem(key){assert.equal(key,REACTI
 assert.deepEqual(readProfile(store,2e12+30*86400000),reaction);
 assert.equal(readProfile(store,2e12+30*86400000+1),null);assert.equal(readProfile(store,2e12-1),null);
 store.value='{malformed';assert.equal(readProfile(store,2e12),null);store.value=null;assert.equal(readProfile(store,2e12),null);
-const measurements={frame:summarizeFrames(Array(180).fill(1000/60)),longTasks:0,drift:5,timerCount:20,network:networkStats([35,40,35,40,35],[10,11],0),connectionType:'4g',threads:8,memory:8,reactionMs:200};
-assert.deepEqual(Object.values(gradeReadiness(measurements)).map(x=>x.grade),Array(11).fill('A'));
+const measurements={frame:summarizeFrames(Array(180).fill(1000/60)),longTasks:0,drift:5,timerCount:20,network:networkStats([35,40,35,40,35],[10,11],0),connectionType:'4g',threads:8,memory:8};
+assert.deepEqual(Object.values(gradeReadiness(measurements)).map(x=>x.grade),Array(10).fill('A'));
 const frame120=summarizeFrames(Array(360).fill(1000/120));assert.equal(gradeReadiness({...measurements,frame:frame120}).frame.grade,'A');
-const unavailable=gradeReadiness({...measurements,frame:null,longTasks:null,drift:null,timerCount:0,network:null,connectionType:undefined,threads:undefined,memory:undefined,reactionMs:undefined});
-assert.deepEqual(Object.values(unavailable).map(x=>x.grade),Array(11).fill(null));
+const unavailable=gradeReadiness({...measurements,frame:null,longTasks:null,drift:null,timerCount:0,network:null,connectionType:undefined,threads:undefined,memory:undefined});
+assert.deepEqual(Object.values(unavailable).map(x=>x.grade),Array(10).fill(null));
 const failed=gradeReadiness({...measurements,network:networkStats([null,null,null,null,null],[],7)});assert.equal(failed.error.grade,'F');assert.equal(failed.speed.grade,null);
 const excluded=gradeReadiness({...measurements,network:networkStats([null,null,null,null,null],[],0)});assert.equal(excluded.error.grade,null);
 const partial=gradeReadiness({...measurements,network:networkStats([40,null,80,40,null],[10],0)});assert.equal(partial.latency.grade,'A');assert.equal(partial.jitter.grade,null);assert.equal(partial.speed.grade,null);assert.match(partial.error.note,/잠정/);

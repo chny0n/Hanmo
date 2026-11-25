@@ -39,7 +39,6 @@
         <p><strong>화면 안정성</strong><span>화면 갱신 간격·끊김·긴 작업</span></p>
         <p><strong>브라우저 부하</strong><span>타이머 지연·논리 코어·메모리 대략값</span></p>
         <p><strong>한모 연결 상태</strong><span>정적 파일 응답·지터·다운로드 처리량</span></p>
-        <p><strong>반응 정보</strong><span>별도 반응속도 테스트 연결</span></p>
       </div>
       <label class="lab-check" for="readiness-network"><input id="readiness-network" type="checkbox" checked>
         <span>한모 정적 파일에 7회 요청해 응답·다운로드를 검사합니다.
@@ -47,7 +46,6 @@
       <div class="lab-actions">
         <button type="button" class="lab-button primary" id="readiness-start">PC 진단 시작</button>
         <button type="button" class="lab-button secondary" id="readiness-cancel" hidden>검사 취소</button>
-        <a href="./reaction-test.html" class="lab-button secondary lab-inline-link">반응속도 테스트</a>
       </div>
       <p class="lab-status" id="readiness-status" role="status" aria-live="polite">사용자가 시작할 때만 검사합니다. 결과와 입력 내용은 서버에 저장하지 않습니다.</p>
     </section>
@@ -73,7 +71,6 @@
         <div class="readiness-metric"><dt><span>네트워크 유형 추정</span><span class="readiness-grade" role="img" data-metric-grade="connection" data-grade="none">—</span></dt><dd id="readiness-connection-value">—</dd><dd class="readiness-grade-note" data-grade-note="connection" hidden></dd></div>
         <div class="readiness-metric"><dt><span>논리 코어</span><span class="readiness-grade" role="img" data-metric-grade="threads" data-grade="none">—</span></dt><dd id="readiness-threads-value">—</dd><dd class="readiness-grade-note" data-grade-note="threads" hidden></dd></div>
         <div class="readiness-metric"><dt><span>기기 메모리 대략값</span><span class="readiness-grade" role="img" data-metric-grade="memory" data-grade="none">—</span></dt><dd id="readiness-memory-value">—</dd><dd class="readiness-grade-note" data-grade-note="memory" hidden></dd></div>
-        <div class="readiness-metric"><dt><span>반응속도 테스트</span><span class="readiness-grade" role="img" data-metric-grade="reaction" data-grade="none">—</span></dt><dd id="readiness-reaction-value">—</dd><dd class="readiness-grade-note" data-grade-note="reaction" hidden></dd></div>
       </dl>
       <details id="readiness-grade-criteria" class="readiness-grade-criteria">
         <summary><span class="readiness-criteria-closed">등급 기준 보기</span><span class="readiness-criteria-open">진단 결과로 돌아가기</span></summary>
@@ -89,12 +86,11 @@
           <li>네트워크 유형 추정: 4g(A), 3g(C), 2g(D), slow-2g(F)</li>
           <li>논리 코어: 8·6·4·2개 이상 / 미만</li>
           <li>기기 메모리 대략값: 8·4·2·1GB 이상 / 미만</li>
-          <li>반응속도 중앙값: 200·250·300·400ms 이하 / 초과</li>
         </ul>
         <p class="lab-footnote">타이머 표본 15개, HTTP 표본 3개, 연속 지터 차이 2개, 다운로드 표본 2개 미만이면 해당 등급을 보류합니다. 전부 제외된 요청은 판정 보류, 일부 제외는 실패 횟수의 잠정 등급입니다. 미측정·미지원은 F가 아닙니다.</p>
       </details>
       <section id="readiness-advice" aria-labelledby="readiness-advice-heading" hidden>
-        <h3 id="readiness-advice-heading">권장 조치</h3>
+        <h3 id="readiness-advice-heading">B 이하 항목 개선 안내</h3>
         <ul id="readiness-advice-list"></ul>
       </section>
       <p class="lab-footnote">다운로드 처리량은 압축을 반영한 전송 본문 크기를 요청 전체 시간으로 나눈 값입니다. 브라우저 캐시와 전송 확인이 안 된 표본은 제외합니다. 지터는 연속한 응답시간 차이의 중앙값입니다. 한모 관측값은 회선 속도나 학교 서버 성능과 다를 수 있습니다.</p>

@@ -1,6 +1,5 @@
 // @ts-check
 // 학교 서버와 무관한 현재 탭·한모 정적 CDN의 관측값만 측정합니다.
-import {readProfile} from './reaction-profile.mjs';
 const HEAD_REQUESTS=5;
 const DOWNLOAD_REQUESTS=2;
 export function percentile(samples,ratio){
@@ -45,10 +44,10 @@ function thresholdGrade(value,limits,higher=false){
 /**
  * 수강신청용 참고 등급입니다. 공식 벤치마크나 실제 학교 서버의 성능 등급이 아닙니다.
  * @param {{frame:{median:number,p95:number,interruptions:number,samples:number}|null,longTasks:number|null,drift:number|null,timerCount:number,
- * network:ReturnType<typeof networkStats>|null,connectionType?:string,threads?:number,memory?:number,reactionMs?:number}} measurement 관측값과 유효 표본 수
+ * network:ReturnType<typeof networkStats>|null,connectionType?:string,threads?:number,memory?:number}} measurement 관측값과 유효 표본 수
  * @returns {Record<string,GradeResult>}
  */
-export function gradeReadiness({frame,longTasks,drift,timerCount,network,connectionType,threads,memory,reactionMs}){
+export function gradeReadiness({frame,longTasks,drift,timerCount,network,connectionType,threads,memory}){
   /** @param {ReadinessGrade|null} grade @param {string} [note] @returns {GradeResult} */
   const rated=(grade,note='')=>({grade,note:grade===null?(note||'판정 보류'):note});
   const pending=note=>rated(null,note);
@@ -84,9 +83,24 @@ export function gradeReadiness({frame,longTasks,drift,timerCount,network,connect
       rated(thresholdGrade(threads,[8,6,4,2],true),'하드웨어 참고 등급'):pending('브라우저 미지원'),
     memory:typeof memory==='number'&&memory>0?
       rated(thresholdGrade(memory,[8,4,2,1],true),'브라우저 근삿값 · 참고 등급'):pending('브라우저 미지원'),
-    reaction:typeof reactionMs==='number'&&reactionMs>=80&&reactionMs<=3000?
-      rated(thresholdGrade(reactionMs,[200,250,300,400])):pending('유효한 반응 측정 없음'),
   };
+}
+/** @type {[Record<string,string>,string][]} */
+const ADVICE_GROUPS=[
+  [{frame:'화면 프레임'},'영상 재생·녹화를 멈추고 화면 주사율과 절전 설정을 확인하세요.'],
+  [{task:'긴 작업',drift:'타이머 지연',threads:'논리 코어',memory:'메모리'},'사용하지 않는 탭·앱을 닫고 작업 관리자에서 CPU·메모리 사용량을 확인하세요.'],
+  [{latency:'HTTP 응답',jitter:'연결 지터',speed:'다운로드',error:'요청 실패',connection:'네트워크 유형'},
+    '대용량 전송을 잠시 멈추고 안정적인 Wi-Fi 또는 유선 연결에서 다시 검사하세요.'],
+];
+/** @param {Record<string,GradeResult>} grades 지표별 참고 등급 */
+export function gradeAdvice(grades){
+  return ADVICE_GROUPS.flatMap(([labels,action])=>{
+    const affected=Object.entries(labels).filter(([key])=>{
+      const grade=grades[key]?.grade;
+      return grade!=null&&grade!=='A';
+    }).map(([,label])=>label);
+    return affected.length?[affected.join('·')+': '+action]:[];
+  });
 }
 
 /**
@@ -277,12 +291,6 @@ if(typeof document!=='undefined'){
         guard(signal.aborted,'진단 취소');
         const assessment=assessReadiness({frame,longTasks,network,drift});
         summary.textContent=assessment.messages.join(' ');
-        adviceList.replaceChildren(...assessment.actions.map(action=>{
-          const item=document.createElement('li');
-          item.textContent=action;
-          return item;
-        }));
-        advice.hidden=assessment.actions.length===0;
         value('readiness-frame-value',text(1000/frame.median)+'fps 관측','· 프레임 간격 중앙값 '+
           text(frame.median)+'ms · 95백분위수 '+text(frame.p95)+'ms · 끊김 '+frame.interruptions+'회');
         value('readiness-task-value',longTasks===null?'지원되지 않음':longTasks+'회 (50ms 이상)');
@@ -297,12 +305,17 @@ if(typeof document!=='undefined'){
           navigator.hardwareConcurrency?navigator.hardwareConcurrency+' 논리 코어':'브라우저 미지원');
         value('readiness-memory-value',
           navigator.deviceMemory?navigator.deviceMemory+'GB (대략값)':'브라우저 미지원');
-        const profile=readProfile();
-        value('readiness-reaction-value',profile?profile.medianMs+'ms':'미측정',profile?'(반응 테스트에서 읽음)':'· 반응 테스트 이용');
         const grades=gradeReadiness({frame,longTasks,drift,timerCount,network,
           connectionType:connection?.effectiveType,threads:navigator.hardwareConcurrency,
-          memory:navigator.deviceMemory,reactionMs:profile?.medianMs});
+          memory:navigator.deviceMemory});
         renderGrades(grades);
+        const actions=gradeAdvice(grades);
+        adviceList.replaceChildren(...actions.map(action=>{
+          const item=document.createElement('li');
+          item.textContent=action;
+          return item;
+        }));
+        advice.hidden=actions.length===0;
         // 기존 이상 기준과 새로운 참고 등급이 서로 모순되어 보이지 않도록 구분합니다.
         const low=Object.values(grades).some(item=>item.grade==='D'||item.grade==='F');
         if(low&&assessment.messages[0]==='이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.')summary.textContent='참고 기준에서 개선이 필요한 항목이 있습니다. 항목별 등급과 관측값을 확인하세요.';
