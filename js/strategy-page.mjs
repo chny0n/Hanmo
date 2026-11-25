@@ -127,8 +127,8 @@ if(form){
       active.terminate();worker=null;busy(false);
       if(message.type==='error'){status.textContent=message.message;return;}
       const r=message.result;
-      const outcome=wins=>{
-        if(r.guaranteed)return '100%';
+      const outcome=(wins,guaranteed=r.guaranteed)=>{
+        if(guaranteed)return '100%';
         if(wins===0)return '성공 미관측 (0/'+r.trials+'회)';
         if(wins===r.trials)return '실패 미관측 ('+r.trials+'/'+r.trials+'회)';
         return (100*wins/r.trials).toFixed(1)+'%';
@@ -142,7 +142,7 @@ if(form){
         const rank=document.createElement('span');rank.className='strategy-order-rank';rank.textContent=(slot+1)+'번째';
         const course=document.createElement('strong');course.textContent=name;
         const rate=document.createElement('span');rate.className='strategy-course-rate';
-        rate.textContent=outcome(Math.round(r.courseSuccess[slot]*r.trials));
+        rate.textContent=outcome(Math.round(r.courseSuccess[slot]*r.trials),r.courseGuaranteed[slot]);
         const bar=document.createElement('div');bar.className='strategy-course-track';bar.setAttribute('aria-hidden','true');
         const fill=document.createElement('span');
         // 추천 순서와 관측 성공률을 같은 카드에서 확인합니다.

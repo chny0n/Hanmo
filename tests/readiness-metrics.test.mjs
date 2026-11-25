@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {percentile,summarizeFrames,findings,assessReadiness,networkSample,networkStats,gradeReadiness} from '../js/readiness.mjs';
+import {percentile,summarizeFrames,findings,assessReadiness,networkSample,networkStats,gradeReadiness,gradeAdvice} from '../js/readiness.mjs';
 test('분위수는 입력 순서와 무관하고 입력을 변경하지 않는다',()=>{
   const values=[30,10,20];
   assert.equal(percentile(values,0.5),20);
@@ -83,16 +83,17 @@ test('미지원·미실시 지표는 이상으로 처리하지 않고 불완전�
 
 const goodNetwork={median:40,jitter:5,mbps:10,failures:0,latencyCount:5,jitterCount:4,downloadCount:2,excluded:0};
 const goodMeasurement={frame:{median:20,p95:25,interruptions:0,samples:150},longTasks:0,drift:5,timerCount:30,
-  network:goodNetwork,connectionType:'4g',threads:8,memory:8,reactionMs:200};
-test('11개 지표는 독립 등급이며 전체 종합 등급을 생성하지 않는다',()=>{
+  network:goodNetwork,connectionType:'4g',threads:8,memory:8};
+test('10개 PC 지표는 독립 등급이며 반응속도와 전체 등급을 생성하지 않는다',()=>{
   const grades=gradeReadiness(goodMeasurement);
-  assert.equal(Object.keys(grades).length,11);
+  assert.equal(Object.keys(grades).length,10);
+  assert.equal(grades.reaction,undefined);
   assert.ok(Object.values(grades).every(x=>x.grade==='A'));
 });
 test('작을수록 좋은 수치와 클수록 좋은 수치의 등급 경계를 모두 검증한다',()=>{
   const cases=[
     ['task','longTasks',[0,1,2,4,5]],['drift','drift',[5,15,30,99.99,100]],
-    ['reaction','reactionMs',[200,250,300,400,401]],['threads','threads',[8,6,4,2,1]],
+    ['threads','threads',[8,6,4,2,1]],
     ['memory','memory',[8,4,2,1,.5]],
   ];
   for(const [key,field,values] of cases){
@@ -106,6 +107,15 @@ test('작을수록 좋은 수치와 클수록 좋은 수치의 등급 경계를 
   }
   assert.deepEqual(['4g','3g','2g','slow-2g','unknown'].map(connectionType=>
     gradeReadiness({...goodMeasurement,connectionType}).connection.grade),['A','C','D','F',null]);
+});
+test('개선 조치는 B부터 표시하고 A와 판정 보류를 건너뛴다',()=>{
+  assert.deepEqual(gradeAdvice(gradeReadiness(goodMeasurement)),[]);
+  const actions=gradeAdvice(gradeReadiness({...goodMeasurement,threads:6,drift:15,memory:undefined,
+    network:{...goodNetwork,median:80}}));
+  assert.equal(actions.length,2);
+  assert.match(actions[0],/^타이머 지연·논리 코어:/);
+  assert.match(actions[1],/^HTTP 응답:/);
+  assert.doesNotMatch(actions.join(' '),/화면 프레임|연결 지터|메모리:/);
 });
 test('프레임은 FPS·95백분위수·끊김 중 최저 등급으로 판정한다',()=>{
   const frame=goodMeasurement.frame;

@@ -255,17 +255,27 @@ test('후보군 규모는 과목 수의 합계가 아니라 최대 수요와 중
 test('진입 혼합분포는 즉시 시작과 지연 시작을 구분하고 동시 시작 조건을 지원한다',()=>{
   assert.equal(rivalStartMs(.5),0);
   assert.equal(rivalStartMs(.75),0);
-  assert.equal(rivalStartMs(.875),15000);
-  assert.ok(rivalStartMs(.9999)>29900);
+  assert.equal(rivalStartMs(.875),2000*Math.log(2));
+  assert.ok(rivalStartMs(.95)>rivalStartMs(.875));
+  assert.ok(rivalStartMs(.75001)<1);
   assert.equal(rivalStartMs(.9999,1),0);
 });
 test('전체 신청량은 입력 과목 수에만 의존하지 않으며 모든 배정 과목을 보존한다',()=>{
   for(let n=1;n<=8;n++){
     const known=Array.from({length:n},(_,i)=>i);
     const selected=rivalOrder(known,Array(n).fill(1),()=>.01,()=>1);
-    assert.equal(selected.length,Math.max(5,n));
+    assert.equal(selected.length,n);
     assert.deepEqual(selected.filter(i=>i>=0).sort((a,b)=>a-b),known);
   }
+});
+test('적은 과목이 만석 경쟁을 피하지 않으며 6번째 이후에도 좌석이 남을 수 있다',()=>{
+  const scenario={seed:123456789,trials:160,startDelayMs:0,actionMs:630,jitterMs:100};
+  const courses=Array.from({length:8},(_,i)=>({id:String(i),name:String(i),rank:i+1,capacity:39,rivals:40}));
+  const short=courses.slice(0,2).map(course=>({...course,capacity:12}));
+  assert.ok(simulate({...scenario,courses:short}).allWins<scenario.trials*.5);
+  const eight=simulate({...scenario,courses});
+  assert.ok(eight.courseSuccess[5]>0);
+  assert.ok(eight.courseSuccess[7]>0);
 });
 test('목록 밖 과목과 입력 과목의 경쟁 가중치가 같은 비율로 변하면 선택 순서가 유지된다',()=>{
   const pick=w=>{
