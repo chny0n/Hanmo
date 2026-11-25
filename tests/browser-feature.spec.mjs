@@ -135,7 +135,13 @@ test('학사 통합 화면과 강의 검색의 제목 구분선이 남는다',as
 test('개발자 페이지는 네 명의 Contributor를 나란히 표기한다',async({page})=>{
  await page.goto('/html/developer.html');
  await expect(page.locator('.hanmo-contributor-list > li')).toHaveCount(4);
- await expect(page.locator('.hanmo-contributor-list strong')).toHaveText(['ZetBe','심민성','이의상','김채윤']);
+ await expect(page.locator('.hanmo-contributor-list strong')).toHaveText([
+   'ZetBe','심민성 · 한모(2026) 업데이트 총괄','이의상 · 한모(2026) 업데이트 nlp 담당',
+   '김채윤 · 한모(2026) 업데이트 데이터 및 품질 보증 담당',
+ ]);
+ const roles=page.locator('.hanmo-contributor-role');
+ await expect(roles).toHaveText(['· 한모(2026) 업데이트 총괄','· 한모(2026) 업데이트 nlp 담당','· 한모(2026) 업데이트 데이터 및 품질 보증 담당']);
+ expect(await roles.evaluateAll(items=>items.every(item=>parseFloat(getComputedStyle(item).fontSize)<parseFloat(getComputedStyle(item.parentElement).fontSize)))).toBe(true);
  await expect(page.locator('.hanmo-contributor-list span')).toHaveCount(4);
 });
 
