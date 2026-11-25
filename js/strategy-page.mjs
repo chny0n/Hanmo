@@ -143,7 +143,7 @@ if(form){
         '초 포함) · 전체 신청 시도 평균 소요시간 '+(r.timing.meanCompletionMs/1000).toFixed(1)+'초';
       // 현재 실행에 사용된 값을 표시하며 재실험 결과는 항상 접힌 상태에서 시작합니다.
       formulaValues.textContent='N = '+input.courses.length+' · M = '+r.trials+' · a = '+input.actionMs+
-        'ms · σ = '+input.jitterMs+'ms · t₀ = '+input.startDelayMs+'ms · τ = '+r.serverServiceMs+'ms · 실험 시드 '+r.seed;
+        'ms · σ = '+input.jitterMs+'ms · t₀ = '+input.startDelayMs+'ms · τ_min = '+r.serverServiceMs+'ms · 실험 시드 '+r.seed;
       formulas.open=false;
       result.hidden=false;inputPanel.hidden=true;
       result.scrollTop=0;

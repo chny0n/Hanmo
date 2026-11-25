@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS,rivalGroupMeanMs,rivalReactionMs,rivalActionMs,rivalActionTimes} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS,rivalGroupMeanMs,rivalReactionMs,rivalActionMs,fittsTimeMs,serviceFinishMs} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -54,16 +54,16 @@ test('가상 정원은 300까지 허용하고 301부터 거부한다',()=>{
 });
 test('경쟁자는 입력 목록 밖의 과목을 먼저 신청할 수 있고 최대 8과목을 선택한다',()=>{
   const draws=[.99,.4,.7,.9,.8,.7,.8,.7,.8];
-  const order=rivalOrder([0],[1],()=>draws.shift());
+  const order=rivalOrder([0],[1],()=>draws.shift(),()=>1);
   assert.equal(order.length,8);
-  assert.equal(order.at(-1).course,0);
-  assert.equal(order.filter(({course})=>course<0).length,7);
+  assert.equal(order.at(-1),0);
+  assert.equal(order.filter(course=>course<0).length,7);
 });
 test('같은 난수에서 정원 대비 경쟁자가 많아지면 해당 과목이 앞설 수 있다',()=>{
   const order=capacity=>{
     const weights=[urgencyWeight({capacity,rivals:50}),urgencyWeight({capacity:20,rivals:50})];
     const draws=[0,.2,.5];
-    return rivalOrder([0,1],weights,()=>draws.shift()).map(({course})=>course);
+    return rivalOrder([0,1],weights,()=>draws.shift(),()=>1);
   };
   assert.deepEqual(order(20),[1,0]);
   assert.deepEqual(order(1),[0,1]);
@@ -128,15 +128,15 @@ test('동시에 도착한 요청과 이후 요청은 공통 서버에서 순차 
   const events=[];
   runSharedQueue(agents,(agent,slot,arrival,start,processed,reply)=>events.push([agent.id,slot,arrival,start,processed,reply]));
   assert.deepEqual(events,[
-    [1,0,100,100,110,1100],
-    [2,0,100,110,120,1110],
-    [0,0,105,120,130,3120],
-    [1,1,1150,1150,1160,2150],
-    [2,1,1160,1160,1170,2160],
+    [1,0,100,100,120,1100],
+    [2,0,100,120,140,1120],
+    [0,0,105,140,160,3140],
+    [1,1,1150,1150,1170,2150],
+    [2,1,1170,1170,1190,2170],
   ]);
   assert.deepEqual(agents,original);
-  assert.equal(events[1][5]-events[1][2],1010);
-  assert.equal(events[2][5]-events[2][2],3015);
+  assert.equal(events[1][5]-events[1][2],1020);
+  assert.equal(events[2][5]-events[2][2],3035);
 });
 test('최소 힙 대기열은 독립적인 정렬 기반 FCFS 기준 구현과 일치한다',()=>{
   const agents=Array.from({length:23},(_,id)=>({
@@ -152,15 +152,22 @@ test('최소 힙 대기열은 독립적인 정렬 기반 FCFS 기준 구현과 �
     pending.sort((a,b)=>a.arrival-b.arrival||a.agent.id-b.agent.id);
     const {agent,slot,arrival}=pending.shift();
     const start=Math.max(arrival,available);
-    available=start+SERVER_SERVICE_MS;
+    // 누적 처리량과 역함수를 이용한 독립 기준 구현입니다.
+    const work=t=>t<=2000?t/20:t<=5000?100+(t-2000)/12.5:340+(t-5000)/10;
+    const time=w=>w<=100?w*20:w<=340?2000+(w-100)*12.5:5000+(w-340)*10;
+    available=time(work(start)+1);
     const reply=start+agent.delays[slot];
     expected.push([agent.id,slot,arrival,start,available,reply]);
     if(slot+1<agent.actions.length)pending.push({agent,slot:slot+1,arrival:reply+agent.actions[slot+1]});
   }
-  assert.deepEqual(actual,expected);
+  assert.equal(actual.length,expected.length);
+  for(let i=0;i<actual.length;i++){
+    assert.deepEqual(actual[i].slice(0,2),expected[i].slice(0,2));
+    assert.ok(actual[i].slice(2).every((value,j)=>Math.abs(value-expected[i][j+2])<1e-8));
+  }
   const reversed=[];
   runSharedQueue([...agents].reverse(),(agent,slot,arrival,start,processed,reply)=>reversed.push([agent.id,slot,arrival,start,processed,reply]));
-  assert.deepEqual(reversed,expected);
+  assert.deepEqual(reversed,actual);
 });
 test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평균 소요시간에 포함한다',()=>{
   const s=input();
@@ -170,7 +177,7 @@ test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평�
   assert.equal(r.allWins,s.trials);
   assert.ok(r.timing.meanWaitMs>=s.courses.length*1000);
   assert.ok(r.timing.meanWaitMs<=s.courses.length*3000);
-  assert.ok(r.timing.meanCompletionMs>=r.timing.meanWaitMs+s.startDelayMs+s.courses.length*460);
+  assert.ok(r.timing.meanCompletionMs>=r.timing.meanWaitMs+s.startDelayMs+s.courses.length*(80+fittsTimeMs(80,60)));
   assert.equal(r.timing.meanQueueWaitMs,0);
   assert.equal(r.serverServiceMs,10);
   assert.deepEqual(r.timing,simulate(s).timing);
@@ -196,19 +203,36 @@ test('회차별 경쟁 집단 평균은 시드로 재현되고 240~300ms 범위�
   assert.ok(Math.abs(average-270)<2);
   assert.notEqual(rivalGroupMeanMs(seed,0),rivalGroupMeanMs(seed,1));
 });
-test('개인 감마분포는 집단 평균의 이동을 반영하고 매 신청에서 같은 개인 속도를 유지한다',()=>{
-  const draw=()=>Math.exp(-1);
-  assert.ok(Math.abs(rivalReactionMs(240,draw)-240)<1e-9);
-  assert.ok(Math.abs(rivalReactionMs(300,draw)-300)<1e-9);
-  assert.equal(rivalActionMs(270,0),650);
-  assert.equal(rivalActionMs(270,1),675);
-  assert.equal(rivalActionMs(270,-1),625);
-  assert.equal(rivalActionMs(80,-10),460);
-  const fast=rivalActionTimes(123456789,1,12,240,8);
-  const slow=rivalActionTimes(123456789,1,12,300,8);
-  assert.deepEqual(fast,rivalActionTimes(123456789,1,12,240,8));
-  assert.deepEqual(fast.slice(0,3),rivalActionTimes(123456789,1,12,240,3));
-  assert.ok(new Set(fast).size>1);
-  assert.ok(fast.every((a,i)=>a>=460&&slow[i]>=a&&Math.abs(slow[i]-a-60)<1e-9));
-  assert.notDeepEqual(fast,rivalActionTimes(123456789,1,13,240,8));
+test('이동 로그정규 개인 위치의 변화와 Ex-Gaussian 신청 지연을 반영한다',()=>{
+  const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-9);
+  near(rivalReactionMs(270,0),80+155*Math.exp(-(0.35**2)/2));
+  assert.ok(rivalReactionMs(270,-1)<rivalReactionMs(270,1));
+  assert.ok(rivalReactionMs(240,0)<rivalReactionMs(300,0));
+  near(rivalActionMs(200,0,Math.exp(-1),380),615);
+  near(rivalActionMs(200,1,Math.exp(-1),380),640);
+  near(rivalActionMs(200,-1,Math.exp(-1),380),590);
+  near(rivalActionMs(80,-10,.9,380),460);
+  assert.ok(rivalActionMs(200,0,.01,380)>rivalActionMs(200,0,.9,380));
+  assert.ok(rivalActionMs(240,0,.5,380)>rivalActionMs(180,0,.5,380));
+});
+test('Fitts 조작시간은 거리에 따라 증가하고 버튼 폭에 따라 감소한다',()=>{
+  assert.equal(fittsTimeMs(240,60),380);
+  assert.ok(fittsTimeMs(80,60)<fittsTimeMs(480,60));
+  assert.ok(fittsTimeMs(240,120)<fittsTimeMs(240,60));
+});
+test('비정상 대기열은 시간대 경계에서 남은 작업량을 정확히 처리한다',()=>{
+  assert.equal(serviceFinishMs(100),120);
+  assert.equal(serviceFinishMs(1990),2006.25);
+  assert.equal(serviceFinishMs(2000),2012.5);
+  assert.equal(serviceFinishMs(4995),5006);
+  assert.equal(serviceFinishMs(5000),5010);
+  assert.equal(serviceFinishMs(10000),10010);
+});
+test('개인별 선호가 같으면 기존 가중 선택으로 환원되고 선호가 다르면 순서가 바뀐다',()=>{
+  const pick=preference=>{
+    const draws=[0,.5,.5];
+    return rivalOrder([0,1],[1,1],()=>draws.shift(),preference);
+  };
+  assert.deepEqual(pick(()=>1),[0,1]);
+  assert.deepEqual(pick(i=>i===1?4:1),[1,0]);
 });

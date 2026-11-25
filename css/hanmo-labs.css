@@ -167,11 +167,11 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-formulas{margin:10px 0 12px;border-block:1px solid var(--lab-border);padding:6px 0}
 .hanmo-strategy .strategy-formulas summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:13px;padding:6px 0}
 .hanmo-strategy .strategy-formulas summary:focus-visible{outline:2px solid #f4c76c;outline-offset:2px}
-.hanmo-strategy .strategy-formula-body{padding:0 0 6px;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-formula-body{padding:0 0 6px;overflow-wrap:anywhere;container-type:inline-size;min-width:0}
 .hanmo-strategy .strategy-formula-body .lab-footnote{max-width:none;margin:5px 0 10px}
 .hanmo-strategy .strategy-formula-list{margin:0}
 .hanmo-strategy .strategy-formula-list dt{font-size:14px;font-weight:600;color:var(--lab-text);margin:12px 0 4px}
 .hanmo-strategy .strategy-formula-list dd{margin:0}
-.hanmo-strategy .strategy-math-line{overflow-x:auto;margin:8px 0;padding:3px 0}
-.hanmo-strategy .strategy-math-line math{font-size:clamp(16px,1.5vw,20px);color:var(--lab-text);margin-inline:0}
+.hanmo-strategy .strategy-math-line{margin:8px 0;padding:3px 0;min-width:0;overflow:visible}
+.hanmo-strategy .strategy-math-line math{font-size:clamp(13px,1.5vw,20px);font-size:clamp(12px,3.3cqi,20px);color:var(--lab-text);margin-inline:0}
 .hanmo-strategy .strategy-formula-list dd>.lab-footnote{margin:8px 0 14px}

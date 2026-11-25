@@ -31,14 +31,47 @@ const MAX_COURSES=8;
 // 합성 모형의 초기 가정이며 관측 데이터에서 추정한 모수가 아닙니다.
 export const RIVAL_REACTION_MEAN_MS=270;
 export const RIVAL_GROUP_SHIFT_MS=30;
-export const RIVAL_REACTION_SHAPE=20;
+export const RIVAL_LOG_SD=0.35;
 export const RIVAL_ACTION_JITTER_MS=25;
+export const RIVAL_TAIL_MEAN_MS=35;
+const MIN_REACTION_MS=80;
+const PREFERENCE_LOG_SD=0.7;
+const TARGET_WIDTH_PX=60;
+const TARGET_DISTANCE_MIN_PX=80;
+const TARGET_DISTANCE_SPAN_PX=400;
+const FITTS_SLOPE_MS=110;
 const OVERLAP={less:1,baseline:2,more:4};
 // 전략 실험 전용 1~3초(양 끝 포함)의 가상 대기 범위입니다. 실제 학교 서버 측정값이 아닙니다.
 export const REQUEST_WAIT_MIN_MS=1000;
 export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=3001;
-// 단일 논리적 서버는 가상 처리율 초당 100건으로 순차 처리합니다.
+// 단일 논리적 서버의 회복 후 건당 처리시간입니다.
 export const SERVER_SERVICE_MS=10;
+const SERVICE_PHASES=[{until:2000,ms:20},{until:5000,ms:12.5}];
+/** 시간대별 처리율을 적분해 요청 한 건의 작업량이 완료되는 시각을 구합니다.
+ * @param {number} start 처리 시작 시각
+ */
+export function serviceFinishMs(start){
+  let time=start,remaining=1;
+  for(const {until,ms} of SERVICE_PHASES){
+    if(time>=until)continue;
+    const work=(until-time)/ms;
+    if(work>=remaining)return time+remaining*ms;
+    remaining-=work;
+    time=until;
+  }
+  return time+remaining*SERVER_SERVICE_MS;
+}
+/** 가상 화면의 목표 크기와 이동 거리로 선택·확인 시간을 계산합니다.
+ * @param {number} distance 목표까지의 거리(px)
+ * @param {number} width 목표의 유효 폭(px)
+ */
+export function fittsTimeMs(distance,width){
+  return DIRECT_SUBMIT_MS+FITTS_SLOPE_MS*(Math.log2(1+distance/width)-Math.log2(5));
+}
+function movementMs(seed,trial,id,slot){
+  const distance=TARGET_DISTANCE_MIN_PX+TARGET_DISTANCE_SPAN_PX*random01(seed,trial,id,slot);
+  return fittsTimeMs(distance,TARGET_WIDTH_PX);
+}
 function random01(seed,trial,stream,draw){
   let x=(seed^Math.imul(trial+1,0x9e3779b9)^
     Math.imul(stream+3,0x85ebca6b)^Math.imul(draw+17,0xc2b2ae35))>>>0;
@@ -77,8 +110,8 @@ export function runSharedQueue(agents,onProcessed){
   while(heap.length){
     const node=heap[0],{agent,slot,arrival}=node;
     const start=Math.max(arrival,available);
-    const processed=start+SERVER_SERVICE_MS;
-    const reply=start+agent.delays[slot];
+    const processed=serviceFinishMs(start);
+    const reply=Math.max(processed,start+agent.delays[slot]);
     available=processed;
     onProcessed(agent,slot,arrival,start,processed,reply);
     // 같은 참가자의 다음 요청은 응답 완료 후에만 대기열에 들어옵니다.
@@ -102,7 +135,8 @@ function userAgent(s,trial,id){
   const actions=[],delays=[];
   for(let slot=0;slot<s.courses.length;slot++){
     const z=normal01(s.seed,trial,100,slot);
-    actions.push(Math.max(DIRECT_SUBMIT_MS+80,s.actionMs+s.jitterMs*z));
+    const reaction=Math.max(MIN_REACTION_MS,s.actionMs-DIRECT_SUBMIT_MS+s.jitterMs*z);
+    actions.push(reaction+movementMs(s.seed^0x2f6e2b1d,trial,0,slot));
     delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)));
   }
   return {id,startMs:s.startDelayMs,actions,delays,courses:[]};
@@ -115,26 +149,24 @@ function userAgent(s,trial,id){
 export function rivalGroupMeanMs(seed,trial){
   return RIVAL_REACTION_MEAN_MS+RIVAL_GROUP_SHIFT_MS*(2*random01(seed^0x6a09e667,trial,0,0)-1);
 }
-/** 집단 평균을 조건으로 개인별 기본 반응시간을 한 번만 추출합니다.
+/** 이동 로그정규 사전분포로 개인별 고유 반응 위치를 한 번 추출합니다.
+ * 지수 꼬리의 평균을 미리 빼므로 절단 전 집단 평균이 설정값과 일치합니다.
  * @param {number} groupMeanMs 회차별 집단 평균
- * @param {()=>number} draw 균등 난수 생성기
- */
-export function rivalReactionMs(groupMeanMs,draw){
-  let product=1;
-  for(let i=0;i<RIVAL_REACTION_SHAPE;i++)product*=draw();
-  return -Math.log(product)*groupMeanMs/RIVAL_REACTION_SHAPE;
-}
-/** 개인 고유 반응속도를 모든 신청에 유지하고 순번마다 독립 변동을 더합니다.
- * @param {number} personalMs 개인의 기본 반응시간
  * @param {number} z 표준 정규 난수
  */
-export function rivalActionMs(personalMs,z){
-  return DIRECT_SUBMIT_MS+Math.max(80,personalMs+RIVAL_ACTION_JITTER_MS*z);
+export function rivalReactionMs(groupMeanMs,z){
+  const scale=groupMeanMs-MIN_REACTION_MS-RIVAL_TAIL_MEAN_MS;
+  return MIN_REACTION_MS+scale*Math.exp(RIVAL_LOG_SD*z-RIVAL_LOG_SD**2/2);
 }
-/** @param {number} seed 실험 시드 @param {number} trial 회차 @param {number} rival 경쟁자 ID @param {number} personalMs 개인 반응시간 @param {number} count 신청 횟수 */
-export function rivalActionTimes(seed,trial,rival,personalMs,count){
-  return Array.from({length:count},(_,slot)=>
-    rivalActionMs(personalMs,normal01(seed^0x3c6ef372,trial,rival,slot)));
+/** 개인 위치를 유지하고 정규 변동과 지수 꼬리로 신청별 반응을 생성합니다.
+ * @param {number} personalMs 개인별 고유 반응 위치
+ * @param {number} z 표준 정규 난수
+ * @param {number} unit 열린 구간 (0,1)의 균등 난수
+ * @param {number} movement 선택·확인 시간
+ */
+export function rivalActionMs(personalMs,z,unit,movement){
+  const tail=-RIVAL_TAIL_MEAN_MS*Math.log(unit);
+  return movement+Math.max(MIN_REACTION_MS,personalMs+RIVAL_ACTION_JITTER_MS*z+tail);
 }
 
 /** @param {{capacity:number,rivals:number}} course 가상 과목 */
@@ -156,12 +188,12 @@ function assignCourses(courses,population,seed,trial){
   return portfolios;
 }
 
-export function rivalOrder(known,urgency,draw){
+export function rivalOrder(known,urgency,draw,preference){
   const size=known.length+Math.floor(draw()*(MAX_COURSES-known.length+1));
-  // 가중치가 클수록 작은 키를 뽑아 앞 순서에 놓입니다. 기타 과목의 가중치는 1입니다.
-  const entries=known.map(course=>({course,key:-Math.log(draw())/urgency[course]}));
-  while(entries.length<size)entries.push({course:-1,key:-Math.log(draw())});
-  return entries.sort((a,b)=>a.key-b.key);
+  // 지수 경주로 개인별 가중 Plackett–Luce 순열을 생성합니다.
+  const entries=known.map((course,index)=>({course,key:-Math.log(draw())/(urgency[course]*preference(index))}));
+  while(entries.length<size)entries.push({course:-1,key:-Math.log(draw())/preference(entries.length)});
+  return entries.sort((a,b)=>a.key-b.key).map(({course})=>course);
 }
 
 function simulateTrial(s,urgency,population,trial){
@@ -174,16 +206,21 @@ function simulateTrial(s,urgency,population,trial){
     if(!known.length)continue;
     let count=0;
     const draw=()=>random01(timingSeed,trial,rival,count++);
-    const personalMs=rivalReactionMs(groupMean,draw);
-    const courses=rivalOrder(known,urgency,draw).map(({course})=>course);
-    const actions=rivalActionTimes(s.seed,trial,rival,personalMs,courses.length);
+    const personalMs=rivalReactionMs(groupMean,normal01(s.seed^0x3c6ef372,trial,rival,0));
+    const preference=index=>Math.exp(PREFERENCE_LOG_SD*normal01(s.seed^0x55b7a821,trial,rival,index));
+    const courses=rivalOrder(known,urgency,draw,preference);
+    const actions=courses.map((_,slot)=>rivalActionMs(
+      personalMs,normal01(s.seed^0x7c81f307,trial,rival,slot),
+      random01(s.seed^0x3f67a5d9,trial,rival,slot),
+      movementMs(s.seed^0x1a9b42f3,trial,rival,slot),
+    ));
     const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)));
     agents.push({id:rival,startMs:0,actions,delays,courses});
   }
   const times=[],closing=s.courses.map(()=>Infinity),counts=new Uint16Array(s.courses.length);
   let totalWaitMs=0,queueWaitMs=0,completionMs=0;
-  // 과목 종류·신청 성공 여부와 무관하게 모든 요청이 동일한 서버 처리시간을 사용합니다.
-  // 따라서 본인의 과목 순서를 바꾸더라도 신청 순번별 처리시각은 동일하여 기존 DP를 사용할 수 있습니다.
+  // 처리율은 시각에만 의존하며 과목 종류·성공 여부와 무관합니다.
+  // 이동 거리도 과목이 아닌 신청 순번별로 추출하므로 기존 DP가 유효합니다.
   runSharedQueue(agents,(agent,slot,arrival,start,processed,reply)=>{
     if(agent===player){
       times.push(processed);

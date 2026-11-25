@@ -152,13 +152,13 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-recommendation')).not.toContainText('(기본 가정)');
   await expect(page.locator('#strategy-setup')).toContainText(/경쟁자가 여러 과목을 신청하는 정도가 낮을 때.*높을 때.*실험 시드/);
   await expect(page.getByRole('heading',{name:'경쟁자 가정',exact:true})).toBeVisible();
-  await expect(page.locator('#strategy-result')).toContainText('경쟁자는 최대 8과목을 순서대로 신청합니다. 정원에 비해 경쟁자가 많을수록 경쟁자들도 더 일찍 신청할 가능성이 높습니다.');
+  await expect(page.locator('#strategy-result')).toContainText('경쟁자는 최대 8과목을 순서대로 신청합니다. 정원에 비해 경쟁자가 많을수록 먼저 신청할 가능성이 높지만, 개인별 선호에 따라 순서도 달라집니다.');
   await expect(page.getByRole('heading',{name:'대기시간 가정',exact:true})).toBeVisible();
   await expect(page.locator('#strategy-wait-summary')).toHaveText(/평균 누적 대기시간 \d+\.\d초 \(혼잡 대기 \d+\.\d초 포함\) · 전체 신청 시도 평균 소요시간 \d+\.\d초/);
   await expect(page.locator('#strategy-result')).toContainText('실제 학교 서버의 대기시간을 측정한 값은 아닙니다.');
   await expect(page.locator('#strategy-result')).not.toContainText('경쟁자 중복');
   await expect(page.locator('#strategy-input')).toBeHidden();
-  await expect(page.locator('#strategy-result')).toContainText('가상 처리율은 초당 100건이고 혼잡이 없는 기본 응답시간은 1~3초');
+  await expect(page.locator('#strategy-result')).toContainText('가상 처리율은 시작 후 2초까지 초당 50건, 5초까지 80건, 이후 100건이며 혼잡이 없는 기본 응답시간은 1~3초');
   const formulas=page.locator('#strategy-formulas');
   const summary=formulas.locator('summary');
   await expect(summary).toHaveText('수식 보기');
@@ -168,13 +168,22 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(formulas).toHaveJSProperty('open',true);
   await expect(formulas.locator('.strategy-formula-body')).toBeVisible();
   await expect(page.locator('#strategy-formula-values')).toContainText('N = 3 · M = 1000 · a = 630ms · σ = 170ms · t₀ = 0ms');
-  await expect(page.locator('#strategy-formula-values')).toContainText('τ = 10ms');
+  await expect(page.locator('#strategy-formula-values')).toContainText('τ_min = 10ms');
   await expect(formulas.locator('code')).toHaveCount(0);
-  await expect(formulas.locator('math')).toHaveCount(26);
+  await expect(formulas.locator('math')).toHaveCount(31);
   await expect(page.locator('#strategy-result')).toContainText('240~300ms 사이에서 변합니다');
-  for(const id of ['rival-group','rival-reaction','rival-jitter','rival-action','base-delay','queue-start','queue-end','queue-wait','objective','all-success']){
+  for(const id of ['rival-group','rival-reaction','rival-lognormal','rival-jitter','rival-tail','rival-action','fitts','fitts-geometry','preference','choice','service','base-delay','queue-start','queue-end','queue-wait','objective','all-success']){
     await expect(formulas.locator('math[data-formula="'+id+'"]')).toBeVisible();
   }
+  for(const width of [1200,800,400]){
+    await page.setViewportSize({width,height:800});
+    const overflowing=await formulas.locator('.strategy-math-line').evaluateAll(lines=>lines.filter(line=>{
+      const style=getComputedStyle(line);
+      return ['auto','scroll'].includes(style.overflowX)||line.scrollWidth>line.clientWidth+1;
+    }).map(line=>line.querySelector('math')?.getAttribute('data-formula')));
+    expect(overflowing).toEqual([]);
+  }
+  await page.setViewportSize({width:1200,height:800});
   const math=formulas.locator('math[data-formula="urgency"]');
   await expect(math.locator('msqrt mfrac')).toHaveCount(1);
   const fraction=await math.locator('mfrac').evaluate(el=>{
