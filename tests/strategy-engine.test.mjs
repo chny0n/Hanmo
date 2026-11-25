@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight} from '../js/strategy-engine.mjs';
+import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,requestTimeline,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
   courses:[
@@ -68,7 +68,7 @@ test('같은 난수에서 정원 대비 경쟁자가 많아지면 해당 과목�
   assert.deepEqual(order(20),[1,0]);
   assert.deepEqual(order(1),[0,1]);
 });
-test('같은 순서의 전체 성공 횟수는 입력 행 순서와 무관하고 경쟁자 중복 가정에 반응한다',()=>{
+test('같은 순서의 전체 성공 횟수는 입력 행 순서와 무관하고 복수 과목 신청 정도에 반응한다',()=>{
   const s={...input(),trials:1000,startDelayMs:0,actionMs:580,jitterMs:60};
   s.courses[2].rivals=50;
   const result=simulate(s);
@@ -108,4 +108,36 @@ test('순위 범위와 잘못된 시간·시드를 거부한다',()=>{
   for(const invalid of [{seed:-1},{seed:2**32},{actionMs:NaN},{startDelayMs:5001},{jitterMs:1501}]){
     assert.throws(()=>validateScenario({...input(),...invalid}),RangeError);
   }
+});
+
+test('모의 대기시간은 원본 대기창의 명목 범위 1000~10999ms를 유지한다',()=>{
+  assert.equal(REQUEST_WAIT_MIN_MS,1000);
+  assert.equal(REQUEST_WAIT_MAX_EXCLUSIVE_MS,11000);
+  assert.equal(requestWaitMs(0),1000);
+  assert.equal(requestWaitMs(.5),6000);
+  assert.equal(requestWaitMs(.999999),10999);
+});
+test('먼저 요청한 순서는 유지하고 다음 신청에 이전 대기가 누적되며 마지막 대기도 소요시간에 포함한다',()=>{
+  const arrivals=[];
+  const result=requestTimeline(100,3,()=>600,slot=>[1000,2000,3000][slot],at=>arrivals.push(at));
+  assert.deepEqual(arrivals,[700,2300,4900]);
+  assert.deepEqual(result,{totalWaitMs:6000,completionMs:7900});
+  const withoutWait=[];
+  requestTimeline(100,3,()=>600,()=>0,at=>withoutWait.push(at));
+  assert.deepEqual(withoutWait,[700,1300,1900]);
+  assert.equal(arrivals[0],withoutWait[0]);
+});
+test('정원이 충분해도 모든 신청의 대기시간을 계산하고 평균 소요시간에 포함한다',()=>{
+  const s=input();
+  s.courses.forEach(c=>{c.capacity=300;c.rivals=0;});
+  const r=simulate(s);
+  assert.equal(r.guaranteed,true);
+  assert.equal(r.allWins,s.trials);
+  assert.ok(r.timing.meanWaitMs>=s.courses.length*1000);
+  assert.ok(r.timing.meanWaitMs<s.courses.length*11000);
+  assert.ok(r.timing.meanCompletionMs>=r.timing.meanWaitMs+s.startDelayMs+s.courses.length*460);
+  assert.deepEqual(r.timing,simulate(s).timing);
+  const contested=simulate(input());
+  // 대기 자체는 경쟁 집단의 구성과 무관하며 접수 성공과 별개로 모든 시도에서 발생합니다.
+  assert.deepEqual(contested.timing,r.timing);
 });

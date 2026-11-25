@@ -12,6 +12,7 @@ if(form){
   const inputPanel=document.getElementById('strategy-input');
   const recommendation=document.getElementById('strategy-recommendation');
   const setup=document.getElementById('strategy-setup');
+  const waitSummary=document.getElementById('strategy-wait-summary');
   const redo=document.getElementById('strategy-back');
   const clock=document.getElementById('strategy-clock');
   const reaction=document.getElementById('strategy-reaction');
@@ -132,11 +133,14 @@ if(form){
         return (100*wins/r.trials).toFixed(1)+'%';
       };
       recommendation.textContent='추천 신청 순서 '+r.order.join(' → ')+
-        ' · 전체 성공률 '+outcome(r.allWins)+' (경쟁자 중복 기준)';
-      setup.textContent='같은 순서에서 경쟁자 중복이 적을 때 '+outcome(r.sensitivity.lessOverlap)+
-        ' · 많을 때 '+outcome(r.sensitivity.moreOverlap)+' · 실험 시드 '+r.seed;
+        ' · 전체 성공률 '+outcome(r.allWins)+' (기본 가정)';
+      setup.textContent='같은 순서에서 경쟁자가 여러 과목을 신청하는 정도가 낮을 때 '+outcome(r.sensitivity.lessOverlap)+
+        ' · 높을 때 '+outcome(r.sensitivity.moreOverlap)+' · 실험 시드 '+r.seed;
+      waitSummary.textContent='평균 누적 대기시간 '+(r.timing.meanWaitMs/1000).toFixed(1)+
+        '초 · 전체 신청 시도 평균 소요시간 '+(r.timing.meanCompletionMs/1000).toFixed(1)+'초';
       result.hidden=false;inputPanel.hidden=true;
-      redo.focus({preventScroll:true});
+      result.scrollTop=0;
+      result.focus({preventScroll:true});
     });
     active.addEventListener('error',()=>{
       if(worker!==active)return;

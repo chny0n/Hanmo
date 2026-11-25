@@ -32,6 +32,9 @@ const RIVAL_REACTION_MEAN_MS=270;
 const REACTION_SHAPE=20;
 const RIVAL_STEP_MS=RIVAL_REACTION_MEAN_MS+DIRECT_SUBMIT_MS;
 const OVERLAP={less:1,baseline:2,more:4};
+// 기존 모의신청 대기창과 같은 명목 범위이며 실제 학교 서버의 측정값은 아닙니다.
+export const REQUEST_WAIT_MIN_MS=1000;
+export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=11000;
 function random01(seed,trial,stream,draw){
   let x=(seed^Math.imul(trial+1,0x9e3779b9)^
     Math.imul(stream+3,0x85ebca6b)^Math.imul(draw+17,0xc2b2ae35))>>>0;
@@ -39,15 +42,37 @@ function random01(seed,trial,stream,draw){
   x=Math.imul(x^(x>>>15),0x846ca68b);
   return (((x^(x>>>16))>>>0)+0.5)/4294967296;
 }
+/** @param {number} unit 0 이상 1 미만의 균등 난수 */
+export function requestWaitMs(unit){
+  return REQUEST_WAIT_MIN_MS+Math.floor(unit*(REQUEST_WAIT_MAX_EXCLUSIVE_MS-REQUEST_WAIT_MIN_MS));
+}
+/**
+ * 요청 시각에 선착순 우선순위를 얻고 대기 종료 이후 다음 동작을 시작합니다.
+ * @param {number} startDelayMs 시작 지연
+ * @param {number} count 신청 시도 횟수
+ * @param {(slot:number)=>number} actionForSlot 각 시도의 행동시간
+ * @param {(slot:number)=>number} waitForSlot 각 시도의 대기시간
+ * @param {(at:number,slot:number)=>void} onRequest 접수 시각 기록
+ */
+export function requestTimeline(startDelayMs,count,actionForSlot,waitForSlot,onRequest){
+  let elapsed=startDelayMs,totalWaitMs=0;
+  for(let slot=0;slot<count;slot++){
+    elapsed+=actionForSlot(slot);
+    onRequest(elapsed,slot);
+    const wait=waitForSlot(slot);
+    totalWaitMs+=wait;
+    elapsed+=wait;
+  }
+  return {totalWaitMs,completionMs:elapsed};
+}
 function actionTimes(s,trial){
-  const times=[];let elapsed=s.startDelayMs;
-  for(let slot=0;slot<s.courses.length;slot++){
+  const times=[];
+  const timing=requestTimeline(s.startDelayMs,s.courses.length,slot=>{
     const u1=random01(s.seed,trial,100,slot*2),u2=random01(s.seed,trial,100,slot*2+1);
     const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
-    elapsed+=Math.max(DIRECT_SUBMIT_MS+80,s.actionMs+s.jitterMs*z);
-    times.push(elapsed);
-  }
-  return times;
+    return Math.max(DIRECT_SUBMIT_MS+80,s.actionMs+s.jitterMs*z);
+  },slot=>requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)),at=>times.push(at));
+  return {times,...timing};
 }
 
 function rivalReaction(draw){
@@ -92,9 +117,13 @@ function closingTimes(s,urgency,population,trial){
     let count=0;
     const draw=()=>random01(timingSeed,trial,rival,count++);
     const first=DIRECT_SUBMIT_MS+rivalReaction(draw);
-    rivalOrder(known,urgency,draw).forEach(({course},slot)=>{
-      if(course>=0)arrivals[course].push(first+slot*RIVAL_STEP_MS);
-    });
+    const order=rivalOrder(known,urgency,draw);
+    // 경쟁자도 목록 밖 과목을 포함해 매 요청의 대기가 끝날 때까지 다음 과목을 신청하지 못합니다.
+    requestTimeline(0,order.length,slot=>slot===0?first:RIVAL_STEP_MS,
+      slot=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)),(at,slot)=>{
+        const {course}=order[slot];
+        if(course>=0)arrivals[course].push(at);
+      });
   }
   return s.courses.map(({capacity,rivals},i)=>capacity>rivals
     ?Infinity
@@ -138,7 +167,7 @@ export function simulate(raw){
   const success=Array.from({length:n},()=>new Float64Array(n));
   const baseline=population(OVERLAP.baseline);
   for(let trial=0;trial<s.trials;trial++){
-    const times=actionTimes(s,trial);
+    const {times}=actionTimes(s,trial);
     const closing=guaranteed?s.courses.map(()=>Infinity):closingTimes(s,urgency,baseline,trial);
     for(let j=0;j<n;j++){
       for(let slot=0;slot<n;slot++){
@@ -151,6 +180,10 @@ export function simulate(raw){
   const order=bestOrder(weights,probability);
   const sum=weights.reduce((a,b)=>a+b,0);
   const meanScore=order.reduce((score,j,slot)=>score+weights[j]*probability[j][slot],0)*100/sum;
+  // 추천 순서를 고른 표본과 분리한 평가 표본을 세 가정에서 공통으로 사용합니다.
+  const samples=Array.from({length:s.trials},(_,i)=>actionTimes(s,s.trials+i));
+  const meanWaitMs=Math.round(samples.reduce((sum,item)=>sum+item.totalWaitMs,0)/s.trials);
+  const meanCompletionMs=Math.round(samples.reduce((sum,item)=>sum+item.completionMs,0)/s.trials);
   const evaluated=new Map();
   function allWins(overlap){
     if(guaranteed)return s.trials;
@@ -159,7 +192,7 @@ export function simulate(raw){
     let wins=0;
     // 추천 순서를 고른 회차와 전체 성공을 확인하는 회차는 서로 다릅니다.
     for(let trial=s.trials;trial<2*s.trials;trial++){
-      const times=actionTimes(s,trial);
+      const {times}=samples[trial-s.trials];
       const closing=closingTimes(s,urgency,size,trial);
       if(order.every((j,slot)=>times[slot]<closing[j]))wins++;
     }
@@ -171,6 +204,7 @@ export function simulate(raw){
     ranks:order.map(index=>s.courses[index].rank),
     allWins:allWins(OVERLAP.baseline),meanScore,
     sensitivity:{lessOverlap:allWins(OVERLAP.less),moreOverlap:allWins(OVERLAP.more)},
+    timing:{meanWaitMs,meanCompletionMs},
     guaranteed,
     model:'SYNTHETIC_ONLY',
   };
