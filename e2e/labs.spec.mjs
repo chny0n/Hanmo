@@ -62,6 +62,7 @@ test('클릭과 Space로 반응속도 8회를 완료하면 브라우저에 저�
 });
 
 test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 표시한다',async({page})=>{
+  await page.setViewportSize({width:1280,height:720});
   await page.route('**/data/network-probe.txt?*',route=>route.abort());
   await page.goto('/html/readiness.html');
   await page.locator('#readiness-start').click();
@@ -69,6 +70,19 @@ test('진단은 요청 실패를 분리하고 남은 브라우저 관측값을 �
   await expect(page.locator('#readiness-frame-value')).toContainText('fps 관측');
   await expect(page.locator('#readiness-speed-value')).toHaveText('미측정');
   await expect(page.locator('#readiness-error-value')).toContainText('2/7회 실패');
+  const advice=page.locator('#readiness-advice');
+  await expect(advice).toBeVisible();
+  await expect(advice).toContainText('유선 연결');
+  await page.locator('#readiness-advice-heading').scrollIntoViewIfNeeded();
+  await expect(page.locator('#readiness-advice-heading')).toBeInViewport();
+  await expect(page.locator('#readiness-back')).toBeEnabled();
+  await page.locator('#readiness-back').click();
+  await expect(advice).toBeHidden();
+  await page.locator('#readiness-network').uncheck();
+  await page.locator('#readiness-start').click();
+  await expect(page.locator('#readiness-result')).toBeVisible();
+  await expect(page.locator('#readiness-error-value')).toHaveText('미측정');
+  await expect(advice).not.toContainText('한모 연결:');
 });
 
 test('긴 작업이 미지원이면 다른 PC 진단 결과를 계속 표시한다',async({page})=>{

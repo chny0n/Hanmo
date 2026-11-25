@@ -51,7 +51,7 @@
       </div>
       <p class="lab-status" id="readiness-status" role="status" aria-live="polite">사용자가 시작할 때만 검사합니다. 결과와 입력 내용은 서버에 저장하지 않습니다.</p>
     </section>
-    <section class="lab-panel lab-result-panel" id="readiness-result" aria-labelledby="readiness-result-heading" hidden>
+    <section class="lab-panel lab-result-panel" id="readiness-result" aria-labelledby="readiness-result-heading" tabindex="0" hidden>
       <div class="lab-section-heading"><h2 id="readiness-result-heading">진단 결과</h2><span class="lab-minor">현재 브라우저 관측값</span></div>
       <p id="readiness-summary" class="lab-summary"></p>
       <dl class="lab-stats lab-stats-grid">
@@ -67,6 +67,10 @@
         <div><dt>기기 메모리 대략값</dt><dd id="readiness-memory-value">—</dd></div>
         <div><dt>반응속도 테스트</dt><dd id="readiness-reaction-value">—</dd></div>
       </dl>
+      <section id="readiness-advice" aria-labelledby="readiness-advice-heading" hidden>
+        <h3 id="readiness-advice-heading">권장 조치</h3>
+        <ul id="readiness-advice-list"></ul>
+      </section>
       <p class="lab-footnote">다운로드 처리량은 압축을 반영한 전송 본문 크기를 요청 전체 시간으로 나눈 값입니다. 브라우저 캐시와 전송 확인이 안 된 표본은 제외합니다. 지터는 연속한 응답시간 차이의 중앙값입니다. 한모 관측값은 회선 속도나 학교 서버 성능과 다를 수 있습니다.</p>
       <button id="readiness-back" class="lab-button secondary" type="button">다시 검사하기</button>
     </section>

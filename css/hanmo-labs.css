@@ -142,3 +142,13 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-strategy .lab-status{margin:0}
  .hanmo-strategy .lab-heading{margin-bottom:2px}
 }
+
+/* 진단 결과에만 작은 권장 조치 목록을 추가하고 긴 결과는 내부에서 스크롤합니다. */
+.hanmo-readiness #readiness-advice{margin:6px 0 10px;padding-top:8px;border-top:1px solid var(--lab-border);color:var(--lab-muted);font-size:13px;line-height:1.55}
+.hanmo-readiness #readiness-advice h3{margin:0 0 4px;color:var(--lab-text);font-size:14px;font-weight:600}
+.hanmo-readiness #readiness-advice ul{margin:0;padding-inline-start:18px}
+.hanmo-readiness #readiness-advice li{margin:2px 0;overflow-wrap:anywhere}
+.hanmo-readiness #readiness-result:focus-visible{outline:2px solid #f4c76c;outline-offset:-2px}
+@media(min-width:1100px) and (min-height:680px){
+ .hanmo-readiness #readiness-result{flex:0 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-inline-end:8px}
+}

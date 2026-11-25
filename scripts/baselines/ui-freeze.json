@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호.",
+  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -29,7 +29,7 @@
     },
     {
       "path": "css/hanmo-labs.css",
-      "sha": "07051344518a86a2dd66d6d0267d1d72fdff48a6"
+      "sha": "2e404fd815e89690de0cecdcf18a4a609758eba7"
     },
     {
       "path": "css/hanmo-policy-footer.css",
@@ -129,7 +129,7 @@
     },
     {
       "path": "html/readiness.html",
-      "sha": "bd8a6d1c4e4792168bea7b897ef6acab1a4dad68"
+      "sha": "e6abb1e92cdf20e92afee85d7c05b95f9f65401c"
     },
     {
       "path": "html/result.html",

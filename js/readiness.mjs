@@ -31,15 +31,32 @@ export function networkStats(latencies,downloadSamples,failures){
     excluded:latencies.length+DOWNLOAD_REQUESTS-valid.length-downloadSamples.length-failures,
   };
 }
-export function findings({frame,longTasks,network,drift}){
-  const result=[];
-  if(frame.interruptions>=3)result.push('화면 갱신이 여러 번 끊겼습니다.');
-  if(frame.median>=30)result.push('이 탭의 화면 갱신 간격이 길었습니다.');
-  if(longTasks!==null&&longTasks>=3)result.push('브라우저 긴 작업이 반복되었습니다.');
-  if(network&&network.failures>=2)result.push('한모 정적 파일 요청에서 반복 오류가 발생했습니다.');
-  if(drift!==null&&drift>=100)result.push('브라우저 타이머가 크게 지연되었습니다.');
-  if(!result.length)result.push('이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.');
-  return result;
+/**
+ * 기존 이상 판정과 조치 안내를 한 곳에서 산출합니다.
+ * @param {{frame:{interruptions:number,median:number},longTasks:number|null,network:{failures:number,excluded?:number}|null,drift?:number|null}} measurement
+ */
+export function assessReadiness({frame,longTasks,network,drift}){
+  const messages=[],actions=[];
+  const interrupted=frame.interruptions>=3;
+  const slowFrames=frame.median>=30;
+  const busy=longTasks!==null&&longTasks>=3;
+  const delayed=drift!=null&&drift>=100;
+  const failed=network!==null&&network.failures>=2;
+  if(interrupted)messages.push('화면 갱신이 여러 번 끊겼습니다.');
+  if(slowFrames)messages.push('이 탭의 화면 갱신 간격이 길었습니다.');
+  if(busy)messages.push('브라우저 긴 작업이 반복되었습니다.');
+  if(failed)messages.push('한모 정적 파일 요청에서 반복 오류가 발생했습니다.');
+  if(delayed)messages.push('브라우저 타이머가 크게 지연되었습니다.');
+  if(!messages.length)messages.push('이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.');
+  // 같은 원인 후보에 대한 조치는 중복하지 않고, 확인하지 못한 원인을 단정하지 않습니다.
+  if(interrupted||slowFrames)actions.push('화면 갱신: 영상 재생·화면 녹화를 잠시 멈추고 디스플레이 주사율과 절전 설정을 확인하세요.');
+  if(busy||delayed)actions.push('브라우저 부하: 사용하지 않는 탭·프로그램을 닫고 작업 관리자에서 CPU·메모리 사용량을 확인한 뒤 현재 탭을 활성화한 상태로 다시 검사하세요.');
+  if(failed)actions.push('한모 연결: 대용량 다운로드를 멈추고 안정적인 Wi-Fi 또는 유선 연결에서 재검사하세요. 계속 실패하면 한모 서비스 상태도 확인하세요.');
+  else if(network&&(network.failures>0||(network.excluded??0)>0))actions.push('연결 측정 제한: 일부 표본을 확인하지 못했습니다. 안정적인 연결에서 다시 검사해 보세요.');
+  return {messages,actions};
+}
+export function findings(measurement){
+  return assessReadiness(measurement).messages;
 }
 const text=(value)=>typeof value==='number'?value.toFixed(1):'측정 불가';
 const guard=(condition,message)=>{if(condition)throw new Error(message);};
@@ -155,6 +172,8 @@ if(typeof document!=='undefined'){
     const result=document.getElementById('readiness-result');
     const inputs=document.getElementById('readiness-input');
     const summary=document.getElementById('readiness-summary');
+    const advice=document.getElementById('readiness-advice');
+    const adviceList=document.getElementById('readiness-advice-list');
     const networkEnabled=document.getElementById('readiness-network');
     const redo=document.getElementById('readiness-back');
     let controller=null,interruption='진단이 취소되었습니다.';
@@ -176,8 +195,14 @@ if(typeof document!=='undefined'){
         let network=null;
         if(networkEnabled.checked)network=await measureNetwork(signal,message=>{status.textContent=message;});
         guard(signal.aborted,'진단 취소');
-        const alerts=findings({frame,longTasks,network,drift});
-        summary.textContent=alerts.join(' ');
+        const assessment=assessReadiness({frame,longTasks,network,drift});
+        summary.textContent=assessment.messages.join(' ');
+        adviceList.replaceChildren(...assessment.actions.map(action=>{
+          const item=document.createElement('li');
+          item.textContent=action;
+          return item;
+        }));
+        advice.hidden=assessment.actions.length===0;
         value('readiness-frame-value',text(1000/frame.median)+'fps 관측 · 프레임 간격 중앙값 '+
           text(frame.median)+'ms · 95백분위수 '+text(frame.p95)+'ms · 끊김 '+frame.interruptions+'회');
         value('readiness-task-value',longTasks===null?'지원되지 않음':longTasks+'회 (50ms 이상)');
@@ -195,7 +220,9 @@ if(typeof document!=='undefined'){
         const profile=readProfile();
         value('readiness-reaction-value',profile?profile.medianMs+'ms (반응 테스트에서 읽음)':'미측정 · 반응 테스트 이용');
         result.hidden=false;inputs.hidden=true;
-        redo.focus({preventScroll:true});
+        // 길어진 결과를 처음부터 읽고 키보드로 스크롤할 수 있도록 합니다.
+        result.scrollTop=0;
+        result.focus({preventScroll:true});
         status.textContent='완료 · 본 결과는 브라우저 및 한모 정적 배포 서버에 대한 관측값입니다.';
       }catch(error){
         status.textContent=signal.aborted?interruption:
