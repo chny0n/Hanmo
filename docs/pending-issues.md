@@ -4,7 +4,9 @@
 
 ## 이번 확인·결정
 
-- 기능 기준 [86c353f](https://github.com/ot4562-glitch/Hanmo_develop/commit/86c353f3c97049c1d5c806e670e6c4faafba103a) (2026-11-25): [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758615) 통과(보호 해시·`npm run check`·Chromium E2E 포함), [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758600) 배포 성공, [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45541758548/job/138961709164) **33/34 통과·1 실패**. `tests/browser-feature.spec.mjs:135`에서 역할 접미사가 추가된 Contributor의 `strong` 전체 문자열을 예전 이름만으로 비교하여 실패합니다. 전략 엔진 실패가 아니며 전체 기능 QA 통과로 기록하지 않습니다.
+- [#141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)는 [2660092](https://github.com/ot4562-glitch/Hanmo_develop/commit/2660092dd7f8d7364de95aa0e502bd78df7c0b13)로 squash 병합했습니다. [PR 저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45560110476) 성공(보호 검사·Node·Chromium E2E), 독립 12개 합성 시나리오(2·3·5·8과목×3 시드, 각 100회)의 기존 엔진 반환값 일치. 기존 모수·난수·추천 순서 유지, Wilson 95% 반복 표본 오차와 가정별 범위, 반응 측정 상태 전이/저장 분리 추가. 엔진 테스트 36개·반응 프로필 테스트 10개.
+- [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)의 Contributor 이름/역할 테스트 기대값을 [ba57b48](https://github.com/ot4562-glitch/Hanmo_develop/commit/ba57b48f0e819ffc006b987a844110c9a8be431a)에서 수정했고 [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316) **34/34 통과**, [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424416) 성공. 해당 SHA의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 확인 시 진행 중이었습니다. 최신 Windows 물리 입력·실기기 접근성 인수는 미완료입니다.
+- [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 [ace13a2](https://github.com/ot4562-glitch/Hanmo_develop/commit/ace13a2e4c4b19a5c947c071e64bb2b5e14bef90)에서 필수 JSON 배열 누락과 검수 후 후보 페이로드·해시·유효기한 등 변경을 차단하고 구형 인계 지침을 정정했습니다. [정적 및 격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562372757) 성공. Draft·미병합·독립 협업자 재검토 필요. 현행 최소 데이터 계약·출처 판본 불변성/동시 검수·실 Supabase 권리/운영 인수는 미완료이며 실제 학교 자료 OFF.
 - 전략 실험은 합성 몬테카를로 기반 개인 신청 전략 도구로 현재 기능 구성을 유지하고 안정화·재현성·설명 가능성·민감도 검증을 우선합니다. 실제 학생 선호·진입·경쟁 중복·신청량·서버 처리율은 미보정입니다. 성공률을 높이기 위한 임의 모수 조정이나 추가 분포·제도 비교·실학교 예측을 당장 개발하지 않습니다.
 - 2016년 신진이·이상원 논문 원문 검토를 반영했습니다. 전공별 과목 선호는 연구 후보이고 논문 소스코드·모수 보정 근거는 미확보입니다. [아키텍처](architecture.md) §5.
 - #135는 이미 병합되었습니다. 이전 Windows 검증 기록은 유지하고 최신 기능/물리 입력 인수는 미완료로 관리합니다.
@@ -69,7 +71,7 @@
 
 ## 후속 실행 순서
 
-1. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 기능 QA의 기존 기대값 불일치를 우선 복구합니다. 승인된 역할 표시·소속·원본 화면을 보존하며 테스트 우회 없이 최신 CI를 검증합니다.
+1. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 수정 및 Feature QA 34/34 통과. 최신 전체 CI와 Windows 접근성 검증 전 이슈 유지.
 2. [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)의 공동 PC 도구 안정화 및 [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 전략 엔진 검증을 진행합니다. 기존 구조 유지, 고정 시드·민감도·과목별/전체 성공·Worker/성능·MathML 가시성을 검증합니다.
 3. [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140)은 별도 승인 이전에는 계획만 수립하는 P2 선택 연구이며 인수 필수 조건이 아닙니다. 학교 데이터 OFF와 수집 제한은 동일합니다.
 4. #71·#72·#101·#73·#126 등 미완료 인수 게이트와 #125를 최신 SHA 기준으로 유지합니다. 이번 정리에서 완료·닫힘 처리한 기존 일반 이슈는 없습니다.
@@ -78,12 +80,12 @@
 
 | PR | 작성자·현재 상태 | 검토 결론/남은 게이트 |
 |---|---|---|
-| [#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120) | 이의상, 미병합 | **REQUEST_CHANGES**: 날짜 윤년 오류는 수정됐지만 `NEEDS_REVIEW` 추출을 승인된 행사 기록으로 바꿀 위험. 검수/권리 실패 폐쇄 테스트 필요 |
-| [#130](https://github.com/ot4562-glitch/Hanmo_develop/pull/130) | 이의상, 미병합 | **REQUEST_CHANGES**: 같은 noticeId의 정상+금지/불량 행에서 부분 accepted 통과. ID 전체 보류·중복/철회 테스트 필요 |
-| [#131](https://github.com/ot4562-glitch/Hanmo_develop/pull/131) | 이의상, #130 위의 stacked PR, 미병합 | **REQUEST_CHANGES**: 매니페스트 scope 관측기간 미검증, 필수 공개 번들 누락 통과. #130 정리 후 새 main 기준 diff/CI 필요 |
-| [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93) | 본인, **Draft·미병합** | 잘못된 운영 담당자만 김채윤(`qamarrchae`)으로 수정. 과거 리뷰 CHANGES_REQUESTED·실 Supabase/권리/인수 미해결. **본인 PR 병합 금지** |
+| [#120](https://github.com/ot4562-glitch/Hanmo_develop/pull/120) | 이의상, 미병합 | **REQUEST_CHANGES**: 날짜·NEEDS_REVIEW 차단 해결; CANDIDATE(사람 검수 전)에서 REAL_APPROVED 행사 승인 레코드 생성 가능. 합성 전용 제한 또는 검수 승인 계약 필요 |
+| [#130](https://github.com/ot4562-glitch/Hanmo_develop/pull/130) | 이의상, 미병합 | **REQUEST_CHANGES**: 동일 ID 전체 보류 해결; REVIEWED의 임의 HTTPS URL과 공식 출처 ID 검증 누락. 검수 출처 계약 또는 실제 입력 보류 필요 |
+| [#131](https://github.com/ot4562-glitch/Hanmo_develop/pull/131) | 이의상, 미병합 | **REQUEST_CHANGES**: 관측기간 행 검증·엄격 공개판 계약 해결; 미래 매니페스트 관측기간·동일 ID 중복 공개판 허용. #130 병합 후 최신 main diff/CI 필요 |
+| [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93) | 본인, **Draft·미병합** | [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 [ace13a2](https://github.com/ot4562-glitch/Hanmo_develop/commit/ace13a2e4c4b19a5c947c071e64bb2b5e14bef90)에서 필수 JSON 배열 누락과 검수 후 후보 페이로드·해시·유효기한 등 변경을 차단하고 구형 인계 지침을 정정했습니다. [정적 및 격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562372757) 성공. Draft·미병합·독립 협업자 재검토 필요. 현행 최소 데이터 계약·출처 판본 불변성/동시 검수·실 Supabase 권리/운영 인수는 미완료이며 실제 학교 자료 OFF. |
 
-**병합 규칙:** 본인 PR은 오류 수정 외 새 기능 추가를 하지 않고 병합하지 않습니다. 다른 협업자 PR은 코드·CI·권리·원본/실기기·의존 PR을 검토하여 차단 결함 없을 때만 병합하고, 아니면 재현과 수정 요구를 남깁니다. 이번 검토에서는 **병합한 PR이 없습니다**.
+**병합 규칙:** 본인 PR은 오류 수정 외 새 기능 추가를 하지 않고 독립 협업자 최신 HEAD 승인 및 별도 병합 승인 없이 병합하지 않습니다. 다른 협업자 PR은 코드·CI·권리·원본/실기기·의존 PR을 검토하여 차단 결함 없을 때만 병합하고, 아니면 재현과 수정 요구를 남깁니다. 이번 검토에서는 **#141 병합**, #120·#130·#131 수정 요청, #93 본인 Draft 오류 수정·미병합.
 
 ## 종료된 작업·역사적 설계와 최종 인수
 
