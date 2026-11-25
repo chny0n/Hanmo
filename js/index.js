@@ -61,5 +61,20 @@ function setSemester(){
   title.innerText=nowTime.getFullYear()+'-'+(nowTime.getMonth()>=6?2:1)+'학기';
 }
 
+// 배너별 종료일은 브라우저 현지 날짜 기준으로 해당 날짜까지 포함합니다.
+function updateHomeBanners(date=nowTime){
+  const region=document.getElementsByClassName('home-banners')[0];
+  if(!region)return;
+  const today=String(date.getFullYear()).padStart(4,'0')+'-'
+    +String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+  let visible=0;
+  for(const banner of Array.from(region.children)){
+    const end=banner.dataset?.endDate;
+    banner.hidden=Boolean(end&&today>end);
+    if(!banner.hidden)visible++;
+  }
+  region.hidden=visible===0;
+}
 setSemester();
+updateHomeBanners();
 check();

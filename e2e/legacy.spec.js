@@ -217,8 +217,24 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
     }));
   });
   await page.goto('/html/practice.html');
+  const verifyWarning=async()=>{
+    const warning=page.locator('.userInfo .practice-warning');
+    await expect(warning).toBeVisible();
+    await expect(warning.locator('strong')).toContainText('모의수강신청 중');
+    await expect(warning.locator('.practice-warning-detail')).toHaveText('실제 수강신청 시스템이 아니에요');
+    await expect(warning).toHaveCSS('background-color','rgb(246, 195, 44)');
+    const position=await warning.evaluate(el=>{
+      const box=el.getBoundingClientRect();
+      const panel=el.closest('.userInfo').getBoundingClientRect();
+      const profile=el.previousElementSibling.getBoundingClientRect();
+      return {inside:box.bottom<=panel.bottom+1&&box.left>=panel.left&&box.right<=panel.right,
+        below:box.top>=profile.bottom-1};
+    });
+    expect(position).toEqual({inside:true,below:true});
+  };
   const practiceInfo=page.locator('.practice-profile');
   await expect(practiceInfo).toBeVisible();
+  await verifyWarning();
   await expect(practiceInfo.locator('[data-practice-field="cohort"]')).toHaveText('2023년');
   await expect(practiceInfo.locator('[data-practice-field="campus"]')).toHaveText('서울캠퍼스');
   await expect(practiceInfo.locator('[data-practice-field="major"]')).toHaveText('가상전공 A');
@@ -229,6 +245,7 @@ test('연습·신청 화면은 같은 내정보를 표시하고 두 표는 테�
   const info=page.locator('.practice-profile');
   await expect(info).toBeVisible();
   await expect(info).toHaveText(practiceText,{useInnerText:true});
+  await verifyWarning();
   expect(await page.locator('.userInfo').boundingBox()).toEqual(practiceBox);
   await expect(info).toContainText('2023년');
   await expect(info).toContainText('서울캠퍼스');

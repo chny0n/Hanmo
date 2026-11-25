@@ -188,3 +188,38 @@ test('입력한 내정보는 상단 바에서 입학년도까지 잘림 없이 �
     }
   }
 });
+
+test.describe('홈 교내 서비스 배너',()=>{
+  test.use({timezoneId:'Asia/Seoul'});
+  test('원본 훕또기 배너는 상단 바 가까이에 배치되고 종료일 다음 날 사라진다',async({page,baseURL})=>{
+    const origin=new URL(baseURL).origin;
+    await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+    await page.clock.setFixedTime(new Date('2026-12-31T23:59:59+09:00'));
+    await page.setViewportSize({width:1280,height:720});
+    await page.goto('/index.html');
+    const banner=page.locator('.home-banners .subNotice');
+    await expect(banner).toBeVisible();
+    await expect(banner).toHaveAttribute('href','https://chat.hufs.ac.kr/');
+    await expect(banner).toHaveAttribute('rel','noopener noreferrer');
+    await expect(banner).toContainText('훕또기');
+    await expect(banner).toContainText('학교 생활에 대해 물어보세요');
+    await expect(banner.locator('img')).toHaveAttribute('src','./img/boo.png');
+    await expect.poll(()=>banner.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+    for(const viewport of [{width:1280,height:720},{width:1920,height:1080}]){
+      await page.setViewportSize(viewport);
+      const bar=await page.locator('.hanmo-topbar').boundingBox();
+      const box=await banner.boundingBox();
+      const title=await page.locator('.titleContainer').boundingBox();
+      expect(box.y).toBeGreaterThanOrEqual(bar.y+bar.height);
+      expect(box.y+box.height).toBeLessThan(title.y);
+      expect(box.y-(bar.y+bar.height)).toBeLessThan(title.y-(box.y+box.height));
+      expect(box.width).toBeCloseTo(702,0);
+      await expect(page.locator('.buttonContainer')).toBeInViewport({ratio:1});
+    }
+    await page.clock.setFixedTime(new Date('2027-01-01T00:00:00+09:00'));
+    await page.reload();
+    await expect(page.locator('.home-banners')).toBeHidden();
+    await expect(banner).toBeHidden();
+    await expect(page.locator('.titleContainer')).toBeVisible();
+  });
+});

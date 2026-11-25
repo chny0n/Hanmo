@@ -555,6 +555,8 @@ test('practice와 selectZone은 기존 황갈색 메뉴·청색 사용자 패널
   expect(colors.user,path).toBe('rgb(0, 45, 86)');
   expect(colors.button,path).toBe('rgb(151, 121, 85)');
   await expect(page.locator('.practiceBadge')).toHaveCount(0);
+  await expect(page.locator('.userInfo .practice-warning')).toBeVisible();
+  await expect(page.locator('.practice-warning-detail')).toHaveText('실제 수강신청 시스템이 아니에요');
  }
 });
 
