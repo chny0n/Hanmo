@@ -66,6 +66,11 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   const publicPhoto=await fetch(base+'/img/developer.jpg');
   assert.equal(publicPhoto.status,200);
   assert.deepEqual(Buffer.from(await publicPhoto.arrayBuffer()),stripPreviewPhotoExif(originalPhoto));
+  const photoHead=await fetch(base+'/img/developer.jpg',{method:'HEAD'});
+  assert.equal(photoHead.status,publicPhoto.status);
+  for(const header of ['content-type','cache-control'])
+    assert.equal(photoHead.headers.get(header),publicPhoto.headers.get(header));
+  assert.equal((await photoHead.arrayBuffer()).byteLength,0);
   assert.deepEqual(await readFile(join(workspace,'img','developer.jpg')),originalPhoto);
   assert.equal((await fetch(base+'/js/unapproved-research.js')).status,404);
   assert.deepEqual(JSON.parse(await readFile(join(workspace,'data',obsolete),'utf8')),obsoleteBody);
@@ -86,6 +91,7 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
     assert.equal(response.status,404,url);
     await response.text();
   }
+  assert.equal((await fetch(staleUrl,{method:'HEAD'})).status,404);
   const config=await fetch(base+'/data/academic-source-config.json');
   assert.equal(config.headers.get('cache-control'),'no-store');
   assert.deepEqual(await config.json(),{schemaVersion:1,mode:'disabled'});

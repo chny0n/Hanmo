@@ -1,7 +1,7 @@
 // @ts-check
 // 브라우저 QA 전용 서버이며 저장소의 dist만 제공한다.
 import {createServer} from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {open,readFile} from 'node:fs/promises';
 import {resolve,relative,isAbsolute,extname} from 'node:path';
 
 const root=resolve(import.meta.dirname,'../dist');
@@ -30,9 +30,17 @@ createServer(async(request,response)=>{
     response.writeHead(400);response.end('Invalid route');return;
   }
   try{
-    const body=await readFile(file);
+    let body;
+    if(request.method==='HEAD'){
+      const handle=await open(file);
+      try{
+        if(!(await handle.stat()).isFile())throw new Error('Not a file');
+      }finally{
+        await handle.close();
+      }
+    }else body=await readFile(file);
     response.writeHead(200,{'content-type':mime[extname(file)]||'application/octet-stream','cache-control':'no-store'});
-    response.end(request.method==='HEAD'?undefined:body);
+    response.end(body);
   }catch{
     response.writeHead(404,{'content-type':'text/plain; charset=utf-8'});response.end('Not found');
   }
