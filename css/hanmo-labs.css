@@ -185,7 +185,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-criteria{margin:10px 0;border-block:1px solid var(--lab-border);padding:5px 0}
 .hanmo-strategy .strategy-criteria summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:14px;padding:5px 0}
 .hanmo-strategy .strategy-criteria .lab-footnote{max-width:none;margin:5px 0}
-.hanmo-strategy .strategy-criteria:not([open])>.lab-footnote{display:none}
+.hanmo-strategy .strategy-criteria a{color:#f4c76c;text-decoration:underline}
 @media(max-width:640px){
   .hanmo-readiness .readiness-grade-grid{grid-template-columns:1fr}
   .hanmo-strategy .strategy-order{grid-template-columns:repeat(2,minmax(0,1fr))}

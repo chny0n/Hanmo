@@ -3,7 +3,7 @@
 <head>
   <script src="../js/pc-only.js"></script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="정원과 경쟁자 수, 처리 대기 조건으로 선착순 신청 순서를 비교하는 한모 비공식 전략 실험">
+  <meta name="description" content="중요 순위, 여석과 경쟁자 수로 선착순 신청 순서를 추천하는 한모 비공식 전략 실험">
   <title>전략 실험 | 한모</title>
   <link rel="icon" href="../img/favicon-purple.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/student-ui.css">
@@ -31,7 +31,7 @@
 </header>
   <main id="main" class="hanmo-main lab-layout" tabindex="-1">
     <div class="hanmo-schoolmark" aria-label="전략 실험 화면">
-      <div class="hanmo-title-line"><span class="hanmo-title-help"><button class="hanmo-title-help-button" type="button" aria-label="전략 실험 기능 안내" aria-describedby="strategy-page-help">i</button><span class="hanmo-title-help-tip" id="strategy-page-help" role="tooltip">중요 순위와 정원 대비 경쟁자 수로 신청 순서를 추천합니다.</span></span><h1>전략 실험</h1></div>
+      <div class="hanmo-title-line"><span class="hanmo-title-help"><button class="hanmo-title-help-button" type="button" aria-label="전략 실험 기능 안내" aria-describedby="strategy-page-help">i</button><span class="hanmo-title-help-tip" id="strategy-page-help" role="tooltip">중요 순위, 여석과 경쟁자 수로 신청 순서를 추천합니다.</span></span><h1>전략 실험</h1></div>
       <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
     </div>
     <section id="strategy-input" class="lab-panel" aria-labelledby="strategy-input-heading">
@@ -60,10 +60,10 @@
       <ol id="strategy-order" class="strategy-order" aria-labelledby="strategy-results-heading"></ol>
       <details id="strategy-criteria" class="strategy-criteria">
         <summary>추천 기준과 계산식 보기</summary>
-        <p class="lab-footnote"><strong>초반 선착순.</strong> 취소·증원 없이 경쟁자도 1~8과목을 신청합니다. 경쟁자 수가 여석 이상이면 마감 차례는 (여석 × 경쟁자가 신청할 과목 수 ÷ 경쟁자 수)를 올림한 값입니다.</p>
-        <p class="lab-footnote"><strong>인터넷과 처리 대기.</strong> 내 첫 도착을 0으로 두고 상대는 −1·0·1에 시작해 1·2·3 단위 간격으로 요청합니다. 동시 도착은 양쪽 순번을 비교합니다.</p>
-        <p class="lab-footnote">내 다음 도착 = 현재 도착과 앞선 상대 요청의 처리 완료 중 늦은 시각 + 인터넷 왕복 간격(요청마다 1·2). 상대 한 차례의 처리 시간은 0부터 상대 요청 간격까지 비교합니다. 이 눈금은 합성 조건입니다.</p>
-        <p class="lab-footnote"><strong>추천 기준.</strong> 1순위는 첫 요청으로 잡을 수 있는 조건에서 지킵니다. 이어 최악 손실(가능한 최대 확보 과목 수 − 확보 수)을 줄입니다. 동률이면 중요 순위를 더 많이 지킵니다.</p>
+        <p class="lab-footnote"><strong>신청 집중도.</strong> 경쟁자가 m과목(1~8개)을 신청할 때 내 j번째 요청까지의 기준값은 p = x × min(j, m) ÷ m입니다. x는 0~1의 상대 진행도입니다.</p>
+        <p class="lab-footnote"><strong>마감 상한.</strong> 여석 C를 경쟁자 R명이 채우는 기준으로 P(이항(R, p) ≥ C), 동시 신청 상한 min(1, R × p ÷ C)을 비교합니다. 과목별 첫 선택 집중은 p = x로도 비교합니다.</p>
+        <p class="lab-footnote"><strong>순서 선택.</strong> 중요도 상위 k과목의 안전 점수는 ∫ max(0, 1 − 마감 상한의 합) dx입니다. 전체 과목까지 k를 늘려, 조건별 최고 점수 대비 손실(1 − 후보 점수 ÷ 최고 점수)의 최악값을 최소화합니다.</p>
+        <p class="lab-footnote">경쟁자 전원이 신청해도 여석이 남는 과목은 뒤에 둡니다. 실제 마감 시각이나 신청 결과는 입력값만으로 알 수 없습니다. <a href="https://github.com/ot4562-glitch/Hanmo_develop/blob/main/docs/strategy-model.md">모형과 연구 근거</a></p>
       </details>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 추천</button>
     </section>

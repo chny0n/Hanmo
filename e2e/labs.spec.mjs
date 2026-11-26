@@ -228,27 +228,25 @@ test('전략 실험은 중요 순위와 경쟁을 절충하고 계산식을 보�
   const result=page.locator('#strategy-result');
   const order=page.locator('#strategy-order li strong');
   await expect(result).toBeVisible();
-  await expect(order).toHaveText(['과목 A','과목 B','과목 C']);
-  await expect(page.locator('#strategy-order li').first()).toContainText('자리당 0.95명');
+  await expect(order).toHaveText(['과목 C','과목 B','과목 A']);
+  await expect(page.locator('#strategy-order li').last()).toContainText('자리당 0.95명');
   await expect(page.locator('#strategy-order li').nth(1)).toContainText('자리당 1명');
   await expect(result).not.toContainText(/성공률|%/);
   const criteria=page.locator('#strategy-criteria');
   await expect(criteria).toHaveJSProperty('open',false);
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
-  await expect(criteria).toContainText('처리 대기');
-  await expect(criteria).toContainText('인터넷 왕복');
-  await expect(criteria).toContainText('앞선 상대 요청의 처리 완료');
-  await expect(criteria).toContainText('동시 도착은 양쪽 순번을 비교합니다');
-  await expect(criteria).toContainText('가능한 최대 확보 과목 수');
-  await expect(criteria).toContainText('1순위는 첫 요청으로 잡을 수 있는 조건에서 지킵니다');
+  await expect(criteria).toContainText('이항(R, p) ≥ C');
+  await expect(criteria).toContainText('중요도 상위 k과목');
+  await expect(criteria).toContainText('조건별 최고 점수 대비 손실');
+  await expect(criteria.getByRole('link',{name:'모형과 연구 근거'})).toBeInViewport();
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
   await expect(rivals).toHaveValue('19');
   await expect(page.locator('#strategy-courses tr:first-child input').first()).toBeFocused();
   await rivals.fill('20');
   await page.locator('#strategy-run').click();
-  await expect(order).toHaveText(['과목 A','과목 B','과목 C']);
+  await expect(order).toHaveText(['과목 C','과목 A','과목 B']);
 });
 
 test('전략 입력은 중요 순위가 중복되면 추천하지 않고 최소 두 과목을 유지한다',async({page})=>{
