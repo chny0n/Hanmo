@@ -188,21 +188,26 @@ test('신호 전 입력과 탭 숨김은 반응 표본을 저장하지 않는다
 });
 
 test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=>{
+  await page.clock.install({time:new Date('2026-11-26T12:00:00Z')});
   await page.addInitScript(()=>{
     Math.random=()=>0;
     Storage.prototype.setItem=()=>{throw new Error('브라우저 저장 차단');};
   });
   await page.goto('/html/reaction-test.html');
+  await page.clock.pauseAt(new Date('2026-11-26T12:05:00Z'));
   await page.locator('#reaction-start').click();
+  const target=page.locator('#reaction-target');
   for(let i=0;i<8;i++){
-    await expect(page.locator('#reaction-target')).toHaveAttribute('data-phase','go');
-    await page.waitForTimeout(120);
+    await page.clock.runFor(1000);
+    await expect(target).toHaveAttribute('data-phase','go');
     await page.keyboard.press('Space');
+    await expect(target).toHaveAttribute('data-phase','break');
+    await page.clock.runFor(350);
   }
   await expect(page.locator('#reaction-report')).toBeVisible();
+  await expect(page.locator('#reaction-report')).toHaveText(/^사용자님의 반응속도는 중앙값 \d+ms 입니다\.$/);
   await expect(page.locator('#reaction-status')).toHaveText('브라우저에 이번 반응속도 결과를 저장하지 못했습니다.');
   await expect(page.locator('#reaction-result a')).toHaveCount(0);
-  await expect(page.locator('#reaction-report')).not.toContainText('저장된');
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
 });
 
