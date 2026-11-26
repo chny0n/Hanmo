@@ -1,7 +1,7 @@
 // @ts-check
 import {z} from 'zod';
 
-/** 학내 지원 기능 세 가지의 엄격한 공통 계약이다. 이 계약만으로 출처 사용권을 승인하거나 합성 예시를 학교 사실로 바꿀 수 없다. */
+/** 학내 자료의 판본과 공개 조건을 검증하는 계약이다. 이 계약만으로 출처 사용권을 승인하거나 합성 예시를 학교 사실로 바꿀 수 없다. */
 const Id = z.string().trim().min(1).max(120).regex(/^[A-Za-z0-9_.:-]+$/);
 const Iso = z.iso.datetime({offset:true});
 const Day = z.iso.date();
@@ -50,53 +50,6 @@ export const ActivityForecastSchema = z.strictObject({
 });
 /** @typedef {z.infer<typeof ActivityForecastSchema>} ActivityForecast */
 
-export const ExchangeApplicantSchema = z.strictObject({
-  duration:z.union([z.literal(1),z.literal(2)]),
-  track:z.enum(['OIA','DEPARTMENT']), status:z.enum(['ENROLLED','LEAVE','UNKNOWN']),
-  completedSemesters:z.number().int().min(0).max(15).optional(),
-  gpa:z.number().finite().min(0).max(4.5).optional(),
-  transfer:z.boolean().optional(), previousCancellation:z.enum(['CLEAR','CANCELLED','UNKNOWN']),
-  language:z.strictObject({test:Id,score:z.number().finite().nonnegative(),expiresOn:Day}).optional(),
-  departureOn:Day.optional(),
-});
-/** @typedef {z.infer<typeof ExchangeApplicantSchema>} ExchangeApplicant */
-/** 학기 제한은 판본이 명시된 승인 공식 출처에서만 가져온다. 없으면 UNKNOWN이다. */
-const SemesterRangeSchema=z.strictObject({min:z.number().int().min(0).max(15),
-  max:z.number().int().min(0).max(15)}).refine(v=>v.min<=v.max);
-const ProgramTermRulesSchema=z.strictObject({
-  one:z.strictObject({ENROLLED:SemesterRangeSchema,LEAVE:SemesterRangeSchema}),
-  two:z.strictObject({ENROLLED:SemesterRangeSchema,LEAVE:SemesterRangeSchema}),
-});
-export const ExchangePolicySchema = z.strictObject({
-  ruleId:Id, sourceRevision:Id, sourceUrl:Source,
-  track:z.enum(['OIA','DEPARTMENT']), publishedAt:Iso, verifiedAt:Iso,
-  effectiveFrom:Day, effectiveUntil:Day.optional(),
-  rights:CampusRightsSchema, provenance:CampusProvenanceSchema,
-  minimumGpa:z.number().finite().min(0).max(4.5),
-  /** 정책별 세부 규칙은 프로그램 기간이나 학생의 진술만으로 추정하지 않는다. */
-  termRules:ProgramTermRulesSchema.optional(),
-  twoSemesterTransfersAllowed:z.boolean().optional(),
-  priorCancellationAllowed:z.boolean().optional(),
-  partnerMinimumGpa:z.number().finite().min(0).max(4.5).optional(),
-  requiredLanguage:z.strictObject({test:Id,minimumScore:z.number().finite().nonnegative()}).optional(),
-  /** 공식 확인된 교류 대학과 학기 범위다. 미확인 대학은 UNKNOWN을 유지한다. */
-  partnerId:Id,
-});
-/** @typedef {z.infer<typeof ExchangePolicySchema>} ExchangePolicy */
-export const ExchangeCheckSchema = z.strictObject({
-  code:z.enum(['TRACK','GPA','SEMESTERS','TRANSFER','CANCELLATION','PARTNER_GPA','LANGUAGE']),
-  status:z.enum(['PASS','FAIL','UNKNOWN','NOT_APPLICABLE']),
-  explanation:z.string().min(1).max(300),
-  sourceRevision:Id.optional(),
-});
-/** @typedef {z.infer<typeof ExchangeCheckSchema>} ExchangeCheck */
-export const ExchangeResultSchema = z.strictObject({
-  asOf:Iso, policyRevision:Id.optional(), result:z.enum(['PASS','FAIL','UNKNOWN']),
-  checks:z.array(ExchangeCheckSchema).length(7),
-  disclaimer:z.literal('제시된 기준에 대한 참고 결과이며 공식 지원 자격·선발 결과가 아닙니다.'),
-});
-/** @typedef {z.infer<typeof ExchangeResultSchema>} ExchangeResult */
-
 /** 검토된 개별 공개 부서 연락처만 예외로 취급한다. 도메인 전체의 개인정보 예외로 확대하지 않는다. */
 export const FaqPublicContactsSchema = z.array(z.string().max(254).regex(
   /^(?:[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?:02|0[3-6][1-5])-\d{3,4}-\d{4})$/,
@@ -128,15 +81,6 @@ export const ActivityArchiveResponseSchema=z.strictObject({
   asOf:Iso,sourceVersion:Id,items:z.array(ActivityRecordSchema).max(200),
   /** 이전 읽기 전용 클라이언트에는 선택 사항이며 true는 제한된 일부 결과만 반환했음을 뜻한다. */
   hasMore:z.boolean().optional(),
-});
-export const ExchangePartnerSummarySchema=z.strictObject({
-  partnerId:Id,track:z.enum(['OIA','DEPARTMENT']),minimumGpa:z.number().min(0).max(4.5),
-  partnerMinimumGpa:z.number().min(0).max(4.5).optional(),
-  requiredLanguage:z.strictObject({test:Id,minimumScore:z.number().nonnegative()}).optional(),
-  sourceRevision:Id,sourceUrl:Source,verifiedAt:Iso,provenance:CampusProvenanceSchema,
-});
-export const ExchangePartnerListSchema=z.strictObject({
-  asOf:Iso,sourceVersion:Id,partners:z.array(ExchangePartnerSummarySchema).max(50),
 });
 /** 출처 링크만 제공하는 보수적 대체 방식이다. 링크는 검토된 서버 메타데이터이며 생성된 문구가 아니다. */
 export const FaqSourceLinkSchema=z.strictObject({

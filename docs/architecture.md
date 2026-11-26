@@ -12,7 +12,7 @@
 
 ### 0.2 금지 기능·기존 구현·배포 차단
 
-**웹 1차 정리 반영:** 졸업 준비 `html/academic-progress.html`과 학사 FAQ `html/academic-faq.html`, 전용 CSS·FAQ JS, 학교 로고 `img/hufs_logo.png`는 [웹 정리 커밋](https://github.com/ot4562-glitch/Hanmo_develop/commit/2712bd939502a31755fd21026ac96fe81650c552)에서 삭제했습니다. 메뉴·사이트맵·빌드·테스트도 수정했습니다. **합성 학업 검증 코어와 진행 중인 공지 검색 작업의 공통 검색 코드는 내부에 둡니다. 독립 FAQ 답변 검증·교수명 검색은 기존 Git 이력에서 확인할 수 있습니다.** 학교 자료 연결 `mode: disabled`를 유지하고 웹 디자인·접근성/실기기 검수는 별도 완료 게이트입니다.
+**웹 1차 정리 반영:** 졸업 준비 `html/academic-progress.html`과 학사 FAQ `html/academic-faq.html`, 전용 CSS·FAQ JS, 학교 로고 `img/hufs_logo.png`는 [웹 정리 커밋](https://github.com/ot4562-glitch/Hanmo_develop/commit/2712bd939502a31755fd21026ac96fe81650c552)에서 삭제했습니다. 메뉴·사이트맵·빌드·테스트도 수정했습니다. **합성 학업 검증 코어와 진행 중인 공지 검색 작업의 공통 검색 코드는 내부에 둡니다. 독립 FAQ 답변 검증·교수명 검색·교환학생 자격 판정은 기존 Git 이력에서 확인할 수 있습니다.** 학교 자료 연결 `mode: disabled`를 유지하고 웹 디자인·접근성/실기기 검수는 별도 완료 게이트입니다.
 
 학교 문양을 사용하던 기존 홈·상단바·이미지·파비콘·SVG·메타정보와 실제 수강신청을 연상시키는 화면은 **별도 수정 및 브라우저 QA 대상**입니다. 기존 UI 동결 정책은 새 서면 금지사항을 보존할 근거가 아니므로 관련 변경을 우선하되, 원본 동작·실기기 회귀·디자인 구별을 확인합니다. **2026-11-23 웹 1차 정리로 금지된 페이지·학교 로고 파일 제거와 비공식 고지를 반영했습니다. 그러나 디자인 전수/Windows 실기기 QA, 원본 운영 도메인 공개·학교의 서비스 인정은 완료되지 않았습니다.** `data/academic-source-config.json`의 `mode: disabled`를 유지하고, 금지된 필드가 포함된 기존 Supabase Draft #93·공개 payload는 수정·재설계 전 활성화하지 않습니다.
 
