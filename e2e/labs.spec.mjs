@@ -252,8 +252,13 @@ test('전략 입력은 중요 순위가 중복되면 추천하지 않고 최소 
   await expect(page.locator('#strategy-result')).toBeHidden();
 });
 
-test('학사 공지와 학사 달력은 한 URL의 탭으로 전환된다',async({page})=>{
+test('달력은 학사 달력 탭을 처음 열 때 한 번만 불러온다',async({page})=>{
+  const calendarRequests=[];
+  page.on('request',request=>{
+    if(new URL(request.url()).pathname.endsWith('/js/academic-calendar.js'))calendarRequests.push(request.url());
+  });
   await page.goto('/html/academic-timeline.html');
+  expect(calendarRequests).toHaveLength(0);
   await expect(page.getByRole('tab',{name:'학사 공지'})).toHaveAttribute('aria-selected','true');
   await page.getByRole('tab',{name:'학사 달력'}).click();
   await expect(page.locator('#academic-calendar-panel')).toBeVisible();
@@ -261,6 +266,9 @@ test('학사 공지와 학사 달력은 한 URL의 탭으로 전환된다',async
   await expect(page.locator('#academic-notice-panel')).toBeHidden();
   await page.getByRole('tab',{name:'학사 공지'}).click();
   await expect(page.locator('#academic-notice-panel')).toBeVisible();
+  await page.getByRole('tab',{name:'학사 공지'}).press('ArrowRight');
+  await expect(page.locator('#calendar-view [role="table"]')).toBeVisible();
+  expect(calendarRequests).toHaveLength(1);
   expect((await page.request.get('/html/academic-support.html')).status()).toBe(404);
   expect((await page.request.get('/html/academic-calendar.html')).status()).toBe(404);
 });

@@ -3,17 +3,13 @@ import {resolve} from 'node:path';
 
 // 허용 목록에 없는 저장소 입력은 트리 셰이킹되더라도 학생 빌드에서 금지한다.
 export const studentInputs = Object.freeze([
-  "js/academic/app/student-forecast.js",
   "js/academic/app/student-entry.js",
   "js/academic/app/academic-calendar.js",
-  "js/academic/core/forecast/offering.js",
-  "js/academic/contracts/forecast/offering.js",
-  "js/academic/views/forecast-student-input.js",
   "js/academic/views/student-entry.js"
 ]);
 const permitted = new Set(studentInputs);
 const normal = path => path.replaceAll('\\','/');
-const expected = new Set(['.build/student-forecast.js','.build/student-entry.js','.build/academic-calendar.js','.build/academic-calendar.css']);
+const expected = new Set(['.build/student-entry.js','.build/academic-calendar.js','.build/academic-calendar.css']);
 const checkInput = path => {
   const p = normal(path);
   if (p.split('/').some(part => part === '..' || part === '') ||

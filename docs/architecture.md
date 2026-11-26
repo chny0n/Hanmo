@@ -83,7 +83,7 @@
 
 ### 2.1 학생 서비스와 비운영 연구 경계
 
-- 개설 전망 계약은 js/academic/contracts/forecast/offering.js에서 직접 참조하며 종전 계약 진입점은 연구 코드 호환을 위해 재내보냅니다.
+- 개설 전망 계산과 입력 계약은 연구 코드에 둡니다. 기존 `html/forecast.html`은 강의 검색으로 이동하며 전망 스크립트를 불러오지 않습니다.
 - esbuild 메타데이터의 모든 입력과 산출물을 scripts/student-boundary.mjs로 검사합니다. 허용 목록에 없는 연구 소스는 트리 셰이킹 여부와 무관하게 학생 빌드에 들어갈 수 없습니다. scripts/public-assets.json에 명시된 정적 파일만 배포합니다.
 - 연구 코어는 진행 중인 협업 PR 및 합성 검증 호환성을 위해 기존 경로를 보존하되 학생 서비스에서 격리합니다. npm run test:research로 별도 실행하며 npm run check는 전체 검사를 유지합니다. Pages는 npm run check:student를 사용합니다.
 - Node 22 및 Action SHA 고정을 강제합니다. [테스트 기준](testing.md)과 [설계 결정](adr/2026-11-25-student-build-boundary.md)을 참조합니다.
@@ -180,7 +180,6 @@
 - **실기기 인수 미완료:** 최신 Windows Chrome/Edge, 60·120Hz, 키보드·NVDA·200% 확대, 한 화면 조작·측정 중 탭 전환/오류, 학교 자료 OFF·비공식 고지·원작 회귀 #71·#72·#134. CI 성공과 구분합니다.
 - **설치 브라우저 자동 검증:** PowerShell에서 `$env:HANMO_BROWSER_CHANNEL='chrome'` 또는 `'msedge'`를 설정한 뒤 `npm run test:e2e`와 `npx playwright test --config tests/playwright-feature.config.mjs`를 실행합니다. 이 결과에는 브라우저 버전과 검사한 SHA를 기록합니다. NVDA·물리 입력·브라우저 실제 확대율은 별도 인수에서 확인합니다.
 - **정책·라이선스/인계:** 공식 로고/오인·학교 자료 라이선스·GPL-3.0/출처를 감사[#73]. JS/JSDoc 이관 자체는 완료됐으나 전체 기능의 동등성/운영 인수[#101]는 미완료. 원작자 `dlacked`에게 전달할 증거와 수락 조건은 [최종 인계 기록](student-data-source-handoff.md#최종-인계-기록)에 있습니다. [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)의 명시적 수락 전 제품 완성 선언 금지.
-- **SVG:** `docs/images/hanmo-01~04`, `hanmo-hero-hufs.svg`, `hanmo-experience-landscape.svg`, `hanmo-feature-preview.svg`, `hanmo-trust-flow.svg`는 현재 5페이지·합성/자료 OFF·4단계 인수 상태에 맞춰 갱신. 이미 정확한 BASIC 합성 분기 그림은 원래 버전 유지.
 
 - **Windows 브라우저 검증:** [Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 Chrome/Edge 자동화 및 브라우저 환경·SHA·최대 표 배치 증거를 수집합니다. 자동화 결과와 물리 입력·NVDA 인수 증거는 구분합니다.
 

@@ -1,6 +1,6 @@
 import {execFileSync} from 'node:child_process';
 import {resolve} from 'node:path';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 const root=resolve(import.meta.dirname,'..');
 const changed=execFileSync('git',['diff','--name-only','--no-renames','origin/main...HEAD'],
  {cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}).trim().split('\n').filter(Boolean);
@@ -52,7 +52,7 @@ const labScripts=new Set([
   'js/readiness.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
   'js/strategy-engine.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
 ]);
-const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
+const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-unified.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('e2e/')||p.startsWith('css/')||p.startsWith('html/')
  ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg','img/hanmo_purple.png','img/favicon-purple.svg','img/boo.png'].includes(p)
@@ -60,6 +60,8 @@ const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
  '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml',
  'package-lock.json','playwright.config.mjs','.nvmrc','.npmrc'].includes(p);
-const unexpected=changed.filter(p=>!allowed(p));
+// 현재 화면에서 참조하지 않는 과거 배포 설정과 이미지의 삭제만 허용합니다.
+const retired=new Set(['goorm.manifest','img/dlacked.svg','img/dlackedLogo.svg','img/waiting.png']);
+const unexpected=changed.filter(p=>!allowed(p)&&!(retired.has(p)&&!existsSync(resolve(root,p))));
 if(unexpected.length)throw Error('Unexpected files:\n'+unexpected.join('\n'));
 console.log('Original HUFS registration imitation preserved; '+changed.length+' scoped changes.');

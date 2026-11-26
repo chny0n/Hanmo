@@ -6,7 +6,7 @@ import {assertStudentBundleMeta,readPublicAssets} from './student-boundary.mjs';
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const build=join(root,'.build');
-const bundles=['student-forecast.js','student-entry.js','academic-calendar.js'];
+const bundles=['student-entry.js','academic-calendar.js'];
 const exists=async p=>{try{return(await stat(p)).isFile()}catch{return false}};
 for(const bundle of bundles)
   if(!await exists(join(build,bundle)))throw Error('Missing generated academic JS bundle: '+bundle);
@@ -67,10 +67,10 @@ for(const name of [
  'js/reaction-page.mjs','js/reaction-profile.mjs',
  'data/network-probe.txt',
  'html/academic-timeline.html',
- 'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-forecast.js','js/student-entry.js','data/academic-source-config.json',
+ 'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-entry.js','data/academic-source-config.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);
 for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
- 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png'])
+ 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/student-forecast.js','js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png'])
  if(await exists(join(dist,banned)))throw Error('Disallowed web artifact: '+banned);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into QA artifact');
 const rootEntries=await readdir(dist);

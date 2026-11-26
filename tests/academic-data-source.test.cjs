@@ -89,13 +89,14 @@ test('secret API keys and arbitrary HTTP endpoints are never fetched',async()=>{
 test('website does not ship retired test feeds or demo controls',()=>{
  const root=path.join(__dirname,'..');
  assert.equal(fs.existsSync(path.join(root,'data/academic-notices-reference.json')),false);
- for(const file of ['html/catalog.html','html/forecast.html','html/academic-timeline.html']){
+ for(const file of ['html/catalog.html','html/academic-timeline.html']){
   const html=fs.readFileSync(path.join(root,file),'utf8');
   assert.ok(html.includes('academic-data-source.js'),file);
   assert.ok(!html.includes('catalog-demo')&&!html.includes('forecast-example'),file);
  }
  const catalog=fs.readFileSync(path.join(root,'js/student-catalog.js'),'utf8');
  assert.ok(!catalog.includes('SYN-ECON')&&!catalog.includes('samples='));
- const forecast=fs.readFileSync(path.join(root,'js/academic/app/student-forecast.js'),'utf8');
- assert.ok(!forecast.includes('DEMO_FORECAST'));
+ const redirect=fs.readFileSync(path.join(root,'html/forecast.html'),'utf8');
+ assert.match(redirect,/location\.replace\("\.\/catalog\.html"\)/);
+ assert.doesNotMatch(redirect,/student-forecast\.js|academic-data-source\.js|forecast-form/);
 });

@@ -70,7 +70,7 @@ test('academic public assets are still under html; engine remains independently 
  const stage=fs.readFileSync(path.join(ROOT,'scripts/stage-static.mjs'),'utf8');
  assert.ok(stage.includes("join(dist,'data')"));
  assert.ok(!stage.includes("join(dist,'degree-rescue')"));
- assert.ok(stage.includes('student-forecast.js'));
+ assert.ok(stage.includes('student-entry.js'));
 });
 
 test('academic package is flat: no nested source package remains',()=>{

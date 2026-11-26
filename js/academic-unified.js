@@ -8,7 +8,26 @@
     document.getElementById('academic-notice-panel'),
     document.getElementById('academic-calendar-panel'),
   ];
-  if(tabs.some(v=>!v)||panels.some(v=>!v))return;
+  const calendarStatus=document.getElementById('calendar-status');
+  if(tabs.some(v=>!v)||panels.some(v=>!v)||!calendarStatus)return;
+  const calendarStatusText=calendarStatus.textContent;
+  let calendarLoad;
+  function showCalendar(){
+    if(!calendarLoad){
+      calendarStatus.textContent='달력 불러오는 중';
+      calendarLoad=import('./academic-calendar.js').then(()=>{
+        calendarStatus.textContent=calendarStatusText;
+        return true;
+      },()=>{
+        calendarStatus.textContent='달력을 불러오지 못했습니다. 학교 학사일정 원문에서 확인해 주세요.';
+        return false;
+      });
+    }
+    void calendarLoad.then(loaded=>{
+      if(loaded&&!panels[1].hidden)
+        requestAnimationFrame(()=>window.dispatchEvent(new Event('hanmo:calendar:show')));
+    });
+  }
   function select(index,focus=false){
     tabs.forEach((tab,i)=>{
       tab.setAttribute('aria-selected',String(i===index));
@@ -16,10 +35,7 @@
       panels[i].hidden=i!==index;
     });
     if(focus)tabs[index].focus();
-    if(index===1){
-      // 숨겨진 달력을 표시한 뒤 FullCalendar가 너비를 다시 측정합니다.
-      requestAnimationFrame(()=>window.dispatchEvent(new Event('hanmo:calendar:show')));
-    }
+    if(index===1)showCalendar();
   }
   tabs.forEach((tab,index)=>{
     tab.addEventListener('click',()=>select(index));

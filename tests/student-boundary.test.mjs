@@ -5,9 +5,8 @@ import {assertStudentBundleMeta,studentInputs,readPublicAssets} from '../scripts
 
 function fixture() {
   return {inputs:Object.fromEntries(studentInputs.map(path=>[path,{bytes:1}])),outputs:{
-    '.build/student-forecast.js':{entryPoint:studentInputs[0],inputs:{[studentInputs[0]]:{bytesInOutput:1}}},
-    '.build/student-entry.js':{entryPoint:studentInputs[1],inputs:{}},
-    '.build/academic-calendar.js':{entryPoint:studentInputs[2],inputs:{}},
+    '.build/student-entry.js':{entryPoint:studentInputs[0],inputs:{[studentInputs[0]]:{bytesInOutput:1}}},
+    '.build/academic-calendar.js':{entryPoint:studentInputs[1],inputs:{}},
     '.build/academic-calendar.css':{inputs:{'node_modules/fullcalendar/skeleton.css':{bytesInOutput:1}}}
   }};
 }
@@ -18,7 +17,7 @@ test('학생 번들 허용 경로만 통과한다',()=>{
 });
 test('제거 최적화로 최종 출력에 없는 연구 코드도 차단한다',()=>{
   const meta=fixture();
-  meta.inputs['js/academic/core/academics/faculty-search.js']={bytes:1};
+  meta.inputs['js/academic/core/forecast/offering.js']={bytes:1};
   assert.throws(()=>assertStudentBundleMeta(meta),/미승인 입력/);
 });
 test('출력에만 기록된 금지 입력도 차단한다',()=>{

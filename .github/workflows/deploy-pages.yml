@@ -47,7 +47,7 @@ jobs:
           test -f dist/index.html
           test -f dist/html/academic-timeline.html
           test -f dist/html/planner.html
-          test -f dist/js/student-forecast.js
+          test -f dist/js/student-entry.js
       - name: Configure GitHub Pages (fork project URL only)
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload generated static site without CNAME

@@ -93,7 +93,7 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "89b094b05aa3ccad4ff4c381397dcf6e738fcce3"
+      "sha": "59d2e6722352efdf93c1b944cc6c31106b55dd5d"
     },
     {
       "path": "html/catalog.html",
@@ -105,7 +105,7 @@
     },
     {
       "path": "html/forecast.html",
-      "sha": "2b552a1602deef76f0b6334537bf1daec6bb17d1"
+      "sha": "d0e15be866fa8ce4f6ed8a172b380b9bdca876a1"
     },
     {
       "path": "html/incident-404.html",
@@ -164,14 +164,6 @@
       "sha": "0abea4990b3037494f11dbd8f7fca64522dfaffd"
     },
     {
-      "path": "img/dlacked.svg",
-      "sha": "20d966eda51b5652654f691650ae500190441b85"
-    },
-    {
-      "path": "img/dlackedLogo.svg",
-      "sha": "c5c65390cfe101bb8ce6fab39152800493c65838"
-    },
-    {
       "path": "img/favicon-purple.svg",
       "sha": "8b5c097a6bb8d2a76d8e1bac46d730ffd4919f7f"
     },
@@ -212,10 +204,6 @@
       "sha": "7ac4ce918133af246c3f239073354a0af3ba4296"
     },
     {
-      "path": "img/waiting.png",
-      "sha": "9e2f24afad0a1f28c4fbf7fbd5e0338adeba5358"
-    },
-    {
       "path": "img/watermark.png",
       "sha": "3ee0a229438e94ffeb8b4566af293c6105409765"
     },
@@ -229,7 +217,7 @@
     },
     {
       "path": "js/academic-unified.js",
-      "sha": "973533ccba4479331d95c307f6ce03fd1a7c24ca"
+      "sha": "fba1f05ace81434393c7a0bfd70e4fdb14a0c46f"
     },
     {
       "path": "js/capacity-settings.js",
