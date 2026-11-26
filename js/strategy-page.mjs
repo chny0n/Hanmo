@@ -1,6 +1,6 @@
 // @ts-check
 // 가상 과목 입력과 추천 순서를 화면에 표시합니다.
-import {MAX_COURSES,recommendCourses} from './strategy-recommendation.mjs';
+import {IMPORTANT_WEIGHT,MAX_COURSES,recommendCourses} from './strategy-recommendation.mjs';
 const form=document.getElementById('strategy-form');
 if(form){
   const body=document.getElementById('strategy-courses');
@@ -68,6 +68,8 @@ if(form){
     renderRows(items);
   });
   const criteria=document.getElementById('strategy-criteria');
+  for(const label of criteria.querySelectorAll('[data-important-weight]'))label.textContent=String(IMPORTANT_WEIGHT);
+  const scoreFormat=new Intl.NumberFormat('ko-KR',{maximumFractionDigits:2});
   redo.addEventListener('click',()=>{
     result.hidden=true;
     inputPanel.hidden=false;
@@ -78,7 +80,7 @@ if(form){
     event.preventDefault();
     try{
       const order=recommendCourses(readRows());
-      orderList.replaceChildren(...order.map(({name,rank,capacity,rivals,important},slot)=>{
+      orderList.replaceChildren(...order.map(({name,rank,capacity,rivals,important,weight,weightedRivals},slot)=>{
         const item=document.createElement('li');
         const headline=document.createElement('div');
         headline.className='strategy-card-head';
@@ -95,7 +97,12 @@ if(form){
         const details=document.createElement('span');
         details.className='strategy-course-inputs';
         details.textContent='중요 '+rank+'위 · 정원 '+capacity+'명 · 경쟁자 '+rivals+'명';
-        item.append(headline,course,details);
+        const score=document.createElement('span');
+        score.className='strategy-course-inputs';
+        score.textContent=weightedRivals
+          ?`점수 ${rivals} ÷ ${capacity} × ${weight} = ${scoreFormat.format(weightedRivals/capacity)}`
+          :'점수 0';
+        item.append(headline,course,details,score);
         return item;
       }));
       criteria.open=false;

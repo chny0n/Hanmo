@@ -10,22 +10,22 @@ const input=()=>({
     {id:'C',name:'가상 C',rank:3,capacity:20,rivals:30},
   ],
 });
-test('추천은 중요 경합, 일반 경합, 정원 여유 순으로 배치한다',()=>{
+test('추천은 경쟁 강도가 높은 일반 과목이 중요 과목을 앞설 수 있게 한다',()=>{
   const courses=[
-    {id:'A',name:'가상 A',rank:1,capacity:4,rivals:12},
+    {id:'A',name:'가상 A',rank:1,capacity:4,rivals:7},
     {id:'B',name:'가상 B',rank:2,capacity:20,rivals:19,important:true},
     {id:'C',name:'가상 C',rank:3,capacity:20,rivals:20,important:true},
     {id:'D',name:'가상 D',rank:4,capacity:4,rivals:40},
   ];
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['C','A','D','B']);
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['D','C','A','B']);
   assert.deepEqual(recommendCourses([...courses].reverse()),recommendCourses(courses));
   assert.deepEqual(courses.map(course=>course.id),['A','B','C','D']);
 });
-test('경합 그룹에서는 좌석당 경쟁자 수가 중요 순위와 함께 추천 순서를 바꾼다',()=>{
+test('동점이면 중요 과목과 입력 순위로 순서를 정한다',()=>{
   const courses=[
-    {id:'A',name:'가상 A',rank:1,capacity:10,rivals:10},
-    {id:'B',name:'가상 B',rank:2,capacity:10,rivals:30},
-    {id:'C',name:'가상 C',rank:3,capacity:10,rivals:20},
+    {id:'A',name:'가상 A',rank:1,capacity:10,rivals:30},
+    {id:'B',name:'가상 B',rank:2,capacity:20,rivals:30,important:true},
+    {id:'C',name:'가상 C',rank:3,capacity:12,rivals:36},
   ];
   assert.deepEqual(recommendCourses(courses).map(course=>course.id),['B','A','C']);
 });

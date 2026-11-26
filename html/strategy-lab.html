@@ -59,8 +59,10 @@
       </div>
       <ol id="strategy-order" class="strategy-order" aria-labelledby="strategy-results-heading"></ol>
       <details id="strategy-criteria" class="strategy-criteria">
-        <summary>추천 기준 보기</summary>
-        <p class="lab-footnote">체크한 중요 과목 중 경합 과목을 먼저, 나머지 경합 과목을 그다음에 신청합니다. 각 경합 그룹에서는 중요도와 정원 대비 경쟁자 수의 순위를 같은 비중으로 봅니다. 입력상 정원에 여유가 있는 과목은 뒤에 배치합니다.</p>
+        <summary>추천 기준과 계산식 보기</summary>
+        <p class="lab-footnote"><strong>추천 점수 = 경쟁자 수 ÷ 정원 × 중요 가중치</strong>. 중요 과목은 가중치 <span data-important-weight></span>, 그 외는 1입니다. 경쟁자 수가 정원보다 적으면 0점입니다.</p>
+        <p class="lab-footnote">점수가 높은 순으로 신청합니다. 동점이면 체크한 과목, 그다음 입력한 중요 순위가 높은 과목이 먼저입니다. 표시 점수는 소수 둘째 자리까지 반올림합니다.</p>
+        <p class="lab-footnote">예를 들어 정원 10명에 경쟁자 40명인 일반 과목은 4점입니다. 정원 10명에 경쟁자 15명인 중요 과목은 1.5 × <span data-important-weight></span>점이므로 일반 과목을 먼저 추천합니다.</p>
       </details>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 추천</button>
     </section>

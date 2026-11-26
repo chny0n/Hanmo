@@ -206,7 +206,7 @@ test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
 });
 
-test('전략 실험은 체크한 중요 과목과 경합 여부로 신청 순서를 추천한다',async({page})=>{
+test('전략 실험은 중요 가중치와 경쟁 강도를 반영하고 계산식을 보여 준다',async({page})=>{
   await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new Error('저장소 차단');}}));
   await page.goto('/html/strategy-lab.html');
   const rows=page.locator('#strategy-courses tr');
@@ -220,14 +220,18 @@ test('전략 실험은 체크한 중요 과목과 경합 여부로 신청 순서
   await page.locator('#strategy-run').click();
   const result=page.locator('#strategy-result');
   await expect(result).toBeVisible();
-  await expect(page.locator('#strategy-order li strong')).toHaveText(['과목 C','과목 A','과목 B']);
-  await expect(page.locator('#strategy-order li').first()).toContainText('중요 · 경합');
+  await expect(page.locator('#strategy-order li strong')).toHaveText(['과목 A','과목 C','과목 B']);
+  await expect(page.locator('#strategy-order li').first()).toContainText('30 ÷ 8 × 1 = 3.75');
+  await expect(page.locator('#strategy-order li').nth(1)).toContainText('중요 · 경합');
+  await expect(page.locator('#strategy-order li').nth(1)).toContainText('30 ÷ 20 × 2 = 3');
   await expect(page.locator('#strategy-order li').last()).toContainText('정원 여유');
   await expect(result).not.toContainText(/성공률|%/);
   const criteria=page.locator('#strategy-criteria');
   await expect(criteria).toHaveJSProperty('open',false);
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
+  await expect(criteria).toContainText('추천 점수 = 경쟁자 수 ÷ 정원 × 중요 가중치');
+  await expect(criteria).toContainText('중요 과목은 가중치 2');
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
   await expect(page.getByRole('checkbox',{name:'C 중요 과목',exact:true})).toBeChecked();
@@ -353,7 +357,7 @@ test('8과목 추천 결과는 좁은 화면에서도 가로 스크롤 없이 �
   await page.goto('/html/strategy-lab.html');
   for(let i=3;i<8;i++)await page.locator('#strategy-add').click();
   for(const id of 'ABCDEFGH'){
-    await page.getByRole('spinbutton',{name:id+' 경쟁자',exact:true}).fill('0');
+    await page.getByRole('spinbutton',{name:id+' 경쟁자',exact:true}).fill('199');
     await page.getByRole('textbox',{name:id+' 과목 이름',exact:true}).fill(id+'수강신청전략실험긴과목명'.repeat(3).slice(0,29));
   }
   await page.locator('#strategy-run').click();
@@ -367,6 +371,9 @@ test('8과목 추천 결과는 좁은 화면에서도 가로 스크롤 없이 �
     await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
     await expect(page.locator('.strategy-order-rank').first()).toHaveText('1번째');
   }
+  await page.locator('#strategy-criteria summary').press('Enter');
+  await page.setViewportSize({width:1280,height:720});
+  await expectOneScreen(page,'#strategy-result');
   for(const width of [1440,1200,800,400]){
     await page.setViewportSize({width,height:800});
     const overflow=await page.locator('#strategy-order, #strategy-order li, .strategy-card-head').evaluateAll(nodes=>

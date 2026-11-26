@@ -28,22 +28,17 @@ export function validateCourses(courses){
   }
 }
 
+export const IMPORTANT_WEIGHT=2;
+
 /** @param {Course[]} courses 입력 과목 */
 export function recommendCourses(courses){
   validateCourses(courses);
-  const byImportance=[...courses].sort((a,b)=>a.rank-b.rank);
-  const contested=byImportance.filter(course=>course.rivals>=course.capacity);
-  const open=byImportance.filter(course=>course.rivals<course.capacity)
-    .sort((a,b)=>Number(Boolean(b.important))-Number(Boolean(a.important))||a.rank-b.rank);
-  const orderGroup=group=>group.map((course,index)=>{
-    const crowdRank=1+group.filter(other=>
-      other.rivals*course.capacity>course.rivals*other.capacity).length;
-    return {course,priority:index+1+crowdRank};
-  }).sort((a,b)=>a.priority-b.priority||a.course.rank-b.course.rank)
-    .map(({course})=>course);
-  return [
-    ...orderGroup(contested.filter(course=>course.important)),
-    ...orderGroup(contested.filter(course=>!course.important)),
-    ...open,
-  ];
+  return courses.map(course=>{
+    const {capacity,rivals,important}=course;
+    const weight=important?IMPORTANT_WEIGHT:1;
+    const weightedRivals=rivals>=capacity?rivals*weight:0;
+    return {...course,weight,weightedRivals};
+  }).sort((a,b)=>
+    b.weightedRivals*a.capacity-a.weightedRivals*b.capacity||
+    b.weight-a.weight||a.rank-b.rank);
 }
