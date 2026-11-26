@@ -26,4 +26,4 @@
 
 개설 전망 계약은 `js/academic/contracts/forecast/offering.js`에 분리합니다. 기존 `contracts/index.js` 내보내기는 연구 코드 호환을 위해 유지하지만 학생 번들에는 허용하지 않습니다. 학생 빌드의 명시적 입력·정적 자산 허용 목록과 연구 테스트 분리는 [ADR](adr/2026-11-25-student-build-boundary.md)에 따릅니다. 연구 소스 보존은 운영 승인이나 실제 학사자료 연결이 아닙니다.
 
-과거 졸업계획 화면의 표시 모델과 전공별 중요공지 고정 코드는 Git 이력에서 확인할 수 있습니다. 학점 원장 계산과 공지·일정 연구 코어는 합성 검증용으로 유지합니다. [#63 종료 범위](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#51 비개인화 공지 분류](https://github.com/ot4562-glitch/Hanmo_develop/issues/51)
+과거 졸업계획 화면의 표시 모델과 로드맵 저장·백업 모듈, 전공별 중요공지 고정 코드는 Git 이력에서 확인할 수 있습니다. 학점 원장 계산과 공지·일정 연구 코어는 합성 검증용으로 유지합니다. [#63 종료 범위](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#51 비개인화 공지 분류](https://github.com/ot4562-glitch/Hanmo_develop/issues/51)
