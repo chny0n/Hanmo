@@ -200,7 +200,7 @@ test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=
     await page.keyboard.press('Space');
   }
   await expect(page.locator('#reaction-report')).toBeVisible();
-  await expect(page.locator('#reaction-status')).toContainText('저장하지 못해');
+  await expect(page.locator('#reaction-status')).toHaveText('브라우저에 이번 반응속도 결과를 저장하지 못했습니다.');
   await expect(page.locator('#reaction-result a')).toHaveCount(0);
   await expect(page.locator('#reaction-report')).not.toContainText('저장된');
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();

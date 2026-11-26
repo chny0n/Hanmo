@@ -62,7 +62,7 @@ if(start){
   function complete(samples){
     const profile=profileFromSamples(samples);
     const saved=saveProfile(null,profile);
-    const message=saved?'':'브라우저에 이번 결과를 저장하지 못해 전략 실험에 전달할 수 없습니다.';
+    const message=saved?'':'브라우저에 이번 반응속도 결과를 저장하지 못했습니다.';
     showResult(profile.medianMs,saved);
     state=initialReactionState();
     showIdle(message,true);

@@ -1,6 +1,5 @@
 // @ts-check
 // 실제 학교 수강 데이터가 없는 합성 환경에서 기대점수 최대 신청 순서를 탐색합니다.
-import {DIRECT_SUBMIT_MS} from './reaction-profile.mjs';
 import {MAX_COURSES,requireInteger,validateCourses} from './strategy-recommendation.mjs';
 export function validateScenario(input){
   validateCourses(input?.courses);
@@ -22,6 +21,7 @@ const PREFERENCE_LOG_SD=0.7;
 const TARGET_WIDTH_PX=60;
 const TARGET_DISTANCE_MIN_PX=80;
 const TARGET_DISTANCE_SPAN_PX=400;
+const REFERENCE_MOVEMENT_MS=380;
 const FITTS_SLOPE_MS=110;
 // 가장 경쟁자가 많은 과목을 신청할 조건부 중복 확률의 합성 시나리오입니다.
 const OVERLAP={less:0.25,baseline:0.5,more:0.75};
@@ -60,7 +60,7 @@ export function serviceFinishMs(start){
  * @param {number} width 목표의 유효 폭(px)
  */
 export function fittsTimeMs(distance,width){
-  return DIRECT_SUBMIT_MS+FITTS_SLOPE_MS*(Math.log2(1+distance/width)-Math.log2(5));
+  return REFERENCE_MOVEMENT_MS+FITTS_SLOPE_MS*(Math.log2(1+distance/width)-Math.log2(5));
 }
 function movementMs(seed,trial,id,slot){
   const distance=TARGET_DISTANCE_MIN_PX+TARGET_DISTANCE_SPAN_PX*random01(seed,trial,id,slot);
@@ -129,7 +129,7 @@ function userAgent(s,trial,id,stableWait){
   const actions=[],delays=[];
   for(let slot=0;slot<s.courses.length;slot++){
     const z=normal01(s.seed,trial,100,slot);
-    const reaction=Math.max(MIN_REACTION_MS,s.actionMs-DIRECT_SUBMIT_MS+s.jitterMs*z);
+    const reaction=Math.max(MIN_REACTION_MS,s.actionMs-REFERENCE_MOVEMENT_MS+s.jitterMs*z);
     actions.push(reaction+movementMs(s.seed^0x2f6e2b1d,trial,0,slot));
     delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,stableWait?0:slot)));
   }
