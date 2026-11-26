@@ -8,7 +8,7 @@
 - 학생 공통 스타일은 빌드에서 `dist/css/student-ui.css`로 묶습니다. 이 출력의 소스 CSS와 기존 배경 URL을 따로 검사합니다.
 - 개발자 사진은 배포본에서 EXIF와 XMP를 제거합니다. 원본, IPTC 촬영자 표기, 색상 프로필, JPEG 압축 스캔을 보존합니다.
 - PC 진단의 합성 다운로드 파일은 빌드에서 기존 v1 바이트를 다시 만들고 SHA-256을 검사합니다.
-- Repository checks의 `student-site`가 학생용 빌드를 검증합니다. `core-and-site`가 연구 검사와 검증된 산출물의 Chromium 검사를 실행합니다. `deploy-pages`는 같은 빌드에서 만든 Pages 산출물의 현행 SHA를 확인해 배포합니다. Feature browser QA는 별도 브라우저 흐름을 검사합니다.
+- Repository checks의 `student-site`가 학생용 빌드를 검증합니다. `core-and-site`가 검증된 산출물로 Chromium 회귀와 기능 QA를 실행하고 보고서를 따로 보관합니다. 같은 작업에서 연구 검사를 수행합니다. `deploy-pages`는 같은 빌드에서 만든 Pages 산출물의 현행 SHA를 확인해 배포합니다.
 - Windows 실제 Chrome/Edge, NVDA, 200% 확대, 물리 입력, 실제 자료 권리·독립 검수·운영 인수는 별도입니다. 검사 결과를 기록할 때 검사한 SHA와 실행 환경을 명시합니다.
 
 [아키텍처 §9](architecture.md) · [미결 이슈](pending-issues.md) · [Actions](https://github.com/ot4562-glitch/Hanmo_develop/actions)
