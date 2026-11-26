@@ -1,25 +1,9 @@
 // @ts-check
 // 실제 학교 수강 데이터가 없는 합성 환경에서 기대점수 최대 신청 순서를 탐색합니다.
 import {DIRECT_SUBMIT_MS} from './reaction-profile.mjs';
-const requireInteger=(value,min,max,label)=>{
-  if(!Number.isSafeInteger(value)||value<min||value>max)throw new RangeError(label+' 입력값을 확인하세요.');
-};
+import {MAX_COURSES,requireInteger,validateCourses} from './strategy-recommendation.mjs';
 export function validateScenario(input){
-  if(!input||!Array.isArray(input.courses))throw new RangeError('과목이 없습니다.');
-  const c=input.courses;
-  requireInteger(c.length,2,MAX_COURSES,'과목 수');
-  const ranks=new Set(),ids=new Set();
-  for(const course of c){
-    if(typeof course?.id!=='string'||!course.id||ids.has(course.id))throw new RangeError('과목 ID가 중복되었습니다.');
-    ids.add(course.id);
-    if(typeof course.name!=='string'||!course.name.trim()||course.name.length>30)
-      throw new RangeError('과목 이름은 1~30자로 입력하세요.');
-    requireInteger(course.rank,1,c.length,'중요 순위');
-    if(ranks.has(course.rank))throw new RangeError('중요 순위는 1부터 과목 수까지 중복 없이 설정하세요.');
-    ranks.add(course.rank);
-    requireInteger(course.capacity,1,300,'정원');
-    requireInteger(course.rivals,0,200,'경쟁자');
-  }
+  validateCourses(input?.courses);
   requireInteger(input.seed,0,4294967295,'실험 식별값');
   requireInteger(input.trials,100,5000,'실험 반복 수');
   for(const key of ['startDelayMs','actionMs','jitterMs']){
@@ -27,7 +11,6 @@ export function validateScenario(input){
   }
   return input;
 }
-const MAX_COURSES=8;
 // 합성 모형의 초기 가정이며 관측 데이터에서 추정한 모수가 아닙니다.
 export const RIVAL_REACTION_MEAN_MS=270;
 export const RIVAL_GROUP_SHIFT_MS=30;

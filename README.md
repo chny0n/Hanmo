@@ -109,8 +109,8 @@ flowchart LR
 | **모의수강신청** · [열기](html/vsugang.html) | BASIC/TIME/SELECT, 기본 OFF인 가상 404·정원 마감, 독립 대기 설정 | **합성 모의연습 가능** · 실제 신청 아님 |
 | **내정보** · [열기](html/planner.html) | 캠퍼스·전공·입학년도 직접 입력과 로컬 저장 | **직접 입력 가능** · 학교 학적 미연동 |
 | **PC 진단** · [열기](html/readiness.html) | 프레임·타이머 지연과 한모 정적 CDN 응답시간·다운로드 처리량 관측 | **브라우저 관측 가능** · 브라우저 캐시와 확인할 수 없는 전송 표본 제외 |
-| **반응속도 테스트** · [열기](html/reaction-test.html) | 시각 신호에 대한 8회 반응 측정, 중앙값 로컬 저장 | **측정 가능** · 전략 실험에 자동 적용 |
-| **전략 실험** · [열기](html/strategy-lab.html) | 가상 과목 2~8개(정원 1~300·경쟁자 0~200), 계층적 반응·개인 선호·공통 FCFS 대기열, 1,000회 학습과 별도 조건별 1,000회 평가 | **합성 전략 실험** · 전체/과목별 성공 빈도·기대 성공 과목 수·전원 동시 시작 민감도; 실제 예측 미검증 |
+| **반응속도 테스트** · [열기](html/reaction-test.html) | 시각 신호에 대한 8회 반응 측정, 중앙값 로컬 저장 | **측정 가능** · 브라우저에 저장 |
+| **전략 실험** · [열기](html/strategy-lab.html) | 가상 과목 2~8개의 중요도·정원·경쟁자 수로 신청 순서 추천 | **경합 과목 우선** · 중요 과목 체크 지원 |
 | **학사 정보** · [열기](html/academic-timeline.html) | **공지·월간 달력 탭 통합**, 학교 공식 일정·원문 확인 경로 | 실제 공지·행사 스냅샷 **미연결** · 공식 확정/개인별 마감 판정 아님 |
 | **강의 검색** · [열기](html/catalog.html) | 허용·검수된 개설 관측/비식별 집계의 자체 전망 표시를 준비 | **데이터 미연결** · 교수명/수강 관련 정보 제외, [이전 전망 경로](html/forecast.html)는 여기로 이동 |
 
@@ -180,7 +180,7 @@ flowchart TB
 
 Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install chromium` → `npm run test:e2e` 순서로 확인합니다. GitHub Actions의 자동 검사 통과는 Windows Chrome/Edge·NVDA·고배율 실기기 인수나 운영 배포 승인과는 별개입니다.
 
-**현재 개발 기준(2026-11-25):** 전략 실험은 합성 몬테카를로 기반 개인 신청 전략 도구로 현재 기능 구성을 유지하고 안정화·재현성·설명 가능성·민감도 검증을 우선합니다. 실제 학생 선호·진입·경쟁 중복·신청량·서버 처리율은 미보정입니다. 성공률을 높이기 위한 임의 모수 조정이나 추가 분포·제도 비교·실학교 예측을 당장 개발하지 않습니다. 수식 보기에는 39개 MathML 수식과 가정을 표시합니다. [#141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)는 [2660092](https://github.com/ot4562-glitch/Hanmo_develop/commit/2660092dd7f8d7364de95aa0e502bd78df7c0b13)로 squash 병합했습니다. [PR 저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45560110476) 성공(보호 검사·Node·Chromium E2E), 독립 12개 합성 시나리오(2·3·5·8과목×3 시드, 각 100회)의 기존 엔진 반환값 일치. 기존 모수·난수·추천 순서 유지, Wilson 95% 반복 표본 오차와 가정별 범위, 반응 측정 상태 전이/저장 분리 추가. 엔진 테스트 36개·반응 프로필 테스트 10개. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)의 Contributor 이름/역할 테스트 기대값을 [ba57b48](https://github.com/ot4562-glitch/Hanmo_develop/commit/ba57b48f0e819ffc006b987a844110c9a8be431a)에서 수정했고 [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316) **34/34 통과**, [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424416) 성공. 해당 SHA의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 확인 시 진행 중이었습니다. 최신 Windows 물리 입력·실기기 접근성 인수는 미완료입니다.
+**전략 실험 개발 기록:** [#141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)는 [2660092](https://github.com/ot4562-glitch/Hanmo_develop/commit/2660092dd7f8d7364de95aa0e502bd78df7c0b13)로 squash 병합했습니다. [PR 저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45560110476) 성공(보호 검사·Node·Chromium E2E), 독립 12개 합성 시나리오(2·3·5·8과목×3 시드, 각 100회)의 기존 엔진 반환값 일치. 기존 모수·난수·추천 순서 유지, Wilson 95% 반복 표본 오차와 가정별 범위, 반응 측정 상태 전이/저장 분리 추가. 엔진 테스트 36개·반응 프로필 테스트 10개. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)의 Contributor 이름/역할 테스트 기대값을 [ba57b48](https://github.com/ot4562-glitch/Hanmo_develop/commit/ba57b48f0e819ffc006b987a844110c9a8be431a)에서 수정했고 [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316) **34/34 통과**, [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424416) 성공. 해당 SHA의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 확인 시 진행 중이었습니다. 최신 Windows 물리 입력·실기기 접근성 인수는 미완료입니다.
 
 **개발 역할:** 심민성(`ot4562-glitch`) — 한모(2026) 업데이트 총괄; 이의상(`uisang2004-maker`) — 업데이트 nlp 담당; 김채윤(`qamarrchae`) — 업데이트 데이터 및 품질 보증 담당. 개발자 소개 페이지의 기존 소속·이름을 유지하고 역할을 작은 글씨로 표시합니다.
 

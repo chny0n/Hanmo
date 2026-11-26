@@ -206,174 +206,42 @@ test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
 });
 
-test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시간으로 실행된다',async({page})=>{
-  await seedProfile(page);
-  await page.goto('/html/strategy-lab.html');
-  await expect(page.locator('#strategy-input')).not.toContainText('가상');
-  await expect(page.locator('#strategy-status')).toContainText('한 번의 선착순 신청 회차');
-  await expect(page.locator('#strategy-reaction')).toContainText('250ms');
-  await expect(page.locator('#strategy-clock')).toContainText('시');
-  await expect(page.locator('#strategy-courses tr')).toHaveCount(3);
-  await expect(page.locator('#strategy-courses input')).toHaveCount(12);
-  await expect(page.getByRole('textbox',{name:'A 과목 이름',exact:true})).toHaveValue('과목 A');
-  await expect(page.getByRole('spinbutton',{name:'A 정원',exact:true})).toHaveValue('8');
-  await page.getByRole('button',{name:'과목 추가',exact:true}).click();
-  await expect(page.getByRole('textbox',{name:'D 과목 이름',exact:true})).toHaveValue('과목 D');
-  await page.getByRole('button',{name:'D 삭제',exact:true}).click();
-  await expect(page.locator('#strategy-form input[name="seed"], #strategy-form input[name="startDelay"], #strategy-form input[name="actionInterval"]')).toHaveCount(0);
-  await expect(page.locator('#strategy-share')).toHaveCount(0);
-  await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
-  await expect(page.locator('#strategy-recommendation')).toContainText('추천 신청 순서');
-  await expect(page.locator('#strategy-recommendation')).toContainText('전체 성공률');
-  await expect(page.locator('#strategy-recommendation')).not.toContainText('(기본 가정)');
-  await expect(page.locator('#strategy-order li')).toHaveCount(3);
-  await expect(page.locator('#strategy-order .strategy-course-rate')).toHaveCount(3);
-  await expect(page.locator('#strategy-setup tbody tr')).toHaveCount(4);
-  for(const name of ['낮은 경쟁 중복도','기본 조건','높은 경쟁 중복도','경쟁자 전원 동시 시작']){
-    await expect(page.locator('#strategy-setup tbody')).toContainText(name);
-  }
-  await expect(page.locator('#strategy-run-info')).toContainText('실험 시드');
-  await expect(page.locator('#strategy-expected-value')).toHaveText(/\d+\.\d{2} \/ 3개/);
-  await expect(page.locator('#strategy-completion-value')).toHaveText(/\d+\.\d초/);
-  await expect(page.locator('#strategy-wait-value')).toHaveText(/\d+\.\d초/);
-  await expect(page.locator('#strategy-sampling')).toContainText('반복 실험 오차 95% 범위');
-  await expect(page.locator('#strategy-assumption-range')).toContainText('경쟁 가정별 관측 범위');
-  expect(await page.locator('.strategy-course-track span').evaluateAll(nodes=>nodes.every(node=>parseFloat(node.style.width)>=0&&parseFloat(node.style.width)<=100))).toBe(true);
-  const assumptions=page.locator('#strategy-assumptions');
-  await expect(assumptions).toHaveJSProperty('open',false);
-  await expect(assumptions.locator('#strategy-rival-heading')).toBeHidden();
-  await expect(assumptions.locator('#strategy-wait-heading')).toBeHidden();
-  await assumptions.locator('summary').press('Enter');
-  await expect(assumptions.locator('#strategy-rival-heading')).toBeVisible();
-  await expect(assumptions).toContainText('본인 입력과 별도로 5~8과목에서 추출');
-  await expect(assumptions).toContainText('오픈 후 1초 안에 진입');
-  await expect(assumptions.locator('#strategy-wait-heading')).toBeVisible();
-  await expect(assumptions.locator('#strategy-stable-wait')).not.toBeEmpty();
-  await expect(page.locator('.strategy-course-rate').first()).toHaveAttribute('title',/가정별.*평균 처리 시각/);
-  await expectOneScreen(page,'#strategy-result');
-  await expect(page.locator('#strategy-wait-summary')).toHaveText(/평균 누적 대기시간 \d+\.\d초 \(혼잡 대기 \d+\.\d초 포함\) · 전체 신청 시도 평균 소요시간 \d+\.\d초/);
-  await expect(page.locator('#strategy-result')).toContainText('실제 학교 서버의 대기시간을 측정한 값은 아닙니다.');
-  await expect(page.locator('#strategy-result')).not.toContainText('경쟁자 중복');
-  await expect(page.locator('#strategy-input')).toBeHidden();
-  await expect(page.locator('#strategy-result')).toContainText('가상 처리율은 시작 후 2초까지 초당 50건, 5초까지 80건, 이후 100건이며 혼잡이 없는 기본 응답시간은 1~3초');
-  await assumptions.locator('summary').press('Enter');
-  await expect(assumptions).toHaveJSProperty('open',false);
-  const formulas=page.locator('#strategy-formulas');
-  const summary=formulas.locator('summary');
-  await expect(summary).toHaveText('수식 보기');
-  await expect(formulas).toHaveJSProperty('open',false);
-  await expect(formulas.locator('.strategy-formula-body')).toBeHidden();
-  await page.setViewportSize({width:1280,height:720});
-  await expectOneScreen(page,'#strategy-result');
-  await summary.click();
-  await expect(formulas).toHaveJSProperty('open',true);
-  await expect(formulas.locator('.strategy-formula-body')).toBeVisible();
-  await expect(page.locator('#strategy-order')).toBeHidden();
-  await expect(page.locator('#strategy-results-heading')).toBeVisible();
-  await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
-  const formulaScroll=await formulas.locator('.strategy-formula-body').evaluate(el=>({client:el.clientHeight,scroll:el.scrollHeight,overflow:getComputedStyle(el).overflowY}));
-  expect(formulaScroll.overflow).toBe('auto');
-  expect(formulaScroll.scroll).toBeGreaterThan(formulaScroll.client);
-  await expect(page.locator('#strategy-formula-values')).toContainText('N = 3 · M = 1000 · a = 630ms · σ = 170ms · t₀ = 0ms');
-  await expect(page.locator('#strategy-formula-values')).toContainText('τ_min = 10ms');
-  await expect(formulas.locator('code')).toHaveCount(0);
-  await expect(formulas.locator('math')).toHaveCount(39);
-  await expect(page.locator('#strategy-result')).toContainText('240~300ms 사이에서 변합니다');
-  for(const id of ['rival-group','rival-reaction','rival-lognormal','rival-jitter','rival-tail','rival-action','fitts','fitts-geometry','population','overlap','membership','workload','background-urgency','preference','choice','entry','entry-share','service','base-delay','queue-start','queue-end','queue-wait','objective','all-success','evaluated-course','expected-courses']){
-    await expect(formulas.locator('math[data-formula="'+id+'"]')).toBeVisible();
-  }
-  for(const width of [1200,800,400]){
-    await page.setViewportSize({width,height:800});
-    const overflowing=await formulas.locator('.strategy-math-line').evaluateAll(lines=>lines.filter(line=>{
-      const style=getComputedStyle(line);
-      return ['auto','scroll'].includes(style.overflowX)||line.scrollWidth>line.clientWidth+1;
-    }).map(line=>line.querySelector('math')?.getAttribute('data-formula')));
-    expect(overflowing).toEqual([]);
-  }
-  await page.setViewportSize({width:1200,height:800});
-  const math=formulas.locator('math[data-formula="urgency"]');
-  await expect(math.locator('msqrt mfrac')).toHaveCount(1);
-  const fraction=await math.locator('mfrac').evaluate(el=>{
-    const [num,den]=Array.from(el.children).map(child=>child.getBoundingClientRect());
-    return {namespace:el.namespaceURI,numTop:num.top,denTop:den.top,numWidth:num.width,denWidth:den.width};
-  });
-  expect(fraction.namespace).toBe('http://www.w3.org/1998/Math/MathML');
-  expect(fraction.denTop).toBeGreaterThan(fraction.numTop);
-  expect(fraction.numWidth).toBeGreaterThan(0);
-  expect(fraction.denWidth).toBeGreaterThan(0);
-  await expect(formulas.locator('math[data-formula="all-success"] munderover')).toHaveCount(2);
-  await summary.focus();
-  await page.keyboard.press('Enter');
-  await expect(formulas).toHaveJSProperty('open',false);
-});
-
-test('전략 실험은 경쟁 중에는 100% 반올림을 피하고 충분한 정원은 100%로 표시한다',async({page})=>{
-  await seedProfile(page);
-  await page.goto('/html/strategy-lab.html');
-  const readout=page.locator('#strategy-recommendation');
-  const capacity=page.getByRole('spinbutton',{name:'A 정원',exact:true});
-  for(const id of ['B','C']){
-    await page.getByRole('spinbutton',{name:id+' 경쟁자',exact:true}).fill('0');
-  }
-  await page.getByRole('spinbutton',{name:'A 경쟁자',exact:true}).fill('200');
-  await capacity.fill('200');
-  await page.locator('#strategy-run').click();
-  await expect(readout).toContainText('실패 미관측');
-  await page.locator('#strategy-back').click();
-  await capacity.fill('201');
-  await page.locator('#strategy-run').click();
-  await expect(readout).toContainText('100%');
-  await expect(readout).not.toContainText('(기본 가정)');
-});
-
-test('전략 실험은 다른 탭의 반응 프로필 등록과 삭제를 반영한다',async({page,context})=>{
-  await page.goto('/html/strategy-lab.html');
-  const measurement=await context.newPage();
-  await measurement.goto('/html/reaction-test.html');
-  await measurement.evaluate(p=>{
-    localStorage.setItem('hanmo.reaction.profile.v1',JSON.stringify({...p,measuredAt:Date.now()}));
-  },profile);
-  const summary=page.locator('#strategy-reaction');
-  await expect(summary).toContainText('250ms');
-  await measurement.evaluate(()=>localStorage.removeItem('hanmo.reaction.profile.v1'));
-  await expect(summary).toContainText('측정 결과 없음');
-});
-
-test('반응속도 기록이 없으면 결과를 임의 생성하지 않는다',async({page})=>{
-  await page.goto('/html/strategy-lab.html');
-  await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-status')).toContainText('반응속도 테스트를 먼저');
-  await expect(page.locator('#strategy-result')).toBeHidden();
-});
-
-test('전략 계산을 취소해도 최소 과목 수를 유지한다',async({page})=>{
-  await seedProfile(page);
-  await page.addInitScript(()=>{
-    Worker.prototype.postMessage=()=>{};
-  });
+test('전략 실험은 체크한 중요 과목과 경합 여부로 신청 순서를 추천한다',async({page})=>{
+  await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new Error('저장소 차단');}}));
   await page.goto('/html/strategy-lab.html');
   const rows=page.locator('#strategy-courses tr');
-  await rows.last().getByRole('button').click();
-  await expect(rows).toHaveCount(2);
+  await expect(rows).toHaveCount(3);
+  await expect(page.getByRole('checkbox')).toHaveCount(3);
+  await page.getByRole('checkbox',{name:'C 중요 과목',exact:true}).check();
+  await page.getByRole('spinbutton',{name:'B 정원',exact:true}).fill('51');
+  await page.getByRole('button',{name:'과목 추가',exact:true}).click();
+  await expect(page.getByRole('checkbox',{name:'C 중요 과목',exact:true})).toBeChecked();
+  await page.getByRole('button',{name:'D 삭제',exact:true}).click();
   await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-status')).toHaveText('1,000회 반복 실험 중입니다.');
-  await page.locator('#strategy-cancel').click();
-  await expect(page.locator('#strategy-status')).toHaveText('계산을 취소했습니다.');
-  for(const button of await rows.getByRole('button').all()) await expect(button).toBeDisabled({timeout:1000});
-  await expect(page.locator('#strategy-run')).toBeEnabled();
+  const result=page.locator('#strategy-result');
+  await expect(result).toBeVisible();
+  await expect(page.locator('#strategy-order li strong')).toHaveText(['과목 C','과목 A','과목 B']);
+  await expect(page.locator('#strategy-order li').first()).toContainText('중요 · 경합');
+  await expect(page.locator('#strategy-order li').last()).toContainText('정원 여유');
+  await expect(result).not.toContainText(/성공률|%/);
+  const criteria=page.locator('#strategy-criteria');
+  await expect(criteria).toHaveJSProperty('open',false);
+  await criteria.locator('summary').press('Enter');
+  await expect(criteria).toHaveJSProperty('open',true);
+  await expectOneScreen(page,'#strategy-result');
+  await page.locator('#strategy-back').click();
+  await expect(page.getByRole('checkbox',{name:'C 중요 과목',exact:true})).toBeChecked();
+  await expect(page.locator('#strategy-courses tr:first-child input').first()).toBeFocused();
 });
 
-test('로컬 저장소 접근이 차단되어도 반응 테스트와 전략 화면이 응답한다',async({page})=>{
-  await page.addInitScript(()=>{
-    Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Blocked','SecurityError');}});
-  });
-  await page.goto('/html/reaction-test.html');
-  await page.locator('#reaction-start').click();
-  await expect(page.locator('#reaction-target')).toBeEnabled({timeout:1000});
+test('전략 입력은 중요 순위가 중복되면 추천하지 않고 최소 두 과목을 유지한다',async({page})=>{
   await page.goto('/html/strategy-lab.html');
+  await page.getByRole('button',{name:'C 삭제',exact:true}).click();
+  await expect(page.getByRole('button',{name:'A 삭제',exact:true})).toBeDisabled();
+  await page.getByRole('spinbutton',{name:'B 중요 순위',exact:true}).fill('1');
   await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-status')).toContainText('반응속도 테스트를 먼저');
+  await expect(page.locator('#strategy-status')).toContainText('중복 없이');
+  await expect(page.locator('#strategy-result')).toBeHidden();
 });
 
 test('학사 공지와 학사 달력은 한 URL의 탭으로 전환된다',async({page})=>{
@@ -480,7 +348,7 @@ test('1280×720에서 최대 8개 과목 입력과 모든 핵심 동작이 가�
   await check('#strategy-status');
 });
 
-test('8과목 결과의 추천 순서와 성공률은 좁은 화면에서도 가로 스크롤 없이 표시된다',async({page})=>{
+test('8과목 추천 결과는 좁은 화면에서도 가로 스크롤 없이 표시된다',async({page})=>{
   await seedProfile(page);
   await page.goto('/html/strategy-lab.html');
   for(let i=3;i<8;i++)await page.locator('#strategy-add').click();
@@ -491,23 +359,17 @@ test('8과목 결과의 추천 순서와 성공률은 좁은 화면에서도 가
   await page.locator('#strategy-run').click();
   await expect(page.locator('#strategy-result')).toBeVisible({timeout:20000});
   await expect(page.locator('#strategy-order li')).toHaveCount(8);
-  await expect(page.locator('#strategy-order .strategy-course-rate')).toHaveCount(8);
-  await expect(page.locator('#strategy-overall-value')).toHaveText('100%');
-  await expect(page.locator('#strategy-expected-value')).toHaveText('8.00 / 8개');
+  await expect(page.locator('#strategy-order .strategy-course-demand')).toHaveCount(8);
+  await expect(page.locator('#strategy-order')).not.toContainText('100%');
   for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
     await page.setViewportSize(viewport);
     await expectOneScreen(page,'#strategy-result');
     await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
-    const heading=await page.locator('.strategy-order-heading').boundingBox();
-    const order=await page.locator('#strategy-order').boundingBox();
-    expect(order.y).toBeGreaterThanOrEqual(heading.y+heading.height);
-    expect(order.width).toBeGreaterThanOrEqual(heading.width-1);
-    await expect(page.locator('.strategy-course-rate').first()).toHaveCSS('font-size','18px');
     await expect(page.locator('.strategy-order-rank').first()).toHaveText('1번째');
   }
   for(const width of [1440,1200,800,400]){
     await page.setViewportSize({width,height:800});
-    const overflow=await page.locator('#strategy-order, #strategy-order li, .strategy-result-metrics, .strategy-result-metrics>div, .strategy-conditions').evaluateAll(nodes=>
+    const overflow=await page.locator('#strategy-order, #strategy-order li, .strategy-card-head').evaluateAll(nodes=>
       nodes.filter(node=>node.scrollWidth>node.clientWidth+1).map(node=>node.className||node.tagName));
     expect(overflow).toEqual([]);
   }

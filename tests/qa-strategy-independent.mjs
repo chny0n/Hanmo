@@ -1,7 +1,6 @@
 // 합성 전략 및 브라우저 관측 계약의 독립 점검입니다. 학교 서버에 요청하지 않습니다.
 // 기본 실행은 경계·독립 기준·고정 시드만 검증합니다. 최대 입력의 별도 측정은 --benchmark이며 CI 필수 항목이 아닙니다.
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
 import {performance} from 'node:perf_hooks';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
@@ -109,9 +108,7 @@ const partial=gradeReadiness({...measurements,network:networkStats([40,null,80,4
 const t={startTime:20,responseEnd:120,transferSize:1200,encodedBodySize:1000,workerStart:0,deliveryType:''};
 assert.equal(networkSample(t,'HEAD'),100);assert.equal(networkSample(t,'GET'),0.08);
 for(const patch of [{transferSize:0},{deliveryType:'cache'},{workerStart:1}])assert.equal(networkSample({...t,...patch},'GET'),null);
-// 수식 식별자 개수만 검증합니다. 수식 자체의 의미와 브라우저 배치는 별도로 확인해야 합니다.
-const html=readFileSync(new URL('../html/strategy-lab.html',import.meta.url),'utf8');const formulaIds=Array.from(html.matchAll(/<math\b[^>]*data-formula="([^"]+)"/g),m=>m[1]);assert.equal(formulaIds.length,39);assert.equal(new Set(formulaIds).size,39);
-console.log(JSON.stringify({columns:['과목 수','경합','시드','기본 성공','낮은 중복도 성공','높은 중복도 성공','동시 진입 성공','기본 응답 고정 성공','기대 성공 과목 수','Wilson 구간(%)','실행 ms'],trialsPerCondition:100,node:process.version,sha:spawnSync('git',['-C',fileURLToPath(new URL('..',import.meta.url)),'rev-parse','HEAD'],{encoding:'utf8'}).stdout?.trim()||null,vectors:{service:13,queue:120,dp:35,scenarioRows:rows.length,formulaIds},rows},null,2));
+console.log(JSON.stringify({columns:['과목 수','경합','시드','기본 성공','낮은 중복도 성공','높은 중복도 성공','동시 진입 성공','기본 응답 고정 성공','기대 성공 과목 수','Wilson 구간(%)','실행 ms'],trialsPerCondition:100,node:process.version,sha:spawnSync('git',['-C',fileURLToPath(new URL('..',import.meta.url)),'rev-parse','HEAD'],{encoding:'utf8'}).stdout?.trim()||null,vectors:{service:13,queue:120,dp:35,scenarioRows:rows.length},rows},null,2));
 for(const trials of (process.argv.includes('--benchmark')?[1000,5000]:[])){
   const s=sample(8,4294967295,trials,true);
   for(const c of s.courses){c.capacity=1;c.rivals=200;}

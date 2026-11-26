@@ -37,7 +37,9 @@ test('예상하지 못한 산출물과 필수 입력 누락을 차단한다',()=
 test('공개 목록은 학사 연구 경로와 삭제한 페이지를 제외한다',async()=>{
   const paths=await readPublicAssets(fileURLToPath(new URL('..',import.meta.url)));
   assert.ok(paths.includes('html/planner.html'));
-  assert.ok(paths.includes('js/strategy-engine.mjs'));
+  assert.ok(paths.includes('js/strategy-recommendation.mjs'));
+  assert.ok(!paths.includes('js/strategy-engine.mjs'));
+  assert.ok(!paths.includes('js/strategy-worker.mjs'));
   assert.ok(paths.every(path=>!path.startsWith('js/academic/')));
   assert.ok(!paths.includes('html/academic-progress.html'));
 });

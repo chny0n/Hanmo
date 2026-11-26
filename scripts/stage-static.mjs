@@ -63,15 +63,14 @@ for(const name of [
  'index.html','html/planner.html','html/forecast.html','html/catalog.html',
  'html/readiness.html','html/reaction-test.html','html/strategy-lab.html','css/hanmo-labs.css',
  'css/academic-unified.css','js/academic-unified.js',
- 'js/readiness.mjs','js/strategy-page.mjs','js/strategy-worker.mjs',
+ 'js/readiness.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs',
  'js/reaction-page.mjs','js/reaction-profile.mjs',
  'data/network-probe.txt',
- 'js/strategy-engine.mjs',
  'html/academic-timeline.html',
  'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-forecast.js','js/student-entry.js','data/academic-source-config.json',
 ])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);
 for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
- 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','img/hufs_logo.png'])
+ 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png'])
  if(await exists(join(dist,banned)))throw Error('Disallowed web artifact: '+banned);
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into QA artifact');
 const rootEntries=await readdir(dist);

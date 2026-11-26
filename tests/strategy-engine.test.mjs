@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {recommendCourses} from '../js/strategy-recommendation.mjs';
 import {simulate,validateScenario,bestOrder,rivalOrder,urgencyWeight,requestWaitMs,runSharedQueue,REQUEST_WAIT_MIN_MS,REQUEST_WAIT_MAX_EXCLUSIVE_MS,SERVER_SERVICE_MS,rivalGroupMeanMs,rivalReactionMs,rivalActionMs,fittsTimeMs,serviceFinishMs,competitorPopulation,rivalStartMs} from '../js/strategy-engine.mjs';
 const input=()=>({
   seed:123456789,trials:120,startDelayMs:200,actionMs:800,jitterMs:100,
@@ -8,6 +9,25 @@ const input=()=>({
     {id:'B',name:'가상 B',rank:2,capacity:20,rivals:50},
     {id:'C',name:'가상 C',rank:3,capacity:20,rivals:30},
   ],
+});
+test('추천은 중요 경합, 일반 경합, 정원 여유 순으로 배치한다',()=>{
+  const courses=[
+    {id:'A',name:'가상 A',rank:1,capacity:4,rivals:12},
+    {id:'B',name:'가상 B',rank:2,capacity:20,rivals:19,important:true},
+    {id:'C',name:'가상 C',rank:3,capacity:20,rivals:20,important:true},
+    {id:'D',name:'가상 D',rank:4,capacity:4,rivals:40},
+  ];
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['C','A','D','B']);
+  assert.deepEqual(recommendCourses([...courses].reverse()),recommendCourses(courses));
+  assert.deepEqual(courses.map(course=>course.id),['A','B','C','D']);
+});
+test('경합 그룹에서는 좌석당 경쟁자 수가 중요 순위와 함께 추천 순서를 바꾼다',()=>{
+  const courses=[
+    {id:'A',name:'가상 A',rank:1,capacity:10,rivals:10},
+    {id:'B',name:'가상 B',rank:2,capacity:10,rivals:30},
+    {id:'C',name:'가상 C',rank:3,capacity:10,rivals:20},
+  ];
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['B','A','C']);
 });
 test('시드가 같으면 최적 신청 순서와 가상 성공 확률이 같다',()=>{
   assert.deepEqual(simulate(input()),simulate(input()));
