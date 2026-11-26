@@ -1,23 +1,14 @@
 # 한모 · 현행 이슈와 PR 검토 상태
 
-> **2026-11-25 실제 GitHub 열린 일반 이슈 기준:** **30건 open**. 실행/권리/제품 정본은 [현행 아키텍처](architecture.md), [에이전트 규칙](../agent.md)이고, 각 이슈의 최신 제목·본문·담당자가 세부 구현 계약입니다. 기존의 닫힌 HMD 설계·사용자 반려 제안은 **과거 기록**이며 신규 구현 지시가 아닙니다.
+> **2026-11-26 확인:** [GitHub 열린 일반 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues?q=is%3Aissue+is%3Aopen) 27건. 각 이슈에서 담당자와 체크리스트를 확인합니다. 제품 기준은 [아키텍처](architecture.md), 작업 절차는 [AGENTS.md](../AGENTS.md)에 있습니다.
 
-## 이번 확인·결정
+## 현행 실행 범위
 
-- [#141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)는 [2660092](https://github.com/ot4562-glitch/Hanmo_develop/commit/2660092dd7f8d7364de95aa0e502bd78df7c0b13)로 squash 병합했습니다. [PR 저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45560110476) 성공(보호 검사·Node·Chromium E2E), 독립 12개 합성 시나리오(2·3·5·8과목×3 시드, 각 100회)의 기존 엔진 반환값 일치. 기존 모수·난수·추천 순서 유지, Wilson 95% 반복 표본 오차와 가정별 범위, 반응 측정 상태 전이/저장 분리 추가. 엔진 테스트 36개·반응 프로필 테스트 10개.
-- [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)의 Contributor 이름/역할 테스트 기대값을 [ba57b48](https://github.com/ot4562-glitch/Hanmo_develop/commit/ba57b48f0e819ffc006b987a844110c9a8be431a)에서 수정했고 [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316) **34/34 통과**, [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424416) 성공. 해당 SHA의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 확인 시 진행 중이었습니다. 최신 Windows 물리 입력·실기기 접근성 인수는 미완료입니다.
-- [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 [ace13a2](https://github.com/ot4562-glitch/Hanmo_develop/commit/ace13a2e4c4b19a5c947c071e64bb2b5e14bef90)에서 필수 JSON 배열 누락과 검수 후 후보 페이로드·해시·유효기한 등 변경을 차단하고 구형 인계 지침을 정정했습니다. [정적 및 격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562372757) 성공. Draft·미병합·독립 협업자 재검토 필요. 현행 최소 데이터 계약·출처 판본 불변성/동시 검수·실 Supabase 권리/운영 인수는 미완료이며 실제 학교 자료 OFF.
-- 전략 실험은 합성 몬테카를로 기반 개인 신청 전략 도구로 현재 기능 구성을 유지하고 안정화·재현성·설명 가능성·민감도 검증을 우선합니다. 실제 학생 선호·진입·경쟁 중복·신청량·서버 처리율은 미보정입니다. 성공률을 높이기 위한 임의 모수 조정이나 추가 분포·제도 비교·실학교 예측을 당장 개발하지 않습니다.
-- 2016년 신진이·이상원 논문 원문 검토를 반영했습니다. 전공별 과목 선호는 연구 후보이고 논문 소스코드·모수 보정 근거는 미확보입니다. [아키텍처](architecture.md) §5.
-- #135는 이미 병합되었습니다. 이전 Windows 검증 기록은 유지하고 최신 기능/물리 입력 인수는 미완료로 관리합니다.
+- 학생용 전략 실험은 개시 직후 선착순 신청 순서를 추천합니다. 기존 몬테카를로 엔진은 합성 연구 경로에서 유지합니다. [아키텍처 §5](architecture.md#5-전략-실험-신청-순서-추천)
+- 학사 공지·달력은 한 화면의 탭이며 강의 검색은 미연결 상태입니다. 실제 학교 자료와 원격 텔레메트리는 비활성 상태입니다. [공개자료 운영 방침](public-data-operating-decision.md)
+- #71·#72·#138은 [`c8caff2`](https://github.com/ot4562-glitch/Hanmo_develop/commit/c8caff2c877c78093e3c05409e68a4012c7e6776)의 Windows 자동 QA를 기록하고 닫혔습니다. 최대 SELECT 완료 표의 내부 스크롤, 물리 키 입력, NVDA 및 최종 후보 현장 인수는 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)에서 확인합니다. [#71 원본 연습 결과](https://github.com/ot4562-glitch/Hanmo_develop/issues/71#issuecomment-7160455697) · [#72 접근성 결과](https://github.com/ot4562-glitch/Hanmo_develop/issues/72#issuecomment-7160456967) · [#138 개발자 소개 결과](https://github.com/ot4562-glitch/Hanmo_develop/issues/138#issuecomment-7160458183)
 
-- 전략 실험 가상 정원 **1~300명**(300 허용, 301 거부 테스트), 경쟁자 0~200; 실제 학교 정원/확률과 무관. 코드 수정 [d7d87f7](https://github.com/ot4562-glitch/Hanmo_develop/commit/d7d87f7eaa1056ecb59d8cfb91927255d3a78792).
-- **[#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134):** PC 진단·8회 반응속도 테스트·가상 전략 실험의 안정화, 측정/계산 신뢰성과 Windows 실기기 인수를 공동 검증합니다. 담당자는 이의상(`uisang2004-maker`)과 김채윤(`qamarrchae`)입니다.
-- **[#59](https://github.com/ot4562-glitch/Hanmo_develop/issues/59) (closed/not_planned):** 독립 학교 문의처 학생 페이지 제거. **[#132](https://github.com/ot4562-glitch/Hanmo_develop/issues/132)·[#133](https://github.com/ot4562-glitch/Hanmo_develop/issues/133) (closed):** 결과 PNG 공유/기록 등급/순위·부가 제안은 현행 구현 대상 아님.
-- 학사 공지·달력은 `html/academic-timeline.html` 단일 화면의 탭이고, 강의 검색은 `html/catalog.html`에만 남았습니다. 실제 학교 공지·개설·행사 자료는 `mode: disabled`이며 크롤러·Supabase 미연결입니다.
-- 실기기 Windows Chrome/Edge·200%/NVDA 원본 인수는 여전히 **미완료**이며 Node/Chromium CI 성공과 구별합니다.
-
-## 현재 열린 이슈 (30건)
+## 현재 열린 이슈 (27건)
 
 ### 학생 UI·합성 연습·신뢰성
 
@@ -28,11 +19,8 @@
 | [#57](https://github.com/ot4562-glitch/Hanmo_develop/issues/57) | [구현][1차][P0][통합] 비공식 모의연습→공지 원문 링크·개설 집계 안내 흐름 완성 | `ot4562-glitch` | open |
 | [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58) | [검증][1차][P1][통합] 비공식 달력·학교 일정 링크·마감 오인 방지 QA | `uisang2004-maker` | open |
 | [#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69) | [검증][4차][P2][통합] JS 로컬 저장·합성 계산·브라우저 회귀(졸업 UI 제외) | `ot4562-glitch` | open |
-| [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) | [검증][2차][P0][통합] BASIC/TIME/SELECT·두 돌발상황 OFF·접속대기 Windows 실기기 QA | `ot4562-glitch` | open |
-| [#72](https://github.com/ot4562-glitch/Hanmo_develop/issues/72) | [검증][공통][P1][통합] PC 접근성·비공식 고지·지원 기기·삭제 UI 전체 QA | `ot4562-glitch` | open |
 | [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) | [구현][1차][P2][통합] 검수된 공개 일정 달력 표시·원문 탐색 (선택 확장) | `uisang2004-maker` | open |
 | [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134) | [검증][2차][P1][통합] PC 진단·반응속도 테스트·전략 실험 안정화 및 신뢰성 인수 | `qamarrchae`, `uisang2004-maker` | open |
-| [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) | [검증][공통][P0][통합] 개발자 역할 표기 변경 후 Feature browser QA 회귀 복구 | `ot4562-glitch` | open |
 | [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) | [검증][2차][P1][통합] 전략 실험 고정 모형의 합성 검증·민감도·성능 회귀 | `qamarrchae`, `uisang2004-maker` | open |
 | [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140) | [설계][2차][P2][데이터] 동의 기반 모의연습 검증 및 모수 보정 연구 계획 | `qamarrchae`, `uisang2004-maker` | open |
 
@@ -71,10 +59,10 @@
 
 ## 후속 실행 순서
 
-1. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 수정 및 Feature QA 34/34 통과. 최신 전체 CI와 Windows 접근성 검증 전 이슈 유지.
-2. [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)의 공동 PC 도구 안정화 및 [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 전략 엔진 검증을 진행합니다. 기존 구조 유지, 고정 시드·민감도·과목별/전체 성공·Worker/성능·MathML 가시성을 검증합니다.
-3. [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140)은 별도 승인 이전에는 계획만 수립하는 P2 선택 연구이며 인수 필수 조건이 아닙니다. 학교 데이터 OFF와 수집 제한은 동일합니다.
-4. #71·#72·#101·#73·#126 등 미완료 인수 게이트와 #125를 최신 SHA 기준으로 유지합니다. 이번 정리에서 완료·닫힘 처리한 기존 일반 이슈는 없습니다.
+1. [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)는 세 PC 도구와 공개 순서 추천 화면을 검증합니다. 과목 입력 경계, 가상 조건별 손실 계산, 중요 순위, 8과목 결과와 계산 기준 가시성을 확인합니다.
+2. [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139)는 내부 합성 엔진의 고정 시드·민감도·성능을 검증합니다. GitHub 본문의 Worker·MathML 항목은 이전 학생 화면을 가리킵니다.
+3. [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140)은 선택 연구 계획입니다. 자료 수집은 별도 승인 뒤 검토합니다.
+4. #101 기능 동등성, #73 권리, #126 철회, #125 현장 QA와 최종 인수는 후보 SHA를 기준으로 기록합니다. 선택적 Supabase 실습은 #67의 기존 선행 요건에 따릅니다.
 
 ## 열려 있는 PR과 의존성
 
@@ -85,11 +73,11 @@
 | [#131](https://github.com/ot4562-glitch/Hanmo_develop/pull/131) | 이의상, 미병합 | **REQUEST_CHANGES**: 관측기간 행 검증·엄격 공개판 계약 해결; 미래 매니페스트 관측기간·동일 ID 중복 공개판 허용. #130 병합 후 최신 main diff/CI 필요 |
 | [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93) | 본인, **Draft·미병합** | [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 [ace13a2](https://github.com/ot4562-glitch/Hanmo_develop/commit/ace13a2e4c4b19a5c947c071e64bb2b5e14bef90)에서 필수 JSON 배열 누락과 검수 후 후보 페이로드·해시·유효기한 등 변경을 차단하고 구형 인계 지침을 정정했습니다. [정적 및 격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562372757) 성공. Draft·미병합·독립 협업자 재검토 필요. 현행 최소 데이터 계약·출처 판본 불변성/동시 검수·실 Supabase 권리/운영 인수는 미완료이며 실제 학교 자료 OFF. |
 
-**병합 규칙:** 본인 PR은 오류 수정 외 새 기능 추가를 하지 않고 독립 협업자 최신 HEAD 승인 및 별도 병합 승인 없이 병합하지 않습니다. 다른 협업자 PR은 코드·CI·권리·원본/실기기·의존 PR을 검토하여 차단 결함 없을 때만 병합하고, 아니면 재현과 수정 요구를 남깁니다. 이번 검토에서는 **#141 병합**, #120·#130·#131 수정 요청, #93 본인 Draft 오류 수정·미병합.
+병합 기준은 [AGENTS.md](../AGENTS.md#작업승인권리-경계)에 있습니다.
 
 ## 종료된 작업·역사적 설계와 최종 인수
 
 - 역사적 설계 HMD-001~032는 GitHub [닫힌 이슈 검색](https://github.com/ot4562-glitch/Hanmo_develop/issues?q=is%3Aissue+is%3Aclosed)에서 버전 이력 확인; 현재 서비스 구현 근거로 오인하지 않습니다.
 - 현재 취소된 **독립 문의처 #59**, **결과 공유/등급 제안 #132·#133**, 과거 FAQ·졸업·학칙/학생 판정 제안은 신규 구현을 하지 않습니다.
-- #71 원본 모드 Windows 실기기 QA → 필요성 확인 시 #67 김채윤의 선택적 Supabase Free 직접 실습(학교자료 수집은 별도 권리/검수) → #101 전체 JS/기능·정적 정책/권리 인수 → 최종 #125 원개발자 `dlacked` 소스·문서·검증 인계/명시적 수락 순으로 추적합니다.
+- 이전 합성 모델과 자동 검사의 기록은 [PR #141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)과 [2026-11-25 QA 보고서](qa/2026-11-25-full-qa.md)에서 확인합니다. 당시 `ba57b48`의 [Feature QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316)는 통과했고 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 취소로 종료됐습니다.
 - `docs/README.md`의 역사 문서와 [아키텍처](architecture.md)의 현행 설계는 역할을 분리합니다. API 스키마·학교 규정·정책은 서면 직원 안내·잠정 운영 방침의 범위를 넘어 자동 활성화하지 않습니다.

@@ -73,7 +73,7 @@
 ## 6. 책임·인계
 
 - **운영 범위·철회 책임:** `ot4562-glitch`; 두 직원과의 대면 설명 내용은 운영자 진술로 기록하며 학교 기관 차원의 확정된 사용권이라고 주장하지 않음
-- **데이터/선택적 Supabase:** 김채윤(`qamarrchae`); 2차 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) 이후 별도 Free 프로젝트 직접 실습, RLS/공개 필드 검증/백업·철회. 그전 실데이터 연결 OFF
+- **데이터/선택적 Supabase.** 김채윤(`qamarrchae`)이 2차 원본 회귀와 #67의 선행 요건을 확인한 뒤 별도 Free 프로젝트에서 RLS, 공개 필드, 백업과 철회를 직접 검증합니다. 실제 자료 연결은 비활성 상태입니다. [#71 원본 회귀](https://github.com/ot4562-glitch/Hanmo_develop/issues/71) · [#67 실습·인수](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
 - **검색·학생 UI:** 이의상(`uisang2004-maker`) 및 소유자. 금지 필드 누출·공식 오인·오류·PC 접근성 검증
 - **최종 인수:** 완성 후 원개발자 `dlacked`에게 대면/서면의 차이, 운영자의 해석 책임, 자료 철회 기술과 제한사항을 포함해 실제 수락받음([#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125))
 

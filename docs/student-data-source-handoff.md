@@ -6,7 +6,7 @@
 
 ## Supabase Free 실제 연결 전제
 
-**2차 Windows 실기기 QA(#71) 완료 후 김채윤(`qamarrchae`)이 담당자로서 직접 별도 Supabase Free 실습 프로젝트를 생성**하고 학교 자료 이용권, 원문/판본 독립 검수, 승인 출처 관리와 RLS 실제 조회 테스트를 거쳐야 합니다. [Draft PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 **현재 `main` 미병합**입니다. 철회 상태 복원/재발행 금지, 검수 후 출처 연결 변경 차단, 관리자 함수 권한 검사와 빈 공개 데이터 확인을 구현해 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했습니다. 이는 실제 Supabase 프로젝트의 Data API, RLS, 익명 요청, 동시 트랜잭션, 학교 실자료를 시험한 결과가 아닙니다. **김채윤 실습·운영 검증 전까지 실연동하지 않으며**, 전체 완성 후 [원개발자 인계 #125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)는 별도 수락을 필요로 합니다.
+**2차 원본 회귀(#71)와 #67의 선행 요건을 충족한 뒤 김채윤(`qamarrchae`)이 직접 별도 Supabase Free 실습 프로젝트를 생성**하고 학교 자료 이용권, 원문/판본 독립 검수, 승인 출처 관리와 RLS 실제 조회 테스트를 거쳐야 합니다. [Draft PR #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 **현재 `main` 미병합**입니다. 철회 상태 복원/재발행 금지, 검수 후 출처 연결 변경 차단, 관리자 함수 권한 검사와 빈 공개 데이터 확인을 구현해 [격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45041483859)를 통과했습니다. 이는 실제 Supabase 프로젝트의 Data API, RLS, 익명 요청, 동시 트랜잭션, 학교 실자료를 시험한 결과가 아닙니다. **김채윤 실습·운영 검증 전까지 실연동하지 않으며**, 전체 완성 후 [원개발자 인계 #125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)는 별도 수락을 필요로 합니다.
 
 공개 연결 설정을 활성화할 때 필요한 필드는 schemaVersion=1, mode=supabase, projectUrl=https://실제-프로젝트.supabase.co, publishableKey=sb_publishable_공개키 입니다. URL과 공개용 키만 저장할 수 있으며 secret/service_role/DB 암호·학생 성적·개인 계획은 저장소/브라우저에 넣거나 전송하지 않습니다.
 
@@ -52,7 +52,7 @@ npm run check
 
 ### 검증한 기준과 재현
 
-**2026-11-25 후보 상태:** [#141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)는 [2660092](https://github.com/ot4562-glitch/Hanmo_develop/commit/2660092dd7f8d7364de95aa0e502bd78df7c0b13)로 squash 병합했습니다. [PR 저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45560110476) 성공(보호 검사·Node·Chromium E2E), 독립 12개 합성 시나리오(2·3·5·8과목×3 시드, 각 100회)의 기존 엔진 반환값 일치. 기존 모수·난수·추천 순서 유지, Wilson 95% 반복 표본 오차와 가정별 범위, 반응 측정 상태 전이/저장 분리 추가. 엔진 테스트 36개·반응 프로필 테스트 10개. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)의 Contributor 이름/역할 테스트 기대값을 [ba57b48](https://github.com/ot4562-glitch/Hanmo_develop/commit/ba57b48f0e819ffc006b987a844110c9a8be431a)에서 수정했고 [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316) **34/34 통과**, [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424416) 성공. 해당 SHA의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 확인 시 진행 중이었습니다. 최신 Windows 물리 입력·실기기 접근성 인수는 미완료입니다. [#93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)은 [ace13a2](https://github.com/ot4562-glitch/Hanmo_develop/commit/ace13a2e4c4b19a5c947c071e64bb2b5e14bef90)에서 필수 JSON 배열 누락과 검수 후 후보 페이로드·해시·유효기한 등 변경을 차단하고 구형 인계 지침을 정정했습니다. [정적 및 격리 PostgreSQL 16 CI](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562372757) 성공. Draft·미병합·독립 협업자 재검토 필요. 현행 최소 데이터 계약·출처 판본 불변성/동시 검수·실 Supabase 권리/운영 인수는 미완료이며 실제 학교 자료 OFF. 아래 PR #135의 증거는 역사적 검증 SHA이며 최신 후보의 검증 및 물리 입력·최종 수락을 대체하지 않습니다. #134·#139와 #71·#72·#101·#125의 인수는 유지하고, #140은 선택적 연구 설계입니다.
+[미결 이슈](pending-issues.md)에서 검증한 SHA와 진행 중인 PR을 확인합니다. 후보 인계에는 #134·#139의 PC 도구 검증, #101의 기능 동등성, #125의 최종 현장 QA와 수락 증거가 필요합니다. #140은 선택 연구입니다.
 
 | 항목 | 인계에 첨부할 증거 |
 |---|---|
@@ -84,6 +84,6 @@ npx playwright test --config tests/playwright-feature.config.mjs
 
 ### 선행 작업과 수락 기록
 
-물리 입력과 2차 실기기 인수 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), 자료 권리·판본과 독립 검수 [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42), 3차 경로 선택과 운영 훈련 [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)~[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)·[#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)의 증빙을 확정합니다. 일정 통합 [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58)·[#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127)과 PC 도구 [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)의 검증 범위와 남은 제약도 함께 기록합니다.
+자동 원본 회귀 [#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71), 물리 입력과 최종 현장 QA [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125), 자료 권리·판본과 독립 검수 [#41](https://github.com/ot4562-glitch/Hanmo_develop/issues/41)·[#42](https://github.com/ot4562-glitch/Hanmo_develop/issues/42), 3차 경로 선택과 운영 훈련 [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)~[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)·[#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126)의 증빙을 확정합니다. 일정 통합 [#58](https://github.com/ot4562-glitch/Hanmo_develop/issues/58)·[#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127)과 PC 도구 [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)의 검증 범위와 남은 제약도 함께 기록합니다.
 
 선행 작업 이후 원개발자와 확인된 채널에서 결과물을 전달합니다. [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)에 **전달 일시(KST)·채널, 수신 및 수락 일시(KST), 확인한 `main`·배포 SHA, 검수자 및 테스트 증거, 수락 범위와 제외 조건, 유지보수·배포 책임자**를 기록합니다. 명시적 수락이 확인된 뒤 이슈를 닫습니다.

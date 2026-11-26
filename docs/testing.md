@@ -2,7 +2,7 @@
 
 - Node 22: .nvmrc, package.json engines, .npmrc. 의존성은 npm ci로 설치합니다.
 - npm run check:student: 언어·주석·UI·Action 고정·학생 입력 경계, 구문, JSDoc, 학생용 단위 테스트, 기존 BASIC/TIME/SELECT, 정적 빌드, smoke·철회 검사.
-- npm run test:research: 학사 합성 단위 테스트와 비공개 수강 전략 시뮬레이터 테스트. `npm run test`는 전체 Vitest, `npm run check`는 학생 검사와 연구 검사를 모두 실행합니다. 공개 전략 추천은 학생 smoke 검사에서 실행합니다.
+- `npm run test:research`는 학사 합성 단위 테스트와 내부 몬테카를로 전략 엔진을 검사합니다. 학생 smoke는 공개 순서 추천을 검사하고, Chromium E2E는 추천 순서와 계산 기준의 가시성을 확인합니다. `npm run test`는 전체 Vitest, `npm run check`는 학생 검사와 연구 검사를 모두 실행합니다.
 - npm run test:e2e 및 npx playwright test --config tests/playwright-feature.config.mjs: Chromium UI·원작 동작·접근성의 자동화 가능한 부분을 검사합니다.
 - 학생 소스 허용 목록과 정적 파일 허용 목록은 배포 직전 검사됩니다. 미승인 연구 입력(출력 크기 0 포함), 임의 출력·정적 파일 유입, 필수 입력 누락을 부정 테스트합니다.
 - Repository checks의 `student-site`가 학생용 빌드를 검증합니다. `core-and-site`가 연구 검사와 검증된 산출물의 Chromium 검사를 실행합니다. `deploy-pages`는 같은 빌드에서 만든 Pages 산출물의 현행 SHA를 확인해 배포합니다. Feature browser QA는 별도 브라우저 흐름을 검사합니다.
@@ -13,3 +13,5 @@
 ## Windows 브라우저 및 실기기 인수
 
 [Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 설치된 Chrome·Edge 채널에서 두 자동 브라우저 묶음을 실행하고 OS·버전·SHA와 캡처를 보관합니다. [QA 결과 보고서](qa/2026-11-25-full-qa.md)에는 자동화 결과와 미실시 항목이 별도로 기록되어 있습니다.
+
+최대 SELECT 완료 표의 내부 스크롤과 남은 물리 입력·NVDA 검증은 [#125 현장 QA](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)에서 추적합니다. 자동 검증 당시의 브라우저·화면 크기·스크롤 높이는 [#71 종료 기록](https://github.com/ot4562-glitch/Hanmo_develop/issues/71#issuecomment-7160455697)에 있습니다.

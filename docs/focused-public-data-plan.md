@@ -162,7 +162,7 @@
 | 3 *(후순위)* | 검수된 날짜가 충분할 때만 달력 일정 표시·공식 원문 이동 | [#127](https://github.com/ot4562-glitch/Hanmo_develop/issues/127) |
 | 4 | 요청·시간·금지일·전역 잠금·오류 당일 차단 | [#66](https://github.com/ot4562-glitch/Hanmo_develop/issues/66) |
 | 5 | 정적 공개판·판본·만료·철회·복구 방지 | [#65](https://github.com/ot4562-glitch/Hanmo_develop/issues/65), [#126](https://github.com/ot4562-glitch/Hanmo_develop/issues/126) |
-| 6 | #71 이후 김채윤의 Free 실습·용량/RLS·백업/복구·무과금 인수 | [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
+| 6 | #71의 원본 회귀와 #67의 선행 요건 확인 후 김채윤의 Free 실습·용량/RLS·백업/복구·무과금 인수 | [#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) |
 | 7 | 권리·화면·최종 제품·원개발자 인수 | [#73](https://github.com/ot4562-glitch/Hanmo_develop/issues/73), [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125) |
 
 ### 검증 가능한 완료 조건

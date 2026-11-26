@@ -180,13 +180,13 @@ flowchart TB
 
 Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install chromium` → `npm run test:e2e` 순서로 확인합니다. GitHub Actions의 자동 검사 통과는 Windows Chrome/Edge·NVDA·고배율 실기기 인수나 운영 배포 승인과는 별개입니다.
 
-**전략 실험 개발 기록:** [#141](https://github.com/ot4562-glitch/Hanmo_develop/pull/141)는 [2660092](https://github.com/ot4562-glitch/Hanmo_develop/commit/2660092dd7f8d7364de95aa0e502bd78df7c0b13)로 squash 병합했습니다. [PR 저장소 검사](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45560110476) 성공(보호 검사·Node·Chromium E2E), 독립 12개 합성 시나리오(2·3·5·8과목×3 시드, 각 100회)의 기존 엔진 반환값 일치. 기존 모수·난수·추천 순서 유지, Wilson 95% 반복 표본 오차와 가정별 범위, 반응 측정 상태 전이/저장 분리 추가. 엔진 테스트 36개·반응 프로필 테스트 10개. [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138)의 Contributor 이름/역할 테스트 기대값을 [ba57b48](https://github.com/ot4562-glitch/Hanmo_develop/commit/ba57b48f0e819ffc006b987a844110c9a8be431a)에서 수정했고 [Feature browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424316) **34/34 통과**, [QA Pages](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424416) 성공. 해당 SHA의 [Repository checks](https://github.com/ot4562-glitch/Hanmo_develop/actions/runs/45562424365)는 확인 시 진행 중이었습니다. 최신 Windows 물리 입력·실기기 접근성 인수는 미완료입니다.
+**전략 실험.** 첫 선착순 회차의 신청 순서를 추천합니다. 계산 기준은 [현행 아키텍처](docs/architecture.md#5-전략-실험-신청-순서-추천), 검증과 인수 상태는 [미결 이슈](docs/pending-issues.md)에서 확인합니다.
 
 **개발 역할:** 심민성(`ot4562-glitch`) — 한모(2026) 업데이트 총괄; 이의상(`uisang2004-maker`) — 업데이트 nlp 담당; 김채윤(`qamarrchae`) — 업데이트 데이터 및 품질 보증 담당. 개발자 소개 페이지의 기존 소속·이름을 유지하고 역할을 작은 글씨로 표시합니다.
 
-**현행 협업 과제:** [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)에서 **이의상(`uisang2004-maker`)·김채윤(`qamarrchae`)**이 PC 진단·반응속도·전략 실험의 안정화와 측정·계산 신뢰성을 공동 검증합니다. 세부 후속 과제: [#138](https://github.com/ot4562-glitch/Hanmo_develop/issues/138) 브라우저 QA 회귀 복구(P0), [#139](https://github.com/ot4562-glitch/Hanmo_develop/issues/139) 고정 전략 모형 합성·민감도·성능 검증(P1), [#140](https://github.com/ot4562-glitch/Hanmo_develop/issues/140) 동의 기반 모의연습 및 보정 연구 설계(P2, 별도 승인 전 수집 없음·인수 필수 아님). 원본 연습 결과의 PNG 저장 버튼은 제거했습니다. #141 병합 완료. 열린 협업 PR #120·#130·#131은 최신 HEAD 재검토 후 수정 요청 상태이고, 본인 Draft #93은 오류 수정 후에도 협업자 재검토 전 병합하지 않습니다.
+**협업 과제.** 이의상(`uisang2004-maker`)과 김채윤(`qamarrchae`)이 세 PC 도구의 측정·계산 신뢰성을 공동 검증합니다. [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)
 
-**단계·인수 계획:** 2차 모의신청 Windows 실기기 QA([#71](https://github.com/ot4562-glitch/Hanmo_develop/issues/71))가 끝난 다음, 3차 담당 **김채윤(`qamarrchae`)**이 선택적 Supabase Free를 **직접 설치·RLS/권한·백업/복구 실습**합니다([#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)). 현재 실제 데이터 연결은 OFF이고 정적 최소 자료가 우선입니다. 전체 프로젝트 완성 후에만 원개발자 **[dlacked/Hanmo](https://github.com/dlacked/Hanmo)**에게 결과물을 전달하고 명시적으로 인수 수락을 확인합니다([#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)). 실기기·자료/운영 인수는 아직 완료되지 않았습니다.
+**운영·인수.** 실제 학교 자료는 비활성 상태입니다. 선택적 Supabase Free 실습은 김채윤이 기존 선행 요건에 따라 직접 수행합니다. 원개발자 `dlacked`에게 전달하기 전 후보 소스의 동등성·권리·현장 QA를 검증하고, 전달 뒤 명시적 인수 수락을 확인합니다. [#67 운영 실습](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) · [#125 최종 인수](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)
 
 [설계 문서](docs/architecture.md) · [문서 안내](docs/README.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 
