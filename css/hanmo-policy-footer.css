@@ -161,7 +161,6 @@ body.hanmo-pc-only-layout > main {
   body.hanmo-ui .hanmo-card-grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
   body.hanmo-ui .hanmo-fields { gap: 16px 28px; }
   body.hanmo-ui .hanmo-list { min-height: 0; }
-  body.hanmo-ui .academic-calendar-main { max-width: none; }
   /* 구형 개발자·결과 화면도 헤더·본문·고지의 세 행만 사용합니다. */
   body.hanmo-policy-legacy > main {
     box-sizing: border-box;

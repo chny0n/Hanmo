@@ -1,7 +1,4 @@
 /* 월간 달력을 남은 화면 높이에 맞추되 데이터·요일 표시는 축소하지 않는다. */
-.academic-calendar-main{max-width:1130px;min-height:0;padding:34px 22px 12px}
-.academic-calendar-main .hanmo-schoolmark{margin:12px 0 32px}
-.academic-calendar-main .hanmo-schoolmark h2{font-size:30px;line-height:1.35}
 .academic-calendar-surface{border-top:1px solid #3b576c;padding-top:8px;min-width:0}
 #calendar-view{color:#f0f5f8;font-family:inherit;font-size:12px;min-width:0}
 #calendar-view>div:first-child{display:flex;align-items:center;justify-content:space-between;
@@ -26,7 +23,6 @@
   padding:6px 0;border-bottom:1px solid #345064;font-size:12px;color:#9fbacb}
 .academic-calendar-footer a{color:#f4d39a}
 @media(max-width:800px){
-  .academic-calendar-main{padding:20px 12px 14px}
   #calendar-view [role="heading"][aria-level="2"]{font-size:18px}
   #calendar-view button{padding:4px 7px;min-height:29px}
 }

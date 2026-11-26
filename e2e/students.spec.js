@@ -193,6 +193,10 @@ test.describe('홈 교내 서비스 배너',()=>{
   test.use({timezoneId:'Asia/Seoul'});
   test('원본 훕또기 배너는 상단 바 가까이에 배치되고 종료일 다음 날 사라진다',async({page,baseURL})=>{
     const origin=new URL(baseURL).origin;
+    let mascotRequests=0;
+    page.on('request',request=>{
+      if(new URL(request.url()).pathname==='/img/boo.png')mascotRequests++;
+    });
     await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
     await page.clock.setFixedTime(new Date('2026-12-31T23:59:59+09:00'));
     await page.setViewportSize({width:1280,height:720});
@@ -205,6 +209,7 @@ test.describe('홈 교내 서비스 배너',()=>{
     await expect(banner).toContainText('학교 생활에 대해 물어보세요');
     await expect(banner.locator('img')).toHaveAttribute('src','./img/boo.png');
     await expect.poll(()=>banner.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+    expect(mascotRequests).toBe(1);
     for(const viewport of [{width:1280,height:720},{width:1920,height:1080}]){
       await page.setViewportSize(viewport);
       const bar=await page.locator('.hanmo-topbar').boundingBox();
@@ -223,5 +228,7 @@ test.describe('홈 교내 서비스 배너',()=>{
     await expect(page.locator('.home-banners')).toBeHidden();
     await expect(banner).toBeHidden();
     await expect(page.locator('.titleContainer')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    expect(mascotRequests).toBe(1);
   });
 });

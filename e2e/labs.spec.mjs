@@ -255,9 +255,11 @@ test('전략 입력은 중요 순위가 중복되면 추천하지 않고 최소 
 });
 
 test('달력은 학사 달력 탭을 처음 열 때 한 번만 불러온다',async({page})=>{
+  const resources=['/css/academic-calendar-vendor.css','/css/academic-calendar.css','/js/academic-calendar.js'];
   const calendarRequests=[];
   page.on('request',request=>{
-    if(new URL(request.url()).pathname.endsWith('/js/academic-calendar.js'))calendarRequests.push(request.url());
+    const path=new URL(request.url()).pathname;
+    if(resources.includes(path))calendarRequests.push(path);
   });
   await page.goto('/html/academic-timeline.html');
   expect(calendarRequests).toHaveLength(0);
@@ -270,9 +272,19 @@ test('달력은 학사 달력 탭을 처음 열 때 한 번만 불러온다',asy
   await expect(page.locator('#academic-notice-panel')).toBeVisible();
   await page.getByRole('tab',{name:'학사 공지'}).press('ArrowRight');
   await expect(page.locator('#calendar-view [role="table"]')).toBeVisible();
-  expect(calendarRequests).toHaveLength(1);
+  expect(calendarRequests.sort()).toEqual(resources);
   expect((await page.request.get('/html/academic-support.html')).status()).toBe(404);
   expect((await page.request.get('/html/academic-calendar.html')).status()).toBe(404);
+});
+
+test('달력 스타일을 받지 못해도 학교 일정 원문과 공지 탭을 열 수 있다',async({page})=>{
+  await page.route('**/css/academic-calendar-vendor.css',route=>route.abort());
+  await page.goto('/html/academic-timeline.html#calendar');
+  await expect(page.locator('#calendar-status')).toContainText('달력을 불러오지 못했습니다.');
+  await expect(page.locator('#calendar-view [role="table"]')).toHaveCount(0);
+  await expect(page.getByRole('link',{name:/학교 학사일정 원문/})).toBeVisible();
+  await page.getByRole('tab',{name:'학사 공지'}).click();
+  await expect(page.locator('#academic-notice-panel')).toBeVisible();
 });
 
 test('모의수강신청 결과의 PNG 저장 UI와 스크립트를 제거한다',async({page})=>{

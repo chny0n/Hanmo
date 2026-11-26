@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "css/academic-calendar.css",
-      "sha": "e79b1e6a46d5469b108f189adbd1a6784dd78d54"
+      "sha": "b18a32bf5591665554b88a07f62acb4213cc2b95"
     },
     {
       "path": "css/academic-unified.css",
@@ -33,7 +33,7 @@
     },
     {
       "path": "css/hanmo-policy-footer.css",
-      "sha": "16dfb14c39f4b751f5eb8fb7a3fd8be2f061cefe"
+      "sha": "3cb8b83e2c750817f882b483fcadb564329b5019"
     },
     {
       "path": "css/hanmo-refined.css",
@@ -93,7 +93,7 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "59d2e6722352efdf93c1b944cc6c31106b55dd5d"
+      "sha": "089db8a69a0556399ff3a8599971da7bd0490f84"
     },
     {
       "path": "html/catalog.html",
@@ -209,7 +209,7 @@
     },
     {
       "path": "index.html",
-      "sha": "7f817b9a380d60b429b25af78753f052d3daf44f"
+      "sha": "8435f9ff345a660b4b4dcbf987e6084e110cbe1b"
     },
     {
       "path": "js/academic-data-source.js",
@@ -217,7 +217,7 @@
     },
     {
       "path": "js/academic-unified.js",
-      "sha": "fba1f05ace81434393c7a0bfd70e4fdb14a0c46f"
+      "sha": "10d22e51f01af62ea988805e69d77a530503c9bd"
     },
     {
       "path": "js/capacity-settings.js",

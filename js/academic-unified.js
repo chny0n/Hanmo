@@ -9,13 +9,20 @@
     document.getElementById('academic-calendar-panel'),
   ];
   const calendarStatus=document.getElementById('calendar-status');
-  if(tabs.some(v=>!v)||panels.some(v=>!v)||!calendarStatus)return;
+  const resources=document.getElementById('academic-calendar-resources');
+  if(tabs.some(v=>!v)||panels.some(v=>!v)||!calendarStatus||!resources)return;
   const calendarStatusText=calendarStatus.textContent;
   let calendarLoad;
   function showCalendar(){
     if(!calendarLoad){
       calendarStatus.textContent='달력 불러오는 중';
-      calendarLoad=import('./academic-calendar.js').then(()=>{
+      const styles=Array.from(resources.content.querySelectorAll('link[rel="stylesheet"]'));
+      const stylesReady=Promise.all(styles.map(link=>new Promise((resolve,reject)=>{
+        link.addEventListener('load',resolve,{once:true});
+        link.addEventListener('error',reject,{once:true});
+      })));
+      resources.replaceWith(resources.content);
+      calendarLoad=stylesReady.then(()=>import('./academic-calendar.js')).then(()=>{
         calendarStatus.textContent=calendarStatusText;
         return true;
       },()=>{
