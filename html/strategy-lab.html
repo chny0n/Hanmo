@@ -8,6 +8,7 @@
   <link rel="icon" href="../img/favicon-purple.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/student-ui.css">
   <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
+  <script src="../js/hanmo-policy-footer.js" defer></script>
   <link rel="stylesheet" href="../css/hanmo-title-divider.css">
   <link rel="stylesheet" href="../css/hanmo-refined.css">
   <link rel="stylesheet" href="../css/hanmo-labs.css">
@@ -102,6 +103,7 @@
       <section class="strategy-assumption" aria-labelledby="strategy-wait-heading">
         <h3 id="strategy-wait-heading">대기시간 가정</h3>
         <p id="strategy-wait-summary" class="lab-footnote"></p>
+        <p class="lab-footnote">개인별 기본 응답시간이 신청 내내 일정한 조건의 전체 성공률은 <strong id="strategy-stable-wait"></strong>입니다. 과목별 성공률에 마우스를 올리면 가정별 범위와 평균 처리 시각을 볼 수 있습니다.</p>
         <p class="lab-footnote">본인과 경쟁자의 모든 신청 요청은 하나의 공통 대기열에서 선착순으로 처리됩니다. 가상 처리율은 시작 후 2초까지 초당 50건, 5초까지 80건, 이후 100건이며 혼잡이 없는 기본 응답시간은 1~3초입니다. 요청이 몰리면 대기가 추가되어 3초를 넘을 수 있으며, 응답 후 다음 과목을 신청합니다. 실제 학교 서버의 대기시간을 측정한 값은 아닙니다.</p>
       </section>
       </div>

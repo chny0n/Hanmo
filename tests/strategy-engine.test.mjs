@@ -31,6 +31,7 @@ test('가상 정원이 충분하면 모든 과목 성공 확률은 100%다',()=>
   assert.equal(result.allWins,s.trials);
   assert.equal(result.guaranteed,true);
   assert.equal(result.sensitivity.synchronized,s.trials);
+  assert.equal(result.sensitivity.stableWait,s.trials);
   assert.equal(result.expectedCourses,s.courses.length);
   assert.deepEqual(result.courseSuccess,[1,1,1]);
 });
@@ -381,8 +382,14 @@ test('불확실성 표시는 추정값을 포함하고, 가정별 범위는 모�
   const p=r.allWins/r.trials;
   assert.equal(r.uncertainty.method,'WILSON_95_SAMPLING_ONLY');
   assert.ok(r.uncertainty.allWins[0]<=p&&p<=r.uncertainty.allWins[1]);
-  r.courseSuccess.forEach((q,i)=>{const [a,b]=r.uncertainty.courseSuccess[i];assert.ok(a<=q+1e-12&&q<=b+1e-12);});
-  for(const wins of [r.allWins,r.sensitivity.lessOverlap,r.sensitivity.moreOverlap,r.sensitivity.synchronized]){
+  r.courseSuccess.forEach((q,i)=>{
+    const [a,b]=r.uncertainty.courseSuccess[i];
+    const [lo,hi]=r.uncertainty.courseAssumptionRange[i];
+    assert.ok(a<=q+1e-12&&q<=b+1e-12);
+    assert.ok(lo<=q&&q<=hi);
+    if(i>0)assert.ok(r.timing.meanSubmissionMs[i]>r.timing.meanSubmissionMs[i-1]);
+  });
+  for(const wins of [r.allWins,...Object.values(r.sensitivity)]){
     assert.ok(r.uncertainty.assumptionRange.min<=wins/r.trials&&wins/r.trials<=r.uncertainty.assumptionRange.max);
   }
 });

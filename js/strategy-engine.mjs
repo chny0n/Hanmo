@@ -142,13 +142,13 @@ function normal01(seed,trial,stream,slot){
   const u1=random01(seed,trial,stream,slot*2),u2=random01(seed,trial,stream,slot*2+1);
   return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
 }
-function userAgent(s,trial,id){
+function userAgent(s,trial,id,stableWait){
   const actions=[],delays=[];
   for(let slot=0;slot<s.courses.length;slot++){
     const z=normal01(s.seed,trial,100,slot);
     const reaction=Math.max(MIN_REACTION_MS,s.actionMs-DIRECT_SUBMIT_MS+s.jitterMs*z);
     actions.push(reaction+movementMs(s.seed^0x2f6e2b1d,trial,0,slot));
-    delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)));
+    delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,stableWait?0:slot)));
   }
   return {id,startMs:s.startDelayMs,actions,delays,courses:[]};
 }
@@ -212,8 +212,8 @@ export function rivalOrder(known,urgency,draw,preference){
   return entries.sort((a,b)=>a.key-b.key).map(({course})=>course);
 }
 
-function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE){
-  const player=userAgent(s,trial,population);
+function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE,stableWait=false){
+  const player=userAgent(s,trial,population,stableWait);
   const agents=[player];
   const portfolios=assignCourses(s.courses,population,s.seed,trial);
   const timingSeed=s.seed^0x729ab44d;
@@ -230,7 +230,7 @@ function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE){
       random01(s.seed^0x3f67a5d9,trial,rival,slot),
       movementMs(s.seed^0x1a9b42f3,trial,rival,slot),
     ));
-    const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)));
+    const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,stableWait?0:slot)));
     const startMs=rivalStartMs(random01(s.seed^0x42cefe21,trial,rival,0),readyShare);
     agents.push({id:rival,startMs,actions,delays,courses});
   }
@@ -320,17 +320,19 @@ export function simulate(raw){
   const order=bestOrder(weights,probability);
   const sum=weights.reduce((a,b)=>a+b,0);
   const meanScore=order.reduce((score,j,slot)=>score+weights[j]*probability[j][slot],0)*100/sum;
-  // 평가 표본과 추천 순서 선택 표본을 분리합니다. 규모와 진입 조건이 같은 경우에만 재사용합니다.
+  // 평가 표본과 추천 순서 선택 표본을 분리하고 동일한 조건의 결과만 재사용합니다.
   const evaluated=new Map();
-  function evaluate(size,readyShare=READY_SHARE){
-    const key=size+':'+readyShare;
+  function evaluate(size,readyShare=READY_SHARE,stableWait=false){
+    const key=size+':'+readyShare+':'+stableWait;
     if(evaluated.has(key))return evaluated.get(key);
     let wins=0,totalWaitMs=0,queueWaitMs=0,completionMs=0;
     const courseWins=new Uint32Array(n);
+    const submissionTimes=new Float64Array(n);
     for(let trial=s.trials;trial<2*s.trials;trial++){
-      const sample=simulateTrial(s,urgency,size,trial,readyShare);
+      const sample=simulateTrial(s,urgency,size,trial,readyShare,stableWait);
       let won=0;
       for(let slot=0;slot<n;slot++){
+        submissionTimes[slot]+=sample.times[slot];
         if(sample.times[slot]<sample.closing[order[slot]]){
           courseWins[slot]++;
           won++;
@@ -346,22 +348,31 @@ export function simulate(raw){
       meanWaitMs:Math.round(totalWaitMs/s.trials),
       meanQueueWaitMs:Math.round(queueWaitMs/s.trials),
       meanCompletionMs:Math.round(completionMs/s.trials),
+      meanSubmissionMs:Array.from(submissionTimes,ms=>Math.round(ms/s.trials)),
     }};
     evaluated.set(key,value);
     return value;
   }
   const base=evaluate(baseline);
-  const allWins=overlap=>guaranteed?s.trials:evaluate(population(overlap)).wins;
-  const sensitivity={lessOverlap:allWins(OVERLAP.less),moreOverlap:allWins(OVERLAP.more),
-    synchronized:guaranteed?s.trials:evaluate(baseline,1).wins};
+  const lessOverlap=guaranteed?base:evaluate(population(OVERLAP.less));
+  const moreOverlap=guaranteed?base:evaluate(population(OVERLAP.more));
+  const synchronized=guaranteed?base:evaluate(baseline,1);
+  const stableWait=guaranteed?base:evaluate(baseline,READY_SHARE,true);
+  const sensitivity={lessOverlap:lessOverlap.wins,moreOverlap:moreOverlap.wins,
+    synchronized:synchronized.wins,stableWait:stableWait.wins};
   // 표시용 불확실성: 반복 실험의 표본 오차(Wilson 95%)와, 합성 가정을 바꿨을 때 전체 성공률이 움직인 범위를 분리합니다.
   // 정원이 경쟁자보다 많은 과목만 있으면 계산상 항상 성공하므로 구간이 [1,1]입니다.
-  const assumptionWins=[base.wins,sensitivity.lessOverlap,sensitivity.moreOverlap,sensitivity.synchronized];
+  const assumptions=[base,lessOverlap,moreOverlap,synchronized,stableWait];
+  const assumptionWins=assumptions.map(sample=>sample.wins);
   const courseGuaranteed=order.map(index=>s.courses[index].capacity>s.courses[index].rivals);
   const uncertainty={
     method:'WILSON_95_SAMPLING_ONLY',
     allWins:guaranteed?[1,1]:wilsonInterval(base.wins,s.trials),
     courseSuccess:base.courseSuccess.map((p,slot)=>courseGuaranteed[slot]?[1,1]:wilsonInterval(Math.round(p*s.trials),s.trials)),
+    courseAssumptionRange:order.map((_,slot)=>{
+      const rates=assumptions.map(sample=>sample.courseSuccess[slot]);
+      return [Math.min(...rates),Math.max(...rates)];
+    }),
     assumptionRange:{min:Math.min(...assumptionWins)/s.trials,max:Math.max(...assumptionWins)/s.trials},
   };
   return {

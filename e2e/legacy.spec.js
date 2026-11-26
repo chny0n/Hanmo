@@ -4,6 +4,29 @@ import {test,expect} from '@playwright/test';
 const safeDate=new Date('2026-11-19T12:00:00+09:00');
 test.use({timezoneId:'Asia/Seoul'});
 
+test('공통 푸터는 이용 제한 예고와 현재 제한을 표시하고 종료 후 지운다',async({page})=>{
+  await page.clock.install({time:new Date('2026-11-26T09:52:50+09:00')});
+  await page.addInitScript(()=>{
+    localStorage.setItem('practiceSetter','3');
+    localStorage.setItem('deviceInfo','true');
+  });
+  await page.goto('/index.html');
+  const notice=page.locator('footer .hanmo-restriction-notice');
+  await expect(notice).toBeEmpty();
+  await page.clock.fastForward(10_000);
+  await expect(notice).toHaveText('곧 이용 제한 · 09:58 ~ 10:10');
+  for(const route of ['/html/practice.html','/html/selectZone.html','/html/strategy-lab.html']){
+    await page.goto(route);
+    await expect(notice).toHaveText('곧 이용 제한 · 09:58 ~ 10:10');
+    await expect(page.locator('.headerNotice')).toHaveCount(0);
+    await expect(page.locator('footer strong')).toContainText('공식 서비스가 아니며');
+  }
+  await page.clock.fastForward(5*60_000);
+  await expect(notice).toHaveText('현재 이용 제한 · 09:58 ~ 10:10');
+  await page.clock.fastForward(13*60_000);
+  await expect(notice).toBeEmpty();
+});
+
 test('SETTING에 흰색 굵은 대기조건 제목이 두 선택칸 위에 표시된다',async({page})=>{
   await page.goto('/html/vsugang.html');
   await page.getByRole('button',{name:'모의신청 설정 열기'}).click();

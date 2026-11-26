@@ -130,9 +130,9 @@ test('home restores the original mock registration layout without the academic-e
  assert.match(home,/<a class="hanmo-brand" href="\.\/index\.html" aria-label="한모 홈으로 이동"/);
  assert.match(home,/<main\b[^>]*id="main"[^>]*tabindex="-1"/);
  for(const tag of ["class='titleContainer'","class='notice blueBox'","class='mainNotice blueBox'",
-   "class='buttonContainer'","class='headerNotice'","class='deviceCheck'"])
+   "class='buttonContainer'","class='deviceCheck'"])
    assert.ok(home.includes(tag),'restore original page structure '+tag);
- for(const txt of ['수강신청 연습하기','새로고침','개발자 소개','NOTICE','이용 제한 시간'])
+ for(const txt of ['수강신청 연습하기','새로고침','개발자 소개','NOTICE','이용 가능 시간'])
    assert.ok(home.includes(txt),'restore original content '+txt);
  for(const asset of ['./css/gnb.css','./css/index.css','./css/layout.css',
    './js/gnb.js','./js/index.js'])

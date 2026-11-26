@@ -27,6 +27,12 @@
   overflow-wrap: anywhere;
 }
 .hanmo-policy-footer strong { font-weight: 750; }
+.hanmo-policy-footer .hanmo-restriction-notice:not(:empty) {
+  display: inline-block;
+  margin-inline-start: .65em;
+  color: #fda4af;
+  font-weight: 750;
+}
 
 /* 홈은 광고가 main에만 위치하고 마지막 안내는 별도 flex 행에 놓입니다. */
 body.hanmo-home > .hanmo-policy-footer {

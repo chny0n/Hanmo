@@ -22,6 +22,9 @@ test('모든 HTML은 비공식 고지를 굵게 한 번만, 마지막 콘텐츠�
   assert.ok(html.indexOf(footer[0])<html.lastIndexOf('</body>'),page);
   const css=page==='index.html'?'./css/hanmo-policy-footer.css':'../css/hanmo-policy-footer.css';
   assert.ok(html.includes('href="'+css+'"'),page);
+  const script=page==='index.html'?'./js/hanmo-policy-footer.js':'../js/hanmo-policy-footer.js';
+  assert.ok(html.includes('src="'+script+'" defer'),page);
+  assert.doesNotMatch(html,/class=['"]headerNotice['"]/,page);
  }
 });
 test('홈 푸터는 광고 없이 중앙 콘텐츠와 독립된 행을 차지한다',()=>{

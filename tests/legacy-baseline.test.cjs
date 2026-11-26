@@ -321,9 +321,7 @@ test('navigation header detects a supported Windows PC without clobbering other 
   assert.equal(h.map.get('deviceInfo'),'true');
   assert.equal(h.get('deviceCheck').style.background,'#038003');
   assert.equal(h.events.timeouts[0].delay,1500);
-  assert.equal(h.events.intervals[0].delay,5000);
-  h.events.intervals[0].fn();
-  assert.equal(h.get('headerNoticeList').style.bottom,'81px');
+  assert.equal(h.events.intervals.length,0);
 });
 test('navigation header rejects unsupported mobile browser with original redirect',()=>{
   const h=createHarness();
@@ -380,7 +378,8 @@ test('each actual HTML page loads classic scripts in order without global collis
   for(const page of pages){
     const html=fs.readFileSync(path.join(ROOT,page),'utf8');
     const scripts=[...html.matchAll(/<script\s+src=['"](?:\.\/|\.\.\/)js\/([^'"]+\.js)['"]/g)]
-      .map(match=>match[1]).filter(file=>file!=='pc-only.js'&&file!=='student-profile-bar.js'&&file!=='home-fit.js'&&file!=='vsugang-fit.js');
+      .map(match=>match[1]).filter(file=>!['pc-only.js','student-profile-bar.js','home-fit.js',
+        'vsugang-fit.js','hanmo-policy-footer.js'].includes(file));
     // 별도 돌발상황 스크립트가 있어도 원본 스크립트 세 개와 실행 순서를 유지한다.
     const originalScripts=page==='html/vsugang.html'?scripts.slice(0,3):scripts;
     // 공통 상단 메뉴와 함께 원본 공지·기기 확인·학기 표시를 유지한다.

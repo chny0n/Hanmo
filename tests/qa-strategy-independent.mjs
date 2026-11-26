@@ -68,15 +68,17 @@ const wilsonRef=(successes,n)=>{
 for(const k of [0,1,5,50,95,99,100])wilsonRef(k,100).forEach((w,i)=>close(w,wilsonInterval(k,100)[i]));
 const check=s=>{
   const start=performance.now(),r=simulate(s),ms=Math.round(performance.now()-start);
-  const cases=[r.allWins,r.sensitivity.lessOverlap,r.sensitivity.moreOverlap,r.sensitivity.synchronized];
+  const cases=[r.allWins,r.sensitivity.lessOverlap,r.sensitivity.moreOverlap,r.sensitivity.synchronized,r.sensitivity.stableWait];
   assert.ok(cases.every(x=>Number.isInteger(x)&&x>=0&&x<=s.trials));
   assert.equal(new Set(r.ranks).size,s.courses.length);
   assert.ok(r.courseSuccess.every(x=>x>=r.allWins/s.trials&&x<=1));
   close(r.expectedCourses,r.courseSuccess.reduce((a,b)=>a+b,0));
   for(const [slot,rank] of r.ranks.entries()){
     const c=s.courses.find(x=>x.rank===rank);
-    if(c.capacity>c.rivals)assert.equal(r.courseSuccess[slot],1);
-    wilsonRef(Math.round(r.courseSuccess[slot]*s.trials),s.trials).forEach((v,i)=>{if(!r.guaranteed)close(v,r.uncertainty.courseSuccess[slot][i]);});
+    const known=c.capacity>c.rivals;
+    if(known)assert.equal(r.courseSuccess[slot],1);
+    const interval=known?[1,1]:wilsonRef(Math.round(r.courseSuccess[slot]*s.trials),s.trials);
+    interval.forEach((v,i)=>close(v,r.uncertainty.courseSuccess[slot][i]));
   }
   assert.deepEqual([r.uncertainty.assumptionRange.min,r.uncertainty.assumptionRange.max],[Math.min(...cases)/s.trials,Math.max(...cases)/s.trials]);
   return {ms,r,cases,rssMB:Math.round(process.memoryUsage().rss/2**20)};
@@ -89,7 +91,7 @@ for(const n of [3,5,8])for(const high of [false,true])for(const seed of [17,2026
 }
 const guaranteed=sample(8,43);
 for(const c of guaranteed.courses)c.capacity=c.rivals+1;
-assert.deepEqual(check(guaranteed).cases,[100,100,100,100]);
+assert.deepEqual(check(guaranteed).cases,[100,100,100,100,100]);
 assert.deepEqual(simulate(guaranteed).uncertainty.allWins,[1,1]);
 const reaction=profileFromSamples([80,120,160,200,250,300,450,3000],2e12);
 const store={value:JSON.stringify(reaction),getItem(key){assert.equal(key,REACTION_KEY);return this.value;}};
@@ -109,7 +111,7 @@ assert.equal(networkSample(t,'HEAD'),100);assert.equal(networkSample(t,'GET'),0.
 for(const patch of [{transferSize:0},{deliveryType:'cache'},{workerStart:1}])assert.equal(networkSample({...t,...patch},'GET'),null);
 // 수식 식별자 개수만 검증합니다. 수식 자체의 의미와 브라우저 배치는 별도로 확인해야 합니다.
 const html=readFileSync(new URL('../html/strategy-lab.html',import.meta.url),'utf8');const formulaIds=Array.from(html.matchAll(/<math\b[^>]*data-formula="([^"]+)"/g),m=>m[1]);assert.equal(formulaIds.length,39);assert.equal(new Set(formulaIds).size,39);
-console.log(JSON.stringify({columns:['과목 수','경합','시드','기본 성공','낮은 중복도 성공','높은 중복도 성공','동시 진입 성공','기대 성공 과목 수','Wilson 구간(%)','실행 ms'],trialsPerCondition:100,node:process.version,sha:spawnSync('git',['-C',fileURLToPath(new URL('..',import.meta.url)),'rev-parse','HEAD'],{encoding:'utf8'}).stdout?.trim()||null,vectors:{service:13,queue:120,dp:35,scenarioRows:rows.length,formulaIds},rows},null,2));
+console.log(JSON.stringify({columns:['과목 수','경합','시드','기본 성공','낮은 중복도 성공','높은 중복도 성공','동시 진입 성공','기본 응답 고정 성공','기대 성공 과목 수','Wilson 구간(%)','실행 ms'],trialsPerCondition:100,node:process.version,sha:spawnSync('git',['-C',fileURLToPath(new URL('..',import.meta.url)),'rev-parse','HEAD'],{encoding:'utf8'}).stdout?.trim()||null,vectors:{service:13,queue:120,dp:35,scenarioRows:rows.length,formulaIds},rows},null,2));
 for(const trials of (process.argv.includes('--benchmark')?[1000,5000]:[])){
   const s=sample(8,4294967295,trials,true);
   for(const c of s.courses){c.capacity=1;c.rivals=200;}

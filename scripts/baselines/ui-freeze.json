@@ -17,7 +17,7 @@
     },
     {
       "path": "css/gnb.css",
-      "sha": "854069bf09436ec5c2e3b3756045089c50e4bef3"
+      "sha": "be91f12c32e88f150a394fc9e6d5f762d2b9eeaa"
     },
     {
       "path": "css/hanmo-components.css",
@@ -33,7 +33,7 @@
     },
     {
       "path": "css/hanmo-policy-footer.css",
-      "sha": "9a7f3b31cba96a613e77a347d8fa6b83ae45f9a8"
+      "sha": "16dfb14c39f4b751f5eb8fb7a3fd8be2f061cefe"
     },
     {
       "path": "css/hanmo-refined.css",
@@ -93,59 +93,59 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "8ce5b8e7b6e1ee89ef99df7f8542b82f4183130e"
+      "sha": "89b094b05aa3ccad4ff4c381397dcf6e738fcce3"
     },
     {
       "path": "html/catalog.html",
-      "sha": "e460056759ee277fe06880e143d59b670d68e3cd"
+      "sha": "07a347ebbcb4ee62230431028068ae027e034742"
     },
     {
       "path": "html/developer.html",
-      "sha": "e2b141e63b1d2befe16611c1bc57dad2b1e16bac"
+      "sha": "6cf8b48417ff5342667fb374cd56c94c8d4990ee"
     },
     {
       "path": "html/forecast.html",
-      "sha": "e33bcf4eacfc0e80c76522b5fd167ab821eb2793"
+      "sha": "2b552a1602deef76f0b6334537bf1daec6bb17d1"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "0d9837982d528694b2b465e543759f199a714eda"
+      "sha": "de81bd98aa5975616cd64519c1cf0e1be2f54f01"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "f077fca25e5275c64720f42f6f1e1518db4c71fc"
+      "sha": "b8b0f71a434e8662b30ec24a799b56c4d094d40b"
     },
     {
       "path": "html/planner.html",
-      "sha": "6019171a88961252bc965ed5840cdd105f23edf6"
+      "sha": "75dd30754b04ea4ca16480da659fec25b072b7ad"
     },
     {
       "path": "html/practice.html",
-      "sha": "c93be1e1ebdf0d8ca768d525826c4108a3392cd1"
+      "sha": "6dee1279a2cd993eee55705a238a58151230e102"
     },
     {
       "path": "html/reaction-test.html",
-      "sha": "c303745d810bb825fc40ec80e074ca2f732fa6b7"
+      "sha": "3e5cbc724d41e5e2846ae892e0bc833ef9283be8"
     },
     {
       "path": "html/readiness.html",
-      "sha": "086f1eb4bc0c28af4b904db2080136e3a28f55a5"
+      "sha": "be4ccaef7cdb3941e43b5186842e35c002a789dc"
     },
     {
       "path": "html/result.html",
-      "sha": "8e46ee4dba9dd683f1fe68118022fb73575031ba"
+      "sha": "e9ce78049aac7dd8bd2d6d0107d50de0f7c806ea"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "1288330d75b7d14cb79b5019cb066f7da0169716"
+      "sha": "73df6cb7ef2481f16d0f51be81dfc73ca110417e"
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "ea0824be47e254568324e47d101f6f1454f89c1a"
+      "sha": "6607bb866883748a62b3d8c66ab4d431fe31ca22"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "e8b98ae8653aafa7818ca01ffa0acea743ef762c"
+      "sha": "f6813cc98030b0f84eae9df9a15fcb24aaa29889"
     },
     {
       "path": "img/background.svg",
@@ -221,7 +221,7 @@
     },
     {
       "path": "index.html",
-      "sha": "51115f1ce676d272cc8d066e291f39405c26f623"
+      "sha": "f48bb1bb3eba5ac779cfcc77ca06ecc32f3fb1a2"
     },
     {
       "path": "js/academic-data-source.js",
@@ -237,7 +237,11 @@
     },
     {
       "path": "js/gnb.js",
-      "sha": "e0d19e1ef615e319252de99e6055ccc506eb7cd0"
+      "sha": "e84778eb0085ca4f9973b183d2adbae60c4a900c"
+    },
+    {
+      "path": "js/hanmo-policy-footer.js",
+      "sha": "5126e539937679038ebf0dc0e53cf92b2d02f218"
     },
     {
       "path": "js/hanmoSys.js",
@@ -253,7 +257,7 @@
     },
     {
       "path": "js/index.js",
-      "sha": "d448f0bb1017185d1b41738fc9fed219a53884e4"
+      "sha": "0ac77c779b340b39f1788da4c85c87b7c427088a"
     },
     {
       "path": "js/pc-only.js",

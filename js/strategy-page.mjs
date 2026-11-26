@@ -147,7 +147,9 @@ if(form){
         const rate=document.createElement('span');rate.className='strategy-course-rate';
         const wins=Math.round(r.courseSuccess[slot]*r.trials);
         rate.textContent=outcome(wins,r.courseGuaranteed[slot],false);
-        rate.title=outcome(wins,r.courseGuaranteed[slot]);
+        const [low,high]=r.uncertainty.courseAssumptionRange[slot];
+        rate.title=outcome(wins,r.courseGuaranteed[slot])+' · 가정별 '+pct(low)+'~'+pct(high)+
+          ' · 평균 처리 시각 '+(r.timing.meanSubmissionMs[slot]/1000).toFixed(1)+'초';
         const bar=document.createElement('div');bar.className='strategy-course-track';bar.setAttribute('aria-hidden','true');
         const fill=document.createElement('span');
         // 추천 순서와 관측 성공률을 같은 카드에서 확인합니다.
@@ -168,6 +170,7 @@ if(form){
       set('strategy-baseline-value',outcome(r.allWins));
       set('strategy-high-overlap',outcome(r.sensitivity.moreOverlap));
       set('strategy-synchronized',outcome(r.sensitivity.synchronized));
+      set('strategy-stable-wait',outcome(r.sensitivity.stableWait));
       set('strategy-assumption-range','경쟁 가정별 관측 범위 '+pct(r.uncertainty.assumptionRange.min)+'~'+pct(r.uncertainty.assumptionRange.max));
       set('strategy-run-info','조건별 독립 평가 '+r.trials.toLocaleString('ko-KR')+'회 · 실험 시드 '+r.seed+' · 실제 수강신청 예측 아님');
       waitSummary.textContent='평균 누적 대기시간 '+(r.timing.meanWaitMs/1000).toFixed(1)+

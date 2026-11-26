@@ -9,10 +9,13 @@ if(start){
   const tally=document.getElementById('reaction-count');
   const report=document.getElementById('reaction-report');
   const result=document.getElementById('reaction-result');
-  const strategyLink=result.querySelector('a');
   const reset=document.getElementById('reaction-reset');
+  const showResult=(median,saved)=>{
+    report.textContent=(saved?'저장된 ':'')+'사용자님의 반응속도는 중앙값 '+median+'ms 입니다.';
+    result.hidden=false;
+  };
   const p=readProfile();
-  if(p){report.textContent='사용자님의 반응속도는 중앙값 '+p.medianMs+'ms 입니다.';result.hidden=false;}
+  if(p)showResult(p.medianMs,true);
   let state=initialReactionState(),timer=0,frame=0;
   /** 결과 코드별 안내 문구. 기존 화면 문구를 그대로 유지한다. */
   const MESSAGES={
@@ -58,12 +61,9 @@ if(start){
   /** @param {number[]} samples 유효 샘플 8개 */
   function complete(samples){
     const profile=profileFromSamples(samples);
-    // 저장에 실패하면 전략 실험이 이전 값이나 빈 값을 쓰지 않도록 연결 링크를 숨긴다.
     const saved=saveProfile(null,profile);
     const message=saved?'':'브라우저에 이번 결과를 저장하지 못해 전략 실험에 전달할 수 없습니다.';
-    report.textContent='사용자님의 반응속도는 중앙값 '+profile.medianMs+'ms 입니다.';
-    strategyLink.hidden=!saved;
-    result.hidden=false;
+    showResult(profile.medianMs,saved);
     state=initialReactionState();
     showIdle(message,true);
   }

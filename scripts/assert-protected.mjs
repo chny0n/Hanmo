@@ -10,7 +10,7 @@ const protectedFiles=new Set(['js/practice.js','css/vsugang.css']);
 const offenders=changed.filter(path=>protectedFiles.has(path));
 if(offenders.length)throw Error('Protected HUFS imitation changed:\n'+offenders.join('\n'));
 
-/* 사용자 승인 범위는 파비콘 교체, 내정보 추가, 파란 정보 영역의 모의신청 경고 표지뿐입니다. */
+/* 연습 화면은 승인된 파비콘·내정보·경고 표지와 이용 제한 안내 이동만 허용합니다. */
 if(changed.includes('html/practice.html')){
   const original=execFileSync('git',['show','origin/main:html/practice.html'],
     {cwd:root,encoding:'utf8',maxBuffer:4*1024*1024});
@@ -35,9 +35,16 @@ if(changed.includes('html/practice.html')){
     if(source.includes('class="practice-profile"')&&!source.includes('class="practice-warning"')&&source.includes(warningAnchor))
       variants.add(source.replace(warningAnchor,warningBlock));
   }
-  const actual=readFileSync(resolve(root,'html/practice.html'),'utf8');
+  for(const source of [...variants]){
+    const withFooterNotice=source
+      .replace(/^([\t ]*)(<link rel="stylesheet" href="\.\.\/css\/hanmo-policy-footer\.css">)\n/m,
+        '$1$2\n$1<script src="../js/hanmo-policy-footer.js" defer></script>\n')
+      .replace(/^[\t ]*<section class='headerNotice'>\n[\s\S]*?^[\t ]*<\/section>\n/m,'');
+    variants.add(withFooterNotice);
+  }
+  const actual=readFileSync(resolve(root,'html/practice.html'),'utf8').replace(/\r\n/g,'\n');
   if(!variants.has(actual))
-    throw Error('원본 practice.html은 승인된 파비콘·좌측 내정보·모의신청 경고 표지 외 수정할 수 없습니다.');
+    throw Error('원본 practice.html은 사용자 승인 범위를 벗어나 수정할 수 없습니다.');
 }
 
 // 원본의 비공식 브랜딩 정리 대상 자산만 동기화하도록 허용합니다.
@@ -45,7 +52,7 @@ const labScripts=new Set([
   'js/readiness.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
   'js/strategy-engine.mjs','js/strategy-page.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
 ]);
-const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
+const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/student-progress.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('e2e/')||p.startsWith('css/')||p.startsWith('html/')
  ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg','img/hanmo_purple.png','img/favicon-purple.svg','img/boo.png'].includes(p)

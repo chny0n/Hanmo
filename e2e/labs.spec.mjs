@@ -201,7 +201,8 @@ test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=
   }
   await expect(page.locator('#reaction-report')).toBeVisible();
   await expect(page.locator('#reaction-status')).toContainText('저장하지 못해');
-  await expect(page.locator('#reaction-result a')).toBeHidden();
+  await expect(page.locator('#reaction-result a')).toHaveCount(0);
+  await expect(page.locator('#reaction-report')).not.toContainText('저장된');
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
 });
 
@@ -248,6 +249,8 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(assumptions).toContainText('본인 입력과 별도로 5~8과목에서 추출');
   await expect(assumptions).toContainText('오픈 후 1초 안에 진입');
   await expect(assumptions.locator('#strategy-wait-heading')).toBeVisible();
+  await expect(assumptions.locator('#strategy-stable-wait')).not.toBeEmpty();
+  await expect(page.locator('.strategy-course-rate').first()).toHaveAttribute('title',/가정별.*평균 처리 시각/);
   await expectOneScreen(page,'#strategy-result');
   await expect(page.locator('#strategy-wait-summary')).toHaveText(/평균 누적 대기시간 \d+\.\d초 \(혼잡 대기 \d+\.\d초 포함\) · 전체 신청 시도 평균 소요시간 \d+\.\d초/);
   await expect(page.locator('#strategy-result')).toContainText('실제 학교 서버의 대기시간을 측정한 값은 아닙니다.');
@@ -397,7 +400,8 @@ test('반응속도 측정 결과는 중앙값만 한 줄로 표시된다',async(
   await seedProfile(page);
   await page.goto('/html/reaction-test.html');
   await expect(page.locator('#reaction-result')).toBeVisible();
-  await expect(page.locator('#reaction-report')).toHaveText('사용자님의 반응속도는 중앙값 250ms 입니다.');
+  await expect(page.locator('#reaction-report')).toHaveText('저장된 사용자님의 반응속도는 중앙값 250ms 입니다.');
+  await expect(page.locator('#reaction-result a')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'내 반응시간'})).toHaveCount(0);
   await expect(page.locator('#reaction-result .lab-footnote')).toHaveCount(0);
 });
