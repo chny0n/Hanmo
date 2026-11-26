@@ -13,6 +13,8 @@ test('공통 푸터는 이용 제한 예고와 현재 제한을 표시하고 종
   await page.goto('/index.html');
   const notice=page.locator('footer .hanmo-restriction-notice');
   await expect(notice).toBeEmpty();
+  await expect(page.locator('.mainNotice .ganeung')).toHaveClass(/thisTime/);
+  await expect(page.locator('.mainNotice .ganeung')).toContainText('00:00 ~ 23:59');
   await page.clock.fastForward(10_000);
   await expect(notice).toHaveText('곧 이용 제한 · 09:58 ~ 10:10');
   for(const route of ['/html/practice.html','/html/selectZone.html','/html/strategy-lab.html']){
@@ -23,6 +25,10 @@ test('공통 푸터는 이용 제한 예고와 현재 제한을 표시하고 종
   }
   await page.clock.fastForward(5*60_000);
   await expect(notice).toHaveText('현재 이용 제한 · 09:58 ~ 10:10');
+  await page.goto('/index.html');
+  await expect(page.locator('.mainNotice .jehan')).toHaveClass(/thisTime/);
+  await expect(page.locator('.mainNotice .jehan')).toContainText('09:58 ~ 10:10');
+  await expect(page.locator('.mainNotice .ganeung')).not.toHaveClass(/thisTime/);
   await page.clock.fastForward(13*60_000);
   await expect(notice).toBeEmpty();
 });
