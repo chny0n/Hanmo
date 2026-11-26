@@ -37,15 +37,22 @@ export function validateCourses(courses){
 function openingScenarios(courses){
   const scenarios=new Map();
   const slots=courses.length;
-  function record(deadlines){
-    const key=deadlines.join(',');
-    if(scenarios.has(key)||deadlines.every(deadline=>deadline===slots-1))return;
+  // 과목당 4비트에 마감 자리 + 1을 저장합니다. 0은 첫 요청 전 마감을 뜻합니다.
+  const bitsPerDeadline=4;
+  const deadlineMask=(1<<bitsPerDeadline)-1;
+  const shifts=courses.map((_,index)=>index*bitsPerDeadline);
+  const deadlineStates=2**(bitsPerDeadline*slots);
+  const slotCodes=shifts.map((_,slot)=>shifts.reduce((code,shift)=>code|((slot+1)<<shift),0));
+  const maxArrival=(slots-1)*(Math.max(...RIVAL_PERIODS)+Math.max(...NETWORK_STEPS));
+  function record(code){
+    if(scenarios.has(code)||code===slotCodes[slots-1])return;
+    const deadlines=shifts.map(shift=>((code>>>shift)&deadlineMask)-1);
     let bestCount=0;
     // 일찍 마감되는 과목부터 가능한 자리만 채우면 해당 조건의 최대 과목 수입니다.
     for(const deadline of [...deadlines].sort((a,b)=>a-b)){
       if(bestCount<=deadline)bestCount++;
     }
-    if(bestCount>0)scenarios.set(key,{deadlines,bestCount});
+    if(bestCount>0)scenarios.set(code,{deadlines,bestCount});
   }
   for(let rivalCourses=1;rivalCourses<=MAX_COURSES;rivalCourses++){
     const closing=courses.map(({capacity,rivals})=>
@@ -61,27 +68,36 @@ function openingScenarios(courses){
   }
   function compareTiming(closing,rivalCourses,period,drain,rivalArrival,rivalsFirst){
     const tie=rivalsFirst?0:1;
-    const closesAt=closing.map(round=>rivalArrival+(round-1)*period+tie);
-    const visited=new Set();
-    function visit(slot,arrival,deadlines){
-      const next=deadlines.map((deadline,index)=>{
-        const closingTime=closesAt[index];
-        if(closingTime===Infinity)return slots-1;
-        return arrival<closingTime?slot:deadline;
-      });
-      if(slot===slots-1||next.every((deadline,index)=>deadline===deadlines[index])){
+    const openFields=new Int32Array(maxArrival+1);
+    let initial=0;
+    for(const [index,round] of closing.entries()){
+      const shift=shifts[index];
+      if(round===Infinity){
+        initial|=slots<<shift;
+        continue;
+      }
+      const closesAt=rivalArrival+(round-1)*period+tie;
+      for(let arrival=0;arrival<=maxArrival&&arrival<closesAt;arrival++)
+        openFields[arrival]|=deadlineMask<<shift;
+    }
+    const visited=Array.from({length:slots},()=>new Set());
+    function visit(slot,arrival,code){
+      const open=openFields[arrival];
+      const next=(code&~open)|(slotCodes[slot]&open);
+      if(slot===slots-1||next===code){
         record(next);
         return;
       }
-      const key=slot+':'+arrival+':'+next.join(',');
-      if(visited.has(key))return;
-      visited.add(key);
+      // 도착 시각과 부호 없는 마감 상태를 한 키로 합칩니다.
+      const key=arrival*deadlineStates+(next>>>0);
+      if(visited[slot].has(key))return;
+      visited[slot].add(key);
       // 앞서 줄에 선 가장 최근 경쟁자 묶음까지 처리되어야 내 응답이 돌아옵니다.
       const lastAhead=Math.min(rivalCourses-1,Math.floor((arrival-rivalArrival-tie)/period));
       const ready=lastAhead<0?arrival:Math.max(arrival,rivalArrival+lastAhead*period+drain);
       for(const network of NETWORK_STEPS)visit(slot+1,ready+network,next);
     }
-    visit(0,0,closesAt.map(time=>time===Infinity?slots-1:-1));
+    visit(0,0,initial);
   }
   const distinct=[...scenarios.values()];
   // 최대 확보 수가 같으면 모든 과목이 더 일찍 또는 같은 때 마감되는 조건의 손실이 항상 더 큽니다.
