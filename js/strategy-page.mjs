@@ -92,7 +92,7 @@ if(form){
         details.textContent='정원 '+capacity+'명 · 경쟁자 '+rivals+'명';
         const pressure=document.createElement('span');
         pressure.className='strategy-course-inputs';
-        pressure.textContent=`자리당 ${ratioFormat.format(rivals/capacity)}~${ratioFormat.format((rivals+1)/capacity)}명`;
+        pressure.textContent=`자리당 ${ratioFormat.format(rivals/capacity)}명`;
         item.append(headline,course,details,pressure);
         return item;
       }));

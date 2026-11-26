@@ -10,27 +10,29 @@ const input=()=>({
     {id:'C',name:'가상 C',rank:3,capacity:20,rivals:30},
   ],
 });
-test('정원 20명에 경쟁자 19명과 20명은 중요 순위로 비교하고 8석에 30명인 과목은 앞에 둔다',()=>{
+test('같은 8과목에서도 입력한 중요 순위에 따라 추천 순서가 달라진다',()=>{
+  const ids='ABCDEFGH';
+  const inputs=[[8,30],[12,33],[16,34],[20,35],[24,36],[30,40],[40,44],[55,50]];
+  for(const [ranks,expected] of [['ABCDEFGH','ABCDEFGH'],['HGFEDCBA','AHGBFEDC'],['EFGHABCD','AEBFGHCD']]){
+    const courses=inputs.map(([capacity,rivals],index)=>({
+      id:ids[index],name:ids[index],rank:ranks.indexOf(ids[index])+1,capacity,rivals,
+    }));
+    assert.equal(recommendCourses(courses).map(course=>course.id).join(''),expected);
+    assert.deepEqual(recommendCourses([...courses].reverse()),recommendCourses(courses));
+    assert.equal(courses.map(course=>course.id).join(''),ids);
+  }
+});
+test('정원 경계에 잘린 경쟁 손실은 없고, 경쟁 정도가 같으면 중요 순위를 따른다',()=>{
   const courses=[
     {id:'A',name:'가상 A',rank:1,capacity:20,rivals:19},
     {id:'B',name:'가상 B',rank:2,capacity:20,rivals:20},
     {id:'C',name:'가상 C',rank:3,capacity:8,rivals:30},
   ];
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['C','A','B']);
-  assert.deepEqual(recommendCourses([...courses].reverse()),recommendCourses(courses));
-  assert.deepEqual(courses.map(course=>course.id),['A','B','C']);
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','C','B']);
   courses[0].rivals=20;
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['C','A','B']);
-  courses[0].rivals=18;
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['C','B','A']);
-});
-test('비교 범위가 연달아 겹칠 때 가장 높은 하한을 기준으로 선택한다',()=>{
-  const courses=[
-    {id:'A',name:'가상 A',rank:1,capacity:20,rivals:18},
-    {id:'B',name:'가상 B',rank:2,capacity:20,rivals:19},
-    {id:'C',name:'가상 C',rank:3,capacity:20,rivals:20},
-  ];
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['B','C','A']);
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','C','B']);
+  courses[2].rivals=8;
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','B','C']);
 });
 test('시드가 같으면 최적 신청 순서와 가상 성공 확률이 같다',()=>{
   assert.deepEqual(simulate(input()),simulate(input()));

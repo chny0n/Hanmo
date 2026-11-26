@@ -60,9 +60,9 @@
       <ol id="strategy-order" class="strategy-order" aria-labelledby="strategy-results-heading"></ol>
       <details id="strategy-criteria" class="strategy-criteria">
         <summary>추천 기준과 계산식 보기</summary>
-        <p class="lab-footnote"><strong>자리당 경쟁자 범위 = 경쟁자 수 ÷ 정원 ~ (경쟁자 수 + 1) ÷ 정원</strong>. 경쟁자 한 명 차이까지 비교하며, 화면의 수는 소수 둘째 자리까지 표시합니다.</p>
-        <p class="lab-footnote">남은 과목 중 자리당 경쟁자 수가 가장 높은 값을 기준으로 삼습니다. 범위가 그 값에 닿는 과목 중 중요 순위가 가장 높은 과목을 골라 이 과정을 반복합니다.</p>
-        <p class="lab-footnote">예를 들어 8석에 30명이면 3.75~3.88명으로 먼저 추천합니다. 20석에 19명과 20명이면 각각 0.95~1명, 1~1.05명으로 범위가 맞닿아 중요 순위로 정합니다.</p>
+        <p class="lab-footnote"><strong>중요 순위 손실</strong> = 중요 순위가 뒤집힌 과목 쌍 수 ÷ 전체 과목 쌍 수.</p>
+        <p class="lab-footnote"><strong>경쟁 손실</strong> = 앞 과목보다 뒤 과목의 자리당 경쟁자 수가 큰 경우, 차이를 모두 더한 값 ÷ 가능한 최대 합. 최대 합은 경쟁이 낮은 과목부터 신청했을 때입니다. 자리당 경쟁자 수는 경쟁자 수 ÷ 정원입니다.</p>
+        <p class="lab-footnote">모든 신청 순서를 비교해 두 손실 중 큰 값이 가장 작은 순서를 추천합니다. 같으면 손실 합이 작은 순서, 그래도 같으면 앞자리의 중요 순위가 높은 순서를 고릅니다.</p>
       </details>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 추천</button>
     </section>

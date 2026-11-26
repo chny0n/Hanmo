@@ -31,14 +31,42 @@ export function validateCourses(courses){
 /** @param {Course[]} courses 입력 과목 */
 export function recommendCourses(courses){
   validateCourses(courses);
-  const remaining=[...courses].sort((a,b)=>a.rank-b.rank);
+  const byRank=[...courses].sort((a,b)=>a.rank-b.rank);
+  const pressure=byRank.map(course=>course.rivals/course.capacity);
+  const pairCount=courses.length*(courses.length-1)/2;
+  // 더 경쟁이 큰 과목을 뒤에 놓았을 때 발생하는 과목 쌍별 비용입니다.
+  const delay=pressure.map(first=>pressure.map(later=>Math.max(0,later-first)));
+  const maxDelay=delay.flat().reduce((sum,cost)=>sum+cost,0);
+  if(maxDelay===0)return byRank;
+
   const order=[];
-  while(remaining.length){
-    const mostCrowded=remaining.reduce((a,b)=>b.rivals*a.capacity>a.rivals*b.capacity?b:a);
-    // 경쟁자 한 명을 더해도 가장 높은 경쟁 강도에 못 미치는 과목은 뒤로 미룹니다.
-    const next=remaining.findIndex(({rivals,capacity})=>
-      (rivals+1)*mostCrowded.capacity>=mostCrowded.rivals*capacity);
-    order.push(remaining.splice(next,1)[0]);
+  let best=[];
+  let bestWorst=Infinity,bestTotal=Infinity;
+  const tolerance=1e-12;
+  function search(used,reversals,delayCost){
+    if(order.length===byRank.length){
+      const rankLoss=reversals/pairCount,competitionLoss=delayCost/maxDelay;
+      const worst=Math.max(rankLoss,competitionLoss),total=rankLoss+competitionLoss;
+      if(worst<bestWorst-tolerance||(Math.abs(worst-bestWorst)<=tolerance&&total<bestTotal-tolerance)){
+        best=[...order];
+        bestWorst=worst;
+        bestTotal=total;
+      }
+      return;
+    }
+    for(let next=0;next<byRank.length;next++){
+      const bit=1<<next;
+      if(used&bit)continue;
+      let addedReversals=0,addedDelay=0;
+      for(const previous of order){
+        if(previous>next)addedReversals++;
+        addedDelay+=delay[previous][next];
+      }
+      order.push(next);
+      search(used|bit,reversals+addedReversals,delayCost+addedDelay);
+      order.pop();
+    }
   }
-  return order;
+  search(0,0,0);
+  return best.map(index=>byRank[index]);
 }
