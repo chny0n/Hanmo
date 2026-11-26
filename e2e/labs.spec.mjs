@@ -292,6 +292,25 @@ test('달력 스타일을 받지 못해도 학교 일정 원문과 공지 탭을
   await expect(page.locator('#academic-notice-panel')).toBeVisible();
 });
 
+test.describe('Temporal API가 없는 브라우저',()=>{
+  test.use({timezoneId:'UTC'});
+
+  test('학사 달력은 서울 날짜로 표시하고 월을 이동한다',async({page})=>{
+    await page.addInitScript(()=>Reflect.deleteProperty(globalThis,'Temporal'));
+    await page.clock.setFixedTime(new Date('2026-11-30T15:00:00Z'));
+    await page.goto('/html/academic-timeline.html#calendar');
+    const calendar=page.locator('#calendar-view');
+    const month=calendar.getByRole('heading');
+    await expect(month).toHaveText('2026년 12월');
+    await expect(calendar.locator('[data-date="2026-12-01"][aria-current="date"]')).toBeVisible();
+    await calendar.getByRole('button',{name:'이전',exact:true}).click();
+    await expect(month).toHaveText('2026년 11월');
+    await calendar.getByRole('button',{name:'오늘',exact:true}).click();
+    await expect(month).toHaveText('2026년 12월');
+    expect(await page.evaluate(()=>typeof globalThis.Temporal)).toBe('undefined');
+  });
+});
+
 test('모의수강신청 결과의 PNG 저장 UI와 스크립트를 제거한다',async({page})=>{
   await page.goto('/html/result.html');
   await expect(page.locator('#practice-report-save')).toHaveCount(0);

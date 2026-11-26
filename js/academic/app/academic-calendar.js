@@ -1,6 +1,5 @@
 // @ts-check
 // FullCalendar MIT 무료 월간 달력만 사용하며 미검수 학교 일정을 생성하지 않는다.
-import 'temporal-polyfill/global';
 import {Calendar} from 'fullcalendar';
 import dayGridPlugin from 'fullcalendar/daygrid';
 import koLocale from 'fullcalendar/locales/ko';
