@@ -30,7 +30,7 @@
 
 현재는 `data/academic-source-config.json`의 **`mode: disabled`**, 실제 학교 크롤러·공개 데이터·Supabase 연결 없음 상태입니다. 공지 화면에는 제목 검색 코드가 있으나 자료 미연결로 비활성화되어 있고, 달력은 FullCalendar의 빈 일정으로 동작합니다. 이 문서의 예산·보존·내부 정정/철회 안전 관리·자동 차단은 **구현 후보 계약**입니다.
 
-연결 전에는 `js/academic-data-source.js`의 구형 `instructor`·`payload.faq` 계약을 폐기하고, 허용 필드만 받는 **DTO v2**를 설계해야 합니다. `docs/references/hufs-academic-source-candidates.json`의 과거 규정·시간표 후보는 이번 기능의 승인된 출처 목록이 아닙니다.
+연결 전에는 `js/academic-data-source.js`의 구형 `instructor`·`payload.faq` 계약을 교체하고, 검수한 허용 필드만 받는 새 공개 데이터 계약을 정의합니다. 출처 목록도 필드별 검수 후 확정합니다.
 
 ## 3. 기능에 필요한 최소 필드
 
@@ -63,7 +63,7 @@
 | 식별·출처 | 공개 화면에 실제 노출된 URL만, 서비스명·운영자 연락처를 User-Agent에 표시 |
 | 용량·권리 | 반입 여유·허용 필드·정책판본·철회 상태를 요청 전에 확인. 상한 또는 금지에 걸리면 중단 |
 
-**첫 출처의 우선 검토 후보:** [한국외국어대학교 학사 공지 게시목록](https://dep.hufs.ac.kr/hufs/11282/subview.do). 근거는 [과거 커밋 `637f0d`의 공지 참고자료](https://github.com/ot4562-glitch/Hanmo_develop/blob/637f0d291a4bfb05bd91d640e3b25b8fa4b38b5a/degree-rescue/data/academic-notices-reference.json)의 **`REFERENCE_ONLY`** 출처 기록과 [현재 도메인 분류 시험](../js/academic/core/academic-display.test.js)에 남은 URL입니다. 둘 다 현재 접근 가능성이나 수집 승인의 증거가 아닙니다. **실접속·공개 화면에 노출된 경로·목록/상세 구조·필드가 미검수이므로 확정 수집 URL로 등록하지 않고 OFF를 유지**합니다. 과거 참고자료의 내용을 운영 데이터로 반입하지 않습니다.
+한국외국어대학교 학사 공지 게시목록은 과거 참고자료에 `REFERENCE_ONLY`로 기록된 검토 후보입니다. 목록·상세 경로, 공개 필드, 수집 권한을 확인하기 전에는 수집을 비활성 상태로 둡니다. [게시목록 후보](https://dep.hufs.ac.kr/hufs/11282/subview.do) · [과거 참고자료](https://github.com/ot4562-glitch/Hanmo_develop/blob/637f0d291a4bfb05bd91d640e3b25b8fa4b38b5a/degree-rescue/data/academic-notices-reference.json)
 
 ### 첫 수집과 누락 처리
 
