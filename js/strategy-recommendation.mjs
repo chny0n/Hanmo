@@ -28,44 +28,71 @@ export function validateCourses(courses){
   }
 }
 
+/** @param {Course[]} courses 중요 순위순 과목 */
+function openingScenarios(courses){
+  const scenarios=new Map();
+  for(let rivalCourses=1;rivalCourses<=MAX_COURSES;rivalCourses++){
+    // 대상 과목이 각 신청 차례에 고르게 흩어진 경우의 마감 차례입니다.
+    const closing=courses.map(({capacity,rivals})=>
+      rivals<capacity?Infinity:Math.ceil(capacity*rivalCourses/rivals));
+    for(let roundsPerRequest=1;roundsPerRequest<=rivalCourses;roundsPerRequest++){
+      for(const firstRound of [0,1]){
+        const deadlines=closing.map(round=>Math.min(courses.length-1,
+          Math.floor((round-1-firstRound)/roundsPerRequest)));
+        const key=deadlines.join(',');
+        if(scenarios.has(key))continue;
+        let bestCount=0;
+        // 일찍 마감되는 과목부터 가능한 자리만 채우면 해당 조건의 최대 과목 수입니다.
+        for(const deadline of [...deadlines].sort((a,b)=>a-b)){
+          if(bestCount<=deadline)bestCount++;
+        }
+        if(bestCount>0&&deadlines.some(deadline=>deadline<courses.length-1)){
+          scenarios.set(key,{deadlines,bestCount});
+        }
+      }
+    }
+  }
+  return [...scenarios.values()];
+}
+
 /** @param {Course[]} courses 입력 과목 */
 export function recommendCourses(courses){
   validateCourses(courses);
   const byRank=[...courses].sort((a,b)=>a.rank-b.rank);
-  const pressure=byRank.map(({rivals,capacity})=>rivals/(capacity+rivals));
-  if(pressure.every((value,index)=>index===0||pressure[index-1]>=value))return byRank;
-  const pairCount=courses.length*(courses.length-1)/2;
-  // 더 경쟁이 큰 과목을 뒤에 놓았을 때 발생하는 과목 쌍별 비용입니다.
-  const delay=pressure.map(first=>pressure.map(later=>Math.max(0,later-first)));
+  const scenarios=openingScenarios(byRank);
+  if(!scenarios.length)return byRank;
 
   const order=[];
   let best=[];
-  let bestWorst=Infinity,bestTotal=Infinity;
-  const tolerance=1e-12;
-  function search(used,reversals,delayCost){
+  let bestLoss=Infinity,bestReversals=Infinity;
+  function search(used,reversals){
     if(order.length===byRank.length){
-      const rankLoss=reversals/pairCount,competitionLoss=delayCost/pairCount;
-      const worst=Math.max(rankLoss,competitionLoss),total=rankLoss+competitionLoss;
-      if(worst<bestWorst-tolerance||(Math.abs(worst-bestWorst)<=tolerance&&total<bestTotal-tolerance)){
+      let worstLoss=0;
+      for(const {deadlines,bestCount} of scenarios){
+        let count=0;
+        for(let slot=0;slot<order.length;slot++){
+          if(slot<=deadlines[order[slot]])count++;
+        }
+        worstLoss=Math.max(worstLoss,bestCount-count);
+        if(worstLoss>bestLoss)return;
+      }
+      if(worstLoss<bestLoss||(worstLoss===bestLoss&&reversals<bestReversals)){
         best=[...order];
-        bestWorst=worst;
-        bestTotal=total;
+        bestLoss=worstLoss;
+        bestReversals=reversals;
       }
       return;
     }
     for(let next=0;next<byRank.length;next++){
       const bit=1<<next;
       if(used&bit)continue;
-      let addedReversals=0,addedDelay=0;
-      for(const previous of order){
-        if(previous>next)addedReversals++;
-        addedDelay+=delay[previous][next];
-      }
+      let addedReversals=0;
+      for(const previous of order)if(previous>next)addedReversals++;
       order.push(next);
-      search(used|bit,reversals+addedReversals,delayCost+addedDelay);
+      search(used|bit,reversals+addedReversals);
       order.pop();
     }
   }
-  search(0,0,0);
+  search(0,0);
   return best.map(index=>byRank[index]);
 }

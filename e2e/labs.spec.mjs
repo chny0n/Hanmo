@@ -231,8 +231,8 @@ test('전략 실험은 중요 순위와 경쟁을 절충하고 계산식을 보�
   await expect(criteria).toHaveJSProperty('open',false);
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
-  await expect(criteria).toContainText('중요 순위 손실');
-  await expect(criteria).toContainText('경쟁자 수 ÷ (정원 + 경쟁자 수)');
+  await expect(criteria).toContainText('처리 대기');
+  await expect(criteria).toContainText('가능한 최대 확보 과목 수');
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
   await expect(rivals).toHaveValue('19');
