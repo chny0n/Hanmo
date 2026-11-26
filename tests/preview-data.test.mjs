@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import {copyFile,mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
+import {mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {test} from 'node:test';
-import {assertDisabledPreviewConfig,assertPreviewData,stripPreviewPhotoExifAndXmp} from '../scripts/preview-data.mjs';
+import {assertDisabledPreviewConfig,assertPreviewData,createSyntheticNetworkProbe,stripPreviewPhotoExifAndXmp} from '../scripts/preview-data.mjs';
 
 const disabled=JSON.stringify({schemaVersion:1,mode:'disabled'});
 
@@ -24,7 +24,8 @@ test('승인된 합성 데이터만 공개하고 복구한 과거 자료나 시�
   const data=join(dist,'data');
   await mkdir(data);
   await writeFile(join(data,'academic-source-config.json'),disabled);
-  await copyFile(new URL('../data/network-probe.txt',import.meta.url),join(data,'network-probe.txt'));
+  const probe=createSyntheticNetworkProbe();
+  await writeFile(join(data,'network-probe.txt'),probe);
   await assertPreviewData(dist);
 
   const old=join(data,'previous-public-snapshot.json');
@@ -32,7 +33,7 @@ test('승인된 합성 데이터만 공개하고 복구한 과거 자료나 시�
   await assert.rejects(assertPreviewData(dist),/미승인 자료 파일/);
   await rm(old);
 
-  await writeFile(join(data,'network-probe.txt'),'검증되지 않은 합성 파일');
+  await writeFile(join(data,'network-probe.txt'),'X'+probe.slice(1));
   await assert.rejects(assertPreviewData(dist),/합성 네트워크 시험 파일/);
 });
 

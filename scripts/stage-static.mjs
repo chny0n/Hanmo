@@ -1,6 +1,6 @@
 import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
-import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,stripPreviewPhotoExifAndXmp} from './preview-data.mjs';
+import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,createSyntheticNetworkProbe,stripPreviewPhotoExifAndXmp} from './preview-data.mjs';
 import {assertStudentBundleMeta,readPublicAssets,studentStyles} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
@@ -15,7 +15,7 @@ for(const bundle of bundles)
 for(const style of Object.keys(styles))
   if(!await exists(join(build,style)))throw Error('Missing generated CSS bundle: '+style);
 const config=await readFile(join(root,'data','academic-source-config.json'),'utf8');
-const probe=await readFile(join(root,'data','network-probe.txt'),'utf8');
+const probe=createSyntheticNetworkProbe();
 assertDisabledPreviewConfig(config);
 assertSyntheticNetworkProbe(probe);
 const meta=JSON.parse(await readFile(join(build,'bundle-meta.json'),'utf8'));

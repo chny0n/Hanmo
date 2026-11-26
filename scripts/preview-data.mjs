@@ -16,7 +16,19 @@ export function assertDisabledPreviewConfig(text){
     throw new Error('공개 미리보기에는 비활성 학사자료 설정만 허용됩니다.');
 }
 
-/** @param {string} text 저장소에서 제공하는 합성 네트워크 시험 파일 */
+export function createSyntheticNetworkProbe(){
+  const alphabet=Buffer.from('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
+  const body=Buffer.alloc(256*1024);
+  // 공개 v1 시험 파일의 바이트를 재현합니다.
+  let state=0x9a7b4c3d;
+  for(let i=0;i<body.length;i++){
+    state=(Math.imul(state,1664525)+1013904223)>>>0;
+    body[i]=alphabet[state%alphabet.length];
+  }
+  return 'HANMO-CDN-NETWORK-PROBE v1 - synthetic and public; no personal content.\n'+body.toString('ascii');
+}
+
+/** @param {string} text 공개 합성 네트워크 시험 파일 */
 export function assertSyntheticNetworkProbe(text){
   const digest=createHash('sha256').update(text.replaceAll('\r\n','\n')).digest('hex');
   if(digest!==probeHash)throw new Error('검증된 합성 네트워크 시험 파일이 아닙니다.');

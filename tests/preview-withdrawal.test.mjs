@@ -33,8 +33,7 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   await Promise.all([
     ...['preview-data.mjs','stage-static.mjs','serve-static.mjs','student-boundary.mjs','public-assets.json'].map(name=>
       cp(join(root,'scripts',name),join(workspace,'scripts',name))),
-    ...['academic-source-config.json','network-probe.txt'].map(name=>
-      cp(join(root,'data',name),join(workspace,'data',name))),
+    cp(join(root,'data','academic-source-config.json'),join(workspace,'data','academic-source-config.json')),
   ]);
 
   const dist=join(workspace,'dist');
