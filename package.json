@@ -17,7 +17,7 @@
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
     "test:student": "vitest run js/academic/views/student-entry.test.js",
-    "test:research": "vitest run js/academic/core js/academic/views --exclude js/academic/views/student-entry.test.js && node --test tests/strategy-engine.test.mjs",
+    "test:research": "vitest run js/academic/core && node --test tests/strategy-engine.test.mjs",
     "check:student": "npm run check:boundaries && npm run check:syntax && npm run check:types && npm run test:student && npm run check:legacy && npm run build && npm run smoke"
   },
   "dependencies": {

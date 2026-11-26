@@ -11,7 +11,7 @@
 | `packages/core/src/academics/` | `js/academic/core/academics/` | JS/JSDoc 전환 완료, 계산/예외·공식 RulePack 검증은 계속 |
 | `packages/core/src/forecast/` | `js/academic/core/forecast/` | JS 전환 완료, 실제 관측 원장/시점별 골드셋 미연결 |
 | `packages/contracts/src/academics/`·`packages/contracts/src/self/` | `js/academic/contracts/` | JS/JSDoc 및 Zod 계약 유지, 운영 스냅샷 인수 별도 |
-| `apps/web/src/features/`의 순수 뷰 모델 | `js/academic/views/` | React 종속 원본 제외, JavaScript 기반 학생 뷰 모델 유지 |
+| `apps/web/src/features/`의 순수 뷰 모델 | `js/academic/views/student-entry.js` | React 종속 원본 제외, 현행 학생 진입 모델 유지 |
 | 후속 공지 메타·공통 검색·합성 행사 코어 | `js/academic/core/campus-assist/`, `js/academic/app/` | JavaScript 기반 합성 코어 확보, **학교 FAQ·졸업요건 학생 기능 제외**. 실제 학교 자료/학생 화면 검증 미완료 |
 | 서버·LLM·인증·학생 개인 원본 | **이식 대상 아님** | 학교 로그인·개인 성적 서버 수집·공개 배포 금지 |
 
@@ -25,3 +25,5 @@
 ## 학생 배포 경계
 
 개설 전망 계약은 `js/academic/contracts/forecast/offering.js`에 분리합니다. 기존 `contracts/index.js` 내보내기는 연구 코드 호환을 위해 유지하지만 학생 번들에는 허용하지 않습니다. 학생 빌드의 명시적 입력·정적 자산 허용 목록과 연구 테스트 분리는 [ADR](adr/2026-11-25-student-build-boundary.md)에 따릅니다. 연구 소스 보존은 운영 승인이나 실제 학사자료 연결이 아닙니다.
+
+과거 졸업계획 화면의 표시 모델과 전공별 중요공지 고정 코드는 Git 이력에서 확인할 수 있습니다. 학점 원장 계산과 공지·일정 연구 코어는 합성 검증용으로 유지합니다. [#63 종료 범위](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#51 비개인화 공지 분류](https://github.com/ot4562-glitch/Hanmo_develop/issues/51)
