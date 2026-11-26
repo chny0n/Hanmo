@@ -23,7 +23,7 @@ for(const name of [
   'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
   'js/student-profile-bar.js','css/hanmo-flat.css',
-  'img/hanmo_purple.png','img/favicon-purple.svg','img/boo.png',
+  'img/favicon-purple.svg','img/boo.png',
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
@@ -36,7 +36,8 @@ for(const name of [
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
 for(const banned of ['html/academic-calendar.html','html/academic-support.html','css/academic-support.css','js/academic-support.js','html/academic-progress.html','html/academic-faq.html',
  'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
- 'js/degree-preparation.js','js/student-forecast.js','js/lab-share.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png'])
+ 'js/degree-preparation.js','js/student-forecast.js','js/lab-share.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs',
+ 'img/hufs_logo.png','img/hanmo_purple.png','img/lucide/external-link.svg','img/lucide/search.svg'])
  if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
 
 // 사이트맵은 포크의 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.

@@ -1,6 +1,6 @@
 // @ts-check
 import {test,expect} from '@playwright/test';
-import {mkdirSync} from 'node:fs';
+import {mkdirSync,readFileSync} from 'node:fs';
 
 test.use({timezoneId:'Asia/Seoul'});
 
@@ -409,11 +409,9 @@ test('삭제된 학교 문의처와 독립 학사 달력 URL은 404다',async({p
 });
 
 test('보라색 원본 favicon은 투명 정사각형 중앙에 550:218 비율을 유지한다',async({page})=>{
- const raw=(await page.request.get('/img/hanmo_purple.png'));
  const icon=(await page.request.get('/img/favicon-purple.svg'));
- expect(raw.ok()).toBe(true);
  expect(icon.ok()).toBe(true);
- const png=await raw.body(),svg=await icon.text();
+ const png=readFileSync(new URL('../img/hanmo_purple.png',import.meta.url)),svg=await icon.text();
  expect(png.toString('ascii',1,4)).toBe('PNG');
  expect(png.readUInt32BE(16)).toBe(550);
  expect(png.readUInt32BE(20)).toBe(218);

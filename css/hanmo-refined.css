@@ -128,7 +128,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main > .hanmo-schoolmark {
   letter-spacing: -.025em;
   font-weight: 700;
 }
-body.hanmo-ui.hanmo-refined > main.hanmo-main > :is(.hanmo-search-controls, .hanmo-support-search) {
+body.hanmo-ui.hanmo-refined > main.hanmo-main > .hanmo-search-controls {
   width: 100%;
   max-width: none;
   padding: 24px 0;
@@ -192,22 +192,8 @@ body.hanmo-refined.hanmo-flat-legacy .container > .button::before { content: non
   mask: var(--hm-icon) center / contain no-repeat;
   -webkit-mask: var(--hm-icon) center / contain no-repeat;
 }
-.hanmo-refined .hm-icon-search { --hm-icon: url("../img/lucide/search.svg"); }
-.hanmo-refined .hm-icon-external { --hm-icon: url("../img/lucide/external-link.svg"); }
 .hanmo-refined .hm-icon-retry { --hm-icon: url("../img/lucide/rotate-ccw.svg"); }
 .hanmo-refined .hm-icon-next { --hm-icon: url("../img/lucide/arrow-right.svg"); }
-
-/* 문의 검색은 입력과 추천만 나란히 놓고 결과와 주의사항을 이어 읽게 합니다. */
-body.hanmo-support-page.hanmo-refined .hanmo-support-search { gap: 20px 40px; }
-body.hanmo-support-page.hanmo-refined .hanmo-support-suggestion {
-  min-height: 40px;
-  border-radius: 4px;
-  background: transparent;
-  font-weight: 500;
-}
-body.hanmo-support-page.hanmo-refined .hanmo-support-suggestion:hover { background: #102a3e; }
-body.hanmo-support-page.hanmo-refined .hanmo-support-caution { max-width: 76ch; color: var(--hm-readable); }
-body.hanmo-support-page.hanmo-refined #support-result-text { font-size: 15px; word-break: keep-all; }
 
 /* FullCalendar의 공개 역할·날짜 속성을 사용해 해시 클래스에 의존하지 않습니다. */
 .hanmo-refined .academic-calendar-surface { padding-top: 18px; }

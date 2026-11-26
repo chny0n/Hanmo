@@ -1,13 +1,7 @@
 /* 학업 페이지와 개발자 소개의 평평한 레이아웃을 정의한다. */
 body.hanmo-ui .hanmo-card,
 body.hanmo-ui .hanmo-item,
-body.hanmo-ui .hanmo-result,
-body.hanmo-ui .hanmo-empty,
-body.hanmo-ui .hanmo-metric,
-body.hanmo-ui .credit-card,
-body.hanmo-ui .plan-row,
-body.hanmo-ui .progress-table-scroll,
-body.hanmo-ui .scenario-fieldset{
+body.hanmo-ui .hanmo-empty{
   background:transparent;
   background-image:none;
   box-shadow:none;
@@ -16,50 +10,26 @@ body.hanmo-ui .scenario-fieldset{
 }
 body.hanmo-ui .hanmo-card{padding:18px 0;margin-top:0;min-width:0}
 body.hanmo-ui .hanmo-card+ .hanmo-card{border-top:1px solid #385367}
-body.hanmo-ui .hanmo-card-grid.two{gap:clamp(22px,4vw,52px)}
-body.hanmo-ui .hanmo-card-grid.two>.hanmo-card:nth-child(2){border-left:1px solid #385367;padding-left:clamp(18px,3vw,36px)}
-body.hanmo-ui .hanmo-result{min-height:80px;padding:14px 0;margin-top:8px}
 body.hanmo-ui .hanmo-empty{padding:21px 0;text-align:left}
 body.hanmo-ui .hanmo-item{padding:19px 0;border-bottom:1px solid #385367}
 body.hanmo-ui .hanmo-item:first-child{border-top:1px solid #385367}
-body.hanmo-ui .hanmo-metric,body.hanmo-ui .credit-card{padding:14px 0}
-body.hanmo-ui .progress-table-scroll{overflow-x:auto}
-body.hanmo-ui .scenario-fieldset{padding:12px 0;margin:8px 0 16px}
-body.hanmo-ui .scenario-fieldset label{border:1px solid #4a6c81;border-radius:0;background:transparent}
-body.hanmo-ui .scenario-fieldset label:has(input:checked){background:transparent;border-color:#f4c76c}
-body.hanmo-ui .plan-row{padding:12px 0;border-bottom:1px solid #385367}
-body.hanmo-ui .credit-overview{gap:28px}
 body.hanmo-ui .hanmo-section-title{margin:22px 0 14px}
 body.hanmo-ui .hanmo-card>h2{margin-bottom:14px}
 body.hanmo-ui .hanmo-status{color:#c4d8e4}
-body.hanmo-ui .hanmo-card-grid.two+section.hanmo-card{margin-top:32px!important;border-top:1px solid #385367;padding-top:30px}
 body.hanmo-flat-legacy .info.blueBox{background:transparent;border:0;border-radius:0;
   box-shadow:none;padding:18px 0}
 body.hanmo-flat-legacy .info.blueBox+ .info.blueBox{border-top:1px solid #385367}
 body.hanmo-flat-legacy .info .card{background:transparent;border:0;border-radius:0}
-@media(max-width:830px){
-  body.hanmo-ui .hanmo-card-grid.two>.hanmo-card:nth-child(2){
-    border-left:0;border-top:1px solid #385367;padding-left:0
-  }
-}
 
 /* 평면 레이아웃을 유지하되 구분선과 제목 간격의 시각적 밀도만 정돈한다. */
 body.hanmo-ui .hanmo-card + .hanmo-card {
   border-top-color: rgba(131, 174, 194, .32);
 }
-body.hanmo-ui .hanmo-card-grid.two > .hanmo-card:nth-child(2) {
-  border-left-color: rgba(131, 174, 194, .32);
-}
 body.hanmo-ui .hanmo-card :is(h2, h3) {
   letter-spacing: -.018em;
 }
-@media (max-width: 830px) {
-  body.hanmo-ui .hanmo-card-grid.two > .hanmo-card:nth-child(2) {
-    border-top-color: rgba(131, 174, 194, .32);
-  }
-}
 
-/* 학사 공지·강의 검색도 문의처처럼 본문 폭을 열고 같은 최대 작업 영역을 사용합니다. */
+/* 학사 공지와 강의 검색에 같은 최대 작업 영역을 적용합니다. */
 body.hanmo-ui.hanmo-search-page > main.hanmo-main {
   box-sizing: border-box;
   width: 100%;
@@ -89,7 +59,7 @@ body.hanmo-ui.hanmo-search-page > main.hanmo-main > :is(.hanmo-section-title, .h
   }
 }
 
-/* 1980×1080에서는 문의처의 전체 폭 규칙과 동일하게 중앙 1660px 제한을 해제합니다. */
+/* 넓고 높은 화면에서는 중앙 1660px 제한을 해제합니다. */
 @media (min-width: 1600px) and (min-height: 900px) {
   body.hanmo-ui.hanmo-search-page > main.hanmo-main > :is(
     .hanmo-search-controls, .hanmo-section-title, .hanmo-list, .hanmo-actions, #notice-status
