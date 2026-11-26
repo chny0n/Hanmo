@@ -223,23 +223,23 @@ test('전략 실험은 중요 순위와 경쟁을 절충하고 계산식을 보�
   const result=page.locator('#strategy-result');
   const order=page.locator('#strategy-order li strong');
   await expect(result).toBeVisible();
-  await expect(order).toHaveText(['과목 A','과목 C','과목 B']);
+  await expect(order).toHaveText(['과목 A','과목 B','과목 C']);
   await expect(page.locator('#strategy-order li').first()).toContainText('자리당 0.95명');
-  await expect(page.locator('#strategy-order li').nth(2)).toContainText('자리당 1명');
+  await expect(page.locator('#strategy-order li').nth(1)).toContainText('자리당 1명');
   await expect(result).not.toContainText(/성공률|%/);
   const criteria=page.locator('#strategy-criteria');
   await expect(criteria).toHaveJSProperty('open',false);
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
   await expect(criteria).toContainText('중요 순위 손실');
-  await expect(criteria).toContainText('경쟁자 수 ÷ 정원');
+  await expect(criteria).toContainText('경쟁자 수 ÷ (정원 + 경쟁자 수)');
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
   await expect(rivals).toHaveValue('19');
   await expect(page.locator('#strategy-courses tr:first-child input').first()).toBeFocused();
   await rivals.fill('20');
   await page.locator('#strategy-run').click();
-  await expect(order).toHaveText(['과목 A','과목 C','과목 B']);
+  await expect(order).toHaveText(['과목 A','과목 B','과목 C']);
 });
 
 test('전략 입력은 중요 순위가 중복되면 추천하지 않고 최소 두 과목을 유지한다',async({page})=>{

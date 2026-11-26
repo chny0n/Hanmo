@@ -13,7 +13,7 @@ const input=()=>({
 test('같은 8과목에서도 입력한 중요 순위에 따라 추천 순서가 달라진다',()=>{
   const ids='ABCDEFGH';
   const inputs=[[8,30],[12,33],[16,34],[20,35],[24,36],[30,40],[40,44],[55,50]];
-  for(const [ranks,expected] of [['ABCDEFGH','ABCDEFGH'],['HGFEDCBA','AHGBFEDC'],['EFGHABCD','AEBFGHCD']]){
+  for(const [ranks,expected] of [['ABCDEFGH','ABCDEFGH'],['HGFEDCBA','HGFEADCB'],['EFGHABCD','EFAGHBCD']]){
     const courses=inputs.map(([capacity,rivals],index)=>({
       id:ids[index],name:ids[index],rank:ranks.indexOf(ids[index])+1,capacity,rivals,
     }));
@@ -22,15 +22,25 @@ test('같은 8과목에서도 입력한 중요 순위에 따라 추천 순서가
     assert.equal(courses.map(course=>course.id).join(''),ids);
   }
 });
-test('정원 경계에 잘린 경쟁 손실은 없고, 경쟁 정도가 같으면 중요 순위를 따른다',()=>{
+test('자리당 경쟁자 수가 비슷하면 입력 중요 순위를 유지한다',()=>{
+  const ids='ABCDEFGH';
+  const capacities=[20,24,28,32,36,40,44,48];
+  for(const ranks of [ids,'HGFEDCBA']){
+    const courses=capacities.map((capacity,index)=>({
+      id:ids[index],name:ids[index],rank:ranks.indexOf(ids[index])+1,capacity,rivals:capacity+1,
+    }));
+    assert.equal(recommendCourses(courses).map(course=>course.id).join(''),ranks);
+  }
+});
+test('경쟁자 수가 정원에 닿아도 중요 순위가 갑자기 밀리지 않는다',()=>{
   const courses=[
     {id:'A',name:'가상 A',rank:1,capacity:20,rivals:19},
     {id:'B',name:'가상 B',rank:2,capacity:20,rivals:20},
     {id:'C',name:'가상 C',rank:3,capacity:8,rivals:30},
   ];
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','C','B']);
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','B','C']);
   courses[0].rivals=20;
-  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','C','B']);
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','B','C']);
   courses[2].rivals=8;
   assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','B','C']);
 });

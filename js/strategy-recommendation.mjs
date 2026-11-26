@@ -32,12 +32,11 @@ export function validateCourses(courses){
 export function recommendCourses(courses){
   validateCourses(courses);
   const byRank=[...courses].sort((a,b)=>a.rank-b.rank);
-  const pressure=byRank.map(course=>course.rivals/course.capacity);
+  const pressure=byRank.map(({rivals,capacity})=>rivals/(capacity+rivals));
+  if(pressure.every((value,index)=>index===0||pressure[index-1]>=value))return byRank;
   const pairCount=courses.length*(courses.length-1)/2;
   // 더 경쟁이 큰 과목을 뒤에 놓았을 때 발생하는 과목 쌍별 비용입니다.
   const delay=pressure.map(first=>pressure.map(later=>Math.max(0,later-first)));
-  const maxDelay=delay.flat().reduce((sum,cost)=>sum+cost,0);
-  if(maxDelay===0)return byRank;
 
   const order=[];
   let best=[];
@@ -45,7 +44,7 @@ export function recommendCourses(courses){
   const tolerance=1e-12;
   function search(used,reversals,delayCost){
     if(order.length===byRank.length){
-      const rankLoss=reversals/pairCount,competitionLoss=delayCost/maxDelay;
+      const rankLoss=reversals/pairCount,competitionLoss=delayCost/pairCount;
       const worst=Math.max(rankLoss,competitionLoss),total=rankLoss+competitionLoss;
       if(worst<bestWorst-tolerance||(Math.abs(worst-bestWorst)<=tolerance&&total<bestTotal-tolerance)){
         best=[...order];
