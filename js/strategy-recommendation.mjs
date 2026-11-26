@@ -52,7 +52,10 @@ function openingScenarios(courses){
       }
     }
   }
-  return [...scenarios.values()];
+  const distinct=[...scenarios.values()];
+  // 최대 확보 수가 같으면 모든 과목이 더 일찍 또는 같은 때 마감되는 조건의 손실이 항상 더 큽니다.
+  return distinct.filter(scenario=>!distinct.some(other=>other!==scenario&&other.bestCount===scenario.bestCount&&
+    other.deadlines.every((deadline,index)=>deadline<=scenario.deadlines[index])));
 }
 
 /** @param {Course[]} courses 입력 과목 */
@@ -66,6 +69,8 @@ export function recommendCourses(courses){
   let best=[];
   let bestLoss=Infinity,bestReversals=Infinity;
   function search(used,reversals){
+    // 손실 0은 더 줄일 수 없습니다. 동점 순서는 중요 순위대로 먼저 방문합니다.
+    if(bestLoss===0&&reversals>=bestReversals)return;
     if(order.length===byRank.length){
       let worstLoss=0;
       for(const {deadlines,bestCount} of scenarios){
@@ -83,14 +88,14 @@ export function recommendCourses(courses){
       }
       return;
     }
+    let remainingHigherPriority=0;
     for(let next=0;next<byRank.length;next++){
       const bit=1<<next;
       if(used&bit)continue;
-      let addedReversals=0;
-      for(const previous of order)if(previous>next)addedReversals++;
       order.push(next);
-      search(used|bit,reversals+addedReversals);
+      search(used|bit,reversals+remainingHigherPriority);
       order.pop();
+      remainingHigherPriority++;
     }
   }
   search(0,0);

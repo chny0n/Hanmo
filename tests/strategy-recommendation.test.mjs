@@ -31,6 +31,13 @@ test('한 과목은 여석이 남고 다른 과목은 첫 처리 차례에 마�
   ];
   assert.deepEqual(recommendCourses(courses).map(course=>course.id),['B','A']);
 });
+test('마감 순서가 같아 보여도 가능한 확보 수가 다른 조건은 함께 반영한다',()=>{
+  const courses=[
+    {id:'A',name:'가상 A',rank:1,capacity:8,rivals:30},
+    {id:'B',name:'가상 B',rank:2,capacity:10,rivals:18},
+  ];
+  assert.deepEqual(recommendCourses(courses).map(course=>course.id),['A','B']);
+});
 test('응답 사이 경쟁자가 두 차례 진행하면 B보다 D를 앞세우는 순서를 고른다',()=>{
   const courses=[
     {id:'A',name:'가상 A',rank:1,capacity:8,rivals:30},
