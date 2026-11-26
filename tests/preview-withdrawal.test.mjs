@@ -73,6 +73,13 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   const priorConfig=join(workspace,'data','academic-source-config.json');
   await writeFile(priorConfig,JSON.stringify({schemaVersion:1,mode:'supabase'}));
   await assert.rejects(stage(),/비활성 학사자료 설정만 허용/);
+  await writeFile(priorConfig,JSON.stringify({schemaVersion:1,mode:'disabled'}));
+  const publicManifest=join(workspace,'scripts','public-assets.json');
+  const assets=JSON.parse(await readFile(publicManifest,'utf8'));
+  await writeFile(publicManifest,JSON.stringify(assets.filter(path=>path!=='html/vsugang.html')));
+  await assert.rejects(stage(),/Missing public student asset html\/vsugang\.html/);
+  await writeFile(publicManifest,JSON.stringify([...assets,'html/scenario-workshop.html']));
+  await assert.rejects(stage(),/Disallowed web artifact: html\/scenario-workshop\.html/);
   await assertPreviewData(dist);
   for(const url of [staleUrl,staleUrl+'?previous=1']){
     const response=await fetch(url);

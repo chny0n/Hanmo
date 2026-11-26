@@ -7,6 +7,7 @@ const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const build=join(root,'.build');
 const bundles=['student-entry.js','academic-calendar.js'];
+const rootAssets=['index.html','sitemap.xml','LICENSE'];
 const exists=async p=>{try{return(await stat(p)).isFile()}catch{return false}};
 for(const bundle of bundles)
   if(!await exists(join(build,bundle)))throw Error('Missing generated academic JS bundle: '+bundle);
@@ -19,7 +20,20 @@ const meta=JSON.parse(await readFile(join(build,'bundle-meta.json'),'utf8'));
 assertStudentBundleMeta(meta);
 const {outputs}=meta;
 const publicAssets=await readPublicAssets(root);
-for(const path of publicAssets)
+const assetPaths=new Set(publicAssets);
+// 허용 목록 오류는 기존 공개 산출물을 지우기 전에 검사합니다.
+for(const required of [
+  'html/planner.html','html/forecast.html','html/catalog.html','html/readiness.html',
+  'html/reaction-test.html','html/strategy-lab.html','html/academic-timeline.html','html/vsugang.html',
+  'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js','js/readiness.mjs',
+  'js/strategy-page.mjs','js/strategy-recommendation.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
+])if(!assetPaths.has(required))throw Error('Missing public student asset '+required);
+for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
+  'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/student-forecast.js',
+  'js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png','html/scenario-workshop.html','html/scenario-lab.html',
+])if(assetPaths.has(banned))throw Error('Disallowed web artifact: '+banned);
+if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');
+for(const path of [...rootAssets,...publicAssets])
   if(!(await lstat(join(root,path))).isFile())throw Error('정적 공개 파일이 일반 파일이 아닙니다: '+path);
 const bundledPackages=new Set();
 for(const output of Object.values(outputs)){
@@ -37,44 +51,24 @@ for(const name of [...bundledPackages].sort()){
   notices.push(name+' '+version+'\n\n'+(await readFile(join(directory,license),'utf8')).trim());
 }
 if(!notices.length)throw new Error('번들 라이선스 목록이 비어 있습니다.');
+const photoPath='img/developer.jpg';
+const photo=assetPaths.has(photoPath)?stripPreviewPhotoExif(await readFile(join(root,photoPath))):null;
 await rm(dist,{recursive:true,force:true});
-await mkdir(dist,{recursive:true});
-await copyFile(join(root,'index.html'),join(dist,'index.html'));
-// 포크 미리보기의 공개 URL 목록을 정적 배포 산출물에도 포함합니다.
-await copyFile(join(root,'sitemap.xml'),join(dist,'sitemap.xml'));
-await copyFile(join(root,'LICENSE'),join(dist,'LICENSE'));
+const assetDirectories=new Set(['css','js',...publicAssets.map(path=>dirname(path))]);
+await Promise.all([...assetDirectories].map(path=>mkdir(join(dist,path),{recursive:true})));
+await mkdir(join(dist,'data'),{recursive:true});
+for(const path of rootAssets)await copyFile(join(root,path),join(dist,path));
 await writeFile(join(dist,'THIRD-PARTY-NOTICES.txt'),notices.join('\n\n---\n\n')+'\n');
 // 새 파일은 허용 목록에 명시하기 전에는 공개 산출물에 복사되지 않는다.
 for(const path of publicAssets){
   const target=join(dist,path);
-  await mkdir(dirname(target),{recursive:true});
-  const source=join(root,path);
-  if(path==='img/developer.jpg')await writeFile(target,stripPreviewPhotoExif(await readFile(source)));
-  else await copyFile(source,target);
+  if(path===photoPath)await writeFile(target,photo);
+  else await copyFile(join(root,path),target);
 }
-await mkdir(join(dist,'data'),{recursive:true});
 await copyFile(join(build,'academic-calendar.css'),join(dist,'css','academic-calendar-vendor.css'));
 await writeFile(join(dist,'data','academic-source-config.json'),JSON.stringify({schemaVersion:1,mode:'disabled'},null,2)+'\n');
 await writeFile(join(dist,'data','network-probe.txt'),probe);
 await assertPreviewData(dist);
 for(const bundle of bundles)
   await copyFile(join(build,bundle),join(dist,'js',bundle));
-for(const name of [
- 'index.html','html/planner.html','html/forecast.html','html/catalog.html',
- 'html/readiness.html','html/reaction-test.html','html/strategy-lab.html','css/hanmo-labs.css',
- 'css/academic-unified.css','js/academic-unified.js',
- 'js/readiness.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs',
- 'js/reaction-page.mjs','js/reaction-profile.mjs',
- 'data/network-probe.txt',
- 'html/academic-timeline.html',
- 'html/vsugang.html','css/academic-calendar-vendor.css','js/academic-calendar.js','sitemap.xml','js/student-entry.js','data/academic-source-config.json',
-])if(!await exists(join(dist,name)))throw Error('Missing public student asset '+name);
-for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
- 'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/student-forecast.js','js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png'])
- if(await exists(join(dist,banned)))throw Error('Disallowed web artifact: '+banned);
-if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into QA artifact');
-const rootEntries=await readdir(dist);
-if(rootEntries.includes('degree-rescue'))throw Error('Legacy academic directory leaked into Pages artifact');
-if(await exists(join(dist,'html/scenario-workshop.html'))||await exists(join(dist,'html/scenario-lab.html')))throw Error('Standalone incident HTML leaked into QA artifact');
-if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');
 console.log('Hanmo site staged at dist/ with academic bundles, HTML, CSS and public data.');

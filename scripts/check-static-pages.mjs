@@ -66,15 +66,15 @@ for(const route of publicRoutes){
 if(await exists(join(dist,'data/academic-notices-reference.json')))
   throw Error('Unapproved historical notice feed leaked into public preview');
 if((await readdir(dist)).includes('degree-rescue'))throw Error('Academic student pages must not live under /degree-rescue/');
+const pages=new Map(await Promise.all(htmlRoutes.map(async page=>[page,await readFile(join(dist,page),'utf8')])));
 let linkCount=0,ariaCount=0;
-for(const page of htmlRoutes){
-  const body=await readFile(join(dist,page),'utf8');
+for(const [page,body] of pages){
   const pc=page==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
   const guard=body.indexOf('<script src="'+pc+'"></script>');
   if(guard<0||guard>body.indexOf('</head>'))throw Error('PC-only guard missing or async: '+page);
 }
 for(const page of studentPages){
-  const body=await readFile(join(dist,page),'utf8');
+  const body=pages.get(page);
   if(/<textarea\b|<input\b[^>]*type=["']file["']/i.test(body))
     throw Error('A student page still requires raw HTML/JSON input: '+page);
   if(/planner-sidebar|<aside\s+class=["'].*sidebar/i.test(body))
@@ -104,7 +104,7 @@ for(const page of studentPages){
     linkCount++;
   }
 }
-const root=await readFile(join(dist,'index.html'),'utf8');
+const root=pages.get('index.html');
 if(!root.includes('class="hanmo-topbar"')||
    !root.includes('class="hanmo-brand"')||
    /academic-entry|학사 준비도 한모에서/.test(root))
@@ -124,7 +124,7 @@ if(!root.includes('<body class="hanmo-home hanmo-refined">')||
 if(!root.includes('onclick="location.reload()"'))
   throw Error('Home refresh button must work on a GitHub Pages project path');
 for(const page of studentPages){
-  const body=await readFile(join(dist,page),'utf8');
+  const body=pages.get(page);
   if(!body.includes('class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"'))
     throw Error('Hanmo brand must link to home: '+page);
   if(/<a href="\.\.\/index\.html">홈<\/a>/.test(body))
@@ -136,7 +136,7 @@ for(const path of studentPages.filter(path=>path!=='html/forecast.html')){
 if(root.includes('<a href="./html/vsugang.html"')||/기존 모의신청|기본 모의신청/.test(root))
   throw Error('Home topbar must not expose a redundant mock-registration link');
 for(const page of [...studentPages,'html/vsugang.html','html/result.html','html/developer.html']){
-  const body=await readFile(join(dist,page),'utf8');
+  const body=pages.get(page);
   const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
   if(!bar||!bar.includes('class="hanmo-brand" href="../index.html"'))
     throw Error('Missing consistent home brand link on '+page);
@@ -144,7 +144,7 @@ for(const page of [...studentPages,'html/vsugang.html','html/result.html','html/
     throw Error('Redundant mock-registration or home item in topbar: '+page);
 }
 for(const page of ['index.html',...studentPages,'html/vsugang.html','html/result.html','html/developer.html']){
-  const body=await readFile(join(dist,page),'utf8');
+  const body=pages.get(page);
   const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
   if(!bar||!bar.includes('data-profile-summary'))
     throw Error('Student profile is not accessible from shared navigation: '+page);
@@ -154,11 +154,11 @@ for(const page of ['index.html',...studentPages,'html/vsugang.html','html/result
     throw Error('내정보 must be the rightmost topbar action: '+page);
 }
 for(const page of studentPages){
-  const html=await readFile(join(dist,page),'utf8');
+  const html=pages.get(page);
   if(/class="hanmo-hero"|class="hanmo-eyebrow"/.test(html))
     throw Error('Redundant page-introduction block remains: '+page);
 }
-const menu=await readFile(join(dist,'html/vsugang.html'),'utf8');
+const menu=pages.get('html/vsugang.html');
 if(!menu.includes('<body class="hanmo-vsugang hanmo-refined">')||
    !menu.includes('href="../css/vsugang-fit.css"')||
    !menu.includes('src="../js/vsugang-fit.js" defer'))
@@ -180,7 +180,7 @@ if(!menu.includes('name="incident-RECONNECT" value="no" data-scenario-off="RECON
   throw Error('RECONNECT must default to No');
 if(/LAST_VALID|incident-practice|incident-404-refresh|incident-404-back/.test(menu))
   throw Error('Removed in-menu failure/timer UI is still present');
-const broken=await readFile(join(dist,'html/incident-404.html'),'utf8');
+const broken=pages.get('html/incident-404.html');
 if(!broken.includes('class="navigation"')||
   !broken.includes('inert')||
   !broken.includes('src="../js/incident-404.js"')||
@@ -195,26 +195,23 @@ for(const retired of ['js/incident-options.js','css/scenario-settings.css','js/i
  'js/scenario-lab.js','js/scenario-workshop.js','js/scenario-review.js'])
  if(await exists(join(dist,retired)))throw Error('Removed prototype leaked: '+retired);
 
-const unified=await readFile(join(dist,'html/academic-timeline.html'),'utf8');
+const unified=pages.get('html/academic-timeline.html');
 if(!unified.includes('id="academic-calendar-panel"')||!unified.includes('id="notice-list"')||
    !unified.includes('id="academic-calendar-tab"'))
   throw Error('Academic notice and calendar must share one tabbed page');
 if(!root.includes('href="./html/reaction-test.html"'))
   throw Error('Reaction test missing from global navigation');
-for(const page of [root]){
- // 돌발상황은 모드 메뉴에서만 시작한다.
- if(page.includes('scenario-workshop.html')||page.includes('vsugang.html#scenario-settings'))
-   throw Error('Standalone incident link remains on landing');
-}
+// 돌발상황은 모드 메뉴에서만 시작한다.
+if(root.includes('scenario-workshop.html')||root.includes('vsugang.html#scenario-settings'))
+  throw Error('Standalone incident link remains on landing');
 for(const oldPage of ['html/scenario-workshop.html','html/scenario-lab.html'])
   if(await exists(join(dist,oldPage)))throw Error('Standalone synthetic page remains: '+oldPage);
-for(const p of htmlRoutes){
-  const html=await readFile(join(dist,p),'utf8');
+for(const [p,html] of pages){
   if(/(?:href|src)=["'][^"']*scenario-(?:workshop|lab)\.html/i.test(html))
     throw Error('Dead standalone scenario link from '+p);
 }
 for(const path of ['index.html',...studentPages,'html/vsugang.html','html/developer.html','html/result.html']){
- const html=await readFile(join(dist,path),'utf8');
+ const html=pages.get(path);
  if(html.includes('academic-progress.html')||html.includes('academic-faq.html'))
    throw Error('Deleted page still linked from: '+path);
  if(!html.includes('본 서비스는 한국외국어대학교의 공식 서비스가 아니며'))
