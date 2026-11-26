@@ -186,7 +186,7 @@ Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install ch
 
 **협업 과제.** 이의상(`uisang2004-maker`)과 김채윤(`qamarrchae`)이 세 PC 도구의 측정·계산 신뢰성을 공동 검증합니다. [#134](https://github.com/ot4562-glitch/Hanmo_develop/issues/134)
 
-**운영·인수.** 실제 학교 자료는 비활성 상태입니다. 선택적 Supabase Free 실습은 김채윤이 기존 선행 요건에 따라 직접 수행합니다. 원개발자 `dlacked`에게 전달하기 전 후보 소스의 동등성·권리·현장 QA를 검증하고, 전달 뒤 명시적 인수 수락을 확인합니다. [#67 운영 실습](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) · [#125 최종 인수](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)
+**운영·인수.** 실제 학교 자료는 비활성 상태입니다. 김채윤은 2차 원본 연습 검증의 선행 요건을 충족한 뒤 선택적 Supabase Free 실습을 직접 수행합니다. 원개발자 `dlacked`에게 전달하기 전 후보 소스의 동등성·권리·현장 QA를 검증하고, 전달 뒤 명시적 인수 수락을 확인합니다. [#67 운영 실습](https://github.com/ot4562-glitch/Hanmo_develop/issues/67) · [#125 최종 인수](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)
 
 [설계 문서](docs/architecture.md) · [문서 안내](docs/README.md) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 
