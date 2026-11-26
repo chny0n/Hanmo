@@ -241,6 +241,7 @@ test('전략 실험은 중요 순위와 경쟁을 절충하고 계산식을 보�
   await expect(criteria).toContainText('앞선 상대 요청의 처리 완료');
   await expect(criteria).toContainText('동시 도착은 양쪽 순번을 비교합니다');
   await expect(criteria).toContainText('가능한 최대 확보 과목 수');
+  await expect(criteria).toContainText('1순위는 첫 요청으로 잡을 수 있는 조건에서 지킵니다');
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
   await expect(rivals).toHaveValue('19');

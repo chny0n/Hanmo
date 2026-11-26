@@ -37,6 +37,7 @@ export function validateCourses(courses){
 function openingScenarios(courses){
   const scenarios=new Map();
   const slots=courses.length;
+  let priorityDeadline=slots-1;
   // 과목당 4비트에 마감 자리 + 1을 저장합니다. 0은 첫 요청 전 마감을 뜻합니다.
   const bitsPerDeadline=4;
   const deadlineMask=(1<<bitsPerDeadline)-1;
@@ -47,6 +48,8 @@ function openingScenarios(courses){
   function record(code){
     if(scenarios.has(code)||code===slotCodes[slots-1])return;
     const deadlines=shifts.map(shift=>((code>>>shift)&deadlineMask)-1);
+    // 첫 요청으로도 확보할 수 없는 조건은 1순위 과목의 신청 기회를 제한하지 않습니다.
+    if(deadlines[0]>=0)priorityDeadline=Math.min(priorityDeadline,deadlines[0]);
     let bestCount=0;
     // 일찍 마감되는 과목부터 가능한 자리만 채우면 해당 조건의 최대 과목 수입니다.
     for(const deadline of [...deadlines].sort((a,b)=>a-b)){
@@ -101,8 +104,9 @@ function openingScenarios(courses){
   }
   const distinct=[...scenarios.values()];
   // 최대 확보 수가 같으면 모든 과목이 더 일찍 또는 같은 때 마감되는 조건의 손실이 항상 더 큽니다.
-  return distinct.filter(scenario=>!distinct.some(other=>other!==scenario&&other.bestCount===scenario.bestCount&&
+  const opening=distinct.filter(scenario=>!distinct.some(other=>other!==scenario&&other.bestCount===scenario.bestCount&&
     other.deadlines.every((deadline,index)=>deadline<=scenario.deadlines[index])));
+  return {opening,priorityDeadline};
 }
 
 /** @param {Course[]} courses 입력 과목 */
@@ -110,7 +114,7 @@ export function recommendCourses(courses){
   validateCourses(courses);
   const byRank=[...courses].sort((a,b)=>a.rank-b.rank);
   if(byRank.every(({capacity,rivals})=>rivals<capacity))return byRank;
-  const opening=openingScenarios(byRank);
+  const {opening,priorityDeadline}=openingScenarios(byRank);
   if(!opening.length)return byRank;
 
   const slots=byRank.length;
@@ -136,6 +140,7 @@ export function recommendCourses(courses){
   let bestLoss=Infinity,bestReversals=Infinity;
   function search(used,reversals){
     const slot=order.length;
+    if(slot>priorityDeadline&&!(used&1))return;
     const counts=secured[slot];
     let loss=0;
     for(let index=0;index<scenarios.length;index++){

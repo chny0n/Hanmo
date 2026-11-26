@@ -63,7 +63,7 @@
         <p class="lab-footnote"><strong>초반 선착순.</strong> 취소·증원 없이 경쟁자도 1~8과목을 신청합니다. 경쟁자 수가 여석 이상이면 마감 차례는 (여석 × 경쟁자가 신청할 과목 수 ÷ 경쟁자 수)를 올림한 값입니다.</p>
         <p class="lab-footnote"><strong>인터넷과 처리 대기.</strong> 내 첫 도착을 0으로 두고 상대는 −1·0·1에 시작해 1·2·3 단위 간격으로 요청합니다. 동시 도착은 양쪽 순번을 비교합니다.</p>
         <p class="lab-footnote">내 다음 도착 = 현재 도착과 앞선 상대 요청의 처리 완료 중 늦은 시각 + 인터넷 왕복 간격(요청마다 1·2). 상대 한 차례의 처리 시간은 0부터 상대 요청 간격까지 비교합니다. 이 눈금은 합성 조건입니다.</p>
-        <p class="lab-footnote"><strong>추천 기준.</strong> 조건별 손실은 가능한 최대 확보 과목 수에서 이 순서로 확보한 과목 수를 뺀 값입니다. 가장 큰 손실이 작은 순서를 고르고, 동률이면 중요 순위를 더 많이 지키는 순서를 고릅니다.</p>
+        <p class="lab-footnote"><strong>추천 기준.</strong> 1순위는 첫 요청으로 잡을 수 있는 조건에서 지킵니다. 이어 최악 손실(가능한 최대 확보 과목 수 − 확보 수)을 줄입니다. 동률이면 중요 순위를 더 많이 지킵니다.</p>
       </details>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 추천</button>
     </section>
