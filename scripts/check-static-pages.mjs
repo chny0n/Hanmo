@@ -1,6 +1,7 @@
 import {readFile,stat,readdir} from 'node:fs/promises';
 import {resolve,join,sep} from 'node:path';
 import {assertPreviewData} from './preview-data.mjs';
+import {studentStyles} from './student-boundary.mjs';
 
 const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
@@ -22,7 +23,7 @@ for(const name of [
   'js/student-preferences.js','js/student-notices.js','js/student-catalog.js',
   'js/student-entry.js',
  'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
-  'js/student-profile-bar.js','css/hanmo-flat.css',
+  'js/student-profile-bar.js',
   'img/favicon-purple.svg','img/boo.png',
   'js/home-fit.js','css/home-fit.css',
   'js/vsugang-fit.js','css/vsugang-fit.css',
@@ -33,11 +34,15 @@ for(const name of [
   'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,
 ])await must(name);
+const style=await readFile(join(dist,'css','student-ui.css'),'utf8');
+if(/@import\b/i.test(style)||!style.includes('../img/background.svg'))
+  throw Error('Bundled student styles must use the existing background URL and no CSS imports');
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
 for(const banned of ['html/academic-calendar.html','html/academic-support.html','css/academic-support.css','js/academic-support.js','html/academic-progress.html','html/academic-faq.html',
  'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
  'js/degree-preparation.js','js/student-forecast.js','js/lab-share.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs',
- 'img/hufs_logo.png','img/hanmo_purple.png','img/lucide/external-link.svg','img/lucide/search.svg'])
+ 'img/hufs_logo.png','img/hanmo_purple.png','img/lucide/external-link.svg','img/lucide/search.svg',
+ ...studentStyles.slice(1)])
  if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
 
 // 사이트맵은 포크의 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.

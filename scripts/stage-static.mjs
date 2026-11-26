@@ -1,17 +1,19 @@
 import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
 import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,stripPreviewPhotoExif} from './preview-data.mjs';
-import {assertStudentBundleMeta,readPublicAssets} from './student-boundary.mjs';
+import {assertStudentBundleMeta,readPublicAssets,studentStyles} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
 const build=join(root,'.build');
 const bundles=['student-entry.js','academic-calendar.js'];
+const styles={'academic-calendar.css':'academic-calendar-vendor.css','student-ui.css':'student-ui.css'};
 const rootAssets=['index.html','sitemap.xml','LICENSE'];
 const exists=async p=>{try{return(await stat(p)).isFile()}catch{return false}};
 for(const bundle of bundles)
   if(!await exists(join(build,bundle)))throw Error('Missing generated academic JS bundle: '+bundle);
-if(!await exists(join(build,'academic-calendar.css')))throw Error('Missing FullCalendar CSS bundle');
+for(const style of Object.keys(styles))
+  if(!await exists(join(build,style)))throw Error('Missing generated CSS bundle: '+style);
 const config=await readFile(join(root,'data','academic-source-config.json'),'utf8');
 const probe=await readFile(join(root,'data','network-probe.txt'),'utf8');
 assertDisabledPreviewConfig(config);
@@ -27,10 +29,12 @@ for(const required of [
   'html/reaction-test.html','html/strategy-lab.html','html/academic-timeline.html','html/vsugang.html',
   'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js','js/readiness.mjs',
   'js/strategy-page.mjs','js/strategy-recommendation.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
+  'img/background.svg',
 ])if(!assetPaths.has(required))throw Error('Missing public student asset '+required);
 for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
   'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/student-forecast.js',
   'js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png','html/scenario-workshop.html','html/scenario-lab.html',
+  ...studentStyles,
 ])if(assetPaths.has(banned))throw Error('Disallowed web artifact: '+banned);
 if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');
 for(const path of [...rootAssets,...publicAssets])
@@ -65,7 +69,8 @@ for(const path of publicAssets){
   if(path===photoPath)await writeFile(target,photo);
   else await copyFile(join(root,path),target);
 }
-await copyFile(join(build,'academic-calendar.css'),join(dist,'css','academic-calendar-vendor.css'));
+for(const [style,target] of Object.entries(styles))
+  await copyFile(join(build,style),join(dist,'css',target));
 await writeFile(join(dist,'data','academic-source-config.json'),JSON.stringify({schemaVersion:1,mode:'disabled'},null,2)+'\n');
 await writeFile(join(dist,'data','network-probe.txt'),probe);
 await assertPreviewData(dist);
