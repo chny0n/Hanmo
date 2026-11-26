@@ -1,6 +1,6 @@
 // @ts-check
 // 가상 과목 입력과 추천 순서를 화면에 표시합니다.
-import {IMPORTANT_WEIGHT,MAX_COURSES,recommendCourses} from './strategy-recommendation.mjs';
+import {MAX_COURSES,recommendCourses} from './strategy-recommendation.mjs';
 const form=document.getElementById('strategy-form');
 if(form){
   const body=document.getElementById('strategy-courses');
@@ -20,8 +20,7 @@ if(form){
     return [...body.querySelectorAll('tr')].map(row=>{
       const input=name=>row.querySelector('[data-field="'+name+'"]')?.value??'';
       return {id:row.dataset.id,name:input('name').trim(),
-        rank:Number(input('rank')),capacity:Number(input('capacity')),rivals:Number(input('rivals')),
-        important:row.querySelector('[data-field="important"]').checked};
+        rank:Number(input('rank')),capacity:Number(input('capacity')),rivals:Number(input('rivals'))};
     });
   }
   function renderRows(items){
@@ -41,10 +40,6 @@ if(form){
         }
         input.value=String(item[field]);td.append(input);tr.append(td);
       }
-      const flagCell=document.createElement('td'),flag=document.createElement('input');
-      flag.type='checkbox';flag.dataset.field='important';flag.checked=Boolean(item.important);
-      flag.setAttribute('aria-label',item.id+' 중요 과목');
-      flagCell.append(flag);tr.append(flagCell);
       const td=document.createElement('td'),remove=document.createElement('button');
       remove.type='button';remove.className='lab-text-button';remove.textContent='삭제';
       remove.disabled=items.length<=2;
@@ -64,12 +59,11 @@ if(form){
     const items=readRows();if(items.length>=MAX_COURSES)return;
     const id='ABCDEFGH'.split('').find(c=>!items.some(row=>row.id===c));
     if(!id)return;
-    items.push({id,name:'과목 '+id,rank:items.length+1,capacity:15,rivals:30,important:false});
+    items.push({id,name:'과목 '+id,rank:items.length+1,capacity:15,rivals:30});
     renderRows(items);
   });
   const criteria=document.getElementById('strategy-criteria');
-  for(const label of criteria.querySelectorAll('[data-important-weight]'))label.textContent=String(IMPORTANT_WEIGHT);
-  const scoreFormat=new Intl.NumberFormat('ko-KR',{maximumFractionDigits:2});
+  const ratioFormat=new Intl.NumberFormat('ko-KR',{maximumFractionDigits:2});
   redo.addEventListener('click',()=>{
     result.hidden=true;
     inputPanel.hidden=false;
@@ -80,7 +74,7 @@ if(form){
     event.preventDefault();
     try{
       const order=recommendCourses(readRows());
-      orderList.replaceChildren(...order.map(({name,rank,capacity,rivals,important,weight,weightedRivals},slot)=>{
+      orderList.replaceChildren(...order.map(({name,rank,capacity,rivals},slot)=>{
         const item=document.createElement('li');
         const headline=document.createElement('div');
         headline.className='strategy-card-head';
@@ -89,20 +83,17 @@ if(form){
         position.textContent=(slot+1)+'번째';
         const demand=document.createElement('span');
         demand.className='strategy-course-demand';
-        const competition=rivals>=capacity?'경합':'정원 여유';
-        demand.textContent=important?'중요 · '+competition:competition;
+        demand.textContent='중요 '+rank+'위';
         headline.append(position,demand);
         const course=document.createElement('strong');
         course.textContent=name;
         const details=document.createElement('span');
         details.className='strategy-course-inputs';
-        details.textContent='중요 '+rank+'위 · 정원 '+capacity+'명 · 경쟁자 '+rivals+'명';
-        const score=document.createElement('span');
-        score.className='strategy-course-inputs';
-        score.textContent=weightedRivals
-          ?`점수 ${rivals} ÷ ${capacity} × ${weight} = ${scoreFormat.format(weightedRivals/capacity)}`
-          :'점수 0';
-        item.append(headline,course,details,score);
+        details.textContent='정원 '+capacity+'명 · 경쟁자 '+rivals+'명';
+        const pressure=document.createElement('span');
+        pressure.className='strategy-course-inputs';
+        pressure.textContent=`자리당 ${ratioFormat.format(rivals/capacity)}~${ratioFormat.format((rivals+1)/capacity)}명`;
+        item.append(headline,course,details,pressure);
         return item;
       }));
       criteria.open=false;

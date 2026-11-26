@@ -1,5 +1,5 @@
 /**
- * @typedef {{id:string,name:string,rank:number,capacity:number,rivals:number,important?:boolean}} Course
+ * @typedef {{id:string,name:string,rank:number,capacity:number,rivals:number}} Course
  */
 export const MAX_COURSES=8;
 
@@ -28,17 +28,17 @@ export function validateCourses(courses){
   }
 }
 
-export const IMPORTANT_WEIGHT=2;
-
 /** @param {Course[]} courses 입력 과목 */
 export function recommendCourses(courses){
   validateCourses(courses);
-  return courses.map(course=>{
-    const {capacity,rivals,important}=course;
-    const weight=important?IMPORTANT_WEIGHT:1;
-    const weightedRivals=rivals>=capacity?rivals*weight:0;
-    return {...course,weight,weightedRivals};
-  }).sort((a,b)=>
-    b.weightedRivals*a.capacity-a.weightedRivals*b.capacity||
-    b.weight-a.weight||a.rank-b.rank);
+  const remaining=[...courses].sort((a,b)=>a.rank-b.rank);
+  const order=[];
+  while(remaining.length){
+    const mostCrowded=remaining.reduce((a,b)=>b.rivals*a.capacity>a.rivals*b.capacity?b:a);
+    // 경쟁자 한 명을 더해도 가장 높은 경쟁 강도에 못 미치는 과목은 뒤로 미룹니다.
+    const next=remaining.findIndex(({rivals,capacity})=>
+      (rivals+1)*mostCrowded.capacity>=mostCrowded.rivals*capacity);
+    order.push(remaining.splice(next,1)[0]);
+  }
+  return order;
 }

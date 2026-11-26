@@ -40,7 +40,7 @@
         <div class="lab-table-scroll">
           <table class="lab-table lab-input-table">
             <caption>과목 2~8개</caption>
-            <thead><tr><th>과목 이름</th><th>중요 순위</th><th>정원</th><th>경쟁자</th><th>중요 과목</th><th>삭제</th></tr></thead>
+            <thead><tr><th>과목 이름</th><th>중요 순위</th><th>정원</th><th>경쟁자</th><th>삭제</th></tr></thead>
             <tbody id="strategy-courses"></tbody>
           </table>
         </div>
@@ -51,7 +51,7 @@
           <button type="submit" class="lab-button primary" id="strategy-run">신청 순서 추천 받기</button>
         </div>
       </form>
-      <p class="lab-status" id="strategy-status" role="status" aria-live="polite">같은 신청 회차의 여석과 경쟁자 수를 입력하고, 꼭 잡고 싶은 과목을 체크하세요.</p>
+      <p class="lab-status" id="strategy-status" role="status" aria-live="polite">같은 신청 회차의 여석과 본인을 뺀 경쟁자 수를 입력하세요.</p>
     </section>
     <section id="strategy-result" class="lab-panel lab-result-panel" aria-labelledby="strategy-results-heading" tabindex="0" hidden>
       <div class="lab-section-heading">
@@ -60,9 +60,9 @@
       <ol id="strategy-order" class="strategy-order" aria-labelledby="strategy-results-heading"></ol>
       <details id="strategy-criteria" class="strategy-criteria">
         <summary>추천 기준과 계산식 보기</summary>
-        <p class="lab-footnote"><strong>추천 점수 = 경쟁자 수 ÷ 정원 × 중요 가중치</strong>. 중요 과목은 가중치 <span data-important-weight></span>, 그 외는 1입니다. 경쟁자 수가 정원보다 적으면 0점입니다.</p>
-        <p class="lab-footnote">점수가 높은 순으로 신청합니다. 동점이면 체크한 과목, 그다음 입력한 중요 순위가 높은 과목이 먼저입니다. 표시 점수는 소수 둘째 자리까지 반올림합니다.</p>
-        <p class="lab-footnote">예를 들어 정원 10명에 경쟁자 40명인 일반 과목은 4점입니다. 정원 10명에 경쟁자 15명인 중요 과목은 1.5 × <span data-important-weight></span>점이므로 일반 과목을 먼저 추천합니다.</p>
+        <p class="lab-footnote"><strong>자리당 경쟁자 범위 = 경쟁자 수 ÷ 정원 ~ (경쟁자 수 + 1) ÷ 정원</strong>. 경쟁자 한 명 차이까지 비교하며, 화면의 수는 소수 둘째 자리까지 표시합니다.</p>
+        <p class="lab-footnote">남은 과목 중 자리당 경쟁자 수가 가장 높은 값을 기준으로 삼습니다. 범위가 그 값에 닿는 과목 중 중요 순위가 가장 높은 과목을 골라 이 과정을 반복합니다.</p>
+        <p class="lab-footnote">예를 들어 8석에 30명이면 3.75~3.88명으로 먼저 추천합니다. 20석에 19명과 20명이면 각각 0.95~1명, 1~1.05명으로 범위가 맞닿아 중요 순위로 정합니다.</p>
       </details>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 추천</button>
     </section>

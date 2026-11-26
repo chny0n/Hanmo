@@ -206,36 +206,39 @@ test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
 });
 
-test('전략 실험은 중요 가중치와 경쟁 강도를 반영하고 계산식을 보여 준다',async({page})=>{
+test('전략 실험은 한 명 차이에서는 중요 순위를 반영하고 계산식을 보여 준다',async({page})=>{
   await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new Error('저장소 차단');}}));
   await page.goto('/html/strategy-lab.html');
   const rows=page.locator('#strategy-courses tr');
   await expect(rows).toHaveCount(3);
-  await expect(page.getByRole('checkbox')).toHaveCount(3);
-  await page.getByRole('checkbox',{name:'C 중요 과목',exact:true}).check();
-  await page.getByRole('spinbutton',{name:'B 정원',exact:true}).fill('51');
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+  await page.getByRole('spinbutton',{name:'A 정원',exact:true}).fill('20');
+  const rivals=page.getByRole('spinbutton',{name:'A 경쟁자',exact:true});
+  await rivals.fill('19');
+  await page.getByRole('spinbutton',{name:'B 경쟁자',exact:true}).fill('20');
+  await page.getByRole('spinbutton',{name:'C 정원',exact:true}).fill('8');
   await page.getByRole('button',{name:'과목 추가',exact:true}).click();
-  await expect(page.getByRole('checkbox',{name:'C 중요 과목',exact:true})).toBeChecked();
   await page.getByRole('button',{name:'D 삭제',exact:true}).click();
   await page.locator('#strategy-run').click();
   const result=page.locator('#strategy-result');
+  const order=page.locator('#strategy-order li strong');
   await expect(result).toBeVisible();
-  await expect(page.locator('#strategy-order li strong')).toHaveText(['과목 A','과목 C','과목 B']);
-  await expect(page.locator('#strategy-order li').first()).toContainText('30 ÷ 8 × 1 = 3.75');
-  await expect(page.locator('#strategy-order li').nth(1)).toContainText('중요 · 경합');
-  await expect(page.locator('#strategy-order li').nth(1)).toContainText('30 ÷ 20 × 2 = 3');
-  await expect(page.locator('#strategy-order li').last()).toContainText('정원 여유');
+  await expect(order).toHaveText(['과목 C','과목 A','과목 B']);
+  await expect(page.locator('#strategy-order li').nth(1)).toContainText('자리당 0.95~1명');
+  await expect(page.locator('#strategy-order li').nth(2)).toContainText('자리당 1~1.05명');
   await expect(result).not.toContainText(/성공률|%/);
   const criteria=page.locator('#strategy-criteria');
   await expect(criteria).toHaveJSProperty('open',false);
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
-  await expect(criteria).toContainText('추천 점수 = 경쟁자 수 ÷ 정원 × 중요 가중치');
-  await expect(criteria).toContainText('중요 과목은 가중치 2');
+  await expect(criteria).toContainText('(경쟁자 수 + 1) ÷ 정원');
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
-  await expect(page.getByRole('checkbox',{name:'C 중요 과목',exact:true})).toBeChecked();
+  await expect(rivals).toHaveValue('19');
   await expect(page.locator('#strategy-courses tr:first-child input').first()).toBeFocused();
+  await rivals.fill('20');
+  await page.locator('#strategy-run').click();
+  await expect(order).toHaveText(['과목 C','과목 A','과목 B']);
 });
 
 test('전략 입력은 중요 순위가 중복되면 추천하지 않고 최소 두 과목을 유지한다',async({page})=>{
