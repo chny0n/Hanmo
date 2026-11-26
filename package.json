@@ -21,8 +21,6 @@
     "check:student": "npm run check:boundaries && npm run check:syntax && npm run check:types && npm run test:student && npm run check:legacy && npm run build && npm run smoke"
   },
   "dependencies": {
-    "papaparse": "5.7.0",
-    "zod": "4.6.7",
     "fullcalendar": "7.1.5",
     "temporal-polyfill": "1.0.8"
   },
@@ -33,7 +31,9 @@
     "esbuild": "0.28.2",
     "typescript": "5.9.3",
     "vitest": "5.1.1",
-    "@playwright/test": "1.65.1"
+    "@playwright/test": "1.65.1",
+    "papaparse": "5.7.0",
+    "zod": "4.6.7"
   },
   "engines": {
     "node": "22.x"
