@@ -19,6 +19,6 @@ export default defineConfig({
   reporter:'line',
   use:{baseURL:'http://127.0.0.1:4174',trace:'retain-on-failure'},
   projects:[{name:channel??'chromium',use:{...devices['Desktop Chrome'],channel}}],
-  webServer:{command:'node scripts/serve-feature-preview.mjs',cwd:projectRoot,
+  webServer:{command:'node scripts/serve-static.mjs',cwd:projectRoot,env:{PORT:'4174'},
     url:'http://127.0.0.1:4174/index.html',reuseExistingServer:!process.env.CI,timeout:30000}
 });

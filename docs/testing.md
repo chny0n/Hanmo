@@ -14,4 +14,6 @@
 
 [Windows browser QA](https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/windows-browser-qa.yml)는 설치된 Chrome·Edge 채널에서 두 자동 브라우저 묶음을 실행하고 OS·버전·SHA와 캡처를 보관합니다. [QA 결과 보고서](qa/2026-11-25-full-qa.md)에는 자동화 결과와 미실시 항목이 별도로 기록되어 있습니다.
 
+정기 화면 기록 테스트는 현재 후보의 12개 경로를 1440×900과 1280×720에서 캡처합니다. 원작 보호 파일은 고정된 Git blob과 승인된 동결 해시로 검사합니다. 이전 디자인을 재현하는 빌드 절차는 [검증 도구의 Git 이력](https://github.com/ot4562-glitch/Hanmo_develop/blob/4f2b52a1c0f66be788d23f4fc7c9e0f558c2df14/scripts/capture-design-baseline.mjs)에 있습니다.
+
 최대 SELECT 완료 표의 내부 스크롤과 남은 물리 입력·NVDA 검증은 [#125 현장 QA](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)에서 추적합니다. 자동 검증 당시의 브라우저·화면 크기·스크롤 높이는 [#71 종료 기록](https://github.com/ot4562-glitch/Hanmo_develop/issues/71#issuecomment-7160455697)에 있습니다.

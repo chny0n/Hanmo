@@ -2,11 +2,11 @@
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
-import {join} from 'node:path';
-import {DESIGN_BASE_COMMIT,repositoryRoot,startDesignBaseline}
-  from '../scripts/capture-design-baseline.mjs';
+import {join,resolve} from 'node:path';
 import {gitBlobHashes} from '../scripts/git-blob-hashes.mjs';
 
+const repositoryRoot=resolve(import.meta.dirname,'..');
+const protectedBaseline='0df1c0dafd23939f48b35aa68614e8461bb83b31';
 const fixedTime=new Date('2026-11-23T12:00:00Z');
 const viewports=[{width:1440,height:900},{width:1280,height:720}];
 const routes=[
@@ -368,32 +368,19 @@ test('practice와 selectZone의 소스·공유 스타일·이미지는 기준 Gi
   const current=gitBlobHashes(repositoryRoot,protectedPaths);
   for(const path of protectedPaths){
     const original=approvedChanges.has(path)?baseline.files.find(file=>file.path===path)?.sha
-      :execFileSync('git',['rev-parse',DESIGN_BASE_COMMIT+':'+path],
+      :execFileSync('git',['rev-parse',protectedBaseline+':'+path],
         {cwd:repositoryRoot,encoding:'utf8'}).trim();
     expect(original,path).toBeTruthy();
     expect(current.get(path),path).toBe(original);
   }
 });
 
-test.describe('같은 날짜와 합성 상태의 전체 경로 전후 화면',()=>{
-  /** @type {Awaited<ReturnType<typeof startDesignBaseline>>|undefined} */
-  let baseline;
-  test.beforeAll(async()=>{
-    test.setTimeout(90_000);
-    baseline=await startDesignBaseline();
-  });
-  test.afterAll(async()=>{await baseline?.close();});
-
+test.describe('같은 날짜와 합성 상태의 현재 화면 기록',()=>{
   for(const [name,path] of routes){
-    test(name+'의 변경 전·후와 작은 PC 창을 기록한다',async({browser},info)=>{
-      const scenarios=[
-        {name:'before',baseURL:baseline.url,viewport:viewports[0]},
-        {name:'after',baseURL:'http://127.0.0.1:4173',viewport:viewports[0]},
-        {name:'after',baseURL:'http://127.0.0.1:4173',viewport:viewports[1]},
-      ];
+    test(name+'의 두 PC 크기 화면을 기록한다',async({browser,baseURL},info)=>{
       const evidence=[];
-      for(const scenario of scenarios){
-        const context=await browser.newContext({baseURL:scenario.baseURL,viewport:scenario.viewport,
+      for(const viewport of viewports){
+        const context=await browser.newContext({baseURL,viewport,
           timezoneId:'Asia/Seoul',locale:'ko-KR',reducedMotion:'reduce'});
         try{
           const page=await context.newPage();
@@ -401,14 +388,14 @@ test.describe('같은 날짜와 합성 상태의 전체 경로 전후 화면',()
           page.on('pageerror',error=>errors.push(error.message));
           await preparePage(page);
           await visit(page,path);
-          const label=name+'-'+scenario.name+'-'+scenario.viewport.width+'x'+scenario.viewport.height;
+          const label=name+'-after-'+viewport.width+'x'+viewport.height;
           await capture(page,info,label);
           evidence.push({label,url:page.url(),pageErrors:errors});
-          if(scenario.name==='after')expect(errors,label).toEqual([]);
+          expect(errors,label).toEqual([]);
         }finally{await context.close();}
       }
-      await info.attach('비교-조건.json',{body:Buffer.from(JSON.stringify({
-        baseCommit:DESIGN_BASE_COMMIT,fixedTime:fixedTime.toISOString(),randomSeed:20261123,
+      await info.attach('캡처-조건.json',{body:Buffer.from(JSON.stringify({
+        fixedTime:fixedTime.toISOString(),randomSeed:20261123,
         externalRequests:'차단',data:'합성 연습 값과 자료 미연결 상태',screens:evidence,
       },null,2)),contentType:'application/json'});
     });
