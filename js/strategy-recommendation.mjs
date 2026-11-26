@@ -2,6 +2,8 @@
  * @typedef {{id:string,name:string,rank:number,capacity:number,rivals:number}} Course
  */
 export const MAX_COURSES=8;
+// 이전 합성 엔진의 응답 범위(1~3초)를 상대 차례 비교용 눈금으로만 사용합니다.
+const RESPONSE_STEPS=[1,2,3];
 
 /** @param {unknown} value 값 @param {number} min 최소 @param {number} max 최대 @param {string} label 항목 */
 export function requireInteger(value,min,max,label){
@@ -31,24 +33,41 @@ export function validateCourses(courses){
 /** @param {Course[]} courses 중요 순위순 과목 */
 function openingScenarios(courses){
   const scenarios=new Map();
+  const slots=courses.length;
+  function record(deadlines){
+    const key=deadlines.join(',');
+    if(scenarios.has(key)||deadlines.every(deadline=>deadline===slots-1))return;
+    let bestCount=0;
+    // 일찍 마감되는 과목부터 가능한 자리만 채우면 해당 조건의 최대 과목 수입니다.
+    for(const deadline of [...deadlines].sort((a,b)=>a-b)){
+      if(bestCount<=deadline)bestCount++;
+    }
+    if(bestCount>0)scenarios.set(key,{deadlines,bestCount});
+  }
   for(let rivalCourses=1;rivalCourses<=MAX_COURSES;rivalCourses++){
     // 대상 과목이 각 신청 차례에 고르게 흩어진 경우의 마감 차례입니다.
     const closing=courses.map(({capacity,rivals})=>
       rivals<capacity?Infinity:Math.ceil(capacity*rivalCourses/rivals));
-    for(let roundsPerRequest=1;roundsPerRequest<=rivalCourses;roundsPerRequest++){
-      for(const firstRound of [0,1]){
-        const deadlines=closing.map(round=>Math.min(courses.length-1,
-          Math.floor((round-1-firstRound)/roundsPerRequest)));
-        const key=deadlines.join(',');
-        if(scenarios.has(key))continue;
-        let bestCount=0;
-        // 일찍 마감되는 과목부터 가능한 자리만 채우면 해당 조건의 최대 과목 수입니다.
-        for(const deadline of [...deadlines].sort((a,b)=>a-b)){
-          if(bestCount<=deadline)bestCount++;
+    for(const rivalStep of RESPONSE_STEPS){
+      for(const rivalFirst of [false,true]){
+        const visited=new Set();
+        function visit(slot,elapsed,deadlines){
+          const rivalRounds=rivalFirst?1+Math.floor(elapsed/rivalStep):Math.ceil(elapsed/rivalStep);
+          const next=deadlines.map((deadline,index)=>{
+            const round=closing[index];
+            if(round===Infinity)return slots-1;
+            return rivalRounds<round?slot:deadline;
+          });
+          if(slot===slots-1||next.every((deadline,index)=>deadline===deadlines[index])){
+            record(next);
+            return;
+          }
+          const key=slot+':'+elapsed+':'+next.join(',');
+          if(visited.has(key))return;
+          visited.add(key);
+          for(const response of RESPONSE_STEPS)visit(slot+1,elapsed+response,next);
         }
-        if(bestCount>0&&deadlines.some(deadline=>deadline<courses.length-1)){
-          scenarios.set(key,{deadlines,bestCount});
-        }
+        visit(0,0,closing.map(round=>round===Infinity?slots-1:-1));
       }
     }
   }

@@ -3,7 +3,7 @@
 <head>
   <script src="../js/pc-only.js"></script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="반응속도 측정과 경쟁 모형을 이용한 한모 비공식 수강신청 순서 실험">
+  <meta name="description" content="정원과 경쟁자 수, 처리 대기 조건으로 선착순 신청 순서를 비교하는 한모 비공식 전략 실험">
   <title>전략 실험 | 한모</title>
   <link rel="icon" href="../img/favicon-purple.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/student-ui.css">
@@ -60,9 +60,9 @@
       <ol id="strategy-order" class="strategy-order" aria-labelledby="strategy-results-heading"></ol>
       <details id="strategy-criteria" class="strategy-criteria">
         <summary>추천 기준과 계산식 보기</summary>
-        <p class="lab-footnote"><strong>초반 선착순.</strong> 취소·증원 없이 경쟁자도 1~8과목을 신청합니다. 신청이 각 차례에 고르게 나뉘고, 누적 신청이 여석에 닿으면 마감합니다.</p>
-        <p class="lab-footnote"><strong>처리 대기.</strong> 내 첫 요청의 처리 순서와, 내 다음 요청까지 경쟁자가 진행한 차례 수를 바꿔 봅니다.</p>
-        <p class="lab-footnote"><strong>추천 기준.</strong> 가능한 최대 확보 과목 수와의 차이가 가장 큰 조건을 비교합니다. 그 차이가 가장 작은 순서를 고릅니다. 같으면 중요 순위를 더 많이 지키는 순서를 고릅니다.</p>
+        <p class="lab-footnote"><strong>초반 선착순.</strong> 취소·증원 없이 경쟁자도 1~8과목을 신청합니다. 경쟁자 수가 여석 이상이면 마감 차례는 (여석 × 경쟁자가 신청할 과목 수 ÷ 경쟁자 수)를 올림한 값입니다.</p>
+        <p class="lab-footnote"><strong>처리 대기.</strong> 인터넷 왕복과 처리 대기를 포함한 응답 뒤 다음 요청을 보냅니다. 내 응답 간격과 상대 차례 간격은 실측 대신 1·2·3 단위를 쓰며, 내 간격은 신청마다 달라질 수 있습니다. 내 앞의 상대 차례 수는 (누적 응답 간격 ÷ 상대 차례 간격)을 올림한 값입니다. 동시 도착 시 상대 우선 조건에서는 내림한 뒤 1을 더합니다.</p>
+        <p class="lab-footnote"><strong>추천 기준.</strong> 조건별 손실은 가능한 최대 확보 과목 수에서 이 순서로 확보한 과목 수를 뺀 값입니다. 가장 큰 손실이 작은 순서를 고르고, 동률이면 중요 순위를 더 많이 지키는 순서를 고릅니다.</p>
       </details>
       <button class="lab-button secondary" id="strategy-back" type="button">과목 수정 후 다시 추천</button>
     </section>

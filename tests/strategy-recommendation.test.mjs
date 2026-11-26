@@ -2,20 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {recommendCourses} from '../js/strategy-recommendation.mjs';
 
+const ids='ABCDEFGH';
+const inputs=[[8,30],[12,33],[16,34],[20,35],[24,36],[30,40],[40,44],[55,50]];
+const rankedCourses=ranks=>inputs.map(([capacity,rivals],index)=>({
+  id:ids[index],name:ids[index],rank:ranks.indexOf(ids[index])+1,capacity,rivals,
+}));
+
 test('같은 8과목에서도 입력한 중요 순위에 따라 추천 순서가 달라진다',()=>{
-  const ids='ABCDEFGH';
-  const inputs=[[8,30],[12,33],[16,34],[20,35],[24,36],[30,40],[40,44],[55,50]];
-  for(const [ranks,expected] of [['ABCDEFGH','ABECDGFH'],['HGFEDCBA','GEDCFHBA'],['EFGHABCD','EBFCGHAD']]){
-    const courses=inputs.map(([capacity,rivals],index)=>({
-      id:ids[index],name:ids[index],rank:ranks.indexOf(ids[index])+1,capacity,rivals,
-    }));
+  for(const [ranks,expected] of [['ABCDEFGH','ABFEGCDH'],['HGFEDCBA','FCDGEHBA'],['EFGHABCD','AEFDGHBC']]){
+    const courses=rankedCourses(ranks);
     assert.equal(recommendCourses(courses).map(course=>course.id).join(''),expected);
     assert.deepEqual(recommendCourses([...courses].reverse()),recommendCourses(courses));
     assert.equal(courses.map(course=>course.id).join(''),ids);
   }
 });
+test('첫 응답만 더 늦는 조건에서 고정 간격 추천보다 한 과목을 더 확보한다',()=>{
+  // 경쟁자 세 과목, 상대 간격 2, 동시 도착 경쟁자 우선, 내 응답 간격 2·1·1·1·1·1·1인 경우입니다.
+  const rivalRounds=[1,2,2,3,3,4,4,5];
+  const closingRounds=[1,2,2,2,2,3,3,Infinity];
+  const secured=order=>[...order].filter((id,slot)=>rivalRounds[slot]<closingRounds[ids.indexOf(id)]).length;
+  const recommendation=recommendCourses(rankedCourses(ids)).map(course=>course.id).join('');
+  assert.equal(secured('BFGACDEH'),4);
+  assert.equal(secured('ABEFCDGH'),1);
+  assert.equal(secured(recommendation),2);
+});
 test('자리당 경쟁자 수가 비슷하면 입력 중요 순위를 유지한다',()=>{
-  const ids='ABCDEFGH';
   const capacities=[20,24,28,32,36,40,44,48];
   for(const ranks of [ids,'HGFEDCBA']){
     const courses=capacities.map((capacity,index)=>({

@@ -232,6 +232,8 @@ test('전략 실험은 중요 순위와 경쟁을 절충하고 계산식을 보�
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
   await expect(criteria).toContainText('처리 대기');
+  await expect(criteria).toContainText('인터넷 왕복');
+  await expect(criteria).toContainText('내 간격은 신청마다 달라질 수 있습니다');
   await expect(criteria).toContainText('가능한 최대 확보 과목 수');
   await expectOneScreen(page,'#strategy-result');
   await page.locator('#strategy-back').click();
