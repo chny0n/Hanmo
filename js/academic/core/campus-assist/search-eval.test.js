@@ -2,7 +2,6 @@
 /** @typedef {import("./search-eval.js").SearchEvalCase} SearchEvalCase */
 /** @typedef {import("./search-eval.js").SearchEvalRun} SearchEvalRun */
 import { describe, expect, it } from 'vitest';
-import { FAQ_EVAL_CASES } from './faq-eval.fixtures.js';
 import { assignFamilySplit, checkSearchGate, evaluateSearchRun, percentileNearestRank, validateSearchEvalSplit, } from './search-eval.js';
 // 모든 사례는 SYNTHETIC 또는 테스트용으로 HUMAN_REVIEWED 라벨만 붙인 가상 자료다. 실제 검색 품질 수치가 아니다.
 /** @param {string} caseId @param {Partial<SearchEvalCase>} [patch] @returns {SearchEvalCase} */
@@ -44,12 +43,6 @@ describe('#40 split rules', () => {
     it('rejects malformed cases (unanswerable with an answer, duplicate relevant ids)', () => {
         expect(() => validateSearchEvalSplit([kase('A', { subsets: ['UNANSWERABLE'] })])).toThrow();
         expect(() => validateSearchEvalSplit([kase('A', { relevant: ['X', 'X'] })])).toThrow();
-    });
-    it('the existing synthetic FAQ regression set (#341) is split per question, so it leaks families across splits', () => {
-        // 기존 회귀 세트는 기준선 회귀용이다. 이 결과는 그것을 #40 홀드아웃으로 쓰면 안 된다는 근거로 고정한다.
-        const cases = FAQ_EVAL_CASES.filter(c => c.expect).map((c, i) => kase('SYN-' + i, { query: c.question,
-            relevant: [c.expect], documentFamily: c.expect, split: c.split === 'TUNED' ? 'TUNE' : 'HOLDOUT' }));
-        expect(validateSearchEvalSplit(cases).some(i => i.kind === 'FAMILY_LEAK')).toBe(true);
     });
 });
 describe('#40 metrics', () => {

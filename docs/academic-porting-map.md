@@ -12,7 +12,7 @@
 | `packages/core/src/forecast/` | `js/academic/core/forecast/` | JS 전환 완료, 실제 관측 원장/시점별 골드셋 미연결 |
 | `packages/contracts/src/academics/`·`packages/contracts/src/self/` | `js/academic/contracts/` | JS/JSDoc 및 Zod 계약 유지, 운영 스냅샷 인수 별도 |
 | `apps/web/src/features/`의 순수 뷰 모델 | `js/academic/views/` | React 종속 원본 제외, JavaScript 기반 학생 뷰 모델 유지 |
-| 후속 공지 메타·검색·합성 행사 코어(옛 FAQ 내부 포함) | `js/academic/core/campus-assist/`, `js/academic/app/` | JavaScript 기반 합성 코어 확보, **학교 FAQ·졸업요건 학생 기능 제외**. 실제 학교 자료/학생 화면 검증 미완료 |
+| 후속 공지 메타·공통 검색·합성 행사 코어 | `js/academic/core/campus-assist/`, `js/academic/app/` | JavaScript 기반 합성 코어 확보, **학교 FAQ·졸업요건 학생 기능 제외**. 실제 학교 자료/학생 화면 검증 미완료 |
 | 서버·LLM·인증·학생 개인 원본 | **이식 대상 아님** | 학교 로그인·개인 성적 서버 수집·공개 배포 금지 |
 
 ## 남은 검증 게이트
