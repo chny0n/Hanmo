@@ -89,7 +89,9 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          fetch-depth: 0
+          fetch-depth: 1
+      - name: Fetch the original UI baseline for browser QA
+        run: git fetch --depth=1 --no-tags origin 0df1c0dafd23939f48b35aa68614e8461bb83b31
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: '.nvmrc'
