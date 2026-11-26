@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {percentile,summarizeFrames,findings,assessReadiness,networkSample,networkStats,gradeReadiness,gradeAdvice} from '../js/readiness.mjs';
+import {percentile,summarizeFrames,findings,networkSample,networkStats,gradeReadiness,gradeAdvice} from '../js/readiness.mjs';
 test('분위수는 입력 순서와 무관하고 입력을 변경하지 않는다',()=>{
   const values=[30,10,20];
   assert.equal(percentile(values,0.5),20);
@@ -21,8 +21,7 @@ test('측정값 기반 끊김 기준은 최소 50ms다',()=>{
 });
 test('지원하지 않는 긴 작업 지표와 네트워크 생략을 허용한다',()=>{
   const frame=summarizeFrames([16,16,17]);
-  const info=findings({frame,longTasks:null,network:null});
-  assert.match(info.join(' '),/이상/);
+  assert.deepEqual(findings({frame,longTasks:null,network:null}),[]);
 });
 test('다운로드는 압축된 본문 크기와 전체 요청 시간으로 계산한다',()=>{
   const timing={startTime:20,responseEnd:120,transferSize:50300,
@@ -42,43 +41,35 @@ test('지터는 실패 또는 제외된 요청을 건너뛰어 비교하지 않�
     {median:70,jitter:5,mbps:5,failures:1,latencyCount:3,jitterCount:1,downloadCount:1,excluded:2});
 });
 
-test('모든 이상 기준을 만족하면 기존 판정 5개와 중복 없는 조치 3개를 표시한다',()=>{
-  const measurement={frame:{interruptions:3,median:30},longTasks:3,network:{failures:2,excluded:0},drift:100};
-  const assessment=assessReadiness(measurement);
-  assert.equal(assessment.messages.length,5);
-  assert.deepEqual(assessment.messages,findings(measurement));
-  assert.equal(assessment.actions.length,3);
-  assert.match(assessment.actions[0],/주사율/);
-  assert.match(assessment.actions[1],/작업 관리자/);
-  assert.match(assessment.actions[2],/유선 연결/);
+test('모든 이상 기준을 만족하면 다섯 관측을 순서대로 요약한다',()=>{
+  const measurement={frame:{interruptions:3,median:30},longTasks:3,network:{failures:2},drift:100};
+  assert.deepEqual(findings(measurement),[
+    '화면 갱신이 여러 번 끊겼습니다.',
+    '이 탭의 화면 갱신 간격이 길었습니다.',
+    '브라우저 긴 작업이 반복되었습니다.',
+    '한모 정적 파일 요청에서 반복 오류가 발생했습니다.',
+    '브라우저 타이머가 크게 지연되었습니다.',
+  ]);
 });
-test('개별 판정은 해당 조치만 제공하고 중복된 브라우저 조치를 만들지 않는다',()=>{
+test('개별 판정은 실제로 관측한 항목만 요약한다',()=>{
   const normal={frame:{interruptions:2,median:29.9},longTasks:2,network:null,drift:99.9};
-  assert.deepEqual(assessReadiness(normal).actions,[]);
+  assert.deepEqual(findings(normal),[]);
   for(const [change,expected] of [
-    [{frame:{interruptions:3,median:16}},/^화면 갱신:/],
-    [{frame:{interruptions:0,median:30}},/^화면 갱신:/],
-    [{longTasks:3},/^브라우저 부하:/],
-    [{drift:100},/^브라우저 부하:/],
-    [{network:{failures:2,excluded:0}},/^한모 연결:/],
+    [{frame:{interruptions:3,median:16}},/끊겼습니다/],
+    [{frame:{interruptions:0,median:30}},/갱신 간격/],
+    [{longTasks:3},/긴 작업/],
+    [{drift:100},/타이머/],
+    [{network:{failures:2}},/반복 오류/],
   ]){
-    const assessment=assessReadiness({...normal,...change});
-    assert.equal(assessment.messages.length,1);
-    assert.equal(assessment.actions.length,1);
-    assert.match(assessment.actions[0],expected);
+    const messages=findings({...normal,...change});
+    assert.equal(messages.length,1);
+    assert.match(messages[0],expected);
   }
 });
-test('미지원·미실시 지표는 이상으로 처리하지 않고 불완전한 연결 표본은 재측정만 안내한다',()=>{
+test('미지원·미실시 지표와 단발 요청 실패는 이상 요약에 넣지 않는다',()=>{
   const measurement={frame:{interruptions:0,median:16},longTasks:null,network:null,drift:null};
-  const normal=assessReadiness(measurement);
-  assert.match(normal.messages[0],/뚜렷한 이상을 발견하지 못했습니다/);
-  assert.deepEqual(normal.actions,[]);
-  for(const network of [{failures:1,excluded:0},{failures:0,excluded:2}]){
-    const limited=assessReadiness({...measurement,network});
-    assert.deepEqual(limited.messages,normal.messages);
-    assert.equal(limited.actions.length,1);
-    assert.match(limited.actions[0],/^연결 측정 제한:/);
-  }
+  assert.deepEqual(findings(measurement),[]);
+  assert.deepEqual(findings({...measurement,network:{failures:1}}),[]);
 });
 
 const goodNetwork={median:40,jitter:5,mbps:10,failures:0,latencyCount:5,jitterCount:4,downloadCount:2,excluded:0};

@@ -2,16 +2,24 @@
 // 학교 서버와 무관한 현재 탭·한모 정적 CDN의 관측값만 측정합니다.
 const HEAD_REQUESTS=5;
 const DOWNLOAD_REQUESTS=2;
+function orderedSamples(samples){
+  if(!Array.isArray(samples)||!samples.length||samples.some(v=>!Number.isFinite(v)||v<0))
+    throw new RangeError('측정 표본이 올바르지 않습니다.');
+  return [...samples].sort((a,b)=>a-b);
+}
+function interpolate(sorted,ratio){
+  const position=(sorted.length-1)*ratio,low=Math.floor(position),high=Math.ceil(position);
+  return sorted[low]+(sorted[high]-sorted[low])*(position-low);
+}
 export function percentile(samples,ratio){
-  if(!Array.isArray(samples)||!samples.length||samples.some(v=>!Number.isFinite(v)||v<0)||
-    !Number.isFinite(ratio)||ratio<0||ratio>1)throw new RangeError('측정 표본이 올바르지 않습니다.');
-  const a=[...samples].sort((x,y)=>x-y),p=(a.length-1)*ratio,lo=Math.floor(p),hi=Math.ceil(p);
-  return a[lo]+(a[hi]-a[lo])*(p-lo);
+  if(!Number.isFinite(ratio)||ratio<0||ratio>1)throw new RangeError('측정 표본이 올바르지 않습니다.');
+  return interpolate(orderedSamples(samples),ratio);
 }
 export function summarizeFrames(samples){
-  const median=percentile(samples,.5);
+  const sorted=orderedSamples(samples);
+  const median=interpolate(sorted,.5);
   const threshold=Math.max(50,median*3);
-  return {median,p95:percentile(samples,.95),threshold,
+  return {median,p95:interpolate(sorted,.95),threshold,
     interruptions:samples.filter(v=>v>=threshold).length,samples:samples.length};
 }
 export function networkStats(latencies,downloadSamples,failures){
@@ -104,31 +112,17 @@ export function gradeAdvice(grades){
 }
 
 /**
- * 기존 이상 판정과 조치 안내를 한 곳에서 산출합니다.
- * @param {{frame:{interruptions:number,median:number},longTasks:number|null,network:{failures:number,excluded?:number}|null,drift?:number|null}} measurement
+ * 실제 관측에서 확인한 이상만 요약합니다.
+ * @param {{frame:{interruptions:number,median:number},longTasks:number|null,network:{failures:number}|null,drift?:number|null}} measurement
  */
-export function assessReadiness({frame,longTasks,network,drift}){
-  const messages=[],actions=[];
-  const interrupted=frame.interruptions>=3;
-  const slowFrames=frame.median>=30;
-  const busy=longTasks!==null&&longTasks>=3;
-  const delayed=drift!=null&&drift>=100;
-  const failed=network!==null&&network.failures>=2;
-  if(interrupted)messages.push('화면 갱신이 여러 번 끊겼습니다.');
-  if(slowFrames)messages.push('이 탭의 화면 갱신 간격이 길었습니다.');
-  if(busy)messages.push('브라우저 긴 작업이 반복되었습니다.');
-  if(failed)messages.push('한모 정적 파일 요청에서 반복 오류가 발생했습니다.');
-  if(delayed)messages.push('브라우저 타이머가 크게 지연되었습니다.');
-  if(!messages.length)messages.push('이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.');
-  // 같은 원인 후보에 대한 조치는 중복하지 않고, 확인하지 못한 원인을 단정하지 않습니다.
-  if(interrupted||slowFrames)actions.push('화면 갱신: 영상 재생·화면 녹화를 잠시 멈추고 디스플레이 주사율과 절전 설정을 확인하세요.');
-  if(busy||delayed)actions.push('브라우저 부하: 사용하지 않는 탭·프로그램을 닫고 작업 관리자에서 CPU·메모리 사용량을 확인한 뒤 현재 탭을 활성화한 상태로 다시 검사하세요.');
-  if(failed)actions.push('한모 연결: 대용량 다운로드를 멈추고 안정적인 Wi-Fi 또는 유선 연결에서 재검사하세요. 계속 실패하면 한모 서비스 상태도 확인하세요.');
-  else if(network&&(network.failures>0||(network.excluded??0)>0))actions.push('연결 측정 제한: 일부 표본을 확인하지 못했습니다. 안정적인 연결에서 다시 검사해 보세요.');
-  return {messages,actions};
-}
-export function findings(measurement){
-  return assessReadiness(measurement).messages;
+export function findings({frame,longTasks,network,drift}){
+  const messages=[];
+  if(frame.interruptions>=3)messages.push('화면 갱신이 여러 번 끊겼습니다.');
+  if(frame.median>=30)messages.push('이 탭의 화면 갱신 간격이 길었습니다.');
+  if(longTasks!==null&&longTasks>=3)messages.push('브라우저 긴 작업이 반복되었습니다.');
+  if(network!==null&&network.failures>=2)messages.push('한모 정적 파일 요청에서 반복 오류가 발생했습니다.');
+  if(drift!=null&&drift>=100)messages.push('브라우저 타이머가 크게 지연되었습니다.');
+  return messages;
 }
 const text=(value)=>typeof value==='number'?value.toFixed(1):'측정 불가';
 const guard=(condition,message)=>{if(condition)throw new Error(message);};
@@ -289,8 +283,7 @@ if(typeof document!=='undefined'){
         let network=null;
         if(networkEnabled.checked)network=await measureNetwork(signal,message=>{status.textContent=message;});
         guard(signal.aborted,'진단 취소');
-        const assessment=assessReadiness({frame,longTasks,network,drift});
-        summary.textContent=assessment.messages.join(' ');
+        const messages=findings({frame,longTasks,network,drift});
         value('readiness-frame-value',text(1000/frame.median)+'fps 관측','· 프레임 간격 중앙값 '+
           text(frame.median)+'ms · 95백분위수 '+text(frame.p95)+'ms · 끊김 '+frame.interruptions+'회');
         value('readiness-task-value',longTasks===null?'지원되지 않음':longTasks+'회 (50ms 이상)');
@@ -316,9 +309,10 @@ if(typeof document!=='undefined'){
           return item;
         }));
         advice.hidden=actions.length===0;
-        // 기존 이상 기준과 새로운 참고 등급이 서로 모순되어 보이지 않도록 구분합니다.
         const low=Object.values(grades).some(item=>item.grade==='D'||item.grade==='F');
-        if(low&&assessment.messages[0]==='이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.')summary.textContent='참고 기준에서 개선이 필요한 항목이 있습니다. 항목별 등급과 관측값을 확인하세요.';
+        summary.textContent=messages.join(' ')||(low
+          ?'참고 기준에서 개선이 필요한 항목이 있습니다. 항목별 등급과 관측값을 확인하세요.'
+          :'이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.');
         document.getElementById('readiness-grade-criteria').open=false;
         result.hidden=false;inputs.hidden=true;
         // 길어진 결과를 처음부터 읽고 키보드로 스크롤할 수 있도록 합니다.
