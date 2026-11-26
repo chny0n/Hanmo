@@ -26,6 +26,8 @@
 
 개설 전망 계약은 `js/academic/contracts/forecast/offering.js`에 분리합니다. 기존 `contracts/index.js` 내보내기는 연구 코드 호환을 위해 유지하지만 학생 번들에는 허용하지 않습니다. 학생 빌드의 명시적 입력·정적 자산 허용 목록과 연구 테스트 분리는 [ADR](adr/2026-11-25-student-build-boundary.md)에 따릅니다. 연구 소스 보존은 운영 승인이나 실제 학사자료 연결이 아닙니다.
 
+이관 초기의 v0.1 학사 스키마는 Git 이력에서 확인할 수 있습니다. 현행 학점 단위 검증은 `academics/vnext.js`에서 공유합니다.
+
 과거 졸업계획 화면의 표시 모델과 로드맵 저장·백업 모듈, 개인별 공지 적용 판정·마감 고정 코드는 Git 이력에서 확인할 수 있습니다. 공지 제목의 주제 분류는 `notice-topics.js`에, 정정·취소 및 검수 보류 근거 추출은 `notice-extract.js`에 둡니다. 학점 원장 계산과 공지·일정 연구 코어는 합성 검증용으로 유지합니다. [#63 종료 범위](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#51 비개인화 공지 분류](https://github.com/ot4562-glitch/Hanmo_develop/issues/51)
 
 개인 일정표의 졸업 원장 연결과 D-day 표시도 Git 이력에서 확인할 수 있습니다. 학교 도메인 판별 회귀는 `academic-source-link.test.js`에서, 합성 행사 연구는 `js/academic/core/campus-assist/`에서 유지합니다. [#52 날짜 검증](https://github.com/ot4562-glitch/Hanmo_develop/issues/52) · [#58 달력 QA](https://github.com/ot4562-glitch/Hanmo_develop/issues/58)

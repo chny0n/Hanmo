@@ -8,10 +8,8 @@
 /** @typedef {{ sourceDocumentSha256:string; sourceDocuments?:readonly {documentId:string;sourceDocumentSha256:string}[]|undefined; clauses:readonly Pick<AcademicClauseVNext,'clauseId'|'kind'|'sourceSpanRef'|'sourceDocumentId'>[]; }} AcademicTrustedSourceInventoryVNext */
 /** @typedef {z.infer<typeof AcademicAuditVNextSchema>} AcademicAuditVNext */
 import { z } from 'zod';
-const CreditUnitsSchema = z.number().int().nonnegative(); // 1단위는 0.5학점이다.
+export const CreditUnitsSchema = z.number().int().nonnegative(); // 1단위는 0.5학점이다.
 /**
- * 병합된 TASK-00 PR #13의 후속 검토 결과다.
- * 기존 V1 통신 계약은 변경하지 않고, 4개 작업 영역 검토 전까지 엄격한 추가 스키마는 선택적으로 사용한다.
  * 스키마 검증은 자료의 내부 일관성만 확인하며 학교 공식 요건, 출처의 완전성, 실제 학점 인정 또는 졸업 자격을 보증하지 않는다.
  */
 const Id = z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_.:-]+$/);

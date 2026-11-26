@@ -2,8 +2,42 @@
 import {describe,it,expect} from 'vitest';
 import {AcademicRulePackVNextSchema} from '../../contracts/index.js';
 import {compareRulePackRevisions} from './rule-diff.js';
-import {syntheticAcademicPack,syntheticMultiDocumentPack,SYNTHETIC_AS_OF} from '../../fixtures/academic-133.js';
-describe('#133 revision comparisons preserve new rule meanings',()=>{
+
+const SYNTHETIC_AS_OF='2026-11-05T00:00:00.000Z';
+const date='2026-01-01T00:00:00.000Z';
+/** 합성 식별자와 가상 학칙만 사용한다. 학교의 공식 승인 근거가 아니다. */
+function syntheticAcademicPack(){
+  return AcademicRulePackVNextSchema.parse({
+    version:'SYN-PACK-1',sourceDocumentVersion:'SYN-DOC-V1',
+    sourceDocumentUrl:'https://synthetic.invalid/rules/primary',
+    sourceDocumentSha256:'a'.repeat(64),sourcePublishedAt:date,effectiveFrom:date,
+    scope:{campus:'SYN-CAMPUS',primaryMajor:'SYN-MAJOR',majorRole:'PRIMARY_MAJOR',
+      admissionType:'REGULAR',curriculumVersion:'SYN-CUR-2024',cohortFrom:2024,cohortTo:2024},
+    state:'APPROVED',requirements:[{id:'SYN-TOTAL',semanticKey:'total',kind:'CREDIT_TOTAL',
+      requiredCreditUnits:84,sourceClauseIds:['SYN-C1'],exceptionClauseIds:[],evidenceRefs:['SYN-E1']}],
+    clauseInventory:[{clauseId:'SYN-C1',kind:'RULE',sourceSpanRef:'SYN-SPAN-1',
+      coverage:{state:'LINKED',requirementIds:['SYN-TOTAL']}}],
+    validationReport:{checkedAt:date,sourceDocumentSha256:'a'.repeat(64),blockingIssues:[]},
+    inventoryReviewedBy:'SYN-INVENTORY',approvedBy:'SYN-APPROVER',
+    independentlyCheckedBy:'SYN-CHECKER',approvedAt:date,
+  });
+}
+function syntheticMultiDocumentPack(){
+  const pack=syntheticAcademicPack();
+  return {...pack,sourceDocuments:[
+    {documentId:'SYN-DOC-A',url:pack.sourceDocumentUrl,version:pack.sourceDocumentVersion,
+      sha256:pack.sourceDocumentSha256,publishedAt:date},
+    {documentId:'SYN-DOC-B',url:'https://synthetic.invalid/rules/exception',version:'SYN-DOC-V2',
+      sha256:'b'.repeat(64),publishedAt:date},
+  ],requirements:pack.requirements.map(r=>({...r,exceptionClauseIds:['SYN-C2']})),
+  clauseInventory:[{...pack.clauseInventory[0],sourceDocumentId:'SYN-DOC-A'},
+    {clauseId:'SYN-C2',sourceDocumentId:'SYN-DOC-B',kind:/** @type {const} */ ('EXCEPTION'),sourceSpanRef:'SYN-SPAN-2',
+      coverage:{state:/** @type {const} */ ('LINKED'),requirementIds:['SYN-TOTAL']}}],
+  validationReport:{...pack.validationReport,sourceDocumentHashes:[
+    {documentId:'SYN-DOC-A',sha256:'a'.repeat(64)},{documentId:'SYN-DOC-B',sha256:'b'.repeat(64)}]}};
+}
+
+describe('합성 규칙 판본의 변경 비교',()=>{
   it('recomputes area-spread and completed-group changes instead of comparing generic course counts',()=>{
     const base=syntheticAcademicPack(),common=base.requirements[0];
     for(const [first,last,field] of /** @type {const} */ ([

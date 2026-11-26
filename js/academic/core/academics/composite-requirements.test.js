@@ -18,7 +18,7 @@ const group={id:'SYN-GROUP',kind:'GROUP_CHOICE',groups:[['G1','G2'],['H1','H2']]
 const run=(r,attempts)=>buildAcademicLedger({asOf,rulePackVersion:'SYN-PACK',
   rulePackState:'APPROVED',requirements:[r],attempts});
 
-describe('#133 composite requirements consume the unique earned ledger',()=>{
+describe('복합 요건의 고유 이수 원장 집계',()=>{
   it('does not satisfy an area spread using enough credits from just one area',()=>{
     expect(run(area,[attempt('A1',['A']),attempt('A2',['A'])]).requirements[0]).toMatchObject({
       state:'UNSATISFIED',earnedCreditUnits:12,matchedAreasCount:1,requiredAreasCount:2});
