@@ -44,12 +44,13 @@ const FITTS_SLOPE_MS=110;
 const OVERLAP={less:0.25,baseline:0.5,more:0.75};
 // 모집단 진입의 혼합분포 및 과목 수는 실측 보정값이 아닙니다.
 const READY_SHARE=0.75;
-const LATE_ENTRY_MEAN_MS=2000;
+const OPENING_WINDOW_MS=1000;
+const MIN_RIVAL_COURSES=5;
 export function competitorPopulation(maxRivals,overlap){
   return Math.ceil(maxRivals/overlap);
 }
 export function rivalStartMs(unit,readyShare=READY_SHARE){
-  return unit<=readyShare?0:-LATE_ENTRY_MEAN_MS*Math.log((1-unit)/(1-readyShare));
+  return unit<=readyShare?0:OPENING_WINDOW_MS*(unit-readyShare)/(1-readyShare);
 }
 // 전략 실험 전용 1~3초(양 끝 포함)의 가상 대기 범위입니다. 실제 학교 서버 측정값이 아닙니다.
 export const REQUEST_WAIT_MIN_MS=1000;
@@ -200,7 +201,7 @@ function assignCourses(courses,population,seed,trial){
 
 export function rivalOrder(known,urgency,draw,preference){
   // 개인의 전체 신청량은 입력 목록에 속한 과목 수와 별도로 뽑고 배정 수 이상을 보장합니다.
-  const size=Math.max(known.length,1+Math.floor(draw()*MAX_COURSES));
+  const size=Math.max(known.length,MIN_RIVAL_COURSES+Math.floor(draw()*(MAX_COURSES-MIN_RIVAL_COURSES+1)));
   // 지수 경주로 개인별 가중 Plackett–Luce 순열을 생성합니다.
   const entries=known.map((course,index)=>({course,key:-Math.log(draw())/(urgency[course]*preference(index))}));
   // 기타 과목에도 입력 과목의 가상 경쟁률 분포를 적용하여 입력 여부에 따른 편향을 줄입니다.
@@ -218,6 +219,7 @@ function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE){
   const timingSeed=s.seed^0x729ab44d;
   const groupMean=rivalGroupMeanMs(s.seed,trial);
   for(const [rival,known] of portfolios.entries()){
+    if(!known.length)continue;
     let count=0;
     const draw=()=>random01(timingSeed,trial,rival,count++);
     const personalMs=rivalReactionMs(groupMean,normal01(s.seed^0x3c6ef372,trial,rival,0));

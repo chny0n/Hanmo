@@ -209,8 +209,7 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await seedProfile(page);
   await page.goto('/html/strategy-lab.html');
   await expect(page.locator('#strategy-input')).not.toContainText('가상');
-  await expect(page.locator('#strategy-status')).toContainText('평균 반응시간은 270ms');
-  await expect(page.locator('#strategy-status')).toContainText('기본 응답 1~3초와 공통 서버 대기열');
+  await expect(page.locator('#strategy-status')).toContainText('한 번의 선착순 신청 회차');
   await expect(page.locator('#strategy-reaction')).toContainText('250ms');
   await expect(page.locator('#strategy-clock')).toContainText('시');
   await expect(page.locator('#strategy-courses tr')).toHaveCount(3);
@@ -240,14 +239,23 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-sampling')).toContainText('반복 실험 오차 95% 범위');
   await expect(page.locator('#strategy-assumption-range')).toContainText('경쟁 가정별 관측 범위');
   expect(await page.locator('.strategy-course-track span').evaluateAll(nodes=>nodes.every(node=>parseFloat(node.style.width)>=0&&parseFloat(node.style.width)<=100))).toBe(true);
-  await expect(page.getByRole('heading',{name:'경쟁자 가정',exact:true})).toBeVisible();
-  await expect(page.locator('#strategy-result')).toContainText('본인 입력과 별도로 1~8과목에서 추출');
-  await expect(page.getByRole('heading',{name:'대기시간 가정',exact:true})).toBeVisible();
+  const assumptions=page.locator('#strategy-assumptions');
+  await expect(assumptions).toHaveJSProperty('open',false);
+  await expect(assumptions.locator('#strategy-rival-heading')).toBeHidden();
+  await expect(assumptions.locator('#strategy-wait-heading')).toBeHidden();
+  await assumptions.locator('summary').press('Enter');
+  await expect(assumptions.locator('#strategy-rival-heading')).toBeVisible();
+  await expect(assumptions).toContainText('본인 입력과 별도로 5~8과목에서 추출');
+  await expect(assumptions).toContainText('오픈 후 1초 안에 진입');
+  await expect(assumptions.locator('#strategy-wait-heading')).toBeVisible();
+  await expectOneScreen(page,'#strategy-result');
   await expect(page.locator('#strategy-wait-summary')).toHaveText(/평균 누적 대기시간 \d+\.\d초 \(혼잡 대기 \d+\.\d초 포함\) · 전체 신청 시도 평균 소요시간 \d+\.\d초/);
   await expect(page.locator('#strategy-result')).toContainText('실제 학교 서버의 대기시간을 측정한 값은 아닙니다.');
   await expect(page.locator('#strategy-result')).not.toContainText('경쟁자 중복');
   await expect(page.locator('#strategy-input')).toBeHidden();
   await expect(page.locator('#strategy-result')).toContainText('가상 처리율은 시작 후 2초까지 초당 50건, 5초까지 80건, 이후 100건이며 혼잡이 없는 기본 응답시간은 1~3초');
+  await assumptions.locator('summary').press('Enter');
+  await expect(assumptions).toHaveJSProperty('open',false);
   const formulas=page.locator('#strategy-formulas');
   const summary=formulas.locator('summary');
   await expect(summary).toHaveText('수식 보기');
@@ -488,7 +496,10 @@ test('8과목 결과의 추천 순서와 성공률은 좁은 화면에서도 가
     await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
     const heading=await page.locator('.strategy-order-heading').boundingBox();
     const order=await page.locator('#strategy-order').boundingBox();
-    expect(order.x).toBeGreaterThanOrEqual(heading.x+heading.width);
+    expect(order.y).toBeGreaterThanOrEqual(heading.y+heading.height);
+    expect(order.width).toBeGreaterThanOrEqual(heading.width-1);
+    await expect(page.locator('.strategy-course-rate').first()).toHaveCSS('font-size','18px');
+    await expect(page.locator('.strategy-order-rank').first()).toHaveText('1번째');
   }
   for(const width of [1440,1200,800,400]){
     await page.setViewportSize({width,height:800});
