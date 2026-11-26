@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {test} from 'node:test';
 import {promisify} from 'node:util';
-import {assertPreviewData,stripPreviewPhotoExif} from '../scripts/preview-data.mjs';
+import {assertPreviewData,stripPreviewPhotoExifAndXmp} from '../scripts/preview-data.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const run=promisify(execFile);
@@ -65,7 +65,7 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   await stage();
   const publicPhoto=await fetch(base+'/img/developer.jpg');
   assert.equal(publicPhoto.status,200);
-  assert.deepEqual(Buffer.from(await publicPhoto.arrayBuffer()),stripPreviewPhotoExif(originalPhoto));
+  assert.deepEqual(Buffer.from(await publicPhoto.arrayBuffer()),stripPreviewPhotoExifAndXmp(originalPhoto));
   const photoHead=await fetch(base+'/img/developer.jpg',{method:'HEAD'});
   assert.equal(photoHead.status,publicPhoto.status);
   for(const header of ['content-type','cache-control'])

@@ -1,6 +1,6 @@
 import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
-import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,stripPreviewPhotoExif} from './preview-data.mjs';
+import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,stripPreviewPhotoExifAndXmp} from './preview-data.mjs';
 import {assertStudentBundleMeta,readPublicAssets,studentStyles} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
@@ -56,7 +56,7 @@ for(const name of [...bundledPackages].sort()){
 }
 if(!notices.length)throw new Error('번들 라이선스 목록이 비어 있습니다.');
 const photoPath='img/developer.jpg';
-const photo=assetPaths.has(photoPath)?stripPreviewPhotoExif(await readFile(join(root,photoPath))):null;
+const photo=assetPaths.has(photoPath)?stripPreviewPhotoExifAndXmp(await readFile(join(root,photoPath))):null;
 await rm(dist,{recursive:true,force:true});
 const assetDirectories=new Set(['css','js',...publicAssets.map(path=>dirname(path))]);
 await Promise.all([...assetDirectories].map(path=>mkdir(join(dist,path),{recursive:true})));

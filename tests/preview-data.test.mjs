@@ -3,7 +3,7 @@ import {copyFile,mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {test} from 'node:test';
-import {assertDisabledPreviewConfig,assertPreviewData,stripPreviewPhotoExif} from '../scripts/preview-data.mjs';
+import {assertDisabledPreviewConfig,assertPreviewData,stripPreviewPhotoExifAndXmp} from '../scripts/preview-data.mjs';
 
 const disabled=JSON.stringify({schemaVersion:1,mode:'disabled'});
 
@@ -36,16 +36,21 @@ test('승인된 합성 데이터만 공개하고 복구한 과거 자료나 시�
   await assert.rejects(assertPreviewData(dist),/합성 네트워크 시험 파일/);
 });
 
-test('공개 사진의 EXIF만 제거하고 다른 앱 세그먼트 및 압축 스캔을 유지한다',()=>{
+test('공개 사진은 EXIF와 XMP를 빼고 촬영자 표기와 색상·압축 데이터를 유지한다',()=>{
   const segment=(marker,body)=>Buffer.concat([
     Buffer.from([0xff,marker,0,body.length+2]),body]);
   const soi=Buffer.from([0xff,0xd8]);
   const exif=segment(0xe1,Buffer.from('Exif\0\0synthetic metadata'));
+  const xmp=segment(0xe1,Buffer.from('http://ns.adobe.com/xap/1.0/\0synthetic metadata'));
+  const extendedXmp=segment(0xe1,Buffer.from('http://ns.adobe.com/xmp/extension/\0synthetic metadata'));
+  const otherApp1=segment(0xe1,Buffer.from('Exif\0'));
   const app0=segment(0xe0,Buffer.from('JFIF\0'));
   const icc=segment(0xe2,Buffer.from('ICC_PROFILE\0'));
+  const iptc=segment(0xed,Buffer.from('Photoshop 3.0\0synthetic credit'));
+  const adobe=segment(0xee,Buffer.from('Adobe'));
   const scan=Buffer.from([0xff,0xda,0,2,0xff,0,0xd9,0xff,0xd9]);
-  const clean=Buffer.concat([soi,app0,icc,scan]);
-  assert.deepEqual(stripPreviewPhotoExif(Buffer.concat([soi,app0,exif,icc,scan])),clean);
-  assert.deepEqual(stripPreviewPhotoExif(clean),clean);
-  assert.throws(()=>stripPreviewPhotoExif(Buffer.concat([soi,Buffer.from([0xff,0xe1,0,20])])),/헤더가 손상/);
+  const clean=Buffer.concat([soi,app0,otherApp1,icc,iptc,adobe,scan]);
+  assert.deepEqual(stripPreviewPhotoExifAndXmp(Buffer.concat([soi,app0,exif,otherApp1,xmp,icc,iptc,extendedXmp,adobe,scan])),clean);
+  assert.deepEqual(stripPreviewPhotoExifAndXmp(clean),clean);
+  assert.throws(()=>stripPreviewPhotoExifAndXmp(Buffer.concat([soi,Buffer.from([0xff,0xe1,0,20])])),/헤더가 손상/);
 });

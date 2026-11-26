@@ -33,11 +33,13 @@ export async function assertPreviewData(dist){
   assertSyntheticNetworkProbe(await readFile(join(data,probeName),'utf8'));
 }
 
-/** @param {Buffer} image 원본 JPEG의 픽셀 데이터와 색상 프로필을 보존하며 EXIF만 제외합니다. */
-export function stripPreviewPhotoExif(image){
+const privateApp1Headers=['Exif\0\0','http://ns.adobe.com/xap/1.0/\0','http://ns.adobe.com/xmp/extension/\0']
+  .map(header=>Buffer.from(header));
+
+/** @param {Buffer} image 원본 JPEG에서 EXIF와 XMP를 제외하고 IPTC 촬영자 표기·색상·픽셀 데이터를 보존합니다. */
+export function stripPreviewPhotoExifAndXmp(image){
   if(image.length<4||image[0]!==0xff||image[1]!==0xd8)
     throw new Error('공개 사진이 유효한 JPEG가 아닙니다.');
-  const exif=Buffer.from([0x45,0x78,0x69,0x66,0,0]);
   const output=[image.subarray(0,2)];
   let offset=2;
   while(offset<image.length){
@@ -54,7 +56,8 @@ export function stripPreviewPhotoExif(image){
     const length=image.readUInt16BE(offset);
     const end=offset+length;
     if(length<2||end>image.length)break;
-    if(marker!==0xe1||!image.subarray(offset+2,Math.min(end,offset+2+exif.length)).equals(exif))
+    if(marker!==0xe1||!privateApp1Headers.some(header=>
+      image.subarray(offset+2,Math.min(end,offset+2+header.length)).equals(header)))
       output.push(image.subarray(start,end));
     offset=end;
   }
