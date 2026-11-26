@@ -34,6 +34,8 @@ export function validateCourses(courses){
 function openingScenarios(courses){
   const scenarios=new Map();
   const slots=courses.length;
+  const lastRequest=(slots-1)*RESPONSE_STEPS.at(-1);
+  const exploredClosings=new Set();
   function record(deadlines){
     const key=deadlines.join(',');
     if(scenarios.has(key)||deadlines.every(deadline=>deadline===slots-1))return;
@@ -49,14 +51,21 @@ function openingScenarios(courses){
     const closing=courses.map(({capacity,rivals})=>
       rivals<capacity?Infinity:Math.ceil(capacity*rivalCourses/rivals));
     for(const rivalStep of RESPONSE_STEPS){
-      for(const rivalFirst of [false,true]){
+      for(const tieOffset of [0,1]){
+        // 동시 도착에서 내 요청이 우선이면 같은 시각에도 신청할 수 있습니다.
+        const closesAt=closing.map(round=>{
+          const time=(round-1)*rivalStep+tieOffset;
+          return time<=lastRequest?time:Infinity;
+        });
+        const closingKey=closesAt.join(',');
+        if(exploredClosings.has(closingKey)||closesAt.every(time=>time===Infinity))continue;
+        exploredClosings.add(closingKey);
         const visited=new Set();
         function visit(slot,elapsed,deadlines){
-          const rivalRounds=rivalFirst?1+Math.floor(elapsed/rivalStep):Math.ceil(elapsed/rivalStep);
           const next=deadlines.map((deadline,index)=>{
-            const round=closing[index];
-            if(round===Infinity)return slots-1;
-            return rivalRounds<round?slot:deadline;
+            const time=closesAt[index];
+            if(time===Infinity)return slots-1;
+            return elapsed<time?slot:deadline;
           });
           if(slot===slots-1||next.every((deadline,index)=>deadline===deadlines[index])){
             record(next);
@@ -67,7 +76,7 @@ function openingScenarios(courses){
           visited.add(key);
           for(const response of RESPONSE_STEPS)visit(slot+1,elapsed+response,next);
         }
-        visit(0,0,closing.map(round=>round===Infinity?slots-1:-1));
+        visit(0,0,closesAt.map(time=>time===Infinity?slots-1:-1));
       }
     }
   }
@@ -81,36 +90,55 @@ function openingScenarios(courses){
 export function recommendCourses(courses){
   validateCourses(courses);
   const byRank=[...courses].sort((a,b)=>a.rank-b.rank);
-  const scenarios=openingScenarios(byRank);
-  if(!scenarios.length)return byRank;
+  if(byRank.every(({capacity,rivals})=>rivals<capacity))return byRank;
+  const opening=openingScenarios(byRank);
+  if(!opening.length)return byRank;
 
+  const slots=byRank.length;
+  const maskCount=1<<slots;
+  const usedCounts=new Uint8Array(maskCount);
+  for(let mask=1;mask<maskCount;mask++)usedCounts[mask]=usedCounts[mask>>1]+(mask&1);
+  const scenarios=opening.map(({deadlines,bestCount})=>{
+    const byDeadline=[...deadlines.keys()].sort((a,b)=>deadlines[a]-deadlines[b]);
+    const remainingBest=new Uint8Array(maskCount);
+    // 이미 배치한 과목을 제외하고 마감이 빠른 순으로 남은 자리를 채웁니다.
+    for(let mask=0;mask<maskCount;mask++){
+      let slot=usedCounts[mask];
+      for(const course of byDeadline){
+        if(!(mask&(1<<course))&&slot<=deadlines[course])slot++;
+      }
+      remainingBest[mask]=slot-usedCounts[mask];
+    }
+    return {deadlines,bestCount,remainingBest};
+  });
+  const secured=Array.from({length:slots+1},()=>new Uint8Array(scenarios.length));
   const order=[];
   let best=[];
   let bestLoss=Infinity,bestReversals=Infinity;
   function search(used,reversals){
-    // 손실 0은 더 줄일 수 없습니다. 동점 순서는 중요 순위대로 먼저 방문합니다.
-    if(bestLoss===0&&reversals>=bestReversals)return;
-    if(order.length===byRank.length){
-      let worstLoss=0;
-      for(const {deadlines,bestCount} of scenarios){
-        let count=0;
-        for(let slot=0;slot<order.length;slot++){
-          if(slot<=deadlines[order[slot]])count++;
-        }
-        worstLoss=Math.max(worstLoss,bestCount-count);
-        if(worstLoss>bestLoss)return;
-      }
-      if(worstLoss<bestLoss||(worstLoss===bestLoss&&reversals<bestReversals)){
-        best=[...order];
-        bestLoss=worstLoss;
-        bestReversals=reversals;
-      }
+    const slot=order.length;
+    const counts=secured[slot];
+    let loss=0;
+    for(let index=0;index<scenarios.length;index++){
+      const {bestCount,remainingBest}=scenarios[index];
+      // 남은 자리를 이 조건에 가장 유리하게 채워도 더 나빠지는 순서를 중단합니다.
+      loss=Math.max(loss,bestCount-counts[index]-remainingBest[used]);
+      if(loss>bestLoss||(loss===bestLoss&&reversals>=bestReversals))return;
+    }
+    if(slot===slots){
+      best=[...order];
+      bestLoss=loss;
+      bestReversals=reversals;
       return;
     }
     let remainingHigherPriority=0;
-    for(let next=0;next<byRank.length;next++){
+    const nextCounts=secured[slot+1];
+    for(let next=0;next<slots;next++){
       const bit=1<<next;
       if(used&bit)continue;
+      for(let i=0;i<scenarios.length;i++){
+        nextCounts[i]=counts[i]+Number(slot<=scenarios[i].deadlines[next]);
+      }
       order.push(next);
       search(used|bit,reversals+remainingHigherPriority);
       order.pop();
