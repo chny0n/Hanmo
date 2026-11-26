@@ -45,5 +45,5 @@
 ## 개발 검증 명령
 
 - Node 22는 .nvmrc·package.json·.npmrc로 통일합니다. npm ci 후 npm run check로 전체 검증합니다.
-- npm run check:student는 공개 빌드와 학생 테스트, npm run test:research는 비운영 합성 코어 테스트입니다. Pages는 학생 검증만 반복하되 Repository checks는 전체 검증을 유지합니다.
+- npm run check:student는 공개 빌드와 학생 테스트, npm run test:research는 비운영 합성 코어 테스트입니다. Repository checks는 학생용 산출물을 한 번 검증합니다. 브라우저 검사와 Pages는 그 산출물을 사용하고 연구 검사는 별도 작업에서 실행합니다.
 - 학생 번들의 소스 입력은 scripts/student-boundary.mjs, 공개 정적 파일은 scripts/public-assets.json의 허용 목록으로 제한합니다. 경계를 늘리는 변경은 정책 검토와 부정 테스트를 동반해야 합니다.

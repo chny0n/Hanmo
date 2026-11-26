@@ -73,7 +73,7 @@
 
 `index.html` / `html/*.html` / `css/*.css` / `js/*.js|*.mjs`의 정적 PC 웹. Node.js 22에서 `npm ci`, `npm run check`, `npx playwright install chromium`, `npm run test:e2e`로 개발/검증합니다. `scripts/stage-static.mjs`이 웹 자산과 번들, 비공식 메타를 `dist/`로 만듭니다. GitHub Pages는 정적 미리보기이며 학교 공식 서비스/실 DB가 아닙니다.
 
-공개 QA의 `dist/data/`에는 비활성 연결 설정과 검증된 합성 네트워크 파일만 둡니다. 빌드에 포함된 외부 패키지의 라이선스와 저장소 `LICENSE`는 정적 산출물에 포함합니다. Pages는 배포 직전에 원격 `main`과 후보 SHA의 일치를 확인합니다. 이 검사가 후속 테스트·문서 커밋으로 이전 후보를 차단해도 최신 후보가 누락되지 않도록 모든 `main` push에서 Pages 워크플로를 실행합니다. 수동 실행, 원본 도메인 보호, `npm run check`, 산출물 검증 및 최신 SHA 차단은 유지합니다. 구판 파일이나 외부 캐시 철회는 [운영 런북](public-data-operating-decision.md)에 따릅니다.
+공개 QA의 `dist/data/`에는 비활성 연결 설정과 검증된 합성 네트워크 파일만 둡니다. 빌드에 포함된 외부 패키지의 라이선스와 저장소 `LICENSE`는 정적 산출물에 포함합니다. Pages는 배포 직전에 원격 `main`과 후보 SHA의 일치를 확인합니다. 모든 `main` push와 `main`의 수동 실행은 Repository checks에서 배포 후보를 만듭니다. 학생용 빌드와 검증을 한 번 수행한 뒤 브라우저 검사와 Pages가 그 결과를 각각 사용합니다. Pages에는 별도 배포 작업에서만 쓰기 권한을 부여합니다. 구판 파일이나 외부 캐시 철회는 [운영 런북](public-data-operating-decision.md)에 따릅니다.
 
 - **연습 원본 보호:** `practice.html`·`selectZone.html`/연결 JS의 BASIC/TIME/SELECT 상태·기본 SETTING·키보드/Enter·시간 측정을 보호하고, `scripts/baselines/ui-freeze.json`과 관련 CI로 승인 변경만 허용.
 - **독립 실험:** `js/readiness.mjs`, `js/reaction-page.mjs`, `js/reaction-profile.mjs`, `js/strategy-page.mjs`, `js/strategy-recommendation.mjs`. 실제 학교 데이터 어댑터로 가상 입력을 보내지 않습니다.
@@ -85,7 +85,7 @@
 
 - 개설 전망 계산과 입력 계약은 연구 코드에 둡니다. 기존 `html/forecast.html`은 강의 검색으로 이동하며 전망 스크립트를 불러오지 않습니다.
 - esbuild 메타데이터의 모든 입력과 산출물을 scripts/student-boundary.mjs로 검사합니다. 허용 목록에 없는 연구 소스는 트리 셰이킹 여부와 무관하게 학생 빌드에 들어갈 수 없습니다. scripts/public-assets.json에 명시된 정적 파일만 배포합니다.
-- 연구 코어는 진행 중인 협업 PR 및 합성 검증 호환성을 위해 기존 경로를 보존하되 학생 서비스에서 격리합니다. npm run test:research로 별도 실행하며 npm run check는 전체 검사를 유지합니다. Pages는 npm run check:student를 사용합니다.
+- 연구 코어는 진행 중인 협업 PR 및 합성 검증 호환성을 위해 기존 경로를 보존하되 학생 서비스에서 격리합니다. npm run test:research로 별도 실행하며 npm run check는 전체 검사를 유지합니다. Pages는 Repository checks의 `npm run check:student`를 통과한 산출물을 배포합니다.
 - Node 22 및 Action SHA 고정을 강제합니다. [테스트 기준](testing.md)과 [설계 결정](adr/2026-11-25-student-build-boundary.md)을 참조합니다.
 
 ## 3. PC 진단 상세
