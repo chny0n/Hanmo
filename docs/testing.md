@@ -2,7 +2,7 @@
 
 - Node 22: .nvmrc, package.json engines, .npmrc. 의존성은 npm ci로 설치합니다.
 - npm run check:student: 언어·주석·UI·Action 고정·학생 입력 경계, 구문, JSDoc, 학생용 단위 테스트, 기존 BASIC/TIME/SELECT, 정적 빌드, smoke·철회 검사.
-- `npm run test:research`는 학사 합성 단위 테스트와 내부 몬테카를로 전략 엔진을 검사합니다. 학생 smoke는 공개 순서 추천을 검사하고, Chromium E2E는 추천 순서와 계산 기준의 가시성을 확인합니다. `npm run test`는 전체 Vitest, `npm run check`는 학생 검사와 연구 검사를 모두 실행합니다.
+- `npm run test:research`는 학사 합성 단위 테스트에서 Vitest 실행 환경을 재사용하고, 내부 몬테카를로 전략 엔진도 검사합니다. `npm run test`는 파일별 격리를 적용하는 전체 Vitest 검사입니다. 학생 smoke는 공개 순서 추천을 검사하고, Chromium E2E는 추천 순서와 계산 기준의 가시성을 확인합니다. `npm run check`는 학생 검사와 연구 검사를 모두 실행합니다.
 - npm run test:e2e 및 npx playwright test --config tests/playwright-feature.config.mjs: Chromium UI·원작 동작·접근성의 자동화 가능한 부분을 검사합니다.
 - 학생 소스 허용 목록과 정적 파일 허용 목록은 배포 직전 검사됩니다. 미승인 연구 입력(출력 크기 0 포함), 임의 출력·정적 파일 유입, 필수 입력 누락을 부정 테스트합니다.
 - 학생 공통 스타일은 빌드에서 `dist/css/student-ui.css`로 묶습니다. 이 출력의 소스 CSS와 기존 배경 URL을 따로 검사합니다.
