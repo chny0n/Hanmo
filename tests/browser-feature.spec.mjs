@@ -788,9 +788,10 @@ test('SETTING과 SELECT 타일의 배경·테두리·느린 빛이 일치한다'
   await page.addInitScript(()=>localStorage.setItem('deviceInfo','true'));
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto('/html/vsugang.html');
-  const setting=page.locator('.grid > .setting');
-  // 돌발상황 칸이 없어져 SETTING 옆의 SELECT 타일과 비교합니다.
-  const incident=page.locator('.grid > [style*="grid-area: s"]');
+  const setting=page.getByRole('button',{name:'모의신청 설정 열기'});
+  // 돌발상황 칸이 없어져 SETTINGS 옆의 SELECT 타일과 비교합니다.
+  // grid-area 문자열은 s와 set이 겹치므로 접근 가능한 이름으로 한 요소만 찾습니다.
+  const incident=page.getByRole('button',{name:'SELECT MODE · 과목 선택 연습'});
   const style=locator=>locator.evaluate(element=>{
     const tile=getComputedStyle(element);
     const before=getComputedStyle(element,'::before');
