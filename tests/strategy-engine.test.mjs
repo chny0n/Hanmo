@@ -262,12 +262,11 @@ test('진입 혼합분포는 즉시 시작과 지연 시작을 구분하고 동�
   assert.ok(rivalStartMs(.9999)<1000);
   assert.equal(rivalStartMs(.9999,1),0);
 });
-test('전체 신청량은 입력 과목 수에만 의존하지 않으며 모든 배정 과목을 보존한다',()=>{
+test('전체 신청량은 입력 과목 수에만 의존하지 않으며 같은 키에서는 배정 과목 순서를 보존한다',()=>{
   for(let n=1;n<=8;n++){
-    const known=Array.from({length:n},(_,i)=>i);
+    const known=Array.from({length:n},(_,i)=>n-1-i);
     const selected=rivalOrder(known,Array(n).fill(1),()=>.01,()=>1);
-    assert.equal(selected.length,Math.max(5,n));
-    assert.deepEqual(selected.filter(i=>i>=0).sort((a,b)=>a-b),known);
+    assert.deepEqual(selected,[...known,...Array(Math.max(0,5-n)).fill(-1)]);
   }
 });
 test('6번째 이후에도 경합 과목의 좌석이 남을 수 있다',()=>{

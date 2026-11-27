@@ -207,14 +207,27 @@ function assignCourses(courses,population,seed,trial){
 export function rivalOrder(known,urgency,draw,preference){
   // 개인의 전체 신청량은 입력 목록에 속한 과목 수와 별도로 뽑고 배정 수 이상을 보장합니다.
   const size=Math.max(known.length,MIN_RIVAL_COURSES+Math.floor(draw()*(MAX_COURSES-MIN_RIVAL_COURSES+1)));
-  // 지수 경주로 개인별 가중 Plackett–Luce 순열을 생성합니다.
-  const entries=known.map((course,index)=>({course,key:-Math.log(draw())/(urgency[course]*preference(index))}));
+  const order=known.slice();
+  const keys=known.map((course,index)=>-Math.log(draw())/(urgency[course]*preference(index)));
   // 기타 과목에도 입력 과목의 가상 경쟁률 분포를 적용하여 입력 여부에 따른 편향을 줄입니다.
-  while(entries.length<size){
+  for(let index=known.length;index<size;index++){
     const backgroundWeight=urgency[Math.floor(draw()*urgency.length)];
-    entries.push({course:-1,key:-Math.log(draw())/(backgroundWeight*preference(entries.length))});
+    keys.push(-Math.log(draw())/(backgroundWeight*preference(index)));
+    order.push(-1);
   }
-  return entries.sort((a,b)=>a.key-b.key).map(({course})=>course);
+  // 최대 8개 지수 경주 키를 동점의 원래 순서를 유지하며 정렬합니다.
+  for(let i=1;i<order.length;i++){
+    const key=keys[i],course=order[i];
+    let j=i;
+    while(j>0&&keys[j-1]>key){
+      keys[j]=keys[j-1];
+      order[j]=order[j-1];
+      j--;
+    }
+    keys[j]=key;
+    order[j]=course;
+  }
+  return order;
 }
 
 function createTrialAgents(s,urgency,population,trial){
