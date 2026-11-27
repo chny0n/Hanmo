@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import {execFile,spawn} from 'node:child_process';
 import {once} from 'node:events';
-import {cp,mkdir,mkdtemp,readFile,rm,symlink,writeFile} from 'node:fs/promises';
+import {cp,mkdir,mkdtemp,readFile,rename,rm,symlink,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {test} from 'node:test';
 import {promisify} from 'node:util';
 import {assertPreviewData,stripPreviewPhotoExifAndXmp} from '../scripts/preview-data.mjs';
+
+import {assertStagedAssets,readPublicAssets} from '../scripts/student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const run=promisify(execFile);
@@ -42,6 +44,8 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   await writeFile(join(dist,'data',obsolete),JSON.stringify(obsoleteBody));
   await writeFile(join(workspace,'data',obsolete),JSON.stringify(obsoleteBody));
   await assert.rejects(assertPreviewData(dist),/미승인 자료 파일/);
+  const approvedAssets=await readPublicAssets(workspace);
+  await assert.rejects(assertStagedAssets(dist,approvedAssets),/Unexpected staged asset data\//);
 
   const startup=AbortSignal.timeout(5000);
   server=spawn(process.execPath,['scripts/serve-static.mjs'],{
@@ -62,6 +66,16 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   await writeFile(join(workspace,'js','unapproved-research.js'),'console.log("synthetic");');
   const originalPhoto=await readFile(join(workspace,'img','developer.jpg'));
   await stage();
+  await assertStagedAssets(dist,approvedAssets);
+  const retired=join(dist,'js','unapproved-research.js');
+  await writeFile(retired,'console.log("synthetic");');
+  await assert.rejects(assertStagedAssets(dist,approvedAssets),/Unexpected staged asset js\/unapproved-research\.js/);
+  await rm(retired);
+  const essential=join(dist,'js','strategy-worker.mjs');
+  const stashed=join(workspace,'strategy-worker.mjs');
+  await rename(essential,stashed);
+  await assert.rejects(assertStagedAssets(dist,approvedAssets),/Missing staged asset js\/strategy-worker\.mjs/);
+  await rename(stashed,essential);
   const publicPhoto=await fetch(base+'/img/developer.jpg');
   assert.equal(publicPhoto.status,200);
   assert.deepEqual(Buffer.from(await publicPhoto.arrayBuffer()),stripPreviewPhotoExifAndXmp(originalPhoto));

@@ -1,10 +1,11 @@
-import {readFile,stat,readdir} from 'node:fs/promises';
-import {resolve,join,sep} from 'node:path';
+import {readFile} from 'node:fs/promises';
+import {resolve,join,relative,sep} from 'node:path';
 import {assertPreviewData} from './preview-data.mjs';
-import {studentStyles} from './student-boundary.mjs';
+import {assertStagedAssets,readPublicAssets} from './student-boundary.mjs';
 
 const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
+const assets=await assertStagedAssets(dist,await readPublicAssets(here));
 await assertPreviewData(dist);
 const studentPages=[
   'html/planner.html','html/academic-timeline.html','html/forecast.html',
@@ -16,34 +17,9 @@ const htmlRoutes=[
   'html/vsugang.html','html/practice.html','html/selectZone.html',
   'html/result.html','html/developer.html','html/incident-404.html',
 ];
-const exists=async(path)=>{try{return (await stat(path)).isFile();}catch{return false;}};
-const must=async(name)=>{if(!await exists(join(dist,name)))throw Error('Missing staged asset '+name);};
-for(const name of [
-  'index.html','LICENSE','THIRD-PARTY-NOTICES.txt','img/lucide/LICENSE','css/student-ui.css',
-  'js/student-preferences.js','js/student-notices.js','js/student-catalog.js',
-  'js/student-entry.js',
- 'js/academic-calendar.js','css/academic-calendar.css','css/academic-calendar-vendor.css',
-  'js/student-profile-bar.js',
-  'img/favicon-purple.svg','img/boo.png',
-  'js/home-fit.js','css/home-fit.css',
-  'js/vsugang-fit.js','css/vsugang-fit.css',
-  'js/incident-404.js','css/incident-404.css',
-  'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js',
-  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs','js/reaction-profile.mjs',
-  'js/reaction-page.mjs','data/network-probe.txt',
-  'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
-  ...htmlRoutes,
-])await must(name);
 const style=await readFile(join(dist,'css','student-ui.css'),'utf8');
 if(/@import\b/i.test(style)||!style.includes('../img/background.svg'))
   throw Error('Bundled student styles must use the existing background URL and no CSS imports');
-if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
-for(const banned of ['html/academic-calendar.html','html/academic-support.html','css/academic-support.css','js/academic-support.js','html/academic-progress.html','html/academic-faq.html',
- 'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
- 'js/degree-preparation.js','js/student-forecast.js','js/lab-share.mjs',
- 'img/hufs_logo.png','img/hanmo_purple.png','img/lucide/external-link.svg','img/lucide/search.svg',
- ...studentStyles.slice(1)])
- if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);
 
 // 사이트맵은 포크의 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.
 const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
@@ -64,13 +40,10 @@ if(!sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')||
 if(/vsugangpractice\.com|tofuhanmo\.com|incident-404\.html|(?:practice|selectZone|result|pc-only|forecast)\.html|<lastmod>2024/.test(sitemap))
   throw Error('Sitemap leaked original domain, synthetic error or session-only routes');
 for(const route of publicRoutes){
-  if(!await exists(join(dist,route||'index.html')))
+  if(!assets.has(route||'index.html'))
     throw Error('Sitemap refers to a missing public page: '+route);
 }
 
-if(await exists(join(dist,'data/academic-notices-reference.json')))
-  throw Error('Unapproved historical notice feed leaked into public preview');
-if((await readdir(dist)).includes('degree-rescue'))throw Error('Academic student pages must not live under /degree-rescue/');
 const pages=new Map(await Promise.all(htmlRoutes.map(async page=>[page,await readFile(join(dist,page),'utf8')])));
 let linkCount=0,ariaCount=0;
 for(const [page,body] of pages){
@@ -104,7 +77,7 @@ for(const page of studentPages){
     const url=new URL(target,'https://preview.invalid/'+page);
     if(url.origin!=='https://preview.invalid')throw Error('Link leaves QA');
     const resolved=resolve(dist,decodeURIComponent(url.pathname).replace(/^\//,''));
-    if(!resolved.startsWith(dist+sep)||!await exists(resolved))
+    if(!resolved.startsWith(dist+sep)||!assets.has(relative(dist,resolved).split(sep).join('/')))
       throw Error('Broken student link: '+page+' '+target);
     linkCount++;
   }
@@ -176,8 +149,6 @@ if(!fitStyles.includes('vsugang-compact-scroll')||
 for(const id of ['scenario-settings','incident-options']){
   if(!menu.includes('id="'+id+'"'))throw Error('Missing incident setting: '+id);
 }
-for(const file of ['js/scenario-settings.js','js/incident-404.js','css/incident-404.css'])
-  await must(file);
 if((menu.match(/data-scenario-toggle=/g)||[]).length!==1||
   (menu.match(/data-scenario-off=/g)||[]).length!==1)
   throw Error('Only RECONNECT yes/no controls may exist');
@@ -196,10 +167,6 @@ if(/LAST_CONFLICT|data-base-course|data-alt-course|incident-search|incident-cand
  throw Error('Deferred substitute/conflict UI must be absent');
 if(/학업 플래너로 이동|scenario-all-on|scenario-all-off/.test(menu))
  throw Error('Legacy-mode landing has an obsolete extra link or bulk incident control');
-for(const retired of ['js/incident-options.js','css/scenario-settings.css','js/incident-courses.js','js/scenario-engine.js','js/scenario-composite.js',
- 'js/scenario-lab.js','js/scenario-workshop.js','js/scenario-review.js'])
- if(await exists(join(dist,retired)))throw Error('Removed prototype leaked: '+retired);
-
 const unified=pages.get('html/academic-timeline.html');
 if(!unified.includes('id="academic-calendar-panel"')||!unified.includes('id="notice-list"')||
    !unified.includes('id="academic-calendar-tab"'))
@@ -209,8 +176,6 @@ if(!root.includes('href="./html/reaction-test.html"'))
 // 돌발상황은 모드 메뉴에서만 시작한다.
 if(root.includes('scenario-workshop.html')||root.includes('vsugang.html#scenario-settings'))
   throw Error('Standalone incident link remains on landing');
-for(const oldPage of ['html/scenario-workshop.html','html/scenario-lab.html'])
-  if(await exists(join(dist,oldPage)))throw Error('Standalone synthetic page remains: '+oldPage);
 for(const [p,html] of pages){
   if(/(?:href|src)=["'][^"']*scenario-(?:workshop|lab)\.html/i.test(html))
     throw Error('Dead standalone scenario link from '+p);

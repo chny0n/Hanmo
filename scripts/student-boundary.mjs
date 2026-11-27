@@ -1,5 +1,5 @@
-import {readFile} from 'node:fs/promises';
-import {resolve} from 'node:path';
+import {readFile,readdir} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
 
 // 허용 목록에 없는 저장소 입력은 트리 셰이킹되더라도 학생 빌드에서 금지한다.
 export const studentInputs = Object.freeze([
@@ -14,7 +14,43 @@ export const studentStyles = Object.freeze([
 const permittedStyles = new Set(studentStyles);
 const styleOutput = '.build/student-ui.css';
 const normal = path => path.replaceAll('\\','/');
-const expected = new Set(['.build/student-entry.js','.build/academic-calendar.js','.build/academic-calendar.css',styleOutput]);
+export const rootAssets = Object.freeze([
+  'index.html', 'sitemap.xml', 'LICENSE',
+]);
+const generatedFiles = Object.freeze([
+  'THIRD-PARTY-NOTICES.txt', 'data/academic-source-config.json', 'data/network-probe.txt',
+]);
+export const bundleOutputs = Object.freeze({
+  'student-entry.js':'js/student-entry.js',
+  'academic-calendar.js':'js/academic-calendar.js',
+  'academic-calendar.css':'css/academic-calendar-vendor.css',
+  'student-ui.css':'css/student-ui.css',
+});
+const requiredPublicAssets = Object.freeze([
+  'css/academic-calendar.css', 'css/academic-unified.css', 'css/hanmo-labs.css', 'css/home-fit.css',
+  'css/incident-404.css', 'css/vsugang-fit.css',
+  'html/academic-timeline.html', 'html/catalog.html', 'html/developer.html', 'html/forecast.html',
+  'html/incident-404.html', 'html/pc-only.html', 'html/planner.html', 'html/practice.html',
+  'html/reaction-test.html', 'html/readiness.html', 'html/result.html', 'html/selectZone.html',
+  'html/strategy-lab.html', 'html/vsugang.html',
+  'img/background.svg', 'img/boo.png', 'img/favicon-purple.svg', 'img/lucide/LICENSE',
+  'js/academic-data-source.js', 'js/academic-unified.js', 'js/home-fit.js', 'js/incident-404.js',
+  'js/pc-only.js', 'js/reaction-page.mjs', 'js/reaction-profile.mjs', 'js/readiness.mjs',
+  'js/scenario-settings.js', 'js/strategy-engine.mjs', 'js/strategy-page.mjs', 'js/strategy-worker.mjs',
+  'js/student-catalog.js', 'js/student-notices.js', 'js/student-preferences.js', 'js/student-profile-bar.js',
+  'js/vsugang-fit.js',
+]);
+const disallowedPublicAssets = Object.freeze([
+  'css/academic-faq.css', 'css/academic-progress.css', 'css/academic-support.css', 'css/scenario-settings.css',
+  'html/academic-calendar.html', 'html/academic-faq.html', 'html/academic-progress.html',
+  'html/academic-support.html', 'html/scenario-lab.html', 'html/scenario-workshop.html',
+  'img/hanmo_purple.png', 'img/hufs_logo.png', 'img/lucide/external-link.svg', 'img/lucide/search.svg',
+  'js/academic-faq.js', 'js/academic-support.js', 'js/degree-preparation.js', 'js/incident-courses.js',
+  'js/incident-options.js', 'js/lab-share.mjs', 'js/scenario-composite.js', 'js/scenario-engine.js',
+  'js/scenario-lab.js', 'js/scenario-review.js', 'js/scenario-workshop.js', 'js/strategy-recommendation.mjs',
+  'js/strategy-sensitivity-worker.mjs', 'js/student-forecast.js',
+]);
+const expected = new Set(Object.keys(bundleOutputs).map(path=>'.build/'+path));
 const checkInput = path => {
   const p = normal(path);
   if (p.split('/').some(part => part === '..' || part === '') ||
@@ -56,5 +92,30 @@ export async function readPublicAssets(root) {
   if (!Array.isArray(paths) || new Set(paths).size !== paths.length ||
       paths.some(path => typeof path !== 'string' || !/^(?:css\/[^/]+\.css|js\/[^/]+\.(?:js|mjs)|html\/[^/]+\.html|img\/[^/]+\.(?:png|jpg|svg)|img\/lucide\/(?:[^/]+\.(?:png|jpg|svg)|LICENSE))$/.test(path) || path.includes('\\')))
     throw new Error('정적 공개 파일 허용 목록 오류');
+  const listed=new Set(paths);
+  for(const path of requiredPublicAssets)
+    if(!listed.has(path))throw Error('Missing public student asset '+path);
+  for(const path of [...disallowedPublicAssets,...studentStyles,...Object.values(bundleOutputs)])
+    if(listed.has(path))throw Error('Disallowed web artifact: '+path);
   return paths;
+}
+
+export async function assertStagedAssets(dist,publicAssets){
+  const allowed=new Set([...rootAssets,...publicAssets,...Object.values(bundleOutputs),...generatedFiles]);
+  const missing=new Set(allowed);
+  const directories=new Set();
+  for(const path of allowed){
+    for(let slash=path.indexOf('/');slash!==-1;slash=path.indexOf('/',slash+1))
+      directories.add(path.slice(0,slash));
+  }
+  async function inspect(prefix=''){
+    for(const entry of await readdir(join(dist,prefix),{withFileTypes:true})){
+      const path=prefix+entry.name;
+      if(entry.isDirectory()&&directories.has(path))await inspect(path+'/');
+      else if(!entry.isFile()||!missing.delete(path))throw Error('Unexpected staged asset '+path);
+    }
+  }
+  await inspect();
+  if(missing.size)throw Error('Missing staged asset '+[...missing].join(', '));
+  return allowed;
 }
