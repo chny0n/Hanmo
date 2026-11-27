@@ -1,7 +1,7 @@
 import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
 import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,createSyntheticNetworkProbe,stripPreviewPhotoExifAndXmp} from './preview-data.mjs';
-import {assertStudentBundleMeta,bundleOutputs,readPublicAssets,rootAssets,siteTarget,canonicalSiteBase} from './student-boundary.mjs';
+import {assertStudentBundleMeta,assertStagedAssets,bundleOutputs,readPublicAssets,rootAssets,siteTarget,canonicalSiteBase} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
@@ -17,7 +17,6 @@ const meta=JSON.parse(await readFile(join(build,'bundle-meta.json'),'utf8'));
 assertStudentBundleMeta(meta);
 const {outputs}=meta;
 const publicAssets=await readPublicAssets(root);
-if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');
 const sourceDomain=(await readFile(join(root,'CNAME'),'utf8')).trim();
 if(sourceDomain!==new URL(canonicalSiteBase).host)throw Error('Invalid source CNAME');
 for(const path of new Set([...rootAssets,'CNAME',...publicAssets]))
@@ -71,4 +70,5 @@ await writeFile(join(dist,'data','network-probe.txt'),probe);
 await assertPreviewData(dist);
 for(const [source,target] of Object.entries(bundleOutputs))
   await copyFile(join(build,source),join(dist,target));
+await assertStagedAssets(dist,publicAssets);
 console.log('Hanmo site staged at dist/ with academic bundles, HTML, CSS and public data.');

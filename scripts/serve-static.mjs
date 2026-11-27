@@ -1,5 +1,5 @@
 // @ts-check
-// 브라우저 QA 전용 서버이며 저장소의 dist만 제공한다.
+// 로컬 정적 서버이며 빌드된 dist만 제공한다.
 import {createServer} from 'node:http';
 import {open,readFile} from 'node:fs/promises';
 import {resolve,relative,isAbsolute,extname} from 'node:path';
@@ -45,5 +45,5 @@ createServer(async(request,response)=>{
     response.writeHead(404,{'content-type':'text/plain; charset=utf-8'});response.end('Not found');
   }
 }).listen(port,'127.0.0.1',function(){
-  console.log('한모 브라우저 QA: http://127.0.0.1:'+this.address().port);
+  console.log('한모: http://127.0.0.1:'+this.address().port);
 });

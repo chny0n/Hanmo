@@ -7,7 +7,7 @@
   <p><strong>수강신청은 미리 연습하고, 다음 학기는 더 쉽게 준비하고.</strong><br>한국외국어대학교 학생을 위한 비공식 PC 웹 · 모의수강신청과 수강신청 준비 도구</p>
 
   <p>
-    <a href="https://github.com/chny0n/Hanmo/actions/workflows/academic-ci.yml"><img alt="코드 검사 상태" src="https://github.com/chny0n/Hanmo/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
+    <a href="https://github.com/chny0n/Hanmo/actions/workflows/academic-ci.yml"><img alt="빌드 상태" src="https://github.com/chny0n/Hanmo/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
     <a href="LICENSE"><img alt="GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F4C76C?labelColor=00131F"></a>
     <img alt="PC 웹 전용" src="https://img.shields.io/badge/platform-PC%20Web-467C96?labelColor=00131F">
     <img alt="비공식 독립 프로젝트" src="https://img.shields.io/badge/project-unofficial-567D6F?labelColor=00131F">
@@ -153,14 +153,7 @@ flowchart TB
         RT --> RP["브라우저 반응 프로필"]
         RP --> ST
         PC --> CDN["한모 CDN · 제한적 속도 관측"]
-        S["허용된 공개 최소 정보·비식별 관측"] -.-> V["권리 확인 · 비식별화 · 독립 검수"]
-        V -. "기본 경로" .-> SNAP["검수된 정적 스냅샷"]
-        V -. "필요할 때만" .-> DB["선택적 Supabase Free"]
-        SNAP -.-> N
-        SNAP -.-> C
-        DB -.-> API["최소 공개 읽기 API"]
-        API -.-> N
-        API -.-> C
+
     end
 
     classDef page fill:#0d3042,stroke:#467c96,color:#eff6fc
@@ -168,7 +161,7 @@ flowchart TB
     classDef planned fill:#3c321e,stroke:#f4c76c,color:#f4c76c
     class H,NAV,PC,RT,ST,I,M,PR,SZ,R,ERR,CAP page
     class J,E,U,LS,RP,CDN data
-    class S,V,SNAP,DB,API,N,C planned
+    class N,C planned
 ```
 
 <sub>학사 공지·개설 전망 화면은 존재하지만 실제 공개 자료 연결은 `mode: disabled`입니다. **학칙·졸업요건(원문 링크·인용·요약·자동 확인 포함), 학교를 대신하는 학사 FAQ, 교수명·수강 관련 정보, 학교 계정·개인 성적 자료는 서비스 대상이 아닙니다.**</sub>
@@ -177,13 +170,13 @@ flowchart TB
 
 실제 학교 자료 연결은 `mode: disabled`입니다. 정보처의 [서면 회신](docs/sources/2026-11-23-hufs-information-office-reply.txt)에 적힌 금지 항목과 수집 조건을 적용합니다. 운영자가 직원의 대면 설명을 근거로 검토하는 공개정보 가공 범위와 공개 전 검수 절차는 [운영 방침](docs/public-data-operating-decision.md)에 기록합니다.
 
-자동 수집은 **현재 OFF**입니다. 구현 시에도 공지 **하루 1회 이하**(첫 목록+신규 상세), 강의시간표 **학기당 2회 이하**, 요청 간 **10초 이상**·동시 접속 **1개**·실행당 **최대 50건**, 수강신청/정정 기간과 전후 각 **1일 중단**, 오류·접속 제한 발생 **당일 재시도 금지**, 공개 노출 URL·운영자 연락처 포함 User-Agent를 모두 강제해야 합니다. 상세 정책과 기술 게이트는 [아키텍처 §0](docs/architecture.md)에서 관리합니다.
+자동 수집은 **현재 OFF**입니다. 구현 시에도 공지 **하루 1회 이하**(첫 목록+신규 상세), 강의시간표 **학기당 2회 이하**, 요청 간 **10초 이상**·동시 접속 **1개**·실행당 **최대 50건**, 수강신청/정정 기간과 전후 각 **1일 중단**, 오류·접속 제한 발생 **당일 재시도 금지**, 공개 노출 URL·운영자 연락처 포함 User-Agent를 모두 강제해야 합니다. 상세 자료 이용 및 철회 조건은 [운영 방침](docs/public-data-operating-decision.md)에서 확인합니다.
 
-### 개발 및 자동 검증
+### 로컬 실행
 
-Node.js **22**에서 `npm ci` → `npm run check` → `npx playwright install chromium` → `npm run test:e2e` 순서로 확인합니다. GitHub Actions의 자동 검사 통과는 Windows Chrome/Edge·NVDA·고배율 실기기 인수나 운영 배포 승인과는 별개입니다.
+Node.js **22**에서 `npm ci` → `npm run build` → `npm run serve` 순서로 실행합니다. 기본 주소는 `http://127.0.0.1:4173/`입니다.
 
-**전략 실험.** 첫 선착순 회차를 가정해 신청 순서와 모의실험 성공 비율을 계산합니다. 계산 기준은 [현행 아키텍처](docs/architecture.md#5-전략-실험-신청-순서-추천), 검증과 인수 상태는 [미결 이슈](docs/pending-issues.md)에서 확인합니다.
+**전략 실험.** 첫 선착순 회차를 가정해 신청 순서와 모의실험 성공 비율을 계산합니다. 계산 기준과 가정은 전략 실험 결과 화면의 수식 및 가정 안내에서 확인할 수 있습니다.
 
 **개발진**
 
