@@ -1,20 +1,21 @@
 <div align="center">
 
-  <a href="https://tofuhanmo.com/"><img src="img/hanmo.png" width="78" alt="한모 로고"></a>
+  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo.png" width="78" alt="한모 로고"></a>
 
-  <h1>한모 · Hanmo</h1>
+  <h1>한모 · Hanmo Develop</h1>
 
-  <p><strong>수강신청은 미리 연습하고, 다음 학기는 더 쉽게 준비하고.</strong><br>한국외국어대학교 학생을 위한 비공식 PC 웹 · 모의수강신청과 수강신청 준비 도구</p>
+  <p><strong>수강신청은 미리 연습하고, 다음 학기는 더 쉽게 준비하고.</strong><br>한모 개발 저장소 · 남은 개발 범위: 학사 정보 및 강의 검색</p>
 
   <p>
-    <a href="https://github.com/chny0n/Hanmo/actions/workflows/academic-ci.yml"><img alt="빌드 상태" src="https://github.com/chny0n/Hanmo/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
+    <a href="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml"><img alt="빌드 상태" src="https://github.com/ot4562-glitch/Hanmo_develop/actions/workflows/academic-ci.yml/badge.svg?branch=main"></a>
     <a href="LICENSE"><img alt="GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F4C76C?labelColor=00131F"></a>
     <img alt="PC 웹 전용" src="https://img.shields.io/badge/platform-PC%20Web-467C96?labelColor=00131F">
     <img alt="비공식 독립 프로젝트" src="https://img.shields.io/badge/project-unofficial-567D6F?labelColor=00131F">
   </p>
 
   <p>
-    <a href="https://tofuhanmo.com/"><strong>한모 이용하기</strong></a> ·
+    <a href="https://tofuhanmo.com/"><strong>운영 한모</strong></a> ·
+    <a href="https://ot4562-glitch.github.io/Hanmo_develop/"><strong>개발판</strong></a> ·
     <a href="#experience">한눈에 보기</a> ·
     <a href="#changes">주요 기능</a> ·
     <a href="#flow">연습 흐름도</a> ·
@@ -34,7 +35,7 @@
 
 수강신청 시작 시각에 맞춰 접속하고, 원하는 과목을 빠르게 신청하고, 예상치 못한 상황에도 대처할 수 있도록 미리 연습해 보세요. 한모는 수강신청 준비부터 모의 연습, 결과 확인까지 한 곳에서 이용할 수 있는 비공식 서비스입니다.
 
-**한모(Hanmo)**는 한국외국어대학교 학생을 위한 PC 전용 모의수강신청 서비스입니다. BASIC · TIME · SELECT 모드와 선택형 돌발상황, PC 진단, 반응속도 테스트, 전략 실험 (베타), 내정보를 제공합니다. 학사 정보와 강의 검색은 자료 연결을 준비 중입니다.
+**Hanmo Develop**은 [한모 운영 저장소](https://github.com/chny0n/Hanmo)와 구분된 개발판입니다. BASIC · TIME · SELECT, 돌발상황, PC 진단, 반응속도 테스트, 전략 실험 (베타), 내정보는 운영 한모에 반영되었습니다. 앞으로의 신규 구현은 **학사 정보와 강의 검색 두 페이지**로 한정합니다.
 
 <a id="experience"></a>
 
@@ -99,13 +100,13 @@ flowchart LR
 
 <a id="next"></a>
 
-## 익숙한 연습에서, 학업 준비까지
+## 개발 목표 · 학사 정보와 강의 검색
 
 한모에서 수강신청을 연습하고 자신의 PC 환경과 신청 전략을 점검해 보세요. 학사 정보와 강의 검색은 자료 연결을 준비 중이며, 실제 학교 공지·학사일정·개설 강좌는 학교의 공식 원문을 확인해 주세요.
 
-**학사 정보와 강의 검색 메뉴는 현재 비활성 상태입니다.** 실제 학교 자료 연결이나 자동 수집은 아직 진행하지 않습니다.
+**학사 정보와 강의 검색 메뉴는 현재 비활성 상태입니다.** 공지 제목·분류 검색, 검수된 일정 표시, 강의명·학수번호 검색 및 개설 관측 집계의 기반을 준비합니다. 실제 자료 연결, 자동 수집, 공개판 검수 및 철회 처리는 별도 구현 대상입니다. [개발 범위와 남은 작업](docs/academic-development.md)
 
-### 한모 서비스 이용 안내
+### 운영 한모 기능 및 개발판 상태
 
 | 화면 | 해볼 수 있는 일 | 현재 상태 |
 | :--- | :--- | :--- |
@@ -114,8 +115,8 @@ flowchart LR
 | **PC 진단** · [이용하기](https://tofuhanmo.com/html/readiness.html) | 프레임·타이머 지연·한모 연결 상태 등 10개 항목별 참고 등급 및 B 이하 개선 안내 | **이용 가능** · 학교 서버 성능 측정 아님 |
 | **반응속도 테스트** · [이용하기](https://tofuhanmo.com/html/reaction-test.html) | 클릭·Space·Enter로 시각 신호에 8회 반응, 중앙값 저장 | **이용 가능** · 브라우저에 저장 |
 | **전략 실험 (베타)** · [이용하기](https://tofuhanmo.com/html/strategy-lab.html) | 가상 과목 2~8개의 중요 순위·정원·경쟁자 수와 저장한 반응시간으로 1,000회 모의실험 | **이용 가능** · 추천 순서와 모의 성공률, 실제 성공률 아님 |
-| **학사 정보** | 학사 공지 및 월간 달력 | **준비 중** · 메뉴 비활성 |
-| **강의 검색** | 허용·검수된 공개 개설 관측 검색 및 비식별 집계 준비 | **준비 중** · 메뉴 비활성 |
+| **학사 정보** | 학사 공지 메타데이터 정밀검색 및 검수된 일정의 월간 표시 | **개발 중** · 메뉴·자료 연결 비활성 |
+| **강의 검색** | 허용·검수된 강의 메타데이터 검색 및 동일 과목 개설 관측 집계 | **개발 중** · 메뉴·자료 연결 비활성 |
 
 <a id="site-flow"></a>
 
@@ -174,7 +175,7 @@ flowchart TB
 
 ### 로컬 실행
 
-Node.js **22**에서 `npm ci` → `npm run build` → `npm run serve` 순서로 실행합니다. 기본 주소는 `http://127.0.0.1:4173/`입니다.
+Node.js **22**에서 `npm ci` → `npm run build` → `npm run serve` 순서로 실행합니다. 기본 주소는 `http://127.0.0.1:4173/`입니다. `npm run test:academic`은 두 페이지에 필요한 합성 데이터 검색·개설 집계·자료 경계·수집 금지 검사만 실행합니다. `npm run collection:status`는 외부 요청 없이 수집 가능 여부를 확인합니다.
 
 **전략 실험.** 첫 선착순 회차를 가정해 신청 순서와 모의실험 성공 비율을 계산합니다. 계산 기준과 가정은 전략 실험 결과 화면의 수식 및 가정 안내에서 확인할 수 있습니다.
 
@@ -190,11 +191,11 @@ Node.js **22**에서 `npm ci` → `npm run build` → `npm run serve` 순서로 
 
 한모 이용 문의는 [개발자 소개](https://tofuhanmo.com/html/developer.html) 페이지의 이메일로 연락해 주세요.
 
-[설계 문서](docs/architecture.md) · [문서 안내](docs/README.md) · [GitHub 저장소](https://github.com/chny0n/Hanmo) · [개발 이슈](https://github.com/chny0n/Hanmo/issues) · [라이선스](LICENSE)
+[설계 문서](docs/architecture.md) · [남은 개발 범위](docs/academic-development.md) · [운영 저장소](https://github.com/chny0n/Hanmo) · [개발 이슈](https://github.com/ot4562-glitch/Hanmo_develop/issues) · [라이선스](LICENSE)
 
 ---
 
 <div align="center">
   <p><strong>수강신청을 연습하는 곳에서, 다음 학기를 준비하는 곳으로.</strong></p>
-  <sub><a href="https://tofuhanmo.com/">tofuhanmo.com</a> · 비공식 한국외국어대학교 학생 프로젝트<br>학교 운영·인증·제휴 서비스가 아니며 실제 학교 로그인·수강신청·공식 학사판정을 제공하지 않습니다.</sub>
+  <sub><a href="https://tofuhanmo.com/">운영 한모</a> · <a href="https://ot4562-glitch.github.io/Hanmo_develop/">Hanmo Develop</a> · 비공식 한국외국어대학교 학생 프로젝트<br>학교 운영·인증·제휴 서비스가 아니며 실제 학교 로그인·수강신청·공식 학사판정을 제공하지 않습니다.</sub>
 </div>

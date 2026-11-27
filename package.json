@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "build": "esbuild js/academic/app/student-entry.js js/academic/app/academic-calendar.js css/student-ui.css --bundle --platform=browser --format=iife --target=es2022 --minify --keep-names --external:../img/background.svg --entry-names=[name] --outdir=.build --metafile=.build/bundle-meta.json && node scripts/stage-static.mjs",
-    "serve": "node scripts/serve-static.mjs"
+    "serve": "node scripts/serve-static.mjs",
+    "test:academic": "node --test tests/academic-development.test.mjs tests/collection-window.test.mjs tests/preview-data.test.mjs",
+    "collection:status": "node scripts/check-collection-window.mjs",
+    "collection:gate": "node scripts/check-collection-window.mjs --enforce"
   },
   "dependencies": {
     "fullcalendar": "7.1.5",

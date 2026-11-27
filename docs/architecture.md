@@ -15,6 +15,10 @@ Node.js 22에서 `npm ci`, `npm run build`, `npm run serve`를 실행합니다. 
 
 공개 파일 목록, 번들 입력 경계, 자료 비활성화 설정, 합성 네트워크 시험 파일, 사진 메타데이터 제거 및 제3자 라이선스 고지는 빌드에서 유지합니다. 미리보기는 개발 저장소 주소를 사용하며 CNAME을 포함하지 않습니다. 원본 저장소에서 명시적으로 운영 빌드를 선택하는 경우에만 운영 도메인을 포함합니다.
 
+## 개발 범위
+
+신규 구현은 학사 정보(`html/academic-timeline.html`)와 강의 검색(`html/catalog.html`)에 한정합니다. [개발 범위](academic-development.md)에 선별 복원한 검색·개설 집계·자료 수집 차단 모듈과 남은 연결 작업을 정리합니다. 기존 모의수강신청과 PC 도구는 운영 한모와 동일한 사용 경험을 유지합니다.
+
 ## 자료 이용
 
 `data/academic-source-config.json`은 `mode: disabled`입니다. 학교 공식 자료 자동 수집 및 실제 DB 연결은 운영하지 않습니다. [공개 학사자료 운영 방침](public-data-operating-decision.md)과 [정보처 서면 안내](sources/2026-11-23-hufs-information-office-reply.txt)의 제한 및 철회 조건을 지킵니다. 실제 학교 자료를 사용하기 전 필요한 권리 확인과 검수는 별도로 수행합니다.

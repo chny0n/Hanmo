@@ -19,6 +19,7 @@ on:
       - 'css/**'
       - 'img/**'
       - 'scripts/**'
+      - 'tests/**'
       - 'data/**'
       - 'package.json'
       - 'package-lock.json'
@@ -49,6 +50,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run test:academic
       - run: npm run build
       - name: Validate original domain and isolate fork preview
         run: |
@@ -61,6 +63,7 @@ jobs:
           fi
           test -f dist/index.html
           test -f dist/html/academic-timeline.html
+          test -f dist/html/catalog.html
           test -f dist/html/planner.html
           test -f dist/js/student-entry.js
       - name: Name the Pages artifact for this build attempt
