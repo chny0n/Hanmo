@@ -101,8 +101,13 @@ export function requestWaitMs(unit){
  * @param {(agent:typeof agents[number],slot:number,arrival:number,start:number,processed:number,reply:number)=>void|boolean|number} onProcessed 처리된 요청 (false면 이후 요청 처리 중단)
  */
 export function runSharedQueue(agents,onProcessed){
+  runQueue(agents,onProcessed,'baseline');
+}
+function runQueue(agents,onProcessed,mode){
+  const synchronizeRivals=mode==='synchronized',stableWait=mode==='stableWait';
+  const player=agents[0];
   const heap=agents.filter(agent=>agent.actions.length).map(agent=>({
-    agent,slot:0,arrival:agent.startMs+agent.actions[0],
+    agent,slot:0,arrival:(synchronizeRivals&&agent!==player?0:agent.startMs)+agent.actions[0],
   }));
   // 요청 도착시각이 같으면 고정 참가자 ID 순서를 사용합니다. 본인 ID는 가장 큽니다.
   const earlier=(a,b)=>a.arrival<b.arrival||(a.arrival===b.arrival&&a.agent.id<b.agent.id);
@@ -122,7 +127,7 @@ export function runSharedQueue(agents,onProcessed){
     const node=heap[0],{agent,slot,arrival}=node;
     const start=Math.max(arrival,available);
     const processed=serviceFinishMs(start);
-    const reply=Math.max(processed,start+agent.delays[slot]);
+    const reply=Math.max(processed,start+agent.delays[stableWait?0:slot]);
     available=processed;
     if(onProcessed(agent,slot,arrival,start,processed,reply)===false)return;
     // 같은 참가자의 다음 요청은 응답 완료 후에만 대기열에 들어옵니다.
@@ -142,13 +147,13 @@ function normal01(seed,trial,stream,slot){
   const u1=random01(seed,trial,stream,slot*2),u2=random01(seed,trial,stream,slot*2+1);
   return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
 }
-function userAgent(s,trial,id,stableWait){
+function userAgent(s,trial,id){
   const actions=[],delays=[];
   for(let slot=0;slot<s.courses.length;slot++){
     const z=normal01(s.seed,trial,100,slot);
     const reaction=Math.max(MIN_REACTION_MS,s.actionMs-DIRECT_SUBMIT_MS+s.jitterMs*z);
     actions.push(reaction+movementMs(s.seed^0x2f6e2b1d,trial,0,slot));
-    delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,stableWait?0:slot)));
+    delays.push(requestWaitMs(random01(s.seed^0x38b77c19,trial,100,slot)));
   }
   return {id,startMs:s.startDelayMs,actions,delays,courses:[]};
 }
@@ -212,8 +217,8 @@ export function rivalOrder(known,urgency,draw,preference){
   return entries.sort((a,b)=>a.key-b.key).map(({course})=>course);
 }
 
-function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE,stableWait=false){
-  const player=userAgent(s,trial,population,stableWait);
+function createTrialAgents(s,urgency,population,trial){
+  const player=userAgent(s,trial,population);
   const agents=[player];
   const portfolios=assignCourses(s.courses,population,s.seed,trial);
   const timingSeed=s.seed^0x729ab44d;
@@ -230,15 +235,19 @@ function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE,stableW
       random01(s.seed^0x3f67a5d9,trial,rival,slot),
       movementMs(s.seed^0x1a9b42f3,trial,rival,slot),
     ));
-    const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,stableWait?0:slot)));
-    const startMs=rivalStartMs(random01(s.seed^0x42cefe21,trial,rival,0),readyShare);
+    const delays=courses.map((_,slot)=>requestWaitMs(random01(s.seed^0x19b4c5d7,trial,rival,slot)));
+    const startMs=rivalStartMs(random01(s.seed^0x42cefe21,trial,rival,0));
     agents.push({id:rival,startMs,actions,delays,courses});
   }
+  return agents;
+}
+function simulateTrial(s,agents,mode){
+  const player=agents[0];
   const times=[],closing=s.courses.map(()=>Infinity),counts=new Uint16Array(s.courses.length);
   let totalWaitMs=0,queueWaitMs=0,completionMs=0;
   // 처리율은 시각에만 의존하며 과목 종류·성공 여부와 무관합니다.
   // 이동 거리도 과목이 아닌 신청 순번별로 추출하므로 기존 DP가 유효합니다.
-  runSharedQueue(agents,(agent,slot,arrival,start,processed,reply)=>{
+  runQueue(agents,(agent,slot,arrival,start,processed,reply)=>{
     if(agent===player){
       times.push(processed);
       totalWaitMs+=reply-arrival;
@@ -250,7 +259,7 @@ function simulateTrial(s,urgency,population,trial,readyShare=READY_SHARE,stableW
       const course=agent.courses[slot];
       if(course>=0&&++counts[course]===s.courses[course].capacity)closing[course]=processed;
     }
-  });
+  },mode);
   return {times,closing,totalWaitMs,queueWaitMs,completionMs};
 }
 
@@ -308,7 +317,8 @@ export function simulate(raw){
   const baseline=population(OVERLAP.baseline);
   if(guaranteed)for(const row of success)row.fill(s.trials);
   else for(let trial=0;trial<s.trials;trial++){
-    const {times,closing}=simulateTrial(s,urgency,baseline,trial);
+    const agents=createTrialAgents(s,urgency,baseline,trial);
+    const {times,closing}=simulateTrial(s,agents,'baseline');
     for(let j=0;j<n;j++){
       for(let slot=0;slot<n;slot++){
         if(times[slot]<closing[j])success[j][slot]++;
@@ -320,44 +330,46 @@ export function simulate(raw){
   const order=bestOrder(weights,probability);
   const sum=weights.reduce((a,b)=>a+b,0);
   const meanScore=order.reduce((score,j,slot)=>score+weights[j]*probability[j][slot],0)*100/sum;
-  // 평가 표본과 추천 순서 선택 표본을 분리하고 동일한 조건의 결과만 재사용합니다.
-  const evaluated=new Map();
-  function evaluate(size,readyShare=READY_SHARE,stableWait=false){
-    const key=size+':'+readyShare+':'+stableWait;
-    if(evaluated.has(key))return evaluated.get(key);
-    let wins=0,totalWaitMs=0,queueWaitMs=0,completionMs=0;
-    const courseWins=new Uint32Array(n);
-    const submissionTimes=new Float64Array(n);
+  // 순서 선택과 별도 표본으로 평가합니다. 후보군이 같은 조건은 참가자 입력을 한 번만 생성합니다.
+  function evaluate(size,modes){
+    const totals=modes.map(mode=>({mode,wins:0,totalWaitMs:0,queueWaitMs:0,completionMs:0,
+      courseWins:new Uint32Array(n),submissionTimes:new Float64Array(n)}));
     for(let trial=s.trials;trial<2*s.trials;trial++){
-      const sample=simulateTrial(s,urgency,size,trial,readyShare,stableWait);
-      let won=0;
-      for(let slot=0;slot<n;slot++){
-        submissionTimes[slot]+=sample.times[slot];
-        if(sample.times[slot]<sample.closing[order[slot]]){
-          courseWins[slot]++;
-          won++;
+      const agents=createTrialAgents(s,urgency,size,trial);
+      for(const total of totals){
+        const sample=simulateTrial(s,agents,total.mode);
+        let won=0;
+        for(let slot=0;slot<n;slot++){
+          total.submissionTimes[slot]+=sample.times[slot];
+          if(sample.times[slot]<sample.closing[order[slot]]){
+            total.courseWins[slot]++;
+            won++;
+          }
         }
+        if(won===n)total.wins++;
+        total.totalWaitMs+=sample.totalWaitMs;
+        total.queueWaitMs+=sample.queueWaitMs;
+        total.completionMs+=sample.completionMs;
       }
-      if(won===n)wins++;
-      totalWaitMs+=sample.totalWaitMs;
-      queueWaitMs+=sample.queueWaitMs;
-      completionMs+=sample.completionMs;
     }
-    const courseSuccess=Array.from(courseWins,count=>count/s.trials);
-    const value={wins,courseSuccess,expectedCourses:courseSuccess.reduce((a,b)=>a+b,0),timing:{
-      meanWaitMs:Math.round(totalWaitMs/s.trials),
-      meanQueueWaitMs:Math.round(queueWaitMs/s.trials),
-      meanCompletionMs:Math.round(completionMs/s.trials),
-      meanSubmissionMs:Array.from(submissionTimes,ms=>Math.round(ms/s.trials)),
-    }};
-    evaluated.set(key,value);
-    return value;
+    return totals.map(({wins,courseWins,submissionTimes,totalWaitMs,queueWaitMs,completionMs})=>{
+      const courseSuccess=Array.from(courseWins,count=>count/s.trials);
+      return {wins,courseSuccess,expectedCourses:courseSuccess.reduce((a,b)=>a+b,0),timing:{
+        meanWaitMs:Math.round(totalWaitMs/s.trials),
+        meanQueueWaitMs:Math.round(queueWaitMs/s.trials),
+        meanCompletionMs:Math.round(completionMs/s.trials),
+        meanSubmissionMs:Array.from(submissionTimes,ms=>Math.round(ms/s.trials)),
+      }};
+    });
   }
-  const base=evaluate(baseline);
-  const lessOverlap=guaranteed?base:evaluate(population(OVERLAP.less));
-  const moreOverlap=guaranteed?base:evaluate(population(OVERLAP.more));
-  const synchronized=guaranteed?base:evaluate(baseline,1);
-  const stableWait=guaranteed?base:evaluate(baseline,READY_SHARE,true);
+  const [base,synchronized=base,stableWait=base]=evaluate(baseline,
+    guaranteed?['baseline']:['baseline','synchronized','stableWait']);
+  function evaluateOverlap(overlap){
+    const size=population(overlap);
+    return guaranteed||size===baseline?base:evaluate(size,['baseline'])[0];
+  }
+  const lessOverlap=evaluateOverlap(OVERLAP.less);
+  const moreOverlap=evaluateOverlap(OVERLAP.more);
   const sensitivity={lessOverlap:lessOverlap.wins,moreOverlap:moreOverlap.wins,
     synchronized:synchronized.wins,stableWait:stableWait.wins};
   // 표시용 불확실성: 반복 실험의 표본 오차(Wilson 95%)와, 합성 가정을 바꿨을 때 전체 성공률이 움직인 범위를 분리합니다.
