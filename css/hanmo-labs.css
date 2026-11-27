@@ -239,6 +239,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-strategy .strategy-order{gap:4px;margin-bottom:3px}
  .hanmo-strategy .strategy-order li{padding:6px 8px;gap:4px}
  .hanmo-strategy #strategy-result:has(.strategy-criteria[open]) .strategy-order li{padding-block:4px;row-gap:2px}
+ .hanmo-strategy #strategy-result:has(.strategy-criteria[open]) .strategy-order strong{font-size:16px;line-height:1.25}
  .hanmo-strategy .strategy-criteria{margin:4px 0;padding:2px 0}
  .hanmo-strategy .strategy-criteria summary{padding-block:3px}
  .hanmo-strategy .strategy-criteria .lab-footnote{margin:2px 0}
