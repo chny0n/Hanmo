@@ -57,20 +57,17 @@ export const REQUEST_WAIT_MIN_MS=1000;
 export const REQUEST_WAIT_MAX_EXCLUSIVE_MS=3001;
 // 단일 논리적 서버의 회복 후 건당 처리시간입니다.
 export const SERVER_SERVICE_MS=10;
-const SERVICE_PHASES=[{until:2000,ms:20},{until:5000,ms:12.5}];
+const OPENING_END_MS=2000,RECOVERY_END_MS=5000;
+const OPENING_SERVICE_MS=20,RECOVERY_SERVICE_MS=12.5;
 /** 시간대별 처리율을 적분해 요청 한 건의 작업량이 완료되는 시각을 구합니다.
  * @param {number} start 처리 시작 시각
  */
 export function serviceFinishMs(start){
-  let time=start,remaining=1;
-  for(const {until,ms} of SERVICE_PHASES){
-    if(time>=until)continue;
-    const work=(until-time)/ms;
-    if(work>=remaining)return time+remaining*ms;
-    remaining-=work;
-    time=until;
-  }
-  return time+remaining*SERVER_SERVICE_MS;
+  if(start<=OPENING_END_MS-OPENING_SERVICE_MS)return start+OPENING_SERVICE_MS;
+  if(start<OPENING_END_MS)return OPENING_END_MS+(1-(OPENING_END_MS-start)/OPENING_SERVICE_MS)*RECOVERY_SERVICE_MS;
+  if(start<=RECOVERY_END_MS-RECOVERY_SERVICE_MS)return start+RECOVERY_SERVICE_MS;
+  if(start<RECOVERY_END_MS)return RECOVERY_END_MS+(1-(RECOVERY_END_MS-start)/RECOVERY_SERVICE_MS)*SERVER_SERVICE_MS;
+  return start+SERVER_SERVICE_MS;
 }
 /** 가상 화면의 목표 크기와 이동 거리로 선택·확인 시간을 계산합니다.
  * @param {number} distance 목표까지의 거리(px)
@@ -106,9 +103,12 @@ export function runSharedQueue(agents,onProcessed){
 function runQueue(agents,onProcessed,mode){
   const synchronizeRivals=mode==='synchronized',stableWait=mode==='stableWait';
   const player=agents[0];
-  const heap=agents.filter(agent=>agent.actions.length).map(agent=>({
-    agent,slot:0,arrival:(synchronizeRivals&&agent!==player?0:agent.startMs)+agent.actions[0],
-  }));
+  const heap=[];
+  for(const agent of agents){
+    if(!agent.actions.length)continue;
+    const start=synchronizeRivals&&agent!==player?0:agent.startMs;
+    heap.push({agent,slot:0,arrival:start+agent.actions[0]});
+  }
   // 요청 도착시각이 같으면 고정 참가자 ID 순서를 사용합니다. 본인 ID는 가장 큽니다.
   const earlier=(a,b)=>a.arrival<b.arrival||(a.arrival===b.arrival&&a.agent.id<b.agent.id);
   function down(i){

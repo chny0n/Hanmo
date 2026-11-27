@@ -231,8 +231,10 @@ test('Fitts 조작시간은 거리에 따라 증가하고 버튼 폭에 따라 �
 });
 test('비정상 대기열은 시간대 경계에서 남은 작업량을 정확히 처리한다',()=>{
   assert.equal(serviceFinishMs(100),120);
+  assert.equal(serviceFinishMs(1980),2000);
   assert.equal(serviceFinishMs(1990),2006.25);
   assert.equal(serviceFinishMs(2000),2012.5);
+  assert.equal(serviceFinishMs(4987.5),5000);
   assert.equal(serviceFinishMs(4995),5006);
   assert.equal(serviceFinishMs(5000),5010);
   assert.equal(serviceFinishMs(10000),10010);
