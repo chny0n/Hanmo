@@ -467,7 +467,7 @@ test('다섯 기능 화면의 메뉴명·제목·i 도움말·구분선 좌표�
     for(const [slug,label] of routes){
       await page.goto('/html/'+slug+'.html');
       await expect(page.locator('.hanmo-topbar a[aria-current="page"]')).toHaveText(label);
-      await expect(page.locator('main .hanmo-schoolmark h1')).toHaveText(label);
+      await expect(page.locator('main .hanmo-schoolmark h1')).toHaveText('한모 | '+label);
       await expect(page.locator('.hanmo-title-divider')).toHaveCount(1);
       await expect(page.locator('.hanmo-title-divider img')).toBeVisible();
       const info=page.locator('.hanmo-title-help-button');

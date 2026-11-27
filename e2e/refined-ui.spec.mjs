@@ -285,7 +285,7 @@ test.describe('수정 화면의 동작과 표시 상태',()=>{
   test('달력은 이전·다음·오늘로 이동하고 학교 일정 미연결을 유지한다',async({page},info)=>{
     await page.setViewportSize(viewports[0]);
     await visit(page,'/html/academic-timeline.html#calendar');
-    await expect(page.getByRole('heading',{name:'학사 정보',level:1})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'한모 | 학사 정보',level:1})).toBeVisible();
     const calendar=page.locator('#calendar-view');
     const month=calendar.getByRole('heading');
     const status=page.locator('#calendar-status');

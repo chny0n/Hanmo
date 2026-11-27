@@ -100,7 +100,7 @@ test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은
     await expect(page.locator('body > .hanmo-policy-footer strong')).toContainText('본 서비스는 한국외국어대학교의 공식 서비스가 아니며');
   }
   await page.goto('/html/catalog.html');
-  await expect(page.locator('.hanmo-schoolmark h1')).toHaveText('강의 검색');
+  await expect(page.locator('.hanmo-schoolmark h1')).toHaveText('한모 | 강의 검색');
   await expect(page.locator('#catalog-query')).toHaveCount(1);
   await expect(page.locator('#catalog-results')).toHaveCount(1);
   await page.goto('/html/academic-timeline.html');
@@ -117,14 +117,14 @@ test('상단 브랜드와 학사공지·강의검색 제목 정리 후 기능은
 });
 
 
-test('학사 공지·강의 검색은 내비게이션 이름과 페이지 표제를 공유한다',async({page})=>{
+test('학사 공지·강의 검색은 내비게이션 이름 앞에 한모를 붙인 표제를 사용한다',async({page})=>{
  for(const name of ['academic-timeline','catalog']){
   await page.goto('/html/'+name+'.html');
   const current=page.locator('.hanmo-topbar a[aria-current="page"]');
   const title=page.locator('.hanmo-schoolmark h1');
   await expect(current).toHaveCount(1);
   await expect(title).toHaveCount(1);
-  expect((await current.innerText()).trim()).toBe((await title.innerText()).trim());
+  await expect(title).toHaveText('한모 | '+(await current.innerText()).trim());
  }
  await page.goto('/html/catalog.html');
  await expect(page.locator('label[for="catalog-query"]')).toContainText('과목명·학수번호');

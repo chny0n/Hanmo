@@ -316,7 +316,7 @@ test('모든 상단 바 브랜드 옆의 불필요한 비공식 문구를 제거
 
 test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검색·결과는 유지한다',()=>{
  const catalog=fs.readFileSync(path.join(ROOT,'html/catalog.html'),'utf8');
- assert.match(catalog,/<h1>강의 검색<\/h1>/);
+ assert.match(catalog,/<h1>한모 \| 강의 검색<\/h1>/);
  assert.doesNotMatch(catalog,/자료 확인 전/);
  for(const id of ['catalog-query','catalog-results','catalog-status'])assert.ok(catalog.includes('id="'+id+'"'));
  const notice=fs.readFileSync(path.join(ROOT,'html/academic-timeline.html'),'utf8');
@@ -330,13 +330,13 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
 });
 
 
-test('다섯 기능 페이지의 상단 메뉴명과 제목이 일치한다',()=>{
+test('다섯 기능 페이지의 i 도움말 옆 제목은 한모 | 페이지명 형식이다',()=>{
  for(const file of ['readiness','reaction-test','strategy-lab','academic-timeline','catalog']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
   const menu=html.match(/<a\b[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/);
   const heading=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h1>([^<]+)<\/h1>/);
   assert.ok(menu&&heading,file);
-  assert.equal(menu[1],heading[1],file);
+  assert.equal(heading[1],'한모 | '+menu[1],file);
   assert.match(html,/class="hanmo-title-help-button"[^>]*aria-describedby="[^"]+"[^>]*>i<\/button>/,file);
   assert.match(html,/class="hanmo-title-help-tip"[^>]*role="tooltip">[^<]+<\/span>/,file);
  }
