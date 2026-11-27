@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {fileURLToPath} from 'node:url';
-import {assertStudentBundleMeta,studentInputs,studentStyles,readPublicAssets} from '../scripts/student-boundary.mjs';
+import {assertStudentBundleMeta,studentInputs,studentStyles,readPublicAssets,resolveSiteTarget,rootAssetsFor,canonicalSiteBase,previewSiteBase} from '../scripts/student-boundary.mjs';
 
 function fixture() {
   return {inputs:Object.fromEntries([...studentInputs,...studentStyles].map(path=>[path,{bytes:1}])),outputs:{
@@ -59,4 +59,14 @@ test('공개 목록은 학사 연구 경로와 삭제한 페이지를 제외한�
   assert.ok(paths.every(path=>!path.startsWith('js/academic/')));
   assert.ok(studentStyles.every(path=>!paths.includes(path)));
   assert.ok(!paths.includes('html/academic-progress.html'));
+});
+
+test('운영 소스와 미리보기는 주소 및 CNAME을 분리한다',()=>{
+  const preview=resolveSiteTarget();
+  const production=resolveSiteTarget('production');
+  assert.equal(preview.base,previewSiteBase);
+  assert.equal(production.base,canonicalSiteBase);
+  assert.ok(!rootAssetsFor(preview).includes('CNAME'));
+  assert.ok(rootAssetsFor(production).includes('CNAME'));
+  assert.throws(()=>resolveSiteTarget('unknown'),/Unknown site target/);
 });

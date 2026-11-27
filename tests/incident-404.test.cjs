@@ -133,3 +133,23 @@ test('404는 화면 내 복구 동작 없이 왼쪽 원형 메뉴만 비활성�
   assert.doesNotMatch(menu,/BASIC MODE의 페이지 전환 404를 연습해요/);
   assert.match(html,/src="\.\.\/js\/pc-only\.js"/);
 });
+
+test('세 연습 화면은 같은 청색 사용자 패널을 사용하고 기존 기기 확인 띠는 없다',()=>{
+  const panel=html=>html.match(/<div class="userInfo">[\s\S]*?(?=\s*<div class="navButton">)/)?.[0]
+    ?.replace(/<!--[\s\S]*?-->/g,'').replace(/연습 모드: BASIC MODE/g,'').replace(/>\s+</g,'><').trim();
+  const practice=fs.readFileSync(path.join(ROOT,'html/practice.html'),'utf8');
+  const select=fs.readFileSync(path.join(ROOT,'html/selectZone.html'),'utf8');
+  const error=fs.readFileSync(path.join(ROOT,'html/incident-404.html'),'utf8');
+  assert.ok(panel(practice));
+  assert.equal(panel(select),panel(practice));
+  assert.equal(panel(error),panel(practice));
+  for(const html of [practice,select,error]){
+    assert.doesNotMatch(html,/class=['"]deviceCheck|한모를 사용할 수 있는 환경이에요/);
+    assert.match(html,/src="..\/js\/student-profile-bar.js"/);
+  }
+  assert.match(error,/class='practiceMode'>연습 모드: BASIC MODE/);
+  assert.match(error,/class="navigation"[^>]*inert/);
+  assert.doesNotMatch(error,/hanmo-title-divider|src=['"][^'"]*\/(?:practice|selectZone|hanmoSys)\.js/);
+  const gnb=fs.readFileSync(path.join(ROOT,'js/gnb.js'),'utf8');
+  assert.doesNotMatch(gnb,/deviceCheck|localStorage\.setItem|location\.href/);
+});

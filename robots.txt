@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ot4562-glitch.github.io/Hanmo_develop/sitemap.xml
+Sitemap: https://tofuhanmo.com/sitemap.xml

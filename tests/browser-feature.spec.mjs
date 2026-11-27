@@ -582,6 +582,8 @@ test('practice와 selectZone은 기존 황갈색 메뉴·청색 사용자 패널
   expect(colors.user,path).toBe('rgb(0, 45, 86)');
   expect(colors.button,path).toBe('rgb(151, 121, 85)');
   await expect(page.locator('.practiceBadge')).toHaveCount(0);
+  await expect(page.locator('.deviceCheck')).toHaveCount(0);
+  await expect(page.getByText('한모를 사용할 수 있는 환경이에요.',{exact:true})).toHaveCount(0);
   await expect(page.locator('.userInfo .practice-warning')).toBeVisible();
   await expect(page.locator('.practice-warning-detail')).toHaveText('실제 수강신청 시스템이 아니에요');
  }
@@ -595,6 +597,11 @@ test('가상 404 연습 세션의 오류 설명은 적색으로 표시한다',as
  });
  await page.goto('/html/incident-404.html');
  await expect(page.locator('.hanmo-404-area h2')).toHaveText('404');
+ await expect(page.locator('.userInfo')).toHaveCSS('background-color','rgb(0, 45, 86)');
+ await expect(page.locator('.userInfo .practice-warning')).toBeVisible();
+ await expect(page.locator('.userInfo .practice-profile > div')).toHaveCount(4);
+ await expect(page.locator('.userInfo .title')).not.toBeEmpty();
+ await expect(page.locator('.navigation')).toHaveAttribute('inert','');
  const red=await page.evaluate(()=>[...document.querySelector('.hanmo-404-area').children]
   .map(x=>getComputedStyle(x).color));
  expect(red).toEqual(['rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)','rgb(185, 28, 48)']);

@@ -191,8 +191,14 @@ test('SELECT에서 중복 Enter를 차단하고 대기 취소와 삭제 뒤 같�
   expect(await page.evaluate(()=>Number(localStorage.getItem('SELECTWaitTime')))).toBeGreaterThanOrEqual(14);
 });
 
-test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 복구를 요구하지 않는다',async({page})=>{
+test('선택한 가상 404는 청색 사용자 패널을 유지하고 새로고침으로 복구된다',async({page})=>{
   await useAllowedPracticeHour(page);
+  await page.addInitScript(()=>{
+    localStorage.setItem('deviceInfo','false');
+    localStorage.setItem('hanmo:student-planner:profile:v1',JSON.stringify({
+      campus:'SEOUL',major:'가상전공 A',secondaryKind:'DOUBLE',doubleMajor:'가상전공 B',cohort:2023,
+    }));
+  });
   await setPracticeOptions(page);
   await page.locator('#incident-options').click();
   await expect(page.locator('#scenario-settings')).toBeVisible();
@@ -202,14 +208,29 @@ test('선택한 가상 404는 새로고침으로 복구되고 직접 방문은 �
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
   await page.waitForLoadState('load');
   await expect(page.locator('.practiceMode')).toContainText('BASIC MODE');
+  const panel=page.locator('.userInfo');
+  const snapshot=async()=>{
+    await expect(panel.locator('[data-practice-field="major"]')).toHaveText('가상전공 A');
+    await expect(panel.locator('.practice-warning')).toBeVisible();
+    await expect(panel.locator('.title')).not.toBeEmpty();
+    await expect(page.locator('.deviceCheck')).toHaveCount(0);
+    await expect(page.getByText('한모를 사용할 수 있는 환경이에요.',{exact:true})).toHaveCount(0);
+    await expect(panel.locator('.hanmo-title-divider')).toHaveCount(0);
+    const box=await panel.boundingBox();
+    const style=await panel.evaluate(el=>getComputedStyle(el).backgroundColor);
+    return {text:(await panel.innerText()).replace(/\s+/g,' ').trim(),box,style};
+  };
+  const originalPanel=await snapshot();
   // 새로고침 탐지와 원작 진입 시간은 가상 타이머로 우회하지 않는다.
   await page.waitForTimeout(10_250);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/incident-404\.html$/);
   await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
   await expect(page.locator('.navigation')).toHaveAttribute('inert','');
+  expect(await snapshot()).toEqual(originalPanel);
   await page.reload();
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);
+  expect(await snapshot()).toEqual(originalPanel);
   // 실패 상태가 없는 직접 오류 페이지 방문은 원래 신청 화면으로 복귀한다.
   await page.goto('/html/incident-404.html');
   await expect(page).toHaveURL(/\/html\/selectZone\.html$/);

@@ -8,7 +8,7 @@ import {test} from 'node:test';
 import {promisify} from 'node:util';
 import {assertPreviewData,stripPreviewPhotoExifAndXmp} from '../scripts/preview-data.mjs';
 
-import {assertStagedAssets,readPublicAssets} from '../scripts/student-boundary.mjs';
+import {assertStagedAssets,readPublicAssets,resolveSiteTarget,canonicalSiteBase,previewSiteBase,siteTarget} from '../scripts/student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const run=promisify(execFile);
@@ -26,7 +26,7 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
     await rm(workspace,{recursive:true,force:true});
   });
   await Promise.all([
-    ...['.build','css','dist','html','img','js','LICENSE','index.html','sitemap.xml','robots.txt'].map(path=>
+    ...['.build','css','dist','html','img','js','LICENSE','index.html','sitemap.xml','robots.txt','CNAME'].map(path=>
       cp(join(root,path),join(workspace,path),{recursive:true})),
     symlink(join(root,'node_modules'),join(workspace,'node_modules'),'junction'),
     mkdir(join(workspace,'scripts')),
@@ -62,9 +62,21 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
   assert.equal(stale.status,200);
   assert.deepEqual(await stale.json(),obsoleteBody);
 
-  const stage=()=>run(process.execPath,['scripts/stage-static.mjs'],{cwd:workspace,timeout:15000});
+  const stage=(target=siteTarget.name)=>run(process.execPath,['scripts/stage-static.mjs'],{cwd:workspace,env:{...process.env,HANMO_SITE_TARGET:target},timeout:15000});
   await writeFile(join(workspace,'js','unapproved-research.js'),'console.log("synthetic");');
   const originalPhoto=await readFile(join(workspace,'img','developer.jpg'));
+  await stage();
+  await assertStagedAssets(dist,approvedAssets);
+  // 두 산출물의 주소와 CNAME을 실제 임시 빌드로 교차 검증합니다.
+  for(const [name,siteBase] of [['production',canonicalSiteBase],['preview',previewSiteBase]]){
+    await stage(name);
+    const staged=await assertStagedAssets(dist,approvedAssets,resolveSiteTarget(name));
+    assert.equal(staged.has('CNAME'),name==='production');
+    assert.match(await readFile(join(dist,'robots.txt'),'utf8'),new RegExp('Sitemap: '+siteBase.replaceAll('.','\\.')+'sitemap\\.xml'));
+    assert.ok((await readFile(join(dist,'sitemap.xml'),'utf8')).includes('<loc>'+siteBase+'</loc>'));
+    if(name==='production')assert.equal((await readFile(join(dist,'CNAME'),'utf8')).trim(),'tofuhanmo.com');
+    else assert.equal((await fetch(base+'/CNAME')).status,404);
+  }
   await stage();
   await assertStagedAssets(dist,approvedAssets);
   const retired=join(dist,'js','unapproved-research.js');

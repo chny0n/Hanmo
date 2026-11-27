@@ -2,7 +2,22 @@ import {execFileSync} from 'node:child_process';
 import {resolve} from 'node:path';
 import {existsSync,readFileSync} from 'node:fs';
 const root=resolve(import.meta.dirname,'..');
-const changed=execFileSync('git',['diff','--name-only','--no-renames','origin/main...HEAD'],
+// 원본에 처음 제안하는 전체 포크 변경은 기존 승인된 포크 스냅샷과 구분하여 검사합니다.
+// 원본 PR의 리뷰 승인을 뜻하지 않으며 원본이 갱신되면 스냅샷을 자동 갱신하지 않습니다.
+let comparisonBase='origin/main';
+const initialUpstreamHandoff='35c3fa5d24c8d265a8cf2c4c83e6c85e2d590d92';
+if(process.env.GITHUB_REPOSITORY==='chny0n/Hanmo'&&process.env.GITHUB_EVENT_NAME==='pull_request'){
+  let installed=true;
+  try{execFileSync('git',['cat-file','-e','origin/main:scripts/assert-protected.mjs'],{cwd:root,stdio:'ignore'});}
+  catch(_error){installed=false;}
+  if(!installed){
+    execFileSync('git',['merge-base','--is-ancestor','origin/main',initialUpstreamHandoff],{cwd:root,stdio:'ignore'});
+    execFileSync('git',['merge-base','--is-ancestor',initialUpstreamHandoff,'HEAD'],{cwd:root,stdio:'ignore'});
+    comparisonBase=initialUpstreamHandoff;
+    console.log('First upstream review: checking new changes against frozen fork handoff; original owner review still required.');
+  }
+}
+const changed=execFileSync('git',['diff','--name-only','--no-renames',comparisonBase+'...HEAD'],
  {cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}).trim().split('\n').filter(Boolean);
 // #116 사용자가 selectZone.html·selectZone.js·practice.css의 제한된 확장을 승인했다.
 // practice.js와 기존 모의신청 진입 CSS를 보호하며 practice.html은 아래의 정확한 승인 변경만 허용한다.
@@ -12,7 +27,7 @@ if(offenders.length)throw Error('Protected HUFS imitation changed:\n'+offenders.
 
 /* 연습 화면은 승인된 파비콘·내정보·경고 표지와 이용 제한 안내 이동만 허용합니다. */
 if(changed.includes('html/practice.html')){
-  const original=execFileSync('git',['show','origin/main:html/practice.html'],
+  const original=execFileSync('git',['show',comparisonBase+':html/practice.html'],
     {cwd:root,encoding:'utf8',maxBuffer:4*1024*1024});
   const withFavicon=original.replace(
     '<link href="../img/hanmo_color.png" rel="shortcut icon" type="image/x-icon">',
@@ -60,7 +75,7 @@ const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith
  ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg','img/hanmo_purple.png','img/favicon-purple.svg','img/boo.png'].includes(p)
  ||p.startsWith('img/lucide/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
- '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml','robots.txt',
+ '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml','robots.txt','CNAME',
  'package-lock.json','playwright.config.mjs','.nvmrc','.npmrc'].includes(p);
 // 현재 화면에서 참조하지 않는 과거 배포 설정과 이미지의 삭제만 허용합니다.
 const retired=new Set(['goorm.manifest','img/dlacked.svg','img/dlackedLogo.svg','img/waiting.png']);

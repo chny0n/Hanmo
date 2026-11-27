@@ -24,7 +24,13 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{
     root.HanmoIncident404=api;
-    if(root.document){
+    if(root.document&&!root.HanmoPcOnly?.blocked){
+      // 기존 연습 화면과 같은 학기 표시를 사용하되 신청 로직과 타이머는 실행하지 않습니다.
+      const title=root.document.querySelector('.userInfo .title');
+      if(title){
+        const now=new Date();
+        title.textContent=now.getFullYear()+'-'+(now.getMonth()>=6?2:1)+'학기';
+      }
       recoverOnBrowserReload(root);
       root.addEventListener?.('pageshow',event=>{
         // 뒤로/앞으로 페이지 캐시에서 되살아난 오류 화면도 유효성 재확인.

@@ -14,9 +14,19 @@ export const studentStyles = Object.freeze([
 const permittedStyles = new Set(studentStyles);
 const styleOutput = '.build/student-ui.css';
 const normal = path => path.replaceAll('\\','/');
-export const rootAssets = Object.freeze([
-  'index.html', 'sitemap.xml', 'robots.txt', 'LICENSE',
+export const canonicalSiteBase = 'https://tofuhanmo.com/';
+export const previewSiteBase = 'https://ot4562-glitch.github.io/Hanmo_develop/';
+// 원본 PR의 소스는 운영 주소를 유지합니다. 기본 산출물에는 운영 CNAME을 포함하지 않습니다.
+export function resolveSiteTarget(name='preview'){
+  if(name!=='preview'&&name!=='production')throw Error('Unknown site target: '+name);
+  const production=name==='production';
+  return Object.freeze({name,base:production?canonicalSiteBase:previewSiteBase,production});
+}
+export const siteTarget=resolveSiteTarget(process.env.HANMO_SITE_TARGET??'preview');
+export const rootAssetsFor=target=>Object.freeze([
+  'index.html','sitemap.xml','robots.txt','LICENSE',...(target.production?['CNAME']:[]),
 ]);
+export const rootAssets=rootAssetsFor(siteTarget);
 const generatedFiles = Object.freeze([
   'THIRD-PARTY-NOTICES.txt', 'data/academic-source-config.json', 'data/network-probe.txt',
 ]);
@@ -100,8 +110,8 @@ export async function readPublicAssets(root) {
   return paths;
 }
 
-export async function assertStagedAssets(dist,publicAssets){
-  const allowed=new Set([...rootAssets,...publicAssets,...Object.values(bundleOutputs),...generatedFiles]);
+export async function assertStagedAssets(dist,publicAssets,target=siteTarget){
+  const allowed=new Set([...rootAssetsFor(target),...publicAssets,...Object.values(bundleOutputs),...generatedFiles]);
   const missing=new Set(allowed);
   const directories=new Set();
   for(const path of allowed){

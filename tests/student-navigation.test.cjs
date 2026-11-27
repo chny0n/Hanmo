@@ -264,15 +264,14 @@ test('검토한 화면 스타일은 비보호 페이지에만 연결한다',()=>
  }
 });
 
-test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 제거한다',()=>{
+test('홈과 학업 제목 장식은 유지하고 세 연습 화면에서는 제거한다',()=>{
  const pages=['index.html','html/vsugang.html','html/developer.html','html/result.html',
   'html/academic-timeline.html','html/catalog.html',
   'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
   'html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
  const original=new Set(['html/result.html']);
- const sidebar=new Set(['html/incident-404.html']);
- const noDivider=new Set(['html/practice.html','html/selectZone.html']);
+ const noDivider=new Set(['html/practice.html','html/selectZone.html','html/incident-404.html']);
  for(const page of pages){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
   const image=page==='index.html'?'./img/hanmo_white.svg':'../img/hanmo_white.svg';
@@ -288,7 +287,6 @@ test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 
    assert.equal((html.match(/<div class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true">/g)||[]).length,1,page);
    assert.ok(html.includes('href="'+(page==='index.html'?'./':'../')+'css/hanmo-title-divider.css"'),page);
    assert.match(html,/class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true"><hr><span><img src="(?:\.\/|\.\.\/)img\/hanmo_white\.svg" alt=""><\/span><hr><\/div>/);
-   if(sidebar.has(page))assert.ok(html.includes('class="hanmo-title-divider hanmo-title-divider--sidebar"'),page);
   }
   // 푸터의 학교 비공식 고지는 제목 장식 추가와 무관하게 페이지 마지막에 남아야 합니다.
   assert.ok(html.lastIndexOf('hanmo-policy-footer')>html.indexOf('hanmo_white.svg'),page);

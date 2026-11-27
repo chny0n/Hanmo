@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {resolve,join,relative,sep} from 'node:path';
 import {assertPreviewData} from './preview-data.mjs';
-import {assertStagedAssets,readPublicAssets} from './student-boundary.mjs';
+import {assertStagedAssets,readPublicAssets,canonicalSiteBase,siteTarget} from './student-boundary.mjs';
 
 const here=resolve(import.meta.dirname,'..');
 const dist=join(here,'dist');
@@ -21,35 +21,48 @@ const style=await readFile(join(dist,'css','student-ui.css'),'utf8');
 if(/@import\b/i.test(style)||!style.includes('../img/background.svg'))
   throw Error('Bundled student styles must use the existing background URL and no CSS imports');
 
-// 사이트맵은 포크의 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.
-const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
-const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
-const robots=await readFile(join(dist,'robots.txt'),'utf8');
-if(robots!=='User-agent: *\nAllow: /\n\nSitemap: '+sitemapBase+'sitemap.xml\n')
-  throw Error('Robots policy must refer to the fork sitemap only');
+// 사이트맵은 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.
 const publicRoutes=[
   '', 'html/vsugang.html','html/readiness.html','html/reaction-test.html',
   'html/strategy-lab.html','html/academic-timeline.html',
   'html/catalog.html','html/planner.html','html/developer.html'
 ];
-const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
-const expectedLocations=publicRoutes.map(route=>sitemapBase+route);
-if(!sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')||
-   !sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')||
-   !sitemap.trimEnd().endsWith('</urlset>')||
-   sitemapLocations.length!==expectedLocations.length||
-   sitemapLocations.some((value,index)=>value!==expectedLocations[index]))
-  throw Error('Sitemap public routes or QA base URL are out of sync');
-if(/vsugangpractice\.com|tofuhanmo\.com|incident-404\.html|(?:practice|selectZone|result|pc-only|forecast)\.html|<lastmod>2024/.test(sitemap))
-  throw Error('Sitemap leaked original domain, synthetic error or session-only routes');
+async function verifyMetadata(directory,base){
+  const sitemap=await readFile(join(directory,'sitemap.xml'),'utf8');
+  const robots=await readFile(join(directory,'robots.txt'),'utf8');
+  const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
+  const expectedLocations=publicRoutes.map(route=>base+route);
+  if(!sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')||
+     !sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')||
+     !sitemap.trimEnd().endsWith('</urlset>')||
+     sitemapLocations.length!==expectedLocations.length||
+     sitemapLocations.some((value,index)=>value!==expectedLocations[index])||
+     /vsugangpractice\.com|incident-404\.html|(?:practice|selectZone|result|pc-only|forecast)\.html|<lastmod>2024/.test(sitemap))
+    throw Error('Sitemap public routes or site target are out of sync: '+directory);
+  if(robots!=='User-agent: *\nAllow: /\n\nSitemap: '+base+'sitemap.xml\n')
+    throw Error('Robots policy must refer to the selected sitemap: '+directory);
+}
+await verifyMetadata(here,canonicalSiteBase);
+await verifyMetadata(dist,siteTarget.base);
+if((await readFile(join(here,'CNAME'),'utf8')).trim()!==new URL(canonicalSiteBase).host)
+  throw Error('Canonical source CNAME mismatch');
+if(siteTarget.production&&(await readFile(join(dist,'CNAME'),'utf8')).trim()!==new URL(canonicalSiteBase).host)
+  throw Error('Production CNAME mismatch');
+if(assets.has('CNAME')!==siteTarget.production)throw Error('Unexpected CNAME in staged site');
 for(const route of publicRoutes){
-  if(!assets.has(route||'index.html'))
-    throw Error('Sitemap refers to a missing public page: '+route);
+  if(!assets.has(route||'index.html'))throw Error('Sitemap refers to a missing public page: '+route);
 }
 
 const pages=new Map(await Promise.all(htmlRoutes.map(async page=>[page,await readFile(join(dist,page),'utf8')])));
 const pcOnlyPage=await readFile(join(dist,'html/pc-only.html'),'utf8');
 if(!/<title>한모 \| [^<|]+<\/title>/.test(pcOnlyPage))throw Error('Page title format: html/pc-only.html');
+const displayUrl=new URL(siteTarget.base);
+const displayHost=displayUrl.host+(displayUrl.pathname==='/'?'':displayUrl.pathname);
+if(!pcOnlyPage.includes('<b>'+displayHost+'</b>'))throw Error('PC-only address mismatch');
+for(const path of ['html/practice.html','html/selectZone.html']){
+  if(/deviceCheck|한모를 사용할 수 있는 환경이에요/.test(pages.get(path)))
+    throw Error('Obsolete device-check banner: '+path);
+}
 let linkCount=0,ariaCount=0;
 for(const [page,body] of pages){
   const pc=page==='index.html'?'./js/pc-only.js':'../js/pc-only.js';

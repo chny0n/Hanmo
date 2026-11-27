@@ -1,7 +1,7 @@
 import {copyFile,lstat,mkdir,readFile,rm,stat,readdir,writeFile} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
 import {assertDisabledPreviewConfig,assertPreviewData,assertSyntheticNetworkProbe,createSyntheticNetworkProbe,stripPreviewPhotoExifAndXmp} from './preview-data.mjs';
-import {assertStudentBundleMeta,bundleOutputs,readPublicAssets,rootAssets} from './student-boundary.mjs';
+import {assertStudentBundleMeta,bundleOutputs,readPublicAssets,rootAssets,siteTarget,canonicalSiteBase} from './student-boundary.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const dist=join(root,'dist');
@@ -18,7 +18,9 @@ assertStudentBundleMeta(meta);
 const {outputs}=meta;
 const publicAssets=await readPublicAssets(root);
 if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');
-for(const path of [...rootAssets,...publicAssets])
+const sourceDomain=(await readFile(join(root,'CNAME'),'utf8')).trim();
+if(sourceDomain!==new URL(canonicalSiteBase).host)throw Error('Invalid source CNAME');
+for(const path of new Set([...rootAssets,'CNAME',...publicAssets]))
   if(!(await lstat(join(root,path))).isFile())throw Error('정적 공개 파일이 일반 파일이 아닙니다: '+path);
 const bundledPackages=new Set();
 for(const output of Object.values(outputs)){
@@ -42,13 +44,27 @@ await rm(dist,{recursive:true,force:true});
 const assetDirectories=new Set(['css','js',...publicAssets.map(path=>dirname(path))]);
 await Promise.all([...assetDirectories].map(path=>mkdir(join(dist,path),{recursive:true})));
 await mkdir(join(dist,'data'),{recursive:true});
-for(const path of rootAssets)await copyFile(join(root,path),join(dist,path));
+for(const path of rootAssets){
+  if(path==='sitemap.xml'||path==='robots.txt'){
+    const source=await readFile(join(root,path),'utf8');
+    if(!source.includes(canonicalSiteBase))throw Error('Missing canonical site address in '+path);
+    await writeFile(join(dist,path),source.replaceAll(canonicalSiteBase,siteTarget.base));
+  }else await copyFile(join(root,path),join(dist,path));
+}
 await writeFile(join(dist,'THIRD-PARTY-NOTICES.txt'),notices.join('\n\n---\n\n')+'\n');
 // 새 파일은 허용 목록에 명시하기 전에는 공개 산출물에 복사되지 않는다.
 for(const path of publicAssets){
   const target=join(dist,path);
   if(path===photoPath)await writeFile(target,photo);
-  else await copyFile(join(root,path),target);
+  else if(path==='html/pc-only.html'){
+    const source=await readFile(join(root,path),'utf8');
+    const canonicalHost=new URL(canonicalSiteBase).host;
+    const displayUrl=new URL(siteTarget.base);
+    const displayHost=displayUrl.host+(displayUrl.pathname==='/'?'':displayUrl.pathname);
+    const anchor='<b>'+canonicalHost+'</b>';
+    if(!source.includes(anchor))throw Error('PC-only source must display the canonical domain');
+    await writeFile(target,source.replace(anchor,'<b>'+displayHost+'</b>'));
+  }else await copyFile(join(root,path),target);
 }
 await writeFile(join(dist,'data','academic-source-config.json'),JSON.stringify({schemaVersion:1,mode:'disabled'},null,2)+'\n');
 await writeFile(join(dist,'data','network-probe.txt'),probe);
