@@ -83,6 +83,10 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-lab .lab-input-table input[data-field="name"]{min-width:100px;max-width:none}
 .hanmo-lab .lab-input-table input{min-height:32px;max-width:150px;padding:4px 8px}
 .hanmo-lab .lab-text-button{padding:4px}
+.hanmo-lab .lab-auto-details{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;padding:7px 0;border-block:1px solid #284657}
+.hanmo-lab .lab-auto-details p{display:flex;align-items:center;gap:8px;margin:0;color:#c4d3de;font-size:12px}
+.hanmo-lab .lab-auto-details strong{color:#f2f5f8;font-weight:600}
+.hanmo-lab .lab-auto-details a{color:#f4c76c;font-size:12px}
 .hanmo-lab .lab-check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 18px;margin:12px 0}
 .hanmo-lab .lab-check-grid p{margin:0;padding:9px 12px;border:1px solid #38566a;display:flex;justify-content:space-between;gap:14px}
 .hanmo-lab .lab-check-grid strong{font-size:13px}
@@ -95,6 +99,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-lab .lab-stats-grid>div{display:block;padding:9px 0;border-top:1px solid #284657}
 .hanmo-lab .lab-stats-grid dt{font-size:11px}
 .hanmo-lab .lab-stats-grid dd{font-size:13px}
+.hanmo-lab .lab-strategy-answer{max-width:80ch;margin:24px 0;color:#f4d394;font-size:clamp(18px,2.2vw,26px);font-weight:700;line-height:1.7}
 .hanmo-lab .lab-inline-link{display:inline-flex;align-items:center;text-decoration:none}
 .hanmo-lab .lab-reaction-target{display:grid;place-items:center;width:100%;height:clamp(148px,26vh,248px);
   font:700 clamp(20px,3vw,28px) "Noto Sans KR",system-ui;cursor:pointer;
@@ -118,6 +123,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-lab .lab-check-grid{margin:6px 0;gap:5px 12px}
  .hanmo-lab .lab-check-grid p{padding:5px 10px}
  .hanmo-lab .lab-actions{margin:6px 0}
+ .hanmo-lab .lab-auto-details{padding:4px 0}
  .hanmo-lab .lab-reaction-target{height:clamp(120px,24vh,190px)}
 }
 
@@ -132,6 +138,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-strategy .lab-table th{padding:4px 8px}
  .hanmo-strategy .lab-table caption{padding-bottom:2px;font-size:11px}
  .hanmo-strategy .lab-actions{margin:4px 0}
+ .hanmo-strategy .lab-auto-details{padding:3px 0}
  .hanmo-strategy .lab-status{margin:0}
  .hanmo-strategy .lab-heading{margin-bottom:2px}
 }
@@ -146,11 +153,29 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-readiness #readiness-result{flex:0 0 auto;min-height:0;overflow:visible}
 }
 
+/* 결과의 경쟁자·대기시간 가정을 독립된 제목으로 짧게 표시합니다. */
+.hanmo-strategy #strategy-result .lab-strategy-answer{margin:12px 0}
+.hanmo-strategy .strategy-assumption h3{font-size:14px;margin:12px 0 3px}
+.hanmo-strategy .strategy-assumption .lab-footnote{margin:4px 0 8px;max-width:none}
+.hanmo-strategy #strategy-wait-summary{color:var(--lab-text);font-weight:600}
 .hanmo-strategy #strategy-result:focus-visible{outline:2px solid #f4c76c;outline-offset:-2px}
 @media(min-width:1100px) and (min-height:680px){
  .hanmo-strategy #strategy-result{flex:0 0 auto;min-height:0;overflow:visible}
 }
 
+/* 수식은 기본 접힘으로 유지하고 펼쳤을 때만 상세한 모형을 표시합니다. */
+.hanmo-strategy .strategy-formulas{margin:10px 0 12px;border-block:1px solid var(--lab-border);padding:6px 0}
+.hanmo-strategy .strategy-formulas summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:13px;padding:6px 0}
+.hanmo-strategy .strategy-formulas summary:focus-visible{outline:2px solid #f4c76c;outline-offset:2px}
+.hanmo-strategy #strategy-assumptions:not([open])>.strategy-assumptions{display:none}
+.hanmo-strategy .strategy-formula-body{padding:0 0 6px;overflow-wrap:anywhere;container-type:inline-size;min-width:0}
+.hanmo-strategy .strategy-formula-body .lab-footnote{max-width:none;margin:5px 0 10px}
+.hanmo-strategy .strategy-formula-list{margin:0}
+.hanmo-strategy .strategy-formula-list dt{font-size:14px;font-weight:600;color:var(--lab-text);margin:12px 0 4px}
+.hanmo-strategy .strategy-formula-list dd{margin:0}
+.hanmo-strategy .strategy-math-line{margin:8px 0;padding:3px 0;min-width:0;overflow:visible}
+.hanmo-strategy .strategy-math-line math{font-size:clamp(13px,1.5vw,20px);font-size:clamp(12px,3.3cqi,20px);color:var(--lab-text);margin-inline:0}
+.hanmo-strategy .strategy-formula-list dd>.lab-footnote{margin:8px 0 14px}
 
 /* 진단 등급은 측정값과 별도로 표시하며 색과 문자 모두로 의미를 전달합니다. */
 .hanmo-readiness .readiness-grade-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:8px 0 12px;color:var(--lab-muted);font-size:12px}
@@ -173,6 +198,9 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-readiness .readiness-criteria-list{padding-inline-start:18px;margin:6px 0;font-size:12px;line-height:1.65;color:var(--lab-muted);overflow-wrap:anywhere}
 .hanmo-reaction .reaction-input-guide{margin:6px 0;font-size:13px;color:var(--lab-muted);text-align:center}
 .hanmo-reaction .lab-reaction-target{padding:12px;text-align:center;overflow-wrap:anywhere}
+/* 추천 순서와 네 개의 요약 지표, 과목별 관측 비율, 가정별 비교를 구분합니다. */
+.hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{min-width:0;margin:0 0 12px}
+.hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:8px 0;font-size:15px;font-weight:650;color:var(--lab-text)}
 .hanmo-strategy .strategy-order{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,128px),1fr));gap:8px;margin:0 0 10px;padding:0}
 .hanmo-strategy .strategy-order li{min-inline-size:0;padding:10px 12px;border:1px solid var(--lab-border);border-radius:8px;background:#102c3d;display:flex;flex-direction:column;gap:6px;overflow-wrap:anywhere}
 .hanmo-strategy .strategy-order li:first-child{border-color:#d9ab59}
@@ -180,25 +208,35 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-order-rank{padding:2px 7px;border-radius:5px;background:#294557;color:var(--lab-text);font-size:15px;font-weight:750;white-space:nowrap}
 .hanmo-strategy .strategy-order li:first-child .strategy-order-rank{background:#f4d394;color:#162334}
 .hanmo-strategy .strategy-order strong{font-size:18px;line-height:1.35;color:var(--lab-text)}
-.hanmo-strategy .strategy-course-demand{color:#f4d394;font-size:14px;font-weight:700}
-.hanmo-strategy .strategy-course-inputs{color:var(--lab-muted);font-size:13px;line-height:1.4}
-.hanmo-strategy .strategy-criteria{margin:10px 0;border-block:1px solid var(--lab-border);padding:5px 0}
-.hanmo-strategy .strategy-criteria summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:14px;padding:5px 0}
-.hanmo-strategy .strategy-criteria .lab-footnote{max-width:none;margin:5px 0}
-.hanmo-strategy .strategy-criteria a{color:#f4c76c;text-decoration:underline}
-.hanmo-strategy #strategy-sensitivity-summary{color:var(--lab-muted);font-size:12px}
-.hanmo-strategy .strategy-sensitivity-list{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;margin:4px 0;padding:0;font-size:13px;line-height:1.4}
-.hanmo-strategy .strategy-sensitivity-list li{overflow-wrap:anywhere}
-.hanmo-strategy .strategy-sensitivity-list span{color:var(--lab-muted)}
-@media(min-width:900px){
- .hanmo-strategy .strategy-sensitivity-list{grid-template-columns:repeat(4,minmax(0,1fr))}
-}
+.hanmo-strategy .strategy-result-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:0}
+.hanmo-strategy .strategy-result-metrics>div{min-width:0;border:1px solid var(--lab-border);border-radius:6px;padding:10px 12px}
+.hanmo-strategy .strategy-result-metrics dt{font-size:12px;color:var(--lab-muted);margin-bottom:4px}
+.hanmo-strategy .strategy-result-metrics dd{margin:0;font-size:clamp(16px,2vw,24px);line-height:1.4;color:var(--lab-text);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-result-metrics #strategy-overall-value{color:#f4d394}
+.hanmo-strategy .strategy-result-metrics .strategy-metric-note{font-size:11px;font-weight:400;color:var(--lab-muted);line-height:1.55;margin-top:3px}
+.hanmo-strategy .strategy-result-block{border-top:1px solid var(--lab-border);padding-top:3px}
+.hanmo-strategy .strategy-course-rate{color:#f4d394;font-size:18px;line-height:1.25;font-variant-numeric:tabular-nums;font-weight:750;overflow-wrap:anywhere}
+.hanmo-strategy .strategy-course-track{height:6px;border-radius:4px;background:#294557;overflow:hidden;margin-top:auto}
+.hanmo-strategy .strategy-course-track span{display:block;height:100%;border-radius:4px;background:#8b5cf6}
+.hanmo-strategy .strategy-conditions{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px}
+.hanmo-strategy .strategy-conditions th,.hanmo-strategy .strategy-conditions td{padding:6px 8px;border-bottom:1px solid #294557;text-align:left;overflow-wrap:anywhere;vertical-align:top}
+.hanmo-strategy .strategy-conditions thead th{color:var(--lab-muted);font-size:11px}
+.hanmo-strategy .strategy-conditions tbody th{font-weight:500;color:var(--lab-text)}
+.hanmo-strategy .strategy-conditions th:last-child,.hanmo-strategy .strategy-conditions td{text-align:right;font-variant-numeric:tabular-nums}
+.hanmo-strategy .strategy-conditions .strategy-baseline{background:#102c3d}
+.hanmo-strategy .strategy-conditions .strategy-baseline td{font-weight:700;color:#f4d394}
+.hanmo-strategy .strategy-result-summary{min-inline-size:0}
+.hanmo-strategy .strategy-result-summary .lab-footnote{max-width:none;margin:5px 0}
 @media(max-width:640px){
-  .hanmo-readiness .readiness-grade-grid{grid-template-columns:1fr}
+  .hanmo-readiness .readiness-grade-grid,.hanmo-strategy .strategy-result-metrics{grid-template-columns:1fr}
   .hanmo-strategy .strategy-order{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 /* 일반 PC에서는 스크롤을 숨겨 잘라내지 않고 실제 내용의 높이를 맞춥니다. */
+.hanmo-strategy .strategy-result-comparison,.hanmo-strategy .strategy-assumptions{min-width:0;display:grid;gap:12px 20px}
+.hanmo-strategy .strategy-order-heading h2{margin:0;font-size:20px}
+.hanmo-strategy .strategy-result-overview .strategy-order-heading h3{margin:4px 0 8px;font-size:18px}
+.hanmo-strategy .strategy-order .strategy-course-track{width:100%;margin-top:2px}
 @media(min-width:1100px) and (min-height:680px){
  .hanmo-readiness #readiness-result,.hanmo-strategy #strategy-result{padding:6px 0}
  .hanmo-readiness #readiness-result .lab-section-heading,.hanmo-strategy #strategy-result .lab-section-heading{margin-bottom:4px}
@@ -221,9 +259,34 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  /* 등급 기준은 별도의 읽기 단계입니다. 펼치면 결과를 가리지 않고 기준 화면으로 전환합니다. */
  .hanmo-readiness #readiness-result:has(#readiness-grade-criteria[open])>:is(.lab-summary,.readiness-grade-legend,.readiness-grade-grid,#readiness-advice,.lab-footnote){display:none}
  .hanmo-readiness #readiness-grade-criteria[open] .lab-footnote{max-width:none}
+ .hanmo-strategy .strategy-result-comparison{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:start;gap:5px 16px}
+ .hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{margin:0 0 5px}
+ .hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:3px 0 4px;font-size:14px;line-height:1.4}
  .hanmo-strategy .strategy-order{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:0 0 5px}
  .hanmo-strategy .strategy-order li{padding:7px 9px}
+ .hanmo-strategy .strategy-order .strategy-course-track{height:5px}
+ .hanmo-strategy .strategy-result-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px 8px}
+ .hanmo-strategy .strategy-result-metrics>div{padding:5px 8px}
+ .hanmo-strategy .strategy-result-metrics dt{margin-bottom:2px;font-size:11px}
+ .hanmo-strategy .strategy-result-metrics dd{font-size:17px;line-height:1.3}
+ .hanmo-strategy .strategy-result-metrics .strategy-metric-note{font-size:11px;line-height:1.35;margin-top:2px}
+ .hanmo-strategy #strategy-setup{border-top:0;padding:0}
+ .hanmo-strategy .strategy-conditions{font-size:12px}
+ .hanmo-strategy .strategy-conditions th,.hanmo-strategy .strategy-conditions td{padding:3px 5px;line-height:1.35}
+ .hanmo-strategy .strategy-result-summary .lab-footnote{margin:3px 0;font-size:11px;line-height:1.35}
+ .hanmo-strategy .strategy-assumptions{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:10px 16px}
+ .hanmo-strategy .strategy-assumption h3{margin:4px 0 2px;font-size:13px;line-height:1.35}
+ .hanmo-strategy .strategy-assumption .lab-footnote{margin:2px 0;font-size:11px;line-height:1.4}
+ .hanmo-strategy .strategy-formulas{margin:4px 0 5px;padding:2px 0}
+ .hanmo-strategy .strategy-formulas summary{padding:3px 0}
  .hanmo-strategy #strategy-back,.hanmo-readiness #readiness-back{min-height:32px;padding:5px 12px}
+ /* 수식 설명만 내부 스크롤을 허용하고 일반 결과의 스크롤은 만들지 않습니다. */
+ .hanmo-strategy #strategy-result:has(#strategy-formulas[open]){display:flex;flex:1 1 0;min-height:0;flex-direction:column}
+ .hanmo-strategy #strategy-result:has(#strategy-formulas[open]) :is(.strategy-order-heading h3,.strategy-order,.strategy-result-comparison,.strategy-assumptions){display:none}
+ .hanmo-strategy #strategy-formulas[open]{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+ .hanmo-strategy #strategy-formulas[open]::details-content{display:flex;flex-direction:column;flex:1 1 0;min-height:0}
+ .hanmo-strategy #strategy-formulas[open] .strategy-formula-body{flex:1 1 0;min-height:0;max-height:calc(100dvh - 260px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-inline-end:8px}
+ .hanmo-strategy #strategy-result:has(#strategy-formulas[open]) #strategy-back{align-self:flex-start;flex:0 0 auto}
  .hanmo-strategy .lab-table-scroll{overflow:visible}
 }
 
@@ -236,11 +299,22 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 /* 8과목 긴 이름에서도 재실험 버튼까지 푸터 위에 배치합니다. */
 @media(min-width:1100px) and (min-height:680px) and (max-height:820px){
  .hanmo-strategy #strategy-result{padding-block:3px}
+ .hanmo-strategy .strategy-order-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;margin-block-end:5px}
+ .hanmo-strategy .strategy-result-comparison{gap:4px 12px}
+ .hanmo-strategy .strategy-result-overview,.hanmo-strategy .strategy-result-block{margin-bottom:3px}
+ .hanmo-strategy .strategy-result-overview h3,.hanmo-strategy .strategy-result-block h3{margin:1px 0 3px}
+ .hanmo-strategy .strategy-result-overview .strategy-order-heading h3{margin:0}
  .hanmo-strategy .strategy-order{gap:4px;margin-bottom:3px}
  .hanmo-strategy .strategy-order li{padding:6px 8px;gap:4px}
- .hanmo-strategy #strategy-result:has(.strategy-criteria[open]) .strategy-order li{padding-block:4px;row-gap:2px}
- .hanmo-strategy #strategy-result:has(.strategy-criteria[open]) .strategy-order strong{font-size:16px;line-height:1.25}
- .hanmo-strategy .strategy-criteria{margin:4px 0;padding:2px 0}
- .hanmo-strategy .strategy-criteria summary{padding-block:3px}
- .hanmo-strategy .strategy-criteria .lab-footnote{margin:2px 0}
+ .hanmo-strategy .strategy-result-metrics>div{padding:4px 7px}
+ .hanmo-strategy .strategy-result-metrics dt{margin-bottom:1px}
+ .hanmo-strategy .strategy-result-metrics .strategy-metric-note{margin-top:1px}
+ .hanmo-strategy .strategy-conditions th,.hanmo-strategy .strategy-conditions td{padding:2px 5px}
+ .hanmo-strategy .strategy-result-summary .lab-footnote{margin:2px 0}
+ .hanmo-strategy .strategy-assumptions{gap:6px 12px}
+ .hanmo-strategy .strategy-assumption h3{margin:2px 0 1px}
+ .hanmo-strategy .strategy-assumption .lab-footnote{margin:1px 0}
+ .hanmo-strategy .strategy-formulas{margin:2px 0 3px}
+ .hanmo-strategy #strategy-result:not(:has(details[open]))>.strategy-formulas{display:inline-block;vertical-align:middle;margin-inline-end:14px}
+ .hanmo-strategy #strategy-result:has(#strategy-assumptions[open]) .strategy-result-comparison{display:none}
 }

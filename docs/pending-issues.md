@@ -4,7 +4,7 @@
 
 ## 현행 실행 범위
 
-- 학생용 전략 실험은 개시 직후 선착순 신청 순서를 추천합니다. 기존 몬테카를로 엔진은 합성 연구 경로에서 유지합니다. [아키텍처 §5](architecture.md#5-전략-실험-신청-순서-추천)
+- 학생용 전략 실험은 개시 직후 선착순 회차를 가정해 신청 순서와 모의실험 성공 비율을 계산합니다. [아키텍처 §5](architecture.md#5-전략-실험-신청-순서-추천)
 - 학사 공지·달력은 한 화면의 탭이며 강의 검색은 미연결 상태입니다. 실제 학교 자료와 원격 텔레메트리는 비활성 상태입니다. [공개자료 운영 방침](public-data-operating-decision.md)
 - #71·#72·#138은 [`c8caff2`](https://github.com/ot4562-glitch/Hanmo_develop/commit/c8caff2c877c78093e3c05409e68a4012c7e6776)의 Windows 자동 QA를 기록하고 닫혔습니다. 최대 SELECT 완료 표의 내부 스크롤, 물리 키 입력, NVDA 및 최종 후보 현장 인수는 [#125](https://github.com/ot4562-glitch/Hanmo_develop/issues/125)에서 확인합니다. [#71 원본 연습 결과](https://github.com/ot4562-glitch/Hanmo_develop/issues/71#issuecomment-7160455697) · [#72 접근성 결과](https://github.com/ot4562-glitch/Hanmo_develop/issues/72#issuecomment-7160456967) · [#138 개발자 소개 결과](https://github.com/ot4562-glitch/Hanmo_develop/issues/138#issuecomment-7160458183)
 

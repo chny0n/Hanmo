@@ -28,12 +28,12 @@ for(const required of [
   'html/planner.html','html/forecast.html','html/catalog.html','html/readiness.html',
   'html/reaction-test.html','html/strategy-lab.html','html/academic-timeline.html','html/vsugang.html',
   'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js','js/readiness.mjs',
-  'js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-sensitivity-worker.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
+  'js/strategy-page.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
   'img/background.svg',
 ])if(!assetPaths.has(required))throw Error('Missing public student asset '+required);
 for(const banned of ['html/academic-progress.html','html/academic-faq.html','css/academic-progress.css',
   'css/academic-faq.css','js/academic-faq.js','js/degree-preparation.js','js/student-forecast.js',
-  'js/strategy-engine.mjs','js/strategy-worker.mjs','img/hufs_logo.png','html/scenario-workshop.html','html/scenario-lab.html',
+  'img/hufs_logo.png','html/scenario-workshop.html','html/scenario-lab.html',
   ...studentStyles,
 ])if(assetPaths.has(banned))throw Error('Disallowed web artifact: '+banned);
 if(await exists(join(root,'degree-rescue','package.json')))throw Error('Old nested package remains in repo');

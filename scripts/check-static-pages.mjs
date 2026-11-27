@@ -29,7 +29,7 @@ for(const name of [
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
   'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js',
-  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-sensitivity-worker.mjs','js/reaction-profile.mjs',
+  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs','js/reaction-profile.mjs',
   'js/reaction-page.mjs','data/network-probe.txt',
   'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,
@@ -40,7 +40,7 @@ if(/@import\b/i.test(style)||!style.includes('../img/background.svg'))
 if(await exists(join(dist,'CNAME')))throw Error('CNAME leaked into fork QA');
 for(const banned of ['html/academic-calendar.html','html/academic-support.html','css/academic-support.css','js/academic-support.js','html/academic-progress.html','html/academic-faq.html',
  'css/academic-progress.css','css/academic-faq.css','js/academic-faq.js',
- 'js/degree-preparation.js','js/student-forecast.js','js/lab-share.mjs','js/strategy-engine.mjs','js/strategy-worker.mjs',
+ 'js/degree-preparation.js','js/student-forecast.js','js/lab-share.mjs',
  'img/hufs_logo.png','img/hanmo_purple.png','img/lucide/external-link.svg','img/lucide/search.svg',
  ...studentStyles.slice(1)])
  if(await exists(join(dist,banned)))throw Error('Prohibited asset in preview: '+banned);

@@ -52,9 +52,10 @@ test('학생 공통 스타일의 소스와 배경 참조를 해당 CSS 출력에
 test('공개 목록은 학사 연구 경로와 삭제한 페이지를 제외한다',async()=>{
   const paths=await readPublicAssets(fileURLToPath(new URL('..',import.meta.url)));
   assert.ok(paths.includes('html/planner.html'));
-  assert.ok(paths.includes('js/strategy-recommendation.mjs'));
-  assert.ok(!paths.includes('js/strategy-engine.mjs'));
-  assert.ok(!paths.includes('js/strategy-worker.mjs'));
+  assert.ok(!paths.includes('js/strategy-recommendation.mjs'));
+  assert.ok(!paths.includes('js/strategy-sensitivity-worker.mjs'));
+  assert.ok(paths.includes('js/strategy-engine.mjs'));
+  assert.ok(paths.includes('js/strategy-worker.mjs'));
   assert.ok(paths.every(path=>!path.startsWith('js/academic/')));
   assert.ok(studentStyles.every(path=>!paths.includes(path)));
   assert.ok(!paths.includes('html/academic-progress.html'));

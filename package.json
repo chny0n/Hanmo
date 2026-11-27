@@ -5,7 +5,7 @@
   "scripts": {
     "test": "vitest run js/academic/core js/academic/views",
     "build": "esbuild js/academic/app/student-entry.js js/academic/app/academic-calendar.js css/student-ui.css --bundle --platform=browser --format=iife --target=es2022 --minify --keep-names --external:../img/background.svg --entry-names=[name] --outdir=.build --metafile=.build/bundle-meta.json && node scripts/stage-static.mjs",
-    "smoke": "node scripts/check-static-pages.mjs && node --test tests/strategy-recommendation.test.mjs tests/readiness-metrics.test.mjs tests/reaction-profile.test.mjs tests/academic-data-source.test.cjs tests/student-navigation.test.cjs tests/policy-footer.test.cjs tests/student-profile.test.cjs tests/home-fit.test.cjs tests/vsugang-fit.test.cjs tests/collection-window.test.mjs tests/preview-data.test.mjs tests/preview-withdrawal.test.mjs",
+    "smoke": "node scripts/check-static-pages.mjs && node --test tests/readiness-metrics.test.mjs tests/reaction-profile.test.mjs tests/academic-data-source.test.cjs tests/student-navigation.test.cjs tests/policy-footer.test.cjs tests/student-profile.test.cjs tests/home-fit.test.cjs tests/vsugang-fit.test.cjs tests/collection-window.test.mjs tests/preview-data.test.mjs tests/preview-withdrawal.test.mjs",
     "collection:status": "node scripts/check-collection-window.mjs",
     "collection:gate": "node scripts/check-collection-window.mjs --enforce",
     "check": "npm run check:student && npm run test:research",
