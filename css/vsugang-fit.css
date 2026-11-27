@@ -8,27 +8,17 @@ body.hanmo-vsugang .f-dirt-down{position:absolute;top:50%;left:50%;width:max-con
 body.hanmo-vsugang .titleContainer{top:0;margin:0}
 body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
 body.hanmo-vsugang .grid{margin-top:0;--vsugang-narrow-areas:"b b" "b b" "s t" "set t"}
-body.hanmo-vsugang .grid > :is(.setting,#incident-options){border:1px solid #000912;background:#06111c;transition:0.3s}
+body.hanmo-vsugang .grid > .setting{border:1px solid #000912;background:#06111c;transition:0.3s}
 /* 주변 칸을 갑자기 어둡게 하지 않고 선택한 칸의 빛만 천천히 밝힌다. */
-/* BASIC의 오른쪽 아래를 실제로 비워 돌발상황 버튼과 겹치지 않게 한다. */
-body.hanmo-vsugang .grid > .basic-mode-tile {
-  clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%);
-}
-/* BASIC의 비운 모서리에 돌발상황 버튼을 별도의 조작 영역으로 배치한다. */
-body.hanmo-vsugang #incident-options{
-  grid-area:2 / 2 / 3 / 3;z-index:1;display:flex;flex-direction:column;align-items:flex-start;
-  padding:0;color:inherit;text-align:left;cursor:pointer;
-}
 body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){margin:5px 20px;font-size:40px;font-weight:100;line-height:normal}
 body.hanmo-vsugang .grid .mode-tile-description{margin:0 20px;font-size:12px}
-body.hanmo-vsugang #incident-options:focus-visible{outline:3px solid #ffcf76;outline-offset:-4px}
 @media(max-width:1000px){
   body.hanmo-vsugang .grid{grid-template-rows:repeat(4,200px);grid-template-areas:var(--vsugang-narrow-areas)}
   body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:36px}
   body.hanmo-vsugang .grid .mode-tile-description{display:none}
 }
 /* SETTING은 상단 메뉴 아래에 표시하고 내부에서 스크롤한다. */
-body.hanmo-vsugang :is(.settingSection,#scenario-settings){
+body.hanmo-vsugang .settingSection{
   box-sizing:border-box;position:fixed;inset:var(--vsugang-topbar-bottom,66px) 0 0;
   height:auto;max-height:none;z-index:110;overflow-y:auto;background:rgba(0,10,18,.87);padding:20px;
 }
@@ -43,13 +33,15 @@ body.hanmo-vsugang .settingPanel{
 /* 두 개의 접속 대기 옵션은 각각 독립적으로 선택할 수 있습니다. */
 .settingPanel .waiting-setting-groups{display:grid;gap:12px;list-style:none}
 .settingPanel .waiting-setting-title{color:#fff;font-weight:700}
+/* 새로 추가된 설정 묶음임을 제목 옆에 작고 옅은 글씨로 알립니다. */
+.settingPanel .waiting-setting-title .setting-new-badge{margin-left:4px;color:#fff;opacity:.55;font-size:12px;font-weight:500}
 .settingPanel .waiting-setting-group{
   display:flex;flex-wrap:wrap;align-items:center;column-gap:20px;row-gap:9px;
   min-width:0;margin:0;padding:12px 16px;border:1px solid #57778d;
   border-radius:8px;background:#0e2535
 }
 .settingPanel .waiting-setting-group legend{padding:0 5px;color:#f0f5fa;font-weight:600}
-/* 원본 한모의 두 칸 선택 모양을 SETTING·돌발상황에 공통 적용한다. */
+/* 원본 한모의 두 칸 선택 모양을 대기조건·돌발상황 선택에 공통 적용한다. */
 .settingPanel .waiting-setting-group .segmented{
   box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
   gap:4px;flex:1 1 100%;width:100%;min-width:0;
@@ -78,16 +70,12 @@ body.hanmo-vsugang .settingPanel{
 .settingPanel .waiting-setting-group .segmented input:focus-visible + span{
   outline:2px solid #ffd27a;outline-offset:1px
 }
-#scenario-settings{width:100%;max-width:none;margin:0;border:0;color:inherit}
-#scenario-settings[open]{display:flex;align-items:center;justify-content:center}
-#scenario-settings::backdrop{background:transparent}
 .settingPanel fieldset{min-width:0}
 .incident-option-group{margin:0}
 .incident-option-group .waiting-setting-group small{
   display:block;flex:0 0 100%;margin-top:0;
   color:#bacbd7;font-size:12px;line-height:1.65
 }
-.incident-option-actions{justify-content:stretch}
 .settingPanel :is(button,input):focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
 /* 높은 확대율에서는 본문만 스크롤한다. */
 body.hanmo-vsugang.vsugang-compact-scroll>main{display:block;overflow-y:auto;overscroll-behavior:contain}
@@ -135,7 +123,7 @@ body.hanmo-vsugang .grid > :is(div, button):is(:hover, :focus-visible)::before {
 body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {
   background-color: #071a27;
 }
-/* 잘린 BASIC도 키보드 포커스를 구별할 수 있게 내부 윤곽을 유지한다. */
+/* BASIC 타일도 키보드 포커스를 구별할 수 있게 내부 윤곽을 유지한다. */
 body.hanmo-vsugang .grid > .basic-mode-tile:focus-visible {
   box-shadow: inset 0 0 0 3px var(--hm-gold, #f4c76c);
 }
@@ -151,8 +139,8 @@ body.hanmo-vsugang .grid .setting .printValue {
   color: #e9c7a8;
   line-height: 1.5;
 }
-/* 설정과 돌발상황 창에만 선택적으로 배경 흐림을 적용한다. */
-body.hanmo-vsugang :is(.settingSection, #scenario-settings) {
+/* 설정 창에만 선택적으로 배경 흐림을 적용한다. */
+body.hanmo-vsugang .settingSection {
   background: rgba(0, 10, 18, .67);
   -webkit-backdrop-filter: blur(7px) saturate(110%);
   backdrop-filter: blur(7px) saturate(110%);
@@ -163,8 +151,7 @@ body.hanmo-vsugang .settingPanel {
   box-shadow: 0 22px 55px rgba(0, 0, 0, .32),
               inset 0 1px 0 rgba(255, 255, 255, .055);
 }
-body.hanmo-vsugang .settingSection[style*="flex"] .settingPanel,
-body.hanmo-vsugang #scenario-settings[open] .settingPanel {
+body.hanmo-vsugang .settingSection[style*="flex"] .settingPanel {
   animation: hanmo-panel-enter .18s var(--hm-ease-soft, ease-out) both;
 }
 @keyframes hanmo-panel-enter {
@@ -175,11 +162,10 @@ body.hanmo-vsugang #scenario-settings[open] .settingPanel {
   body.hanmo-vsugang .grid > :is(div, button),
   body.hanmo-vsugang .grid > :is(div, button)::before,
   .settingPanel .waiting-setting-group .segmented span { transition: none; }
-  body.hanmo-vsugang .settingSection .settingPanel,
-  body.hanmo-vsugang #scenario-settings[open] .settingPanel { animation: none; }
+  body.hanmo-vsugang .settingSection[style*="flex"] .settingPanel { animation: none; }
 }
 
-/* 두 설정창의 제목·입력·간격·버튼을 하나의 스타일로 통일합니다. */
+/* 설정 창의 제목·입력·간격·버튼 스타일을 지정합니다. */
 body.hanmo-vsugang .settingPanel .settingTitle { margin: 0; font-size: 24px; font-weight: 700; }
 body.hanmo-vsugang .settingPanel .settingDesc { margin: 0; color: #cad8e2; font-size: 13px; line-height: 1.55; }
 body.hanmo-vsugang .settingPanel .settingField { display: flex; flex-direction: column; gap: 7px; margin: 0; }
@@ -198,8 +184,8 @@ body.hanmo-vsugang .settingPanel .settingActions .settingButton {
   body.hanmo-vsugang .settingPanel { padding: 18px; }
 }
 
-/* 돌발상황은 SETTING과 정확히 같은 단위 정사각형을 사용합니다. */
-body.hanmo-vsugang .grid > :is(.setting,#incident-options) {
+/* SETTING 타일은 그리드의 단위 정사각형을 그대로 채웁니다. */
+body.hanmo-vsugang .grid > .setting {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -217,12 +203,10 @@ body.hanmo-vsugang .grid > :is(.setting,#incident-options) {
 }
 body.hanmo-vsugang .grid > .setting { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
 body.hanmo-vsugang .grid > .setting > h2 { flex: 0 0 auto; }
-body.hanmo-vsugang #incident-options { justify-content: flex-start; }
-body.hanmo-vsugang #incident-options .mode-tile-title { display: block; }
 
-/* 일반 PC에서는 설정·돌발상황도 한 화면에 표시합니다. 작은 화면과 확대의 접근성 스크롤은 유지합니다. */
+/* 일반 PC에서는 돌발상황을 포함한 설정 창도 한 화면에 표시합니다. 작은 화면과 확대의 접근성 스크롤은 유지합니다. */
 @media(min-width:1100px) and (min-height:680px){
- body.hanmo-vsugang :is(.settingSection,#scenario-settings){overflow:visible;padding:16px}
+ body.hanmo-vsugang .settingSection{overflow:visible;padding:16px}
  body.hanmo-vsugang .settingPanel{width:min(760px,100%);max-height:none;overflow:visible;padding:18px 24px;gap:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
  body.hanmo-vsugang .settingPanel>:is(.settingTitle,.settingDesc,.waiting-setting-groups,.settingActions){grid-column:1/-1}
  body.hanmo-vsugang .settingPanel .waiting-setting-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}

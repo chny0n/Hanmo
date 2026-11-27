@@ -264,11 +264,11 @@ body.hanmo-home.hanmo-refined .button.anotherB { background: transparent; border
 
 /* 모드의 위치·클릭 영역·설정 동작은 보존하고 읽기 밀도만 조정합니다. */
 body.hanmo-vsugang.hanmo-refined .grid { opacity: 1; }
-body.hanmo-vsugang.hanmo-refined .grid > :is(.setting, #incident-options) {
+body.hanmo-vsugang.hanmo-refined .grid > .setting {
   background: #06111c;
   border: 1px solid #000912;
 }
-body.hanmo-vsugang.hanmo-refined .grid > :is(.setting, #incident-options):is(:hover, :focus-visible) {
+body.hanmo-vsugang.hanmo-refined .grid > .setting:is(:hover, :focus-visible) {
   background-color: #071a27;
 }
 body.hanmo-vsugang.hanmo-refined .grid > :is(div, button) { transition: background-color .78s var(--hm-glow-ease, ease-in-out); }

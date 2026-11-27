@@ -55,7 +55,7 @@
 			<section class='settingSection'>
         <form class='settingPanel' onsubmit='getSettingValue(); return false;' aria-labelledby='setting-title'>
           <h2 id='setting-title' class='settingTitle'>연습 설정</h2>
-          <p class='settingDesc'>BASIC·SELECT 모드의 과목 수와 두 대기 조건을 설정합니다.</p>
+          <p class='settingDesc'>BASIC·SELECT 모드의 과목 수와 두 대기 조건, BASIC 돌발상황을 설정합니다.</p>
           <label class='settingField'>
             <span class='settingLabel'>관심강좌에 담은 과목 개수</span>
             <input class='textbox psugangVal' type='number' min='1' max='15' step='1' inputmode='numeric' required>
@@ -81,6 +81,25 @@
               </div>
             </fieldset>
           </div>
+          <div class="waiting-setting-groups incident-option-group" role="group" aria-labelledby="incident-setting-title">
+            <strong class="waiting-setting-title" id="incident-setting-title">BASIC 돌발상황 <span class="setting-new-badge">(신규)</span></strong>
+            <fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">
+              <legend id="incident-reconnect-label">가상 404·접속 끊김</legend>
+              <div class="segmented">
+                <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
+                <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
+              </div>
+              <small id="incident-reconnect-description">BASIC에서 수강신청 화면으로 이동할 때 1회 가상 404가 표시됩니다.</small>
+            </fieldset>
+            <fieldset class="waiting-setting-group" aria-describedby="incident-capacity-description">
+              <legend>정원 마감 · 대체 과목 찾기</legend>
+              <div class="segmented">
+                <label><input type="radio" name="incident-CAPACITY" value="yes" data-capacity-toggle><span>예</span></label>
+                <label><input type="radio" name="incident-CAPACITY" value="no" data-capacity-off checked><span>아니오</span></label>
+              </div>
+              <small id="incident-capacity-description">BASIC에서 임의의 한 과목이 정원 마감됩니다.</small>
+            </fieldset>
+          </div>
           <div class='settingActions'>
             <button type='button' class='settingCancel' onclick='closeSettingPanel()'>닫기</button>
             <button type='submit' class='settingButton'>확인</button>
@@ -102,10 +121,6 @@
 								시작부터 과목 선택까지
 							</p>
 						</div>
-						<button id="incident-options" type="button" aria-haspopup="dialog" aria-controls="scenario-settings" aria-labelledby="incident-options-title" aria-describedby="incident-options-description">
-							<span class="mode-tile-title" id="incident-options-title">돌발상황</span>
-							<span class="mode-tile-description" id="incident-options-description">BASIC 모드의 접속 오류·정원 마감</span>
-						</button>
 						<div style='grid-area: t' onclick='goPractice(2)' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();goPractice(2)}' role='button' tabindex='0' aria-label='TIME MODE · 시작 시간 연습'>
 							<h2>
 								TIME MODE
@@ -124,41 +139,13 @@
 						</div>
 						<div class='setting' style='grid-area: set;' onclick='openSettingPanel()' onkeydown='if(event.key === "Enter" || event.key === " "){event.preventDefault();openSettingPanel();}' role='button' tabindex='0' aria-label='모의신청 설정 열기'>
 							<h2>
-								SETTING
+								SETTINGS
 							</h2>
 							<p class='printValue'>연습 전 과목 수를 설정해 주세요.</p>
 						</div>
 					</div>
 				</section>
 			</section>
-<dialog id="scenario-settings" aria-labelledby="scenario-settings-title">
-  <form class="settingPanel" method="dialog">
-    <h2 id="scenario-settings-title" class="settingTitle">BASIC 모드 돌발상황</h2>
-    <p class="settingDesc">BASIC 모드에서 발생할 가상 돌발상황을 선택합니다.</p>
-    <div class="waiting-setting-groups incident-option-group">
-      <fieldset class="waiting-setting-group" aria-describedby="incident-reconnect-description">
-        <legend id="incident-reconnect-label">가상 404·접속 끊김</legend>
-        <div class="segmented">
-          <label><input type="radio" name="incident-RECONNECT" value="yes" data-scenario-toggle="RECONNECT"><span>예</span></label>
-          <label><input type="radio" name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked><span>아니오</span></label>
-        </div>
-        <small id="incident-reconnect-description">BASIC에서 수강신청 화면으로 이동할 때 1회 가상 404가 표시됩니다.</small>
-      </fieldset>
-      <fieldset class="waiting-setting-group" aria-describedby="incident-capacity-description">
-        <legend>정원 마감 · 대체 과목 찾기</legend>
-        <div class="segmented">
-          <label><input type="radio" name="incident-CAPACITY" value="yes" data-capacity-toggle><span>예</span></label>
-          <label><input type="radio" name="incident-CAPACITY" value="no" data-capacity-off checked><span>아니오</span></label>
-        </div>
-        <small id="incident-capacity-description">BASIC에서 임의의 한 과목이 정원 마감됩니다.</small>
-      </fieldset>
-    </div>
-    <div class="incident-option-actions settingActions">
-      <button class="settingCancel" type="submit" value="cancel">취소</button>
-      <button class="settingButton" type="submit" value="save">확인</button>
-    </div>
-  </form>
-</dialog>
 
 		</main>
 		<script src="../js/vsugang.js"></script>

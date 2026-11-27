@@ -12,11 +12,10 @@
   }
 
   function mount(doc,host){
-    const dialog=doc.getElementById('scenario-settings');
-    const tile=doc.getElementById('incident-options');
+    // 돌발상황 선택은 SETTING 창 안에 있으며 창 열기·저장 이벤트에 맞춰 복원·저장합니다.
     const yes=doc.querySelector('[data-scenario-toggle="RECONNECT"]');
     const no=doc.querySelector('[data-scenario-off="RECONNECT"]');
-    if(!dialog||!tile||!yes||!no||
+    if(!yes||!no||typeof doc.addEventListener!=='function'||
       typeof host.goPractice!=='function'||
       typeof host.hasValidPracticeSettings!=='function')return null;
 
@@ -43,10 +42,6 @@
         }));
       }catch(_error){/* 저장소 접근이 불가능하면 장애를 주입하지 않습니다. */}
     }
-    function openDialog(){
-      syncChecks();
-      if(!dialog.open)dialog.showModal();
-    }
     function start(mode){
       clearTransition();
       if(mode===BASIC_MODE&&enabled&&host.hasValidPracticeSettings())armTransition();
@@ -54,9 +49,9 @@
     }
 
     host.goPractice=start;
-    tile.addEventListener('click',openDialog);
-    dialog.addEventListener('submit',event=>{
-      if(event.submitter?.value!=='save')return;
+    // 창을 열 때는 저장된 선택을 보여 주고, 닫기로 나가면 다음에 열 때 다시 복원합니다.
+    doc.addEventListener('hanmo-settings-open',syncChecks);
+    doc.addEventListener('hanmo-settings-saved',()=>{
       enabled=Boolean(yes.checked);
       try{host.sessionStorage?.setItem(SELECTION_KEY,enabled?'yes':'no');}
       catch(_error){/* 저장 거부 시 이 페이지에서만 설정을 유지합니다. */}

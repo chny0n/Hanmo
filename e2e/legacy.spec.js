@@ -78,7 +78,8 @@ test('모드 타일의 포커스·클릭 영역과 간결한 hover 표시를 유
   await page.keyboard.press('Tab');
   await tile.focus();
   await expect(tile).toBeFocused();
-  await expect(tile).toHaveCSS('clip-path',/polygon/);
+  // 돌발상황이 SETTING으로 옮겨져 BASIC은 잘리지 않은 전체 타일을 사용합니다.
+  await expect(tile).toHaveCSS('clip-path','none');
   await expect(tile).toHaveCSS('background-color','rgb(6, 17, 28)');
   const originalBackground=await tile.evaluate(element=>getComputedStyle(element).backgroundColor);
   const outline=await tile.evaluate(element=>({
@@ -87,8 +88,9 @@ test('모드 타일의 포커스·클릭 영역과 간결한 hover 표시를 유
   }));
   expect(outline.style).not.toBe('none');
   expect(outline.width).toBeGreaterThanOrEqual(2);
-  // 역 ㄱ자 타일의 가운데는 돌발상황 클릭 영역이며, 느린 빛 효과는 유지합니다.
-  await tile.hover({position:{x:60,y:60}});
+  // BASIC 타일 가운데에서도 느린 빛 효과가 유지됩니다.
+  const box=await tile.boundingBox();
+  await tile.hover({position:{x:box.width/2,y:box.height/2}});
   await expect.poll(()=>tile.evaluate(element=>
     getComputedStyle(element).backgroundColor)).not.toBe(originalBackground);
   await expect.poll(()=>tile.evaluate(element=>
@@ -200,10 +202,12 @@ test('선택한 가상 404는 청색 사용자 패널을 유지하고 새로고�
     }));
   });
   await setPracticeOptions(page);
-  await page.locator('#incident-options').click();
-  await expect(page.locator('#scenario-settings')).toBeVisible();
-  await page.locator('[data-scenario-toggle="RECONNECT"]').check();
-  await page.locator('#scenario-settings button[value="save"]').click();
+  // 돌발상황은 SETTING 창 안에서 켜고 같은 확인 버튼으로 저장합니다.
+  await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+  await expect(page.locator('.settingSection')).toBeVisible();
+  await page.locator('.settingSection [data-scenario-toggle="RECONNECT"]').check();
+  await page.locator('.settingSection .settingButton').click();
+  await expect(page.locator('.settingSection')).toBeHidden();
   await page.locator('.basic-mode-tile').click({position:{x:60,y:60}});
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
   await page.waitForLoadState('load');

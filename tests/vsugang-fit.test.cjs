@@ -68,41 +68,56 @@ function menuSettingHarness(){
     psugangVal:{value:''},
     vsugangVal:{value:''}
   };
-  const incident={style:{}};
+  const events=[];
   const document={
     getElementsByClassName(name){return parts[name]?[parts[name]]:[];},
     querySelector(selector){
-      if(selector==='#incident-options')return incident;
-      if(selector==='input[name="waitingYN"]:checked')return {value:'no'};
+      if(selector==='input[name="waitingCourseYN"]:checked')return {value:'no'};
+      if(selector==='input[name="waitingEntryYN"]:checked')return {value:'no'};
       return null;
-    }
+    },
+    dispatchEvent(event){events.push(event.type);return true;}
   };
   const localStorage={
     getItem(key){return stored.get(key)??null;},
     setItem(key,value){stored.set(key,String(value));},
     removeItem(key){stored.delete(key);}
   };
-  const context={document,localStorage,alert(){},location:{href:''}};
+  const context={document,localStorage,alert(){},location:{href:''},
+    Event:class{constructor(type){this.type=type;}}};
   vm.runInNewContext(menuSource,context,{filename:'vsugang.js'});
-  return {stored,parts,incident,context};
+  return {stored,parts,events,context};
 }
 
-test('SETTING과 돌발상황은 설정 상태와 무관하게 동일한 남색 타일을 사용한다',()=>{
+test('SETTING 타일은 설정 상태와 무관하게 동일한 남색 타일을 사용한다',()=>{
   const x=menuSettingHarness();
   assert.equal(x.parts.setting.style.background,undefined);
-  assert.equal(x.incident.style.background,undefined);
   assert.match(x.parts.printValue.innerText,/연습 전 과목 수/);
-  assert.match(menuStyles,/grid > :is\(\.setting,#incident-options\)/);
+  assert.match(menuStyles,/grid > \.setting\{/);
   x.stored.set('psubjectValue','5');
   x.stored.set('subjectValue','2');
   x.stored.set('waitingValue','no');
   x.context.setValue();
   assert.equal(x.parts.setting.style.background,undefined);
-  assert.equal(x.incident.style.background,undefined);
   assert.match(x.parts.printValue.innerText,/올바른 설정값/);
   x.stored.delete('waitingValue');
   x.context.setValue();
   assert.match(x.parts.printValue.innerText,/연습 전 과목 수/);
+});
+
+test('SETTING 창 열기와 올바른 저장에만 돌발상황 동기화 이벤트를 보낸다',()=>{
+  const x=menuSettingHarness();
+  x.context.openSettingPanel();
+  assert.deepEqual(x.events,['hanmo-settings-open']);
+  // 과목 수가 잘못되면 저장 이벤트 없이 창을 유지합니다.
+  x.parts.psugangVal.value='1';
+  x.parts.vsugangVal.value='3';
+  x.context.getSettingValue();
+  assert.deepEqual(x.events,['hanmo-settings-open']);
+  x.parts.vsugangVal.value='1';
+  x.context.getSettingValue();
+  assert.deepEqual(x.events,['hanmo-settings-open','hanmo-settings-saved']);
+  assert.equal(x.parts.settingSection.style.display,'none');
 });
 
 test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 스타일을 사용한다',()=>{
@@ -124,24 +139,25 @@ test('SETTING의 두 대기 설정과 돌발상황이 동일한 예·아니오 �
  assert.match(css,/prefers-reduced-motion:\s*reduce/);
 });
 
-test('BASIC은 돌발상황 버튼과 겹치지 않는 역 ㄱ자 시각·클릭 영역을 사용한다',()=>{
+test('BASIC은 잘리지 않은 2×2 타일 전체를 시각·클릭 영역으로 사용한다',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
  const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
  assert.match(html,/class='basic-mode-tile' style='grid-area: b'/);
- assert.match(css,/\.grid > \.basic-mode-tile\s*\{\s*clip-path:\s*polygon\(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%\)/);
- assert.match(css,/#incident-options\s*\{\s*grid-area:2 \/ 2 \/ 3 \/ 3/);
+ assert.doesNotMatch(css,/\.basic-mode-tile\s*\{\s*clip-path/);
+ assert.doesNotMatch(css+html,/incident-options/);
  assert.match(css,/\.basic-mode-tile:focus-visible/);
 });
 
 
 
-test('SETTING과 BASIC 돌발상황 창은 동일한 패널 크기·제목·선택·버튼 스타일을 사용한다',()=>{
+test('돌발상황 선택은 SETTING 창 안에서 같은 패널·선택·버튼 스타일을 사용한다',()=>{
  const html=fs.readFileSync(path.join(__dirname,'../html/vsugang.html'),'utf8');
  const css=fs.readFileSync(path.join(__dirname,'../css/vsugang-fit.css'),'utf8');
- assert.match(html,/<h2 id="scenario-settings-title" class="settingTitle">/);
- assert.match(html,/class="waiting-setting-groups incident-option-group"/);
- assert.match(html,/class="incident-option-actions settingActions"/);
- assert.match(html,/class="settingCancel" type="submit" value="cancel"/);
+ const settingForm=html.match(/<section class='settingSection'>[\s\S]*?<\/section>/)?.[0]??'';
+ assert.match(settingForm,/class="waiting-setting-groups incident-option-group" role="group" aria-labelledby="incident-setting-title"/);
+ assert.match(settingForm,/<strong class="waiting-setting-title" id="incident-setting-title">BASIC 돌발상황 <span class="setting-new-badge">\(신규\)<\/span><\/strong>/);
+ assert.doesNotMatch(html,/<dialog\b|scenario-settings-title/);
+ assert.equal((settingForm.match(/class='settingCancel'/g)||[]).length,1);
  assert.match(css,/body\.hanmo-vsugang \.settingPanel\{[\s\S]*?width:min\(480px,100%\)/);
  assert.match(css,/body\.hanmo-vsugang \.settingPanel \.settingTitle/);
  assert.match(css,/body\.hanmo-vsugang \.settingPanel \.settingActions button/);

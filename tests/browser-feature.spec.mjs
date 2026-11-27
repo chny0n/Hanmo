@@ -244,10 +244,9 @@ test('BASIC 정원 마감 ON에서 임의의 한 register를 제거하고 합성
   await page.locator('.vsugangVal').fill('1');
   await page.locator('input[name="waitingCourseYN"][value="no"]').check();
   await page.locator('input[name="waitingEntryYN"][value="no"]').check();
-  await page.locator('.settingSection .settingButton').click();
-  await page.locator('#incident-options').click();
+  // 정원 마감 돌발상황은 SETTING 창 안에서 함께 선택해 저장합니다.
   await page.locator('[data-capacity-toggle]').check();
-  await page.locator('#scenario-settings button[value="save"]').click();
+  await page.locator('.settingSection .settingButton').click();
   await page.locator('.basic-mode-tile').click({position:{x:60,y:60}});
   await expect(page).toHaveURL(/\/html\/practice\.html$/);
   await page.waitForLoadState('load');
@@ -485,18 +484,23 @@ test('1980x1080 개발자 소개는 내용과 버튼이 화면 밖으로 잘리�
  }
 });
 
-test('돌발상황과 SETTING 타일은 1980x1080에서 같은 정사각형 크기다',async({page})=>{
+test('BASIC은 1980x1080에서 SETTING 정사각형 네 칸 크기의 온전한 타일이다',async({page})=>{
  await page.setViewportSize({width:1980,height:1080});
  await page.goto('/html/vsugang.html');
  const tiles=await page.evaluate(()=>{
-  const a=document.getElementById('incident-options').getBoundingClientRect();
+  const a=document.querySelector('.grid > .basic-mode-tile').getBoundingClientRect();
   const b=document.querySelector('.grid > .setting').getBoundingClientRect();
-  return {aW:a.width,aH:a.height,bW:b.width,bH:b.height};
+  return {aW:a.width,aH:a.height,bW:b.width,bH:b.height,
+   clip:getComputedStyle(document.querySelector('.basic-mode-tile')).clipPath,
+   incident:Boolean(document.getElementById('incident-options'))};
  });
- expect(Math.abs(tiles.aW-tiles.bW)).toBeLessThanOrEqual(1);
- expect(Math.abs(tiles.aH-tiles.bH)).toBeLessThanOrEqual(1);
- expect(Math.abs(tiles.aW-tiles.aH)).toBeLessThanOrEqual(1);
- expect(tiles.aW).toBeGreaterThan(200);
+ // 돌발상황 칸이 없어져 BASIC이 2×2 칸 전체를 사용합니다.
+ expect(tiles.incident).toBe(false);
+ expect(tiles.clip).toBe('none');
+ expect(Math.abs(tiles.aW-2*tiles.bW)).toBeLessThanOrEqual(2);
+ expect(Math.abs(tiles.aH-2*tiles.bH)).toBeLessThanOrEqual(2);
+ expect(Math.abs(tiles.bW-tiles.bH)).toBeLessThanOrEqual(1);
+ expect(tiles.bW).toBeGreaterThan(200);
 });
 
 test('교양 경고문 표시 여부와 무관하게 selectZone 두 표의 좌표를 고정한다',async({page})=>{
@@ -630,7 +634,8 @@ test('최신 원본 한모의 2칸 예·아니오 선택을 SETTING과 돌발상
  await page.setViewportSize({width:1980,height:1080});
  await page.goto('/html/vsugang.html');
  await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
- await expect(page.locator('.settingSection .segmented')).toHaveCount(2);
+ // 대기조건 두 개와 BASIC 돌발상황 두 개가 한 SETTING 창에 있습니다.
+ await expect(page.locator('.settingSection .segmented')).toHaveCount(4);
  const first=page.locator('.settingSection .segmented').first();
  await expect(first.locator('span')).toHaveText(['예','아니오']);
  await expect(page.locator('input[name="waitingCourseYN"][value="yes"]')).toBeChecked();
@@ -659,19 +664,21 @@ test('최신 원본 한모의 2칸 예·아니오 선택을 SETTING과 돌발상
  await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
  await expect(page.locator('input[name="waitingCourseYN"][value="no"]')).toBeChecked();
  await expect(page.locator('input[name="waitingEntryYN"][value="yes"]')).toBeChecked();
- await page.locator('.settingSection .settingCancel').click();
- await page.locator('#incident-options').click();
- await expect(page.locator('#scenario-settings .segmented')).toHaveCount(2);
  await expect(page.locator('input[name="incident-RECONNECT"][value="no"]')).toBeChecked();
  await expect(page.locator('input[name="incident-CAPACITY"][value="no"]')).toBeChecked();
- const incidentStyle=await page.locator('#scenario-settings .segmented').first()
+ const incidentStyle=await page.locator('.incident-option-group .segmented').first()
    .evaluate(group=>getComputedStyle(group.querySelector('input:checked + span')).backgroundColor);
  expect(incidentStyle).toBe(optionStyle.checkedBackground);
  await expect(page.locator('body')).not.toContainText('권장');
+ // 닫기로 나가면 돌발상황 변경도 저장하지 않습니다.
+ await page.locator('input[name="incident-RECONNECT"][value="yes"]').check();
+ await page.locator('.settingSection .settingCancel').click();
+ await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
+ await expect(page.locator('input[name="incident-RECONNECT"][value="no"]')).toBeChecked();
  await page.locator('input[name="incident-RECONNECT"][value="yes"]').check();
  await page.locator('input[name="incident-CAPACITY"][value="yes"]').check();
- await page.locator('#scenario-settings button[value="save"]').click();
- await page.locator('#incident-options').click();
+ await page.locator('.settingSection .settingButton').click();
+ await page.getByRole('button',{name:'모의신청 설정 열기'}).click();
  await expect(page.locator('input[name="incident-RECONNECT"][value="yes"]')).toBeChecked();
  await expect(page.locator('input[name="incident-CAPACITY"][value="yes"]')).toBeChecked();
 });
@@ -777,12 +784,13 @@ test('공개 학사 도움말은 현재 제공하는 화면에서 마우스·키
  await expect(tip).toBeVisible();
 });
 
-test('SETTING과 돌발상황의 배경·테두리·느린 빛이 일치한다',async({page})=>{
+test('SETTING과 SELECT 타일의 배경·테두리·느린 빛이 일치한다',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('deviceInfo','true'));
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto('/html/vsugang.html');
   const setting=page.locator('.grid > .setting');
-  const incident=page.locator('#incident-options');
+  // 돌발상황 칸이 없어져 SETTING 옆의 SELECT 타일과 비교합니다.
+  const incident=page.locator('.grid > [style*="grid-area: s"]');
   const style=locator=>locator.evaluate(element=>{
     const tile=getComputedStyle(element);
     const before=getComputedStyle(element,'::before');

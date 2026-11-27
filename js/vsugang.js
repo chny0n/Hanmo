@@ -7,6 +7,12 @@ const vsugangInput=document.getElementsByClassName('vsugangVal')[0];
 
 let isSettedValue=false;
 
+/** SETTING 창 열기·저장을 돌발상황 스크립트에 알린다. 이벤트를 지원하지 않는 환경에서는 생략한다. */
+function notifySettingPanel(type){
+  if(typeof document.dispatchEvent==='function'&&typeof Event==='function')
+    document.dispatchEvent(new Event(type));
+}
+
 /** 이 저장 키들은 기존 페이지 간 계약이므로 이름을 변경하지 않는다. */
 function validSetting(preselected,requested,waiting){
   return Number.isInteger(preselected)&&preselected>=1&&preselected<=15
@@ -33,7 +39,7 @@ function setValue(){
 /** 인라인 HTML의 모드 식별값: BASIC=1, TIME=2, SELECT=3. */
 function goPractice(mode){
   if(!isSettedValue){
-    alert('SETTING에서 과목 수를 지정해주세요.');
+    alert('SETTINGS에서 과목 수를 지정해주세요.');
     return;
   }
   localStorage.setItem('practiceSetter',mode);
@@ -55,6 +61,7 @@ function getSettingValue(){
   // 기존 waitingValue는 강의 신청 대기열 전용으로 유지한다.
   localStorage.setItem('waitingValue',courseWaiting);
   localStorage.setItem('waitingEntryValue',entryWaiting);
+  notifySettingPanel('hanmo-settings-saved');
   settingSection.style.display='none';
   setValue();
 }
@@ -74,6 +81,7 @@ function openSettingPanel(){
     const choice=document.querySelector('input[name="waitingEntryYN"][value="'+storedEntry+'"]');
     if(choice)choice.checked=true;
   }
+  notifySettingPanel('hanmo-settings-open');
 }
 
 function closeSettingPanel(){

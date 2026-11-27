@@ -6,22 +6,12 @@ const path=require('node:path');
 const ui=require('../js/scenario-settings.js');
 
 function node(attrs={}){
-  const listeners={};
-  return {
-    checked:false,open:false,attrs,
-    addEventListener(name,handler){listeners[name]=handler;},
-    fire(name,event={}){assert.ok(listeners[name],name);listeners[name](event);},
-    getAttribute(name){return this.attrs[name];},
-    showModal(){this.open=true;}
-  };
+  return {checked:false,attrs,addEventListener(){},getAttribute(name){return this.attrs[name];}};
 }
 
 function harness({valid=true,storageDenied=false,stored=new Map()}={}){
-  const dialogs={};
-  const options=node();
-  const dialog=node();
-  dialogs['incident-options']=options;
-  dialogs['scenario-settings']=dialog;
+  // SETTING 창의 열기·저장 이벤트를 문서 이벤트로 흉내 냅니다.
+  const listeners={};
   const yes=node({'data-scenario-toggle':'RECONNECT'});
   const no=node({'data-scenario-off':'RECONNECT'});
   const navigation=[];
@@ -36,7 +26,7 @@ function harness({valid=true,storageDenied=false,stored=new Map()}={}){
     goPractice(mode){navigation.push(mode);}
   };
   const doc={
-    getElementById:id=>dialogs[id]??null,
+    addEventListener(name,handler){(listeners[name]??=[]).push(handler);},
     querySelector:query=>({
       '[data-scenario-toggle="RECONNECT"]':yes,
       '[data-scenario-off="RECONNECT"]':no
@@ -44,15 +34,16 @@ function harness({valid=true,storageDenied=false,stored=new Map()}={}){
   };
   const app=ui.mount(doc,host);
   assert.ok(app);
-  return {app,yes,no,dialog,options,stored,navigation,host};
+  const fire=name=>{assert.ok(listeners[name]?.length,name);for(const handler of listeners[name])handler();};
+  return {app,yes,no,stored,navigation,host,
+    open:()=>fire('hanmo-settings-open'),save:()=>fire('hanmo-settings-saved')};
 }
 
 function choose(h,enabled){
-  h.options.fire('click');
+  h.open();
   h.yes.checked=enabled;
   h.no.checked=!enabled;
-  h.dialog.fire('submit',{submitter:{value:'save'}});
-  h.dialog.open=false;
+  h.save();
 }
 
 test('404만 선택할 수 있으며 돌발상황은 기본 OFF이다',()=>{
@@ -69,17 +60,19 @@ test('404만 선택할 수 있으며 돌발상황은 기본 OFF이다',()=>{
   }
 });
 
-test('돌발상황 설정은 필수 SETTING과 독립적으로 저장 및 취소된다',()=>{
+test('돌발상황 설정은 SETTING 확인으로 저장되고 닫기로 취소된다',()=>{
   const h=harness();
-  h.options.fire('click');
-  assert.equal(h.dialog.open,true);
+  h.open();
   h.yes.checked=true;
-  h.dialog.fire('submit',{submitter:{value:'cancel'}});
+  // 닫기는 저장 이벤트 없이 창만 닫으므로 다시 열면 저장된 값으로 돌아갑니다.
   assert.deepEqual(h.app.getEnabled(),[]);
+  h.open();
+  assert.equal(h.yes.checked,false);
+  assert.equal(h.no.checked,true);
   choose(h,true);
   assert.deepEqual(h.app.getEnabled(),['RECONNECT']);
   assert.equal(h.stored.get(ui.SELECTION_KEY),'yes');
-  h.options.fire('click');
+  h.open();
   assert.equal(h.yes.checked,true);
   choose(h,false);
   assert.deepEqual(h.app.getEnabled(),[]);
@@ -121,10 +114,10 @@ test('같은 탭에서 메뉴로 돌아오거나 새로고침해도 예/아니�
   const again=harness({stored});
   assert.deepEqual(again.app.getEnabled(),['RECONNECT']);
   assert.equal(again.yes.checked,true);
-  again.options.fire('click');
+  again.open();
   again.yes.checked=false;
   again.no.checked=true;
-  again.dialog.fire('submit',{submitter:{value:'cancel'}});
+  // 닫기로 나가면 저장 이벤트가 없어 기존 선택이 유지됩니다.
   assert.equal(stored.get(ui.SELECTION_KEY),'yes');
 
   choose(again,false);

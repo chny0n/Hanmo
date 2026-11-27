@@ -60,7 +60,8 @@ test('홈은 학업 탐색과 하나의 키보드 접근 가능한 연습 진입
 });
 test('BASIC의 선택형 404만 남고 메뉴 안의 가상 실패/오류 UI는 제거한다',()=>{
  const html=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
- assert.match(html,/id="scenario-settings"/);
+ assert.match(html,/id="incident-setting-title"/);
+ assert.doesNotMatch(html,/id="(?:scenario-settings|incident-options)"/);
  assert.equal((html.match(/data-scenario-toggle="/g)||[]).length,1);
  assert.equal((html.match(/data-scenario-off="/g)||[]).length,1);
  assert.ok(html.includes('name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked'));
@@ -95,7 +96,7 @@ test('new views preserve original Hanmo palette, watermark and shared layers',()
  }
  const originalMenu=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
  assert.match(originalMenu,/class='titleContainer'/);
- assert.match(originalMenu,/id="scenario-settings"/);
+ assert.match(originalMenu,/id="incident-setting-title"/);
  assert.match(originalMenu,/href="\.\.\/css\/vsugang-fit\.css"/);
 });
 
@@ -104,9 +105,11 @@ test('모드 메뉴에서만 옵션을 켜고 실제 practice→selectZone 전�
  const router=fs.readFileSync(path.join(ROOT,'js/hanmoSys.js'),'utf8');
  const menu=fs.readFileSync(path.join(ROOT,'html/vsugang.html'),'utf8');
  const error=fs.readFileSync(path.join(ROOT,'html/incident-404.html'),'utf8');
- assert.match(menu,/<button id="incident-options"[^>]*aria-controls="scenario-settings"/);
- assert.match(menu,/<dialog id="scenario-settings"[^>]*>[\s\S]*data-scenario-toggle=/);
- assert.doesNotMatch(menu.match(/class='settingSection'[\s\S]*?<\/section>/)?.[0]??'',/data-scenario-toggle/);
+ // 돌발상황 선택은 별도 창 없이 SETTING 창 안에서만 켭니다.
+ const settingForm=menu.match(/class='settingSection'[\s\S]*?<\/section>/)?.[0]??'';
+ assert.match(settingForm,/data-scenario-toggle=/);
+ assert.match(settingForm,/data-capacity-toggle/);
+ assert.doesNotMatch(menu,/<dialog\b|id="incident-options"/);
  assert.match(source,/TRANSITION_KEY/);
  assert.match(router,/page==='practice\.html'&&entry\.phase==='armed'/);
  assert.match(router,/location\.assign\('\.\/incident-404\.html'\)/);
@@ -184,7 +187,7 @@ test('vsugang menu fits under the navigation while settings and incident remain 
    '../js/vsugang-fit.js','BASIC MODE','TIME MODE','SELECT','SETTING'])
   assert.ok(html.includes(expected),'missing mode-menu contract '+expected);
  for(const expected of ['height:100dvh','--vsugang-fit-scale','--vsugang-topbar-bottom',
-   'vsugang-compact-scroll','overflow-y:auto','#scenario-settings[open]'])
+   'vsugang-compact-scroll','overflow-y:auto','.incident-option-group'])
   assert.ok(css.includes(expected),'missing viewport protection '+expected);
  assert.ok(js.includes('landing.scrollHeight'));
  assert.ok(js.includes('main.clientHeight'));

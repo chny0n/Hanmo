@@ -172,11 +172,15 @@ if(!menu.includes('<body class="hanmo-vsugang hanmo-refined">')||
 const fitStyles=await readFile(join(dist,'css/vsugang-fit.css'),'utf8');
 if(!fitStyles.includes('vsugang-compact-scroll')||
    !fitStyles.includes('--vsugang-topbar-bottom')||
-   !fitStyles.includes('#scenario-settings[open]'))
+   !fitStyles.includes('.incident-option-group'))
   throw Error('Missing viewport and settings accessibility protection');
-for(const id of ['scenario-settings','incident-options']){
-  if(!menu.includes('id="'+id+'"'))throw Error('Missing incident setting: '+id);
-}
+// 돌발상황 선택은 별도 타일·창 없이 SETTING 창 안에만 둡니다.
+const settingForm=menu.match(/<section class='settingSection'>[\s\S]*?<\/section>/)?.[0]??'';
+if(!settingForm.includes('id="incident-setting-title"')||!settingForm.includes('data-scenario-toggle=')||
+   !settingForm.includes('data-capacity-toggle'))
+  throw Error('Incident options must live inside the SETTING panel');
+if(/id="(?:incident-options|scenario-settings)"/.test(menu))
+  throw Error('Standalone incident tile or dialog remains');
 if((menu.match(/data-scenario-toggle=/g)||[]).length!==1||
   (menu.match(/data-scenario-off=/g)||[]).length!==1)
   throw Error('Only RECONNECT yes/no controls may exist');
