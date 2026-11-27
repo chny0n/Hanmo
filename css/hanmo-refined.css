@@ -362,13 +362,50 @@ body.hanmo-refined .hanmo-topbar .hanmo-profile-summary{
  body.hanmo-policy-legacy.hanmo-refined>main{padding-top:8px;padding-bottom:8px;}
 }
 
-/* 배너가 있는 홈은 남은 화면의 중앙이 아니라 배너 아래부터 본문을 배치합니다. */
-body.hanmo-home.hanmo-refined > .home-banners:not([hidden]) + main {
-  justify-content: flex-start;
-  padding-top: 36px;
+/* 자료 연결 전에는 학사 메뉴의 클릭·키보드 이동과 강조 효과를 제공하지 않습니다. */
+body.hanmo-refined .hanmo-topbar :is(nav,.hanmo-nav-inline) a[aria-disabled="true"],
+body.hanmo-refined .hanmo-topbar :is(nav,.hanmo-nav-inline) a[aria-disabled="true"]:hover {
+  color:#83909b!important;background:transparent;border-bottom-color:transparent;cursor:not-allowed;
+  text-decoration:none;
 }
-@media (max-height: 650px) {
-  body.hanmo-home.hanmo-refined > .home-banners:not([hidden]) + main { padding-top: 28px; }
+body.hanmo-refined .hanmo-topbar :is(nav,.hanmo-nav-inline) a[aria-disabled="true"]::before {
+  opacity:0;transition:none;
+}
+body.hanmo-refined #planner-go-notices:disabled {
+  color:#83909b!important;background:transparent!important;border-color:#52616c!important;
+  opacity:1;cursor:not-allowed;
+}
+body.hanmo-refined #planner-go-notices:disabled::before{opacity:0;transition:none}
+
+/* 홈과 모드 선택의 제목을 기능 페이지의 동일한 상단 기준선과 구분선에 맞춥니다. */
+body:is(.hanmo-home,.hanmo-vsugang).hanmo-refined .titleContainer {
+  top:auto;width:100%;margin:12px 0 16px;align-items:center;text-align:center;
+}
+body:is(.hanmo-home,.hanmo-vsugang).hanmo-refined .titleContainer h1 {
+  margin:0 0 5px;font-size:28px;line-height:1.35;letter-spacing:-.025em;font-weight:700;
+}
+body.hanmo-home.hanmo-refined > main {justify-content:flex-start;padding-top:12px;padding-bottom:8px}
+body.hanmo-home.hanmo-refined .home-fit-content{width:min(702px,100%)}
+body.hanmo-home.hanmo-refined .mainNotice {padding-block:clamp(12px,2.2vh,24px)}
+body.hanmo-home.hanmo-refined .container{margin-top:0}
+body.hanmo-home.hanmo-refined .buttonContainer{justify-content:center}
+@media(min-width:1100px) and (min-height:680px){
+  body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll)>main {
+    padding:12px 32px 8px;justify-content:flex-start;
+  }
+  body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll) .f-dirt-down{
+    position:relative;top:auto;left:auto;width:min(1184px,100%);max-width:100%;margin:0 auto;
+    transform:none;align-items:center;
+  }
+  body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll) .container{margin-top:8px}
+  body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll) .grid {
+    --mode-tile-size:min(280px,calc((100vw - 64px)/4),calc((100dvh - 234px)/2));
+    grid-template-columns:repeat(4,var(--mode-tile-size));
+    grid-template-rows:repeat(2,var(--mode-tile-size));
+  }
+}
+@media(max-width:700px){
+  body:is(.hanmo-home,.hanmo-vsugang).hanmo-refined .titleContainer h1{font-size:clamp(20px,4vw,28px)}
 }
 
 /* 보통 PC에서 검색 결과 목록만 독립 스크롤하고 필터·탭·안내·푸터는 고정합니다. */

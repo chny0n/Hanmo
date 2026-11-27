@@ -82,6 +82,10 @@ test('PC 진단은 실행 전 요청이 없고 PC 지표 10개의 독립 등급�
   await expect(page.locator('[data-metric-grade="error"]')).toHaveAttribute('data-grade','A');
   await expect(page.locator('[data-metric-grade="threads"]')).toHaveAttribute('data-grade','B');
   await expect(page.locator('#readiness-advice')).toContainText('논리 코어');
+  await expect(page.locator('#readiness-advice')).toHaveCSS('background-color','rgb(48, 41, 27)');
+  await expect(page.locator('#readiness-advice')).toHaveCSS('border-left-width','4px');
+  await expect(page.locator('#readiness-advice-heading')).toHaveCSS('color','rgb(255, 220, 151)');
+  await expect(page.locator('#readiness-advice-list li').first()).toHaveCSS('font-weight','600');
   await expect(page.locator('main')).not.toContainText('반응속도 테스트');
   for(const [grade,rgb] of [['A','34, 197, 94'],['B','249, 115, 22'],['C','234, 179, 8'],['D','146, 64, 14'],['F','220, 38, 38']]){
     await expect(page.locator('.readiness-grade-legend [data-grade="'+grade+'"]')).toHaveCSS('background-color','rgb('+rgb+')');
@@ -588,4 +592,32 @@ test('학사정보와 강의 검색은 결과 목록만 세로 스크롤 예외�
   expect(await dates.count()).toBeGreaterThanOrEqual(28);
   for(const date of await dates.all())await expect(date).toBeInViewport({ratio:1});
   for(const name of ['이전','다음','오늘'])await expect(page.locator('#calendar-view').getByRole('button',{name,exact:true})).toBeInViewport({ratio:1});
+});
+
+test('홈과 모드 선택의 제목은 같은 문구와 기능 화면의 구분선 기준을 사용한다',async({page})=>{
+  await page.clock.setFixedTime(new Date('2026-11-27T12:00:00+09:00'));
+  for(const viewport of [{width:1280,height:720},{width:1440,height:900},{width:1920,height:1080}]){
+    await page.setViewportSize(viewport);
+    const positions=[];
+    const titles=[];
+    for(const route of ['/index.html','/html/vsugang.html','/html/readiness.html']){
+      await page.goto(route);
+      await page.evaluate(()=>document.fonts.ready);
+      const title=page.locator('main h1').first();
+      const divider=page.locator('main .hanmo-title-divider');
+      await expect(title).toBeInViewport({ratio:1});
+      await expect(divider).toBeInViewport({ratio:1});
+      const h=await title.boundingBox(),d=await divider.boundingBox();
+      positions.push({route,hTop:h.y,dTop:d.y,dWidth:d.width,center:d.x+d.width/2});
+      titles.push((await title.innerText()).replace(/\s+/g,' ').trim());
+      if(route.includes('vsugang'))await expect(page.locator('.grid')).toBeInViewport({ratio:1});
+      if(route==='/index.html')await expect(page.locator('.buttonContainer')).toBeInViewport({ratio:1});
+      await expect(page.locator('body > footer')).toBeInViewport({ratio:1});
+    }
+    expect(titles[0]).toBe(titles[1]);
+    for(const key of ['hTop','dTop','dWidth','center']){
+      const values=positions.map(item=>item[key]);
+      expect(Math.max(...values)-Math.min(...values),key+' '+JSON.stringify(positions)).toBeLessThanOrEqual(2);
+    }
+  }
 });

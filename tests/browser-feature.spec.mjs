@@ -73,7 +73,7 @@ test('좁은 데스크톱 홈에서도 주요 조작과 안내를 스크롤로 �
 
 test('페이지 제목 아래 한모 구분 장식의 선·로고가 잘 보인다',async({page})=>{
  const routes=['/html/academic-timeline.html','/html/catalog.html',
-  '/html/planner.html','/html/pc-only.html',
+  '/index.html','/html/vsugang.html','/html/planner.html','/html/pc-only.html',
   '/html/forecast.html'];
  for(const route of routes){
   await page.goto(route);
@@ -300,14 +300,14 @@ test('1920x1080 달력은 날짜행이 접히지 않고 모든 날짜가 보인�
 });
 
 
-test('상단 바로 달력과 검색형 학교 문의처를 열 수 있다',async({page})=>{
+test('상단 바에서 미연결 학사 기능을 비활성화하고 나머지 메뉴를 유지한다',async({page})=>{
   await page.setViewportSize({width:1920,height:1080});
   const paths=['/index.html','/html/academic-timeline.html','/html/catalog.html',
     '/html/reaction-test.html',
     '/html/planner.html','/html/forecast.html',
     '/html/vsugang.html','/html/developer.html','/html/result.html'];
   const links=[
-    {name:'학사 정보',end:'/academic-timeline.html'}, {name:'PC 진단',end:'/readiness.html'}, {name:'전략 실험',end:'/strategy-lab.html'},
+    {name:'PC 진단',end:'/readiness.html'}, {name:'전략 실험',end:'/strategy-lab.html'},
   ];
   for(const path of paths){
     await page.goto(path);
@@ -316,6 +316,20 @@ test('상단 바로 달력과 검색형 학교 문의처를 열 수 있다',asyn
     const rect=await bar.boundingBox();
     expect(rect).not.toBeNull();
     expect(rect.height,'상단 바 한 줄: '+path).toBeLessThanOrEqual(86);
+    for(const label of ['학사 정보','강의 검색']){
+      const entry=bar.getByRole('link',{name:label,exact:true});
+      await expect(entry).toBeVisible();
+      await expect(entry).toBeDisabled();
+      await expect(entry).toHaveAttribute('tabindex','-1');
+      expect(await entry.getAttribute('href')).toBeNull();
+      await expect(entry).toHaveCSS('cursor','not-allowed');
+      await expect(entry).toHaveCSS('color','rgb(131, 144, 155)');
+      const box=await entry.boundingBox();
+      expect(box).not.toBeNull();
+      const current=page.url();
+      await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+      expect(page.url()).toBe(current);
+    }
     for(const link of links){
       const entry=bar.getByRole('link',{name:link.name});
       await expect(entry).toBeVisible();
@@ -337,7 +351,8 @@ test('학사 달력과 미연결 강의 전망이 안전하게 작동한다',asy
   page.on('response',response=>{
     if(response.status()>=400)failedResources.push(response.status()+' '+response.url());
   });
-  await page.getByRole('link',{name:'학사 정보'}).click();
+  await expect(page.getByRole('link',{name:'학사 정보'})).toBeDisabled();
+  await page.goto('/html/academic-timeline.html');
    await expect(page).toHaveURL(/academic-timeline\.html$/);
    await page.getByRole('tab',{name:'학사 달력'}).click();
   await page.waitForTimeout(450);

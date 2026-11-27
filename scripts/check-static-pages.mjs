@@ -108,8 +108,18 @@ for(const page of studentPages){
   if(/<a href="\.\.\/index\.html">홈<\/a>/.test(body))
     throw Error('Redundant home menu entry: '+page);
 }
-for(const path of studentPages.filter(path=>path!=='html/forecast.html')){
-  if(!root.includes('./'+path))throw Error('Root main menu does not link to '+path);
+for(const path of studentPages.filter(path=>!['html/forecast.html','html/academic-timeline.html','html/catalog.html'].includes(path))){
+  if(!root.includes('href="./'+path+'"'))throw Error('Root main menu does not link to '+path);
+}
+for(const [page,body] of pages){
+  if(!/<title>[^<|]+ \| 한모<\/title>/.test(body))throw Error('Page title format: '+page);
+  const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  if(!bar)continue;
+  for(const label of ['학사 정보','강의 검색']){
+    const entry=[...bar.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].find(item=>item[1]===label)?.[0];
+    if(!entry||!entry.includes('aria-disabled="true"')||!entry.includes('tabindex="-1"')||/\bhref=|onclick=/.test(entry))
+      throw Error('Academic menu must be disabled: '+page+' '+label);
+  }
 }
 if(root.includes('<a href="./html/vsugang.html"')||/기존 모의신청|기본 모의신청/.test(root))
   throw Error('Home topbar must not expose a redundant mock-registration link');

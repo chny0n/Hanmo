@@ -23,12 +23,20 @@ test('허용된 화면에 비공식 안내를 표시하고 금지된 메뉴 경�
  }
 });
 test('상단 메뉴에는 진단·반응·전략·통합 학사 정보만 보인다',()=>{
- const targets=['readiness','reaction-test','strategy-lab','academic-timeline','catalog','planner'];
+ const targets=['readiness','reaction-test','strategy-lab','planner'];
  for(const route of ['index.html',...student.map(x=>'html/'+x+'.html'),
   'html/vsugang.html','html/developer.html','html/result.html']){
    const html=fs.readFileSync(path.join(ROOT,route),'utf8');
    const bar=html.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0]??'';
-   for(const target of targets)assert.ok(bar.includes(target+'.html'),route+' '+target);
+   for(const target of targets)assert.match(bar,new RegExp('href="[^"]*'+target+'\\.html"'),route+' '+target);
+   for(const [target,label] of [['academic-timeline','학사 정보'],['catalog','강의 검색']]){
+     const disabled=[...bar.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].find(item=>item[1]===label)?.[0];
+     assert.ok(disabled,route+' '+label);
+     assert.match(disabled,/aria-disabled="true"/);
+     assert.match(disabled,/tabindex="-1"/);
+     assert.ok(disabled.includes(target+'.html'));
+     assert.doesNotMatch(disabled,/\bhref=|onclick=/);
+   }
    assert.doesNotMatch(bar,/academic-calendar\.html|academic-support\.html/);
  }
 });
@@ -136,8 +144,7 @@ test('home restores the original mock registration layout without the academic-e
  assert.ok(bar);
  assert.doesNotMatch(bar,/<a[^>]*href=['"]\.\/html\/vsugang\.html['"][^>]*>/,'상단 바에 연습 진입을 중복하지 않습니다.');
  const allowed=['./index.html','./html/readiness.html','./html/reaction-test.html',
-    './html/strategy-lab.html','./html/academic-timeline.html','./html/catalog.html',
-    './html/planner.html'];
+    './html/strategy-lab.html','./html/planner.html'];
  assert.deepEqual([...bar.matchAll(/<a[^>]+href="([^"]+)"/g)].map(x=>x[1]),allowed);
  assert.match(home,/<a\b[^>]*class=['"]button display['"][^>]*href=['"]\.\/html\/vsugang\.html['"]/);
  const homeScript=fs.readFileSync(path.join(ROOT,'js/index.js'),'utf8');
@@ -263,7 +270,7 @@ test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 
   'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
   'html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
- const original=new Set(['index.html','html/vsugang.html','html/developer.html','html/result.html']);
+ const original=new Set(['html/developer.html','html/result.html']);
  const sidebar=new Set(['html/incident-404.html']);
  const noDivider=new Set(['html/practice.html','html/selectZone.html']);
  for(const page of pages){
@@ -279,8 +286,8 @@ test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 
   }else{
    assert.ok(html.includes('src="'+image+'"'),page);
    assert.equal((html.match(/<div class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true">/g)||[]).length,1,page);
-   assert.ok(html.includes('href="../css/hanmo-title-divider.css"'),page);
-   assert.match(html,/class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true"><hr><span><img src="\.\.\/img\/hanmo_white\.svg" alt=""><\/span><hr><\/div>/);
+   assert.ok(html.includes('href="'+(page==='index.html'?'./':'../')+'css/hanmo-title-divider.css"'),page);
+   assert.match(html,/class="hanmo-title-divider(?: hanmo-title-divider--sidebar)?" aria-hidden="true"><hr><span><img src="(?:\.\/|\.\.\/)img\/hanmo_white\.svg" alt=""><\/span><hr><\/div>/);
    if(sidebar.has(page))assert.ok(html.includes('class="hanmo-title-divider hanmo-title-divider--sidebar"'),page);
   }
   // 푸터의 학교 비공식 고지는 제목 장식 추가와 무관하게 페이지 마지막에 남아야 합니다.
@@ -326,7 +333,7 @@ test('강의검색과 학사공지에서 불필요한 제목만 삭제하고 검
 test('다섯 기능 페이지의 상단 메뉴명과 제목이 일치한다',()=>{
  for(const file of ['readiness','reaction-test','strategy-lab','academic-timeline','catalog']){
   const html=fs.readFileSync(path.join(ROOT,'html',file+'.html'),'utf8');
-  const menu=html.match(/<a href="\.\/[^"]+" aria-current="page">([^<]+)<\/a>/);
+  const menu=html.match(/<a\b[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/);
   const heading=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h1>([^<]+)<\/h1>/);
   assert.ok(menu&&heading,file);
   assert.equal(menu[1],heading[1],file);
@@ -439,4 +446,11 @@ test('모의수강신청 결과의 PNG 저장 기능이 제거됐다',()=>{
  const html=fs.readFileSync(path.join(ROOT,'html/result.html'),'utf8');
  assert.doesNotMatch(html,/practice-report-save|practice-report-share\.mjs|연습 결과 PNG 저장/);
  assert.equal(fs.existsSync(path.join(ROOT,'js/practice-report-share.mjs')),false);
+});
+
+test('모든 페이지의 브라우저 제목은 페이지명 | 한모 형식이다',()=>{
+ for(const page of ['index.html',...fs.readdirSync(path.join(ROOT,'html')).filter(name=>name.endsWith('.html')).map(name=>'html/'+name)]){
+   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
+   assert.match(html,/<title>[^<|]+ \| 한모<\/title>/,page);
+ }
 });

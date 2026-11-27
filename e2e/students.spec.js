@@ -58,7 +58,9 @@ test('구형 내정보를 복원하고 저장·삭제를 다른 탭에 반영하
   expect(await page.evaluate(key=>localStorage.getItem(key),profileKey)).toBeNull();
   expect(await page.evaluate(keys=>Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)])),
     Object.keys(legacyPractice))).toEqual(legacyPractice);
-  await page.getByRole('link',{name:'학사 정보'}).click();
+  await expect(page.getByRole('link',{name:'학사 정보'})).toBeDisabled();
+  await expect(page.locator('#planner-go-notices')).toBeDisabled();
+  await page.goto('/html/academic-timeline.html');
   await expect(page).toHaveURL(/\/html\/academic-timeline\.html$/);
   expect(unexpected).toEqual([]);
 });
@@ -191,7 +193,7 @@ test('입력한 내정보는 상단 바에서 입학년도까지 잘림 없이 �
 
 test.describe('홈 교내 서비스 배너',()=>{
   test.use({timezoneId:'Asia/Seoul'});
-  test('원본 훕또기 배너는 상단 바 가까이에 배치되고 종료일 다음 날 사라진다',async({page,baseURL})=>{
+  test('원본 훕또기 배너는 홈 조작 아래에 배치되고 종료일 다음 날 사라진다',async({page,baseURL})=>{
     const origin=new URL(baseURL).origin;
     let mascotRequests=0;
     page.on('request',request=>{
@@ -215,13 +217,14 @@ test.describe('홈 교내 서비스 배너',()=>{
       const bar=await page.locator('.hanmo-topbar').boundingBox();
       const box=await banner.boundingBox();
       const title=await page.locator('.titleContainer').boundingBox();
-      expect(box.y).toBeGreaterThanOrEqual(bar.y+bar.height);
-      expect(box.y+box.height).toBeLessThan(title.y);
-      const titleGap=title.y-(box.y+box.height);
-      expect(box.y-(bar.y+bar.height)).toBeLessThan(titleGap);
-      expect(titleGap).toBeCloseTo(36,0);
+      const buttons=await page.locator('.buttonContainer').boundingBox();
+      const footer=await page.locator('body > footer').boundingBox();
+      expect(title.y).toBeGreaterThanOrEqual(bar.y+bar.height);
+      expect(box.y).toBeGreaterThanOrEqual(buttons.y+buttons.height);
+      expect(box.y+box.height).toBeLessThanOrEqual(footer.y+1);
       expect(box.width).toBeCloseTo(702,0);
       await expect(page.locator('.buttonContainer')).toBeInViewport({ratio:1});
+      await expect(banner).toBeInViewport({ratio:1});
     }
     await page.clock.setFixedTime(new Date('2027-01-01T00:00:00+09:00'));
     await page.reload();

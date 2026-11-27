@@ -318,3 +318,20 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
  .hanmo-strategy #strategy-result:not(:has(details[open]))>.strategy-formulas{display:inline-block;vertical-align:middle;margin-inline-end:14px}
  .hanmo-strategy #strategy-result:has(#strategy-assumptions[open]) .strategy-result-comparison{display:none}
 }
+
+/* B 이하 항목의 개선 조치를 결과 수치와 구분해 즉시 읽을 수 있도록 강조합니다. */
+.hanmo-readiness #readiness-advice {
+  border:1px solid #aa8548;border-left:4px solid #f4c76c;border-radius:5px;
+  background:#30291b;color:#fff1cf;padding:7px 10px;
+}
+.hanmo-readiness #readiness-advice h3 {
+  color:#ffdc97;font-size:15px;font-weight:750;margin:0 0 4px;
+}
+.hanmo-readiness #readiness-advice li {
+  color:#fff1cf;font-weight:600;line-height:1.4;
+}
+@media(min-width:1100px) and (min-height:680px){
+  .hanmo-readiness #readiness-advice{margin:4px 0;padding:4px 8px;font-size:12px}
+  .hanmo-readiness #readiness-advice h3{font-size:14px;margin-bottom:2px}
+  .hanmo-readiness #readiness-advice ul{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 12px}
+}
