@@ -336,7 +336,7 @@ test('다섯 기능 페이지의 i 도움말 옆 제목은 한모 | 페이지명
   const menu=html.match(/<a\b[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/);
   const heading=html.match(/class="hanmo-schoolmark"[^>]*>[\s\S]*?<h1>([^<]+)<\/h1>/);
   assert.ok(menu&&heading,file);
-  assert.equal(heading[1],'한모 | '+menu[1],file);
+  assert.equal(heading[1],'한모 | '+menu[1]+(file==='strategy-lab'?' (베타)':''),file);
   assert.match(html,/class="hanmo-title-help-button"[^>]*aria-describedby="[^"]+"[^>]*>i<\/button>/,file);
   assert.match(html,/class="hanmo-title-help-tip"[^>]*role="tooltip">[^<]+<\/span>/,file);
  }
