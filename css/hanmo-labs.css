@@ -186,6 +186,13 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
 .hanmo-strategy .strategy-criteria summary{cursor:pointer;color:#f4c76c;font-weight:600;font-size:14px;padding:5px 0}
 .hanmo-strategy .strategy-criteria .lab-footnote{max-width:none;margin:5px 0}
 .hanmo-strategy .strategy-criteria a{color:#f4c76c;text-decoration:underline}
+.hanmo-strategy #strategy-sensitivity-summary{color:var(--lab-muted);font-size:12px}
+.hanmo-strategy .strategy-sensitivity-list{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;margin:4px 0;padding:0;font-size:13px;line-height:1.4}
+.hanmo-strategy .strategy-sensitivity-list li{overflow-wrap:anywhere}
+.hanmo-strategy .strategy-sensitivity-list span{color:var(--lab-muted)}
+@media(min-width:900px){
+ .hanmo-strategy .strategy-sensitivity-list{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 @media(max-width:640px){
   .hanmo-readiness .readiness-grade-grid{grid-template-columns:1fr}
   .hanmo-strategy .strategy-order{grid-template-columns:repeat(2,minmax(0,1fr))}

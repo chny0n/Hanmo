@@ -50,7 +50,7 @@ if(changed.includes('html/practice.html')){
 // 원본의 비공식 브랜딩 정리 대상 자산만 동기화하도록 허용합니다.
 const labScripts=new Set([
   'js/readiness.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
-  'js/strategy-engine.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
+  'js/strategy-engine.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-sensitivity-worker.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
 ]);
 const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-unified.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')

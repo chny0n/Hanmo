@@ -29,7 +29,7 @@ for(const name of [
   'js/vsugang-fit.js','css/vsugang-fit.css',
   'js/incident-404.js','css/incident-404.css',
   'css/hanmo-labs.css','css/academic-unified.css','js/academic-unified.js',
-  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/reaction-profile.mjs',
+  'js/readiness.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-sensitivity-worker.mjs','js/reaction-profile.mjs',
   'js/reaction-page.mjs','data/network-probe.txt',
   'data/academic-source-config.json','js/academic-data-source.js','html/pc-only.html','js/pc-only.js','sitemap.xml',
   ...htmlRoutes,

@@ -61,6 +61,7 @@
   "js/selectZone.js",
   "js/strategy-page.mjs",
   "js/strategy-recommendation.mjs",
+  "js/strategy-sensitivity-worker.mjs",
   "js/student-catalog.js",
   "js/student-notices.js",
   "js/student-preferences.js",

@@ -1,6 +1,6 @@
 // @ts-check
 // 가상 과목 입력과 추천 순서를 화면에 표시합니다.
-import {MAX_COURSES,recommendCourses} from './strategy-recommendation.mjs';
+import {MAX_COURSES,MAX_RIVALS,recommendCourses} from './strategy-recommendation.mjs';
 const form=document.getElementById('strategy-form');
 if(form){
   const body=document.getElementById('strategy-courses');
@@ -35,7 +35,7 @@ if(form){
         if(field==='name')input.maxLength=30;
         else{
           input.min=field==='rivals'?'0':'1';
-          input.max=field==='rank'?String(items.length):field==='capacity'?'300':'200';
+          input.max=field==='rank'?String(items.length):field==='capacity'?'300':String(MAX_RIVALS);
           input.step='1';
         }
         input.value=String(item[field]);td.append(input);tr.append(td);
@@ -63,8 +63,82 @@ if(form){
     renderRows(items);
   });
   const criteria=document.getElementById('strategy-criteria');
+  const sensitivity=document.getElementById('strategy-sensitivity');
+  const sensitivitySummary=document.getElementById('strategy-sensitivity-summary');
+  const sensitivityList=document.getElementById('strategy-sensitivity-list');
+  let sensitivityWorker=null;
+  function stopSensitivity(){
+    sensitivityWorker?.terminate();
+    sensitivityWorker=null;
+  }
+  function startSensitivity(courses,order,rankLabels){
+    stopSensitivity();
+    const values=new Map();
+    const positions=new Map(order.map(({id},index)=>[id,index+1]));
+    sensitivityList.replaceChildren(...order.map(({id,name},index)=>{
+      const row=document.createElement('li');
+      const value=document.createElement('span');
+      value.textContent='계산 중';
+      values.set(id,value);
+      const position=document.createElement('strong');
+      position.textContent=(index+1)+'번째';
+      position.title=name;
+      row.append(position,' ',value);
+      return row;
+    }));
+    sensitivitySummary.textContent='· 계산 중';
+    let nearest=null;
+    function showError(){
+      stopSensitivity();
+      sensitivitySummary.textContent='· 계산할 수 없음';
+      for(const value of values.values())value.textContent='계산할 수 없음';
+    }
+    try{
+      const worker=new Worker(new URL('./strategy-sensitivity-worker.mjs',import.meta.url),{type:'module'});
+      sensitivityWorker=worker;
+      worker.addEventListener('error',()=>{
+        if(sensitivityWorker===worker)showError();
+      });
+      worker.addEventListener('message',({data})=>{
+        if(sensitivityWorker!==worker)return;
+        if('checkedDistance' in data){
+          if(nearest===null)sensitivitySummary.textContent='· ±'+data.checkedDistance+'명까지 확인 중';
+          return;
+        }
+        const {id,changes}=data;
+        const value=values.get(id);
+        value.textContent=changes.length
+          ?changes.map(({delta,moved})=>{
+            const count=delta>0?'+'+delta:'−'+Math.abs(delta);
+            const slots=moved.map(movedId=>positions.get(movedId)).sort((a,b)=>a-b).join('·');
+            return count+'명 · '+slots+'번째 자리 변경';
+          }).join(' / ')
+          :'0~'+MAX_RIVALS+'명에서 동일';
+        values.delete(id);
+        for(const {delta,moved} of changes){
+          const distance=Math.abs(delta);
+          nearest=Math.min(nearest??distance,distance);
+          if(distance===1){
+            for(const movedId of moved){
+              const label=rankLabels.get(movedId);
+              if(!label.textContent.endsWith(' 참고'))label.textContent+=' 참고';
+            }
+          }
+        }
+        if(nearest!==null)sensitivitySummary.textContent='· 최소 '+nearest+'명 차이';
+        if(!values.size){
+          if(nearest===null)sensitivitySummary.textContent='· 입력 범위에서 그대로';
+          stopSensitivity();
+        }
+      });
+      worker.postMessage({courses,orderedIds:order.map(course=>course.id)});
+    }catch{
+      showError();
+    }
+  }
   const ratioFormat=new Intl.NumberFormat('ko-KR',{maximumFractionDigits:2});
   redo.addEventListener('click',()=>{
+    stopSensitivity();
     result.hidden=true;
     inputPanel.hidden=false;
     status.textContent=instructions;
@@ -73,8 +147,10 @@ if(form){
   form.addEventListener('submit',event=>{
     event.preventDefault();
     try{
-      const order=recommendCourses(readRows());
-      orderList.replaceChildren(...order.map(({name,rank,capacity,rivals},slot)=>{
+      const courses=readRows();
+      const order=recommendCourses(courses);
+      const rankLabels=new Map();
+      orderList.replaceChildren(...order.map(({id,name,rank,capacity,rivals},slot)=>{
         const item=document.createElement('li');
         const headline=document.createElement('div');
         headline.className='strategy-card-head';
@@ -84,6 +160,7 @@ if(form){
         const demand=document.createElement('span');
         demand.className='strategy-course-demand';
         demand.textContent='중요 '+rank+'위';
+        rankLabels.set(id,demand);
         headline.append(position,demand);
         const course=document.createElement('strong');
         course.textContent=name;
@@ -97,10 +174,12 @@ if(form){
         return item;
       }));
       criteria.open=false;
+      sensitivity.open=false;
       status.textContent='';
       result.hidden=false;
       inputPanel.hidden=true;
       result.focus({preventScroll:true});
+      startSensitivity(courses,order,rankLabels);
     }catch(error){
       status.textContent=error instanceof Error?error.message:'과목 입력값을 확인하세요.';
     }

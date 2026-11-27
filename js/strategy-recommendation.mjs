@@ -2,6 +2,7 @@
  * @typedef {{id:string,name:string,rank:number,capacity:number,rivals:number}} Course
  */
 export const MAX_COURSES=8;
+export const MAX_RIVALS=200;
 const AREA_STEPS=128;
 const COMPARISON_EPSILON=1e-12;
 
@@ -26,7 +27,7 @@ export function validateCourses(courses){
     if(ranks.has(course.rank))throw new RangeError('중요 순위는 1부터 과목 수까지 중복 없이 설정하세요.');
     ranks.add(course.rank);
     requireInteger(course.capacity,1,300,'정원');
-    requireInteger(course.rivals,0,200,'경쟁자');
+    requireInteger(course.rivals,0,MAX_RIVALS,'경쟁자');
   }
 }
 
@@ -176,4 +177,42 @@ export function recommendCourses(courses){
   const recommended=new Array(contested.length);
   orders[best].forEach((slot,rank)=>{recommended[slot]=contested[rank];});
   return recommended.concat(unfilled);
+}
+
+
+/**
+ * @param {Course[]} courses 입력 과목
+ * @param {string[]} orderedIds 기준 추천 순서
+ * @param {(distance:number)=>void} [onDistanceChecked] 거리별 진행 상태
+ */
+export function* compareRivalCounts(courses,orderedIds,onDistanceChecked){
+  const pending=new Map();
+  for(const course of courses){
+    // 여석이 남는 모든 경쟁자 수는 같은 순서를 내므로, 가까운 값만 확인합니다.
+    const lower=course.rivals>=course.capacity?course.capacity-1:course.capacity;
+    if(lower>MAX_RIVALS){
+      yield {id:course.id,changes:[]};
+      continue;
+    }
+    pending.set(course.id,{course,lower,farthest:Math.max(course.rivals-lower,MAX_RIVALS-course.rivals)});
+  }
+
+  for(let distance=1;pending.size;distance++){
+    for(const [id,{course,lower,farthest}] of pending){
+      const changes=[];
+      for(const delta of [-distance,distance]){
+        const rivals=course.rivals+delta;
+        if(rivals<lower||rivals>MAX_RIVALS)continue;
+        const variant=courses.map(item=>item.id===id?{...item,rivals}:item);
+        const order=recommendCourses(variant);
+        const moved=order.filter((item,index)=>item.id!==orderedIds[index]).map(item=>item.id);
+        if(moved.length)changes.push({delta,moved});
+      }
+      if(changes.length||distance===farthest){
+        pending.delete(id);
+        yield {id,changes};
+      }
+    }
+    if(pending.size)onDistanceChecked?.(distance);
+  }
 }

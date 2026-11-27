@@ -20,6 +20,8 @@ const expectOneScreen=async(page,selector)=>{
       const style=getComputedStyle(node),rect=node.getBoundingClientRect();
       if(!node.getClientRects().length||!rect.width||!rect.height||style.visibility!=='visible')continue;
       if(node.closest('.strategy-formula-body,#notice-list,#catalog-results'))continue;
+      const closedDetails=node.closest('details:not([open])');
+      if(closedDetails&&node!==closedDetails&&!node.closest('summary'))continue;
       // 달력의 1px 보조 텍스트는 화면에 그리지 않고 접근성 트리에만 남긴다. 실제 날짜와 조작은 계속 검사한다.
       const interactive='button,a[href],input,select,textarea,[tabindex],[contenteditable="true"]';
       if(node.closest('#calendar-view')&&style.position==='absolute'&&rect.width<=1.1&&rect.height<=1.1&&
@@ -234,8 +236,18 @@ test('전략 실험은 중요 순위와 경쟁을 절충하고 계산식을 보�
   await expect(result).not.toContainText(/성공률|%/);
   const criteria=page.locator('#strategy-criteria');
   await expect(criteria).toHaveJSProperty('open',false);
+  const sensitivity=page.locator('#strategy-sensitivity');
+  await sensitivity.locator('summary').press('Enter');
+  await expect(sensitivity).toHaveJSProperty('open',true);
+  await expect(sensitivity.locator('summary')).toContainText('최소 1명 차이');
+  await expect(sensitivity.getByRole('listitem').nth(2)).toContainText('+1명 · 2·3번째 자리 변경');
+  await expect(sensitivity.getByRole('listitem').nth(1)).toContainText('−1명 · 2·3번째 자리 변경');
+  await expect(page.locator('.strategy-course-demand').nth(1)).toHaveText('중요 2위 참고');
+  await expect(page.locator('.strategy-course-demand').nth(2)).toHaveText('중요 1위 참고');
+  await expect(sensitivity).not.toContainText(/성공률|%/);
   await criteria.locator('summary').press('Enter');
   await expect(criteria).toHaveJSProperty('open',true);
+  await expect(sensitivity).toHaveJSProperty('open',false);
   await expect(criteria).toContainText('이항(R, p) ≥ C');
   await expect(criteria).toContainText('중요도 상위 k과목');
   await expect(criteria).toContainText('조건별 최고 점수 대비 손실');
@@ -421,6 +433,11 @@ test('8과목 추천 결과는 좁은 화면에서도 가로 스크롤 없이 �
     await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
     await expect(page.locator('.strategy-order-rank').first()).toHaveText('1번째');
   }
+  await page.setViewportSize({width:1280,height:720});
+  await page.locator('#strategy-sensitivity summary').press('Enter');
+  await expect(page.locator('#strategy-sensitivity-list li')).toHaveCount(8);
+  await expectOneScreen(page,'#strategy-result');
+  await expect(page.locator('#strategy-back')).toBeInViewport({ratio:1});
   await page.locator('#strategy-criteria summary').press('Enter');
   await page.setViewportSize({width:1280,height:720});
   await expectOneScreen(page,'#strategy-result');
