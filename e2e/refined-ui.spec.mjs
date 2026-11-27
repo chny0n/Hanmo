@@ -363,7 +363,7 @@ test('practice와 selectZone의 소스·공유 스타일·이미지는 기준 Gi
   // 사용자 승인된 좌측 내정보·표 규격·고지 배치 변경은 현행 동결 해시로 검증합니다.
   const approvedChanges=new Set([
     'html/practice.html','html/selectZone.html','css/practice.css','css/hanmo-policy-footer.css','css/gnb.css','js/gnb.js',
-    'js/selectZone.js','js/result.js',
+    'js/selectZone.js','js/result.js','js/pc-only.js','js/hanmoSys.js',
   ]);
   const current=gitBlobHashes(repositoryRoot,protectedPaths);
   for(const path of protectedPaths){

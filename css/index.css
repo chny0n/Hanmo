@@ -96,17 +96,6 @@ main {
 	background: #091b2c;
 }
 
-.phoneContainer {
-	display: none;
-	align-items: center;
-	height: inherit;
-}
-
-.phoneNotice {
-	font-size: 18px;
-	font-weight: bold;
-}
-
 .display {
 	display: flex;
 }

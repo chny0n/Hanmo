@@ -9,21 +9,23 @@ const root = path.resolve(__dirname, '..');
 const script = fs.readFileSync(path.join(root, 'js/pc-only.js'), 'utf8');
 const base = 'https://ot4562-glitch.github.io/Hanmo_develop/';
 const notice = base + 'html/pc-only.html';
-function run(ua, overrides={}) {
+function run(ua, overrides={}, route='html/catalog.html') {
   const redirects=[];
   const attributes={};
   const styles=[];
-  const location={href:base+'html/catalog.html',replace(href){redirects.push(href);}};
+  const location={href:base+route,replace(href){redirects.push(href);}};
+  const listeners=[];
   const document={
     currentScript:{src:base+'js/pc-only.js'},
     documentElement:{setAttribute(key,value){attributes[key]=value;}},
     head:{appendChild(value){styles.push(value);}},
     createElement(){return {textContent:''};},
+    addEventListener(type,listener){listeners.push({type,listener});},
   };
   const navigator={userAgent:ua,platform:'Win32',maxTouchPoints:0,...overrides};
   const window={navigator,location};
   vm.runInNewContext(script,{window,document,URL},{filename:'pc-only.js'});
-  return {redirects,attributes,styles,blocked:window.HanmoPcOnly.blocked};
+  return {redirects,attributes,styles,listeners,blocked:window.HanmoPcOnly.blocked};
 }
 const desktop='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/157.0';
 for(const [name,ua,overrides] of [
@@ -35,13 +37,15 @@ for(const [name,ua,overrides] of [
   ['UA client hints mobile',desktop,{userAgentData:{mobile:true}}],
   ['Windows Phone','Mozilla/5.0 (Windows Phone 10.0; ARM; Trident/7.0; IEMobile/11.0)',{}],
 ]){
-  test(name+' is redirected to PC-only explanation',()=>{
+  test(name+' retains the public URL and mounts a PC-only explanation',()=>{
     const r=run(ua,overrides);
     assert.equal(r.blocked,true);
-    assert.deepEqual(r.redirects,[notice]);
+    assert.deepEqual(r.redirects,[]);
     assert.equal(r.attributes['data-hanmo-pc-only'],'blocked');
     assert.equal(r.styles.length,1);
+    assert.match(r.styles[0].textContent,/#hanmo-mobile-block/);
     assert.match(r.styles[0].textContent,/visibility:\s*hidden/);
+    assert.deepEqual(r.listeners.map(x=>x.type),['DOMContentLoaded']);
   });
 }
 for(const [name,ua,overrides] of [
@@ -60,7 +64,17 @@ for(const [name,ua,overrides] of [
 test('a stale stored desktop allow value cannot bypass the current device check',()=>{
   const r=run('Mozilla/5.0 (Linux; Android 16) Mobile',{});
   assert.equal(r.blocked,true);
-  assert.deepEqual(r.redirects,[notice]);
+  assert.deepEqual(r.redirects,[]);
+});
+
+test('세션 전용 경로는 연습 상태 보호를 위해 기존 안내 경로로 이동한다',()=>{
+  for(const route of ['practice','selectZone','result','incident-404']){
+    const r=run('Mozilla/5.0 (Linux; Android 16) Mobile',{},'html/'+route+'.html');
+    assert.equal(r.blocked,true);
+    assert.deepEqual(r.redirects,[notice]);
+    assert.equal(r.listeners.length,0);
+    assert.match(r.styles[0].textContent,/visibility:\s*hidden/);
+  }
 });
 test('every interactive HTML entry includes the synchronous gate before page scripts',()=>{
   for(const page of ['index.html','html/developer.html','html/vsugang.html','html/practice.html',

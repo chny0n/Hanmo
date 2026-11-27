@@ -24,6 +24,9 @@ if(/@import\b/i.test(style)||!style.includes('../img/background.svg'))
 // 사이트맵은 포크의 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.
 const sitemap=await readFile(join(dist,'sitemap.xml'),'utf8');
 const sitemapBase='https://ot4562-glitch.github.io/Hanmo_develop/';
+const robots=await readFile(join(dist,'robots.txt'),'utf8');
+if(robots!=='User-agent: *\nAllow: /\n\nSitemap: '+sitemapBase+'sitemap.xml\n')
+  throw Error('Robots policy must refer to the fork sitemap only');
 const publicRoutes=[
   '', 'html/vsugang.html','html/readiness.html','html/reaction-test.html',
   'html/strategy-lab.html','html/academic-timeline.html',

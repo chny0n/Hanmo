@@ -12,12 +12,13 @@ function currentHanmoPage(){
 }
 
 function restrictHanmo(){
+  if(typeof window==='object'&&window.HanmoPcOnly?.blocked)return true;
   const restricted=(now.getHours()===9&&now.getMinutes()>=58)
     ||(now.getHours()===10&&now.getMinutes()<=10);
   // 모드 선택 화면은 이용 제한 안내 중에도 열 수 있게 두고,
   // 실제 연습 페이지의 기존 시간/PC 제한은 유지합니다.
   const isModeMenu=currentHanmoPage()==='vsugang.html';
-  if((restricted&&!isModeMenu)||localStorage.getItem('deviceInfo')==='false'){
+  if(restricted&&!isModeMenu){
     location.href='/';
     return true;
   }

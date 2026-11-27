@@ -15,7 +15,7 @@ const permittedStyles = new Set(studentStyles);
 const styleOutput = '.build/student-ui.css';
 const normal = path => path.replaceAll('\\','/');
 export const rootAssets = Object.freeze([
-  'index.html', 'sitemap.xml', 'LICENSE',
+  'index.html', 'sitemap.xml', 'robots.txt', 'LICENSE',
 ]);
 const generatedFiles = Object.freeze([
   'THIRD-PARTY-NOTICES.txt', 'data/academic-source-config.json', 'data/network-probe.txt',

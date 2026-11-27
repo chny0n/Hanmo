@@ -26,7 +26,7 @@ test('정적 미리보기 재배포가 철회된 합성 스냅샷의 직접 URL�
     await rm(workspace,{recursive:true,force:true});
   });
   await Promise.all([
-    ...['.build','css','dist','html','img','js','LICENSE','index.html','sitemap.xml'].map(path=>
+    ...['.build','css','dist','html','img','js','LICENSE','index.html','sitemap.xml','robots.txt'].map(path=>
       cp(join(root,path),join(workspace,path),{recursive:true})),
     symlink(join(root,'node_modules'),join(workspace,'node_modules'),'junction'),
     mkdir(join(workspace,'scripts')),

@@ -128,17 +128,43 @@ test('작은 PC 창에서도 기기 판별 때문에 모바일 안내로 이동�
   await expect(page.locator('#planner-profile')).toBeVisible();
 });
 
-test('모바일 사용자 환경은 별도의 PC 안내로 이동한다',async({browser})=>{
-  const context=await browser.newContext({
-    viewport:{width:390,height:844},
-    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1',
-  });
-  try{
-    const page=await context.newPage();
-    await page.goto('/index.html');
-    await expect(page).toHaveURL(/\/html\/pc-only\.html$/);
-    await expect(page.getByRole('heading',{name:'PC에서 이용해 주세요'})).toBeVisible();
-  }finally{await context.close();}
+test('모바일은 공개 주소를 유지하고 로고·PC 주소·비공식 고지를 표시하며 배경 조작을 차단한다',async({browser,baseURL})=>{
+  for(const [userAgent,width,height] of [
+    ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1',390,844],
+    ['Mozilla/5.0 (Linux; Android 15; SM-X) AppleWebKit/537.36 Chrome/157 Safari/537.36',800,600],
+  ]){
+    const context=await browser.newContext({viewport:{width,height},userAgent});
+    try{
+      const origin=new URL(baseURL).origin;
+      await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+      const page=await context.newPage();
+      await page.clock.setFixedTime(new Date('2026-11-27T09:59:00+09:00'));
+      const routes=['/index.html','/html/vsugang.html','/html/readiness.html','/html/reaction-test.html',
+        '/html/strategy-lab.html','/html/academic-timeline.html','/html/catalog.html','/html/planner.html',
+        '/html/developer.html','/html/forecast.html'];
+      for(const route of routes){
+        await page.goto(route);
+        await expect(page).toHaveURL(new URL(route,baseURL).href);
+        const block=page.locator('#hanmo-mobile-block');
+        await expect(block).toBeVisible();
+        await expect(block.getByRole('heading',{name:'현재 한모를 사용할 수 없는 환경이에요.'})).toBeVisible();
+        await expect(block.locator('.mbLogo img')).toBeVisible();
+        await expect.poll(()=>block.locator('.mbLogo img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+        await expect(block.locator('.mbSite')).toContainText(new URL(baseURL).host);
+        await expect(block.locator('.mbPolicy')).toContainText('공식 서비스가 아니며');
+        expect(await page.evaluate(()=>[...document.body.children].filter(el=>!['SCRIPT','STYLE'].includes(el.tagName)&&el.id!=='hanmo-mobile-block').every(el=>el.inert))).toBe(true);
+        await page.keyboard.press('Tab');
+        expect(await page.evaluate(()=>document.activeElement===document.body||document.activeElement?.closest('#hanmo-mobile-block')!==null)).toBe(true);
+        await expect(page).toHaveURL(new URL(route,baseURL).href);
+        await expect(block).toBeInViewport({ratio:1});
+      }
+      for(const route of ['practice','selectZone','result','incident-404']){
+        await page.goto('/html/'+route+'.html');
+        await expect(page).toHaveURL(/\/html\/pc-only\.html$/);
+        await expect(page.getByRole('heading',{name:'PC에서 이용해 주세요'})).toBeVisible();
+      }
+    }finally{await context.close();}
+  }
 });
 
 test('입력한 내정보는 상단 바에서 입학년도까지 잘림 없이 표시된다',async({page,baseURL})=>{

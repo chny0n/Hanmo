@@ -4,9 +4,6 @@ const $NOTICELIST=document.getElementsByClassName('noticeList')[0];
 const $GANEUNG=document.getElementsByClassName('ganeung')[0];
 const $JEHAN=document.getElementsByClassName('jehan')[0];
 const title=document.getElementsByClassName('title')[0];
-const $TITLECONTAINER=document.getElementsByClassName('titleContainer')[0];
-const $CONTAINER=document.getElementsByClassName('container')[0];
-const $PHONECONTAINER=document.getElementsByClassName('phoneContainer')[0];
 const nowTime=new Date();
 
 // 원본 Hanmo의 NOTICE 문구와 5초 간격 세로 순환을 복원합니다.
@@ -42,11 +39,6 @@ if(noticeItems.length>1){
 }
 
 function check(){
-  if(localStorage.getItem('deviceInfo')==='false'){
-    $CONTAINER.style.display='none';
-    $TITLECONTAINER.style.display='none';
-    $PHONECONTAINER.style.display='flex';
-  }
   // 제한 시간 안내는 유지하되 선택 화면으로 가는 버튼은 항상 표시합니다.
   // 실제 모의신청 진입 제한은 하위 연습 화면에서 유지합니다.
   if((nowTime.getHours()===9&&nowTime.getMinutes()>=58)

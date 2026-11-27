@@ -8,10 +8,12 @@
   <style>
     :root{color-scheme:dark;font-family:"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
     *{box-sizing:border-box}
-    body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:24px;background:#061521;color:#f3f6f9}
+    body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:24px;background:#000d18;color:#f3f6f9}
     main{width:min(520px,100%);padding:32px 28px;background:transparent;border:0;border-radius:0}
     .notice{color:#eac478;font-size:14px;font-weight:800;letter-spacing:.05em}
-    h1{font-size:clamp(24px,7vw,34px);margin:14px 0 18px}
+    h1{font-size:20px;font-weight:700;line-height:1.5;margin:14px 0 12px}
+    main{text-align:center}
+    .pc-site{display:inline-block;padding:10px 16px;border-radius:15px;background:#06111c;border:1px solid #aa8548;color:#ffd27a;font-size:14px;overflow-wrap:anywhere}
     p{line-height:1.9;font-size:16px;color:#d9e5eb}
     small{display:block;margin-top:20px;line-height:1.7;color:#bacdd8}
   </style>
@@ -23,11 +25,12 @@
 </head>
 <body class="hanmo-pc-only-layout hanmo-refined">
   <main id="main" tabindex="-1" aria-labelledby="pc-only-heading">
+    <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
     <span class="notice">한모 · PC 전용 서비스</span>
     <h1 id="pc-only-heading">PC에서 이용해 주세요</h1>
-    <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
     <p>스마트폰·태블릿에서는 이용할 수 없습니다.</p>
     <p>Windows PC에서 Chrome 또는 Edge로 접속해 주세요.</p>
+    <p class="pc-site">PC에서 <b>ot4562-glitch.github.io/Hanmo_develop/</b></p>
     <small>기존에 저장한 자료는 그대로 유지됩니다.</small>
   </main>
   <footer class="hanmo-policy-footer" aria-label="비공식 서비스 안내"><p><strong>본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.</strong></p></footer>

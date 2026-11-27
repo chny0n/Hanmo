@@ -42,6 +42,8 @@ if(changed.includes('html/practice.html')){
       .replace(/^[\t ]*<section class='headerNotice'>\n[\s\S]*?^[\t ]*<\/section>\n/m,'');
     variants.add(withFooterNotice);
   }
+  // 원본 모바일 차단 변경에 따라 사용하지 않는 기기 확인 띠의 정확한 제거만 허용합니다.
+  for(const source of [...variants])variants.add(source.replace(/^[\t ]*<header>\s*<section class='deviceCheck'>[\s\S]*?<\/section>\s*<\/header>\n/m,''));
   const actual=readFileSync(resolve(root,'html/practice.html'),'utf8').replace(/\r\n/g,'\n');
   if(!variants.has(actual))
     throw Error('원본 practice.html은 사용자 승인 범위를 벗어나 수정할 수 없습니다.');
@@ -52,13 +54,13 @@ const labScripts=new Set([
   'js/readiness.mjs','js/reaction-page.mjs','js/reaction-profile.mjs',
   'js/strategy-engine.mjs','js/strategy-page.mjs','js/strategy-recommendation.mjs','js/strategy-sensitivity-worker.mjs','js/strategy-worker.mjs','js/lab-share.mjs',
 ]);
-const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-unified.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/vsugang.js'].includes(p))
+const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-unified.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/pc-only.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('e2e/')||p.startsWith('css/')||p.startsWith('html/')
  ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg','img/hanmo_purple.png','img/favicon-purple.svg','img/boo.png'].includes(p)
  ||p.startsWith('img/lucide/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
- '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml',
+ '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml','robots.txt',
  'package-lock.json','playwright.config.mjs','.nvmrc','.npmrc'].includes(p);
 // 현재 화면에서 참조하지 않는 과거 배포 설정과 이미지의 삭제만 허용합니다.
 const retired=new Set(['goorm.manifest','img/dlacked.svg','img/dlackedLogo.svg','img/waiting.png']);

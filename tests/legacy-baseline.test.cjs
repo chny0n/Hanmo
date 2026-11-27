@@ -315,27 +315,25 @@ test('queue cancellation keeps a simulated course available for retry',async()=>
   assert.equal(h.getMulti('unvisible',0).style.display,'flex');
 });
 
-test('navigation header detects a supported Windows PC without clobbering other keys',()=>{
-  const h=createHarness();
-  h.load('gnb.js');
-  assert.equal(h.map.get('deviceInfo'),'true');
-  assert.equal(h.get('deviceCheck').style.background,'#038003');
-  assert.equal(h.events.timeouts[0].delay,1500);
-  assert.equal(h.events.intervals.length,0);
+test('공통 헤더는 과거 기기 판정과 다른 저장 키를 변경하지 않는다',()=>{
+  for(const userAgent of ['Mozilla/5.0 (Windows NT 10.0; Win64; x64)','Mozilla/5.0 (Linux; Android 13)']){
+    const h=createHarness({deviceInfo:false,waitingValue:'yes'});
+    h.context.navigator.userAgent=userAgent;
+    const before=[...h.map];
+    h.load('gnb.js');
+    assert.deepEqual([...h.map],before);
+    assert.equal(h.events.timeouts.length,0);
+    assert.equal(h.events.intervals.length,0);
+    assert.equal(h.events.navigations.length,0);
+    assert.equal(h.location.href,'/');
+  }
 });
-test('navigation header rejects unsupported mobile browser with original redirect',()=>{
-  const h=createHarness();
-  h.context.navigator.userAgent='Mozilla/5.0 (Linux; Android 13)';
-  h.load('gnb.js');
-  assert.equal(h.map.get('deviceInfo'),'false');
-  assert.equal(h.get('deviceCheck').style.background,'#800309');
-  assert.equal(h.location.href,'/');
-});
-test('legacy false deviceInfo cache does not lock out an actual desktop browser',()=>{
+test('예전 false 기기 판정이 남은 PC도 제한 시간 외 연습할 수 있다',()=>{
   const h=createHarness({deviceInfo:false});
-  h.load('gnb.js');
-  assert.equal(h.map.get('deviceInfo'),'true');
-  assert.equal(h.get('deviceCheck').style.background,'#038003');
+  h.now('2026-11-19T10:11:00+09:00');
+  h.location.href='/html/practice.html';
+  h.load('hanmoSys.js');
+  assert.equal(h.location.href,'/html/practice.html');
 });
 test('hanmo system blocks practice navigation during original 09:58-10:10 window',()=>{
   const h=createHarness({deviceInfo:true});
@@ -351,7 +349,7 @@ test('hanmo system keeps PC user on practice outside restricted window',()=>{
   h.load('hanmoSys.js');
   assert.equal(h.location.href,'/html/practice.html');
 });
-test('home renders semester/notice and shows PC-only message when device is unsupported',()=>{
+test('home renders semester and notices without hiding content because of stale deviceInfo',()=>{
   const h=createHarness({deviceInfo:false});
   h.load('index.js');
   const list=h.get('noticeList');
@@ -367,8 +365,8 @@ test('home renders semester/notice and shows PC-only message when device is unsu
   h.events.intervals[0].fn();
   assert.equal(list.style.bottom,'0px');
   assert.match(h.get('title').innerText,/2026-2학기/);
-  assert.equal(h.get('phoneContainer').style.display,'flex');
-  assert.equal(h.get('container').style.display,'none');
+  assert.equal(h.get('phoneContainer').style.display,undefined);
+  assert.equal(h.get('container').style.display,undefined);
   assert.equal(h.get('button').classList.contains('noDisplay'),false);
 });
 
@@ -382,7 +380,7 @@ test('each actual HTML page loads classic scripts in order without global collis
         'vsugang-fit.js','hanmo-policy-footer.js'].includes(file));
     // 별도 돌발상황 스크립트가 있어도 원본 스크립트 세 개와 실행 순서를 유지한다.
     const originalScripts=page==='html/vsugang.html'?scripts.slice(0,3):scripts;
-    // 공통 상단 메뉴와 함께 원본 공지·기기 확인·학기 표시를 유지한다.
+    // 공통 상단 메뉴와 함께 원본 공지·학기 표시 및 스크립트 순서를 유지한다.
     assert.equal(originalScripts.length,page==='index.html'?2:3,page+' original script count');
     if(page==='html/vsugang.html')assert.deepEqual(scripts.slice(3),[
       'scenario-settings.js','capacity-settings.js',
