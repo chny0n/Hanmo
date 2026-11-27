@@ -1,0 +1,33 @@
+# HUFS One AI → 한모 학업 소스 이관 지도
+
+> 별도 PC 도구(반응속도·전략 실험)는 이 학업 코어 이관의 범위 밖입니다. 현재 전략 실험의 계산 계약과 브라우저 회귀는 [아키텍처](architecture.md) §5·§9 및 #134에서 추적하며 학교 자료와 연결하지 않습니다.
+
+> **현재 상태: 2026-11-25 재확인: JS/JSDoc 전환 완료, 운영 인수 미완료.** [아키텍처 §9](architecture.md) · [#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101).
+
+소스 언어 전환과 제품 통합 인수는 별도 작업입니다. [PR #100](https://github.com/ot4562-glitch/Hanmo_develop/pull/100)과 [PR #102](https://github.com/ot4562-glitch/Hanmo_develop/pull/102) 병합 이후 `main`에 **TypeScript 소스/테스트 0개**, 학업 기능은 JavaScript + JSDoc으로 유지합니다. `tsconfig.json` 대신 `jsconfig.json`의 `allowJs`·`checkJs`·`noEmit`를 사용합니다. **과거 이관 전 98개 TS(그중 테스트 42개)는 역사적 인벤토리이며 현재 남은 파일이 아닙니다.**
+
+| 과거 이식·신규 구현 계열 | 현재 JS 유지보수 경로 | 현재 판정 |
+|---|---|---|
+| `packages/core/src/academics/` | `js/academic/core/academics/` | JS/JSDoc 전환 완료, 계산/예외·공식 RulePack 검증은 계속 |
+| `packages/core/src/forecast/` | `js/academic/core/forecast/` | JS 전환 완료, 실제 관측 원장/시점별 골드셋 미연결 |
+| `packages/contracts/src/academics/`·`packages/contracts/src/self/` | `js/academic/contracts/` | JS/JSDoc 및 Zod 계약 유지, 운영 스냅샷 인수 별도 |
+| `apps/web/src/features/`의 순수 뷰 모델 | `js/academic/views/student-entry.js` | React 종속 원본 제외, 현행 학생 진입 모델 유지 |
+| 후속 공지 메타·공통 검색·합성 행사 코어 | `js/academic/core/campus-assist/`, `js/academic/app/` | JavaScript 기반 합성 코어 확보, **학교 FAQ·졸업요건 학생 기능 제외**. 실제 학교 자료/학생 화면 검증 미완료 |
+| 서버·LLM·인증·학생 개인 원본 | **이식 대상 아님** | 학교 로그인·개인 성적 서버 수집·공개 배포 금지 |
+
+## 남은 검증 게이트
+
+- 코드 이관 자체는 완료되었습니다. **단위·구문·`checkJs`·Zod 검사만으로 전체 기능 동등성이나 실제 학교 데이터 정확도를 입증하지 않습니다.** 전환 전후 고정 입력/출력·예외·`UNKNOWN/NEEDS_REVIEW/STALE`·저장 키·API 계약 확인을 [#68](https://github.com/ot4562-glitch/Hanmo_develop/issues/68)·[#69](https://github.com/ot4562-glitch/Hanmo_develop/issues/69)·[#101](https://github.com/ot4562-glitch/Hanmo_develop/issues/101)에서 추적합니다.
+- UI 기준은 [화면 동결 목록](../scripts/baselines/ui-freeze.json)의 **현행 blob SHA**입니다. 역사적인 기준 커밋 `da30a875` 자체가 이후 사용자 승인 변경을 막는 것은 아니며, 기존 BASIC/TIME/SELECT 원본 파일 보호와 PC 브라우저 QA는 별도입니다.
+- 3차 [Draft #93](https://github.com/ot4562-glitch/Hanmo_develop/pull/93)의 PostgreSQL 16 격리 시험은 학생용 Supabase 구축이 아닙니다. **4차 최종 제품 인수**에는 학교 권리·실DB·PC/접근성·운영자 검증이 필요합니다. [#64](https://github.com/ot4562-glitch/Hanmo_develop/issues/64)–[#67](https://github.com/ot4562-glitch/Hanmo_develop/issues/67)
+- 새 코드·테스트는 JavaScript/JSDoc, 자연어 주석은 한국어로 작성합니다. 생성 번들, 미허용 React/Fastify·학교 인증·개인정보 원본은 이식하지 않습니다.
+
+## 학생 배포 경계
+
+개설 전망 계약은 `js/academic/contracts/forecast/offering.js`에 분리합니다. 기존 `contracts/index.js` 내보내기는 연구 코드 호환을 위해 유지하지만 학생 번들에는 허용하지 않습니다. 학생 빌드의 명시적 입력·정적 자산 허용 목록과 연구 테스트 분리는 [ADR](adr/2026-11-25-student-build-boundary.md)에 따릅니다. 연구 소스 보존은 운영 승인이나 실제 학사자료 연결이 아닙니다.
+
+이관 초기의 v0.1 학사 스키마는 Git 이력에서 확인할 수 있습니다. 현행 학점 단위 검증은 `academics/vnext.js`에서 공유합니다.
+
+과거 졸업계획 화면의 표시 모델과 로드맵 저장·백업 모듈, 개인별 공지 적용 판정·마감 고정 코드는 Git 이력에서 확인할 수 있습니다. 공지 제목의 주제 분류는 `notice-topics.js`에, 정정·취소 및 검수 보류 근거 추출은 `notice-extract.js`에 둡니다. 학점 원장 계산과 공지·일정 연구 코어는 합성 검증용으로 유지합니다. [#63 종료 범위](https://github.com/ot4562-glitch/Hanmo_develop/issues/63) · [#51 비개인화 공지 분류](https://github.com/ot4562-glitch/Hanmo_develop/issues/51)
+
+개인 일정표의 졸업 원장 연결과 D-day 표시도 Git 이력에서 확인할 수 있습니다. 학교 도메인 판별 회귀는 `academic-source-link.test.js`에서, 합성 행사 연구는 `js/academic/core/campus-assist/`에서 유지합니다. [#52 날짜 검증](https://github.com/ot4562-glitch/Hanmo_develop/issues/52) · [#58 달력 QA](https://github.com/ot4562-glitch/Hanmo_develop/issues/58)

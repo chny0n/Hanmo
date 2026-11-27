@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <script src="../js/pc-only.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="한모 비공식 PC 브라우저 준비도 · 네트워크 지연 및 다운로드 처리량 진단">
+  <title>한모 | PC 진단</title>
+  <link rel="icon" href="../img/favicon-purple.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/student-ui.css">
+  <link rel="stylesheet" href="../css/hanmo-policy-footer.css">
+  <script src="../js/hanmo-policy-footer.js" defer></script>
+  <link rel="stylesheet" href="../css/hanmo-title-divider.css">
+  <link rel="stylesheet" href="../css/hanmo-refined.css">
+  <link rel="stylesheet" href="../css/hanmo-labs.css">
+  <script src="../js/student-profile-bar.js" defer></script>
+  <script type="module" src="../js/readiness.mjs"></script>
+</head>
+<body class="hanmo-ui hanmo-refined hanmo-lab hanmo-readiness">
+  <a class="hanmo-skip" href="#main">본문으로 이동</a>
+  <header class="hanmo-topbar">
+  <a class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"><img src="../img/hanmo_white.svg" width="29" height="24" alt="">한모</a>
+  <nav aria-label="주요 서비스">
+    <a href="./readiness.html" aria-current="page">PC 진단</a>
+    <a href="./reaction-test.html">반응속도 테스트</a>
+    <a href="./strategy-lab.html">전략 실험</a>
+    <a role="link" aria-disabled="true" tabindex="-1" data-disabled-target="./academic-timeline.html" title="자료 연결 준비 중">학사 정보</a>
+    <a role="link" aria-disabled="true" tabindex="-1" data-disabled-target="./catalog.html" title="자료 연결 준비 중">강의 검색</a>
+    <span class="hanmo-profile-summary" data-profile-summary role="status" aria-live="polite" aria-label="브라우저에 저장한 내정보, 학교 로그인 아님">내정보 미설정</span>
+    <a class="hanmo-me-link" href="./planner.html">내정보</a>
+  </nav>
+</header>
+  <main id="main" class="hanmo-main lab-layout" tabindex="-1">
+    <div class="hanmo-schoolmark" aria-label="PC 진단 화면">
+      <div class="hanmo-title-line"><span class="hanmo-title-help"><button class="hanmo-title-help-button" type="button" aria-label="PC 진단 기능 안내" aria-describedby="readiness-page-help">i</button><span class="hanmo-title-help-tip" id="readiness-page-help" role="tooltip">브라우저 화면·처리 지연과 한모 연결 상태를 측정합니다.</span></span><h1>한모 | PC 진단</h1></div>
+      <div class="hanmo-title-divider" aria-hidden="true"><hr><span><img src="../img/hanmo_white.svg" alt=""></span><hr></div>
+    </div>
+    <section class="lab-panel" id="readiness-input" aria-labelledby="readiness-heading">
+      <div class="lab-section-heading"><h2 id="readiness-heading">진단 항목</h2><span class="lab-minor">한모 정적 시험 파일 이용 · 외부 학교 서버 접근 없음</span></div>
+      <div class="lab-check-grid">
+        <p><strong>화면 안정성</strong><span>화면 갱신 간격·끊김·긴 작업</span></p>
+        <p><strong>브라우저 부하</strong><span>타이머 지연·논리 코어·메모리 대략값</span></p>
+        <p><strong>한모 연결 상태</strong><span>정적 파일 응답·지터·다운로드 처리량</span></p>
+      </div>
+      <label class="lab-check" for="readiness-network"><input id="readiness-network" type="checkbox" checked>
+        <span>한모 정적 파일에 7회 요청해 응답·다운로드를 검사합니다.
+          <small>HTTP 요청 최대 7회, 각 5초 제한, 학교 도메인 요청 없음. 실제 회선 속도와 다를 수 있습니다.</small></span></label>
+      <div class="lab-actions">
+        <button type="button" class="lab-button primary" id="readiness-start">PC 진단 시작</button>
+        <button type="button" class="lab-button secondary" id="readiness-cancel" hidden>검사 취소</button>
+      </div>
+      <p class="lab-status" id="readiness-status" role="status" aria-live="polite">사용자가 시작할 때만 검사합니다. 결과와 입력 내용은 서버에 저장하지 않습니다.</p>
+    </section>
+    <section class="lab-panel lab-result-panel" id="readiness-result" aria-labelledby="readiness-result-heading" tabindex="0" hidden>
+      <div class="lab-section-heading"><h2 id="readiness-result-heading">진단 결과</h2><span class="lab-minor">현재 브라우저 관측값</span></div>
+      <p id="readiness-summary" class="lab-summary"></p>
+      <div class="readiness-grade-legend" aria-label="참고 등급 의미">
+        <span><b class="readiness-grade" data-grade="A">A</b>매우 양호</span>
+        <span><b class="readiness-grade" data-grade="B">B</b>양호</span>
+        <span><b class="readiness-grade" data-grade="C">C</b>보통</span>
+        <span><b class="readiness-grade" data-grade="D">D</b>개선 권장</span>
+        <span><b class="readiness-grade" data-grade="F">F</b>불량</span>
+        <span><b class="readiness-grade" data-grade="none">—</b>판정 보류</span>
+      </div>
+      <dl class="lab-stats lab-stats-grid readiness-grade-grid">
+        <div class="readiness-metric"><dt><span>화면 프레임</span><span class="readiness-grade" role="img" data-metric-grade="frame" data-grade="none">—</span></dt><dd id="readiness-frame-value">—</dd><dd class="readiness-grade-note" data-grade-note="frame" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>긴 작업</span><span class="readiness-grade" role="img" data-metric-grade="task" data-grade="none">—</span></dt><dd id="readiness-task-value">—</dd><dd class="readiness-grade-note" data-grade-note="task" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>타이머 지연</span><span class="readiness-grade" role="img" data-metric-grade="drift" data-grade="none">—</span></dt><dd id="readiness-drift-value">—</dd><dd class="readiness-grade-note" data-grade-note="drift" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>한모 HTTP 응답시간</span><span class="readiness-grade" role="img" data-metric-grade="latency" data-grade="none">—</span></dt><dd id="readiness-latency-value">—</dd><dd class="readiness-grade-note" data-grade-note="latency" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>연결 지터</span><span class="readiness-grade" role="img" data-metric-grade="jitter" data-grade="none">—</span></dt><dd id="readiness-jitter-value">—</dd><dd class="readiness-grade-note" data-grade-note="jitter" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>다운로드 처리량</span><span class="readiness-grade" role="img" data-metric-grade="speed" data-grade="none">—</span></dt><dd id="readiness-speed-value">—</dd><dd class="readiness-grade-note" data-grade-note="speed" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>요청 실패·표본 제외</span><span class="readiness-grade" role="img" data-metric-grade="error" data-grade="none">—</span></dt><dd id="readiness-error-value">—</dd><dd class="readiness-grade-note" data-grade-note="error" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>네트워크 유형 추정</span><span class="readiness-grade" role="img" data-metric-grade="connection" data-grade="none">—</span></dt><dd id="readiness-connection-value">—</dd><dd class="readiness-grade-note" data-grade-note="connection" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>논리 코어</span><span class="readiness-grade" role="img" data-metric-grade="threads" data-grade="none">—</span></dt><dd id="readiness-threads-value">—</dd><dd class="readiness-grade-note" data-grade-note="threads" hidden></dd></div>
+        <div class="readiness-metric"><dt><span>기기 메모리 대략값</span><span class="readiness-grade" role="img" data-metric-grade="memory" data-grade="none">—</span></dt><dd id="readiness-memory-value">—</dd><dd class="readiness-grade-note" data-grade-note="memory" hidden></dd></div>
+      </dl>
+      <details id="readiness-grade-criteria" class="readiness-grade-criteria">
+        <summary><span class="readiness-criteria-closed">등급 기준 보기</span><span class="readiness-criteria-open">진단 결과로 돌아가기</span></summary>
+        <p class="lab-footnote">A → B → C → D → F 순서로 처음 충족하는 기준을 적용합니다. 한모의 참고 기준이며 실제 학교 서버·공식 하드웨어 벤치마크 또는 수강신청 성공률이 아닙니다.</p>
+        <ul class="readiness-criteria-list">
+          <li>화면 프레임: FPS 50·40·30·20 이상 / 미만, 95백분위수 25·40·60·100ms 이하 / 초과, 끊김 0·1·2·3~4·5회 이상 중 최저 등급</li>
+          <li>긴 작업(50ms 이상): 0·1·2·3~4·5회 이상</li>
+          <li>타이머 지연: 5·15·30ms 이하, 100ms 미만, 100ms 이상</li>
+          <li>HTTP 응답시간: 40·80·150·300ms 이하 / 초과</li>
+          <li>연결 지터: 5·15·30·60ms 이하 / 초과</li>
+          <li>다운로드 처리량: 10·5·2·0.5Mbps 이상 / 미만</li>
+          <li>요청 실패(7회 중): 0·1·2·3~4·5회 이상</li>
+          <li>네트워크 유형 추정: 4g(A), 3g(C), 2g(D), slow-2g(F)</li>
+          <li>논리 코어: 8·6·4·2개 이상 / 미만</li>
+          <li>기기 메모리 대략값: 8·4·2·1GB 이상 / 미만</li>
+        </ul>
+        <p class="lab-footnote">타이머 표본 15개, HTTP 표본 3개, 연속 지터 차이 2개, 다운로드 표본 2개 미만이면 해당 등급을 보류합니다. 전부 제외된 요청은 판정 보류, 일부 제외는 실패 횟수의 잠정 등급입니다. 미측정·미지원은 F가 아닙니다.</p>
+      </details>
+      <section id="readiness-advice" aria-labelledby="readiness-advice-heading" hidden>
+        <h3 id="readiness-advice-heading">B 이하 항목 개선 안내</h3>
+        <ul id="readiness-advice-list"></ul>
+      </section>
+      <p class="lab-footnote">다운로드 처리량은 압축을 반영한 전송 본문 크기를 요청 전체 시간으로 나눈 값입니다. 브라우저 캐시와 전송 확인이 안 된 표본은 제외합니다. 지터는 연속한 응답시간 차이의 중앙값입니다. 한모 관측값은 회선 속도나 학교 서버 성능과 다를 수 있습니다.</p>
+      <button id="readiness-back" class="lab-button secondary" type="button">다시 검사하기</button>
+    </section>
+  </main>
+  <footer class="hanmo-policy-footer" aria-label="비공식 서비스 안내"><p><strong>본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.</strong></p></footer>
+</body></html>

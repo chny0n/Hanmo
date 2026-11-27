@@ -1,0 +1,219 @@
+import {readFile} from 'node:fs/promises';
+import {resolve,join,relative,sep} from 'node:path';
+import {assertPreviewData} from './preview-data.mjs';
+import {assertStagedAssets,readPublicAssets,canonicalSiteBase,siteTarget} from './student-boundary.mjs';
+
+const here=resolve(import.meta.dirname,'..');
+const dist=join(here,'dist');
+const assets=await assertStagedAssets(dist,await readPublicAssets(here));
+await assertPreviewData(dist);
+const studentPages=[
+  'html/planner.html','html/academic-timeline.html','html/forecast.html',
+  'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
+  'html/catalog.html',
+];
+const htmlRoutes=[
+  'index.html',...studentPages,
+  'html/vsugang.html','html/practice.html','html/selectZone.html',
+  'html/result.html','html/developer.html','html/incident-404.html',
+];
+const style=await readFile(join(dist,'css','student-ui.css'),'utf8');
+if(/@import\b/i.test(style)||!style.includes('../img/background.svg'))
+  throw Error('Bundled student styles must use the existing background URL and no CSS imports');
+
+// 사이트맵은 공개 대표 페이지에만 사용하고 호환 리다이렉트·합성 오류·세션 페이지는 제외합니다.
+const publicRoutes=[
+  '', 'html/vsugang.html','html/readiness.html','html/reaction-test.html',
+  'html/strategy-lab.html','html/academic-timeline.html',
+  'html/catalog.html','html/planner.html','html/developer.html'
+];
+async function verifyMetadata(directory,base){
+  const sitemap=await readFile(join(directory,'sitemap.xml'),'utf8');
+  const robots=await readFile(join(directory,'robots.txt'),'utf8');
+  const sitemapLocations=[...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(match=>match[1]);
+  const expectedLocations=publicRoutes.map(route=>base+route);
+  if(!sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')||
+     !sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')||
+     !sitemap.trimEnd().endsWith('</urlset>')||
+     sitemapLocations.length!==expectedLocations.length||
+     sitemapLocations.some((value,index)=>value!==expectedLocations[index])||
+     /vsugangpractice\.com|incident-404\.html|(?:practice|selectZone|result|pc-only|forecast)\.html|<lastmod>2024/.test(sitemap))
+    throw Error('Sitemap public routes or site target are out of sync: '+directory);
+  if(robots!=='User-agent: *\nAllow: /\n\nSitemap: '+base+'sitemap.xml\n')
+    throw Error('Robots policy must refer to the selected sitemap: '+directory);
+}
+await verifyMetadata(here,canonicalSiteBase);
+await verifyMetadata(dist,siteTarget.base);
+if((await readFile(join(here,'CNAME'),'utf8')).trim()!==new URL(canonicalSiteBase).host)
+  throw Error('Canonical source CNAME mismatch');
+if(siteTarget.production&&(await readFile(join(dist,'CNAME'),'utf8')).trim()!==new URL(canonicalSiteBase).host)
+  throw Error('Production CNAME mismatch');
+if(assets.has('CNAME')!==siteTarget.production)throw Error('Unexpected CNAME in staged site');
+for(const route of publicRoutes){
+  if(!assets.has(route||'index.html'))throw Error('Sitemap refers to a missing public page: '+route);
+}
+
+const pages=new Map(await Promise.all(htmlRoutes.map(async page=>[page,await readFile(join(dist,page),'utf8')])));
+const pcOnlyPage=await readFile(join(dist,'html/pc-only.html'),'utf8');
+if(!/<title>한모 \| [^<|]+<\/title>/.test(pcOnlyPage))throw Error('Page title format: html/pc-only.html');
+const displayUrl=new URL(siteTarget.base);
+const displayHost=displayUrl.host+(displayUrl.pathname==='/'?'':displayUrl.pathname);
+if(!pcOnlyPage.includes('<b>'+displayHost+'</b>'))throw Error('PC-only address mismatch');
+for(const path of ['html/practice.html','html/selectZone.html']){
+  if(/deviceCheck|한모를 사용할 수 있는 환경이에요/.test(pages.get(path)))
+    throw Error('Obsolete device-check banner: '+path);
+}
+let linkCount=0,ariaCount=0;
+for(const [page,body] of pages){
+  const pc=page==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
+  const guard=body.indexOf('<script src="'+pc+'"></script>');
+  if(guard<0||guard>body.indexOf('</head>'))throw Error('PC-only guard missing or async: '+page);
+}
+for(const page of studentPages){
+  const body=pages.get(page);
+  if(/<textarea\b|<input\b[^>]*type=["']file["']/i.test(body))
+    throw Error('A student page still requires raw HTML/JSON input: '+page);
+  if(/planner-sidebar|<aside\s+class=["'].*sidebar/i.test(body))
+    throw Error('Left sidebar is forbidden on '+page);
+  if(!body.includes('class="hanmo-topbar"'))throw Error('Missing top menu: '+page);
+  const ids=[...body.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
+  const set=new Set(ids);
+  if(set.size!==ids.length)throw Error('Duplicate DOM id: '+page);
+  for(const [,references] of body.matchAll(/aria-(?:labelledby|describedby)="([^"]+)"/g)){
+    for(const id of references.trim().split(/\s+/)){
+      if(!set.has(id))throw Error('Broken ARIA ref '+page+' #'+id);
+      ariaCount++;
+    }
+  }
+  for(const [,target] of body.matchAll(/(?:src|href)="([^"]+)"/g)){
+    if(/^(?:https?:|mailto:|tel:|data:)/i.test(target))continue;
+    if(target.startsWith('#')){
+      if(!set.has(target.slice(1)))throw Error('Dead fragment: '+page+' '+target);
+      linkCount++;continue;
+    }
+    if(!/^\.?\.\//.test(target))throw Error('Unsupported student-relative URL: '+page+' '+target);
+    const url=new URL(target,'https://preview.invalid/'+page);
+    if(url.origin!=='https://preview.invalid')throw Error('Link leaves QA');
+    const resolved=resolve(dist,decodeURIComponent(url.pathname).replace(/^\//,''));
+    if(!resolved.startsWith(dist+sep)||!assets.has(relative(dist,resolved).split(sep).join('/')))
+      throw Error('Broken student link: '+page+' '+target);
+    linkCount++;
+  }
+}
+const root=pages.get('index.html');
+if(!root.includes('class="hanmo-topbar"')||
+   !root.includes('class="hanmo-brand"')||
+   /academic-entry|학사 준비도 한모에서/.test(root))
+  throw Error('Home must show original content without the academic promo');
+for(const needed of [
+  "class='titleContainer'","class='notice blueBox'","class='mainNotice blueBox'",
+  "class='buttonContainer'","수강신청 연습하기","새로고침","개발자 소개",
+  "./css/index.css","./css/layout.css","./js/gnb.js","./js/index.js"
+]){
+  if(!root.includes(needed))throw Error('Original home element or script missing: '+needed);
+}
+if(!root.includes('<body class="hanmo-home hanmo-refined">')||
+   !root.includes('class="home-fit-content"')||
+   !root.includes('href="./css/home-fit.css"')||
+   !root.includes('src="./js/home-fit.js" defer'))
+  throw Error('Home must retain its navigation and content layout hooks');
+if(!root.includes('onclick="location.reload()"'))
+  throw Error('Home refresh button must work on a GitHub Pages project path');
+for(const page of studentPages){
+  const body=pages.get(page);
+  if(!body.includes('class="hanmo-brand" href="../index.html" aria-label="한모 홈으로 이동"'))
+    throw Error('Hanmo brand must link to home: '+page);
+  if(/<a href="\.\.\/index\.html">홈<\/a>/.test(body))
+    throw Error('Redundant home menu entry: '+page);
+}
+for(const path of studentPages.filter(path=>!['html/forecast.html','html/academic-timeline.html','html/catalog.html'].includes(path))){
+  if(!root.includes('href="./'+path+'"'))throw Error('Root main menu does not link to '+path);
+}
+for(const [page,body] of pages){
+  if(!/<title>한모 \| [^<|]+<\/title>/.test(body))throw Error('Page title format: '+page);
+  const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  if(!bar)continue;
+  for(const label of ['학사 정보','강의 검색']){
+    const entry=[...bar.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].find(item=>item[1]===label)?.[0];
+    if(!entry||!entry.includes('aria-disabled="true"')||!entry.includes('tabindex="-1"')||/\bhref=|onclick=/.test(entry))
+      throw Error('Academic menu must be disabled: '+page+' '+label);
+  }
+}
+if(root.includes('<a href="./html/vsugang.html"')||/기존 모의신청|기본 모의신청/.test(root))
+  throw Error('Home topbar must not expose a redundant mock-registration link');
+for(const page of [...studentPages,'html/vsugang.html','html/result.html','html/developer.html']){
+  const body=pages.get(page);
+  const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  if(!bar||!bar.includes('class="hanmo-brand" href="../index.html"'))
+    throw Error('Missing consistent home brand link on '+page);
+  if(/href="\.\/vsugang\.html"|<a[^>]+>홈<\/a>/.test(bar))
+    throw Error('Redundant mock-registration or home item in topbar: '+page);
+}
+for(const page of ['index.html',...studentPages,'html/vsugang.html','html/result.html','html/developer.html']){
+  const body=pages.get(page);
+  const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
+  if(!bar||!bar.includes('data-profile-summary'))
+    throw Error('Student profile is not accessible from shared navigation: '+page);
+  const expectedHref=page==='index.html'?'./html/planner.html':'./planner.html';
+  const last=bar.match(/<a class="hanmo-me-link" href="([^"]+)"[^>]*>내정보<\/a>/)?.[1];
+  if(last!==expectedHref||bar.indexOf('data-profile-summary')>bar.indexOf('class="hanmo-me-link"'))
+    throw Error('내정보 must be the rightmost topbar action: '+page);
+}
+for(const page of studentPages){
+  const html=pages.get(page);
+  if(/class="hanmo-hero"|class="hanmo-eyebrow"/.test(html))
+    throw Error('Redundant page-introduction block remains: '+page);
+}
+const menu=pages.get('html/vsugang.html');
+if(!menu.includes('<body class="hanmo-vsugang hanmo-refined">')||
+   !menu.includes('href="../css/vsugang-fit.css"')||
+   !menu.includes('src="../js/vsugang-fit.js" defer'))
+  throw Error('Mode menu must load viewport fitting below the topbar');
+const fitStyles=await readFile(join(dist,'css/vsugang-fit.css'),'utf8');
+if(!fitStyles.includes('vsugang-compact-scroll')||
+   !fitStyles.includes('--vsugang-topbar-bottom')||
+   !fitStyles.includes('#scenario-settings[open]'))
+  throw Error('Missing viewport and settings accessibility protection');
+for(const id of ['scenario-settings','incident-options']){
+  if(!menu.includes('id="'+id+'"'))throw Error('Missing incident setting: '+id);
+}
+if((menu.match(/data-scenario-toggle=/g)||[]).length!==1||
+  (menu.match(/data-scenario-off=/g)||[]).length!==1)
+  throw Error('Only RECONNECT yes/no controls may exist');
+if(!menu.includes('name="incident-RECONNECT" value="no" data-scenario-off="RECONNECT" checked'))
+  throw Error('RECONNECT must default to No');
+if(/LAST_VALID|incident-practice|incident-404-refresh|incident-404-back/.test(menu))
+  throw Error('Removed in-menu failure/timer UI is still present');
+const broken=pages.get('html/incident-404.html');
+if(!broken.includes('class="navigation"')||
+  !broken.includes('inert')||
+  !broken.includes('src="../js/incident-404.js"')||
+  (broken.match(/<button\b[^>]*disabled/g)||[]).length!==6||
+  /<button\b[^>]*onclick=|<a\b[^>]*href=/.test(broken))
+  throw Error('Synthetic 404 must keep a non-interactive sidebar and no page recovery controls');
+if(/LAST_CONFLICT|data-base-course|data-alt-course|incident-search|incident-candidates|대체과목 검색/.test(menu))
+ throw Error('Deferred substitute/conflict UI must be absent');
+if(/학업 플래너로 이동|scenario-all-on|scenario-all-off/.test(menu))
+ throw Error('Legacy-mode landing has an obsolete extra link or bulk incident control');
+const unified=pages.get('html/academic-timeline.html');
+if(!unified.includes('id="academic-calendar-panel"')||!unified.includes('id="notice-list"')||
+   !unified.includes('id="academic-calendar-tab"'))
+  throw Error('Academic notice and calendar must share one tabbed page');
+if(!root.includes('href="./html/reaction-test.html"'))
+  throw Error('Reaction test missing from global navigation');
+// 돌발상황은 모드 메뉴에서만 시작한다.
+if(root.includes('scenario-workshop.html')||root.includes('vsugang.html#scenario-settings'))
+  throw Error('Standalone incident link remains on landing');
+for(const [p,html] of pages){
+  if(/(?:href|src)=["'][^"']*scenario-(?:workshop|lab)\.html/i.test(html))
+    throw Error('Dead standalone scenario link from '+p);
+}
+for(const path of ['index.html',...studentPages,'html/vsugang.html','html/developer.html','html/result.html']){
+ const html=pages.get(path);
+ if(html.includes('academic-progress.html')||html.includes('academic-faq.html'))
+   throw Error('Deleted page still linked from: '+path);
+ if(!html.includes('본 서비스는 한국외국어대학교의 공식 서비스가 아니며'))
+   throw Error('Missing unofficial notice: '+path);
+}
+console.log('Student preview smoke: '+studentPages.length+' student pages, '+
+  linkCount+' links, '+ariaCount+' ARIA references; only optional transition 404 is OFF by default; sidebar stays inert until browser reload/back.');

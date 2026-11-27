@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
+  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤. 연습·신청 화면 내정보 표시 및 두 표의 테두리 없는 제한된 스크롤 규격 반영. 공통 상단 내정보 말줄임 제거 및 좁은 창 줄바꿈. 양쪽 연습 화면의 상시 경고 표지 및 홈 상단 바 아래의 원본 훕또기 배너 추가. 배너와 홈 본문의 간격 축소. 연습 좌측 내정보 행간 축소 및 내부 스크롤 제거. 전략 실험의 경쟁자 가정 문구와 신청별 대기시간 모형·결과 안내. 전략 실험 전용 1~3초 대기와 접힌 수식·가정 설명. 전략 실험 공통 선착순 대기열 및 MathML 수식 표기. 전략 실험의 회차별 경쟁자 평균 이동·개인 속도 유지·신청별 변동 및 수식 갱신. #71·#72 접근성 예외: 진단 접힌 기준 표시·전략 8과목 결과 배치와 합성 신청/삭제/재수강 접근 가능한 이름만 변경. 2026-11-27 사용자 검토: B 이하 개선 안내 강조, 학사 메뉴 비활성화, 홈·모드 제목 및 배너 배치, 브라우저 제목 통일. 2026-11-27 사용자 지정: 브라우저 제목은 한모 | 페이지명. 개발자 소개의 공통 제목 기준선과 구분선 적용. 2026-11-27 사용자 지정: i 도움말 옆 다섯 기능 H1만 한모 | 페이지명으로 통일. 전략 실험 본문 제목에 베타 표시. 원본 1620fce 모바일 안내 동기화: 공개 URL 유지, 기존 기기 확인 띠 제거, 세션 보호와 포크 주소 유지. 원본 PR용 도메인 반영, 404 청색 사용자 패널 통일, 개발자 소개 저높이 여백 조정. 전 페이지 공통 푸터를 연습 페이지와 동일한 48px 최소 높이·세로 여백으로 통일.",
+  "files": [
+    {
+      "path": "css/academic-calendar.css",
+      "sha": "b18a32bf5591665554b88a07f62acb4213cc2b95"
+    },
+    {
+      "path": "css/academic-unified.css",
+      "sha": "604bbcfcd3e09f41dcaebb10de8051e7c85bf7f1"
+    },
+    {
+      "path": "css/developer.css",
+      "sha": "c0f768714ad843a75bf38dd46115cf02905970ea"
+    },
+    {
+      "path": "css/gnb.css",
+      "sha": "e0b1fa81b042e2d93e7f142fbd491dd4458f33c5"
+    },
+    {
+      "path": "css/hanmo-components.css",
+      "sha": "90306821aa142cba51a38b6f5fb73418ac78a9fb"
+    },
+    {
+      "path": "css/hanmo-flat.css",
+      "sha": "24c5535d82f566b052753a03ef8767b3220eb49c"
+    },
+    {
+      "path": "css/hanmo-labs.css",
+      "sha": "e13ca6d6e19323dd625fa9b3fc4435cd926d8215"
+    },
+    {
+      "path": "css/hanmo-policy-footer.css",
+      "sha": "54637771ac1ad404f6ee0199cf46b36d69a7e50e"
+    },
+    {
+      "path": "css/hanmo-refined.css",
+      "sha": "20d24d45604636e475eac6bee452b33f34d55e6a"
+    },
+    {
+      "path": "css/hanmo-title-divider.css",
+      "sha": "8d685bdda0841c33e6d89d89cdc31d2cff2f272f"
+    },
+    {
+      "path": "css/hanmo-tokens.css",
+      "sha": "fff04a9bf6e5f769e0e6636a2bd43526dfdadc3d"
+    },
+    {
+      "path": "css/hanmo-views.css",
+      "sha": "b795b1d8a0f556dc848ed374a50fe88faf16ff17"
+    },
+    {
+      "path": "css/home-fit.css",
+      "sha": "55278509ba34cc5b9085eda4e299814e03942aab"
+    },
+    {
+      "path": "css/incident-404.css",
+      "sha": "627f42e67124d1f1f656c876265741259a7606e1"
+    },
+    {
+      "path": "css/index.css",
+      "sha": "e8368626834b857901fe2f7d1d343d69ed860616"
+    },
+    {
+      "path": "css/layout.css",
+      "sha": "c616d23b8aa515e9ff6bbda37ff53a8aa093f1a4"
+    },
+    {
+      "path": "css/normalize.css",
+      "sha": "74ce7b3418e4aad794a97a5ec6584837484d1690"
+    },
+    {
+      "path": "css/practice.css",
+      "sha": "fe778f0dfb6cd84f01cdfb41e71bd2c4203b5113"
+    },
+    {
+      "path": "css/result.css",
+      "sha": "c770a0c89dee7f552cf62ab2bb219b4ecb743793"
+    },
+    {
+      "path": "css/student-ui.css",
+      "sha": "b694be023032943ccc76cce883f65427060e2220"
+    },
+    {
+      "path": "css/vsugang-fit.css",
+      "sha": "db225028b0dc840e1c9b3f9ab315993047f661e9"
+    },
+    {
+      "path": "css/vsugang.css",
+      "sha": "d0f4e1f009d2dee1bb43641919066c1679f7589d"
+    },
+    {
+      "path": "html/academic-timeline.html",
+      "sha": "a70556a4681e09c4241ceb5c33493cd2f17be60c"
+    },
+    {
+      "path": "html/catalog.html",
+      "sha": "e3c4502eea360accb47a6a30ec5027137af9353e"
+    },
+    {
+      "path": "html/developer.html",
+      "sha": "5a7cf9b8959544771a13a90a76144889e28f61f8"
+    },
+    {
+      "path": "html/forecast.html",
+      "sha": "3b97b8fe1c672bc11dedbd3ed141d552291ac25b"
+    },
+    {
+      "path": "html/incident-404.html",
+      "sha": "4ba99d74825b5e92f13e998d1d13e2c741c37013"
+    },
+    {
+      "path": "html/pc-only.html",
+      "sha": "a85ae716900baf2d9f8251e5a04d370916a9f424"
+    },
+    {
+      "path": "html/planner.html",
+      "sha": "349b5443c8eb210680d7e49d22a0f88c3ed4c19a"
+    },
+    {
+      "path": "html/practice.html",
+      "sha": "143323efd1af854f4b20523ace7bde43cb3e0517"
+    },
+    {
+      "path": "html/reaction-test.html",
+      "sha": "71bf2e86a77f3af2d55b9c945eb27c41f7aa1e87"
+    },
+    {
+      "path": "html/readiness.html",
+      "sha": "256fb144f23678826d1383143af23931b1270add"
+    },
+    {
+      "path": "html/result.html",
+      "sha": "73d6616a5fe46afcfac30c7eabe8a4bc997f37e6"
+    },
+    {
+      "path": "html/selectZone.html",
+      "sha": "d71ec9ebe6e35b93b33a7d31ad98716bd0291f86"
+    },
+    {
+      "path": "html/strategy-lab.html",
+      "sha": "8be7a44e19548ff037dc4476cc1b7db8ed00a692"
+    },
+    {
+      "path": "html/vsugang.html",
+      "sha": "79c7f1c124c09c6a31cd11b6fccde1167aa2f527"
+    },
+    {
+      "path": "img/background.svg",
+      "sha": "e140b96cd30dd19cde039c60f30bc744a9b0a0d7"
+    },
+    {
+      "path": "img/boo.png",
+      "sha": "ff19d0e255ec06da33d2e426bda4d163fc7688c6"
+    },
+    {
+      "path": "img/delete.png",
+      "sha": "cc816ba3784b625ecc5b5f8f55ee29a0b33544a5"
+    },
+    {
+      "path": "img/developer.jpg",
+      "sha": "0abea4990b3037494f11dbd8f7fca64522dfaffd"
+    },
+    {
+      "path": "img/favicon-purple.svg",
+      "sha": "8b5c097a6bb8d2a76d8e1bac46d730ffd4919f7f"
+    },
+    {
+      "path": "img/hanmo_color.png",
+      "sha": "baeb2dba7e23393844da368d51e6deb4b791fcb7"
+    },
+    {
+      "path": "img/hanmo_purple.png",
+      "sha": "3c7c89224e277953f624750c26d4e03ec6ffd9b6"
+    },
+    {
+      "path": "img/hanmo_white.svg",
+      "sha": "8fe51bea9fe8656ba47850de5720ffc0e69ae805"
+    },
+    {
+      "path": "img/lucide/LICENSE",
+      "sha": "718bb3f0e44153809972abed31839375804bf652"
+    },
+    {
+      "path": "img/lucide/arrow-right.svg",
+      "sha": "7cf51782e7b069553458ef5d788057d44669628f"
+    },
+    {
+      "path": "img/lucide/rotate-ccw.svg",
+      "sha": "651f170ab3f0f7b5cc7d18e371e612b5fd03a58c"
+    },
+    {
+      "path": "img/register.png",
+      "sha": "7ac4ce918133af246c3f239073354a0af3ba4296"
+    },
+    {
+      "path": "img/watermark.png",
+      "sha": "3ee0a229438e94ffeb8b4566af293c6105409765"
+    },
+    {
+      "path": "index.html",
+      "sha": "8cbd13f7682d94a4b7ff28efc87c0fddd1b3abda"
+    },
+    {
+      "path": "js/academic-data-source.js",
+      "sha": "dba1d9b3160f3b6e65fc988b6262fd374069bea1"
+    },
+    {
+      "path": "js/academic-unified.js",
+      "sha": "10d22e51f01af62ea988805e69d77a530503c9bd"
+    },
+    {
+      "path": "js/capacity-settings.js",
+      "sha": "cff5ea8d6d71f52082c020fee049bb9a60ad76ad"
+    },
+    {
+      "path": "js/gnb.js",
+      "sha": "47887f68eaffbc46b78bbfbda34a727625d79b19"
+    },
+    {
+      "path": "js/hanmo-policy-footer.js",
+      "sha": "5126e539937679038ebf0dc0e53cf92b2d02f218"
+    },
+    {
+      "path": "js/hanmoSys.js",
+      "sha": "d5ff00488cd40193fdfd1c991c003ca400d6136d"
+    },
+    {
+      "path": "js/home-fit.js",
+      "sha": "4e5f2da707f8a9f45ae09ad10209be302178811f"
+    },
+    {
+      "path": "js/incident-404.js",
+      "sha": "fe21835cc586a844f58af9bb3a36017db6b5549f"
+    },
+    {
+      "path": "js/index.js",
+      "sha": "95fc315e7b8d4587105610773e2bbe5ec6d2ec17"
+    },
+    {
+      "path": "js/pc-only.js",
+      "sha": "3def3550668149dc4f1098c88f850fcc70b159fe"
+    },
+    {
+      "path": "js/practice.js",
+      "sha": "ec8ee7b776a555dce11415a4e33fb60094e0e93a"
+    },
+    {
+      "path": "js/result.js",
+      "sha": "83e3ae8aefbd29090c0ea91e2ad34673e52ee011"
+    },
+    {
+      "path": "js/scenario-settings.js",
+      "sha": "6be045961b66bda8b89906930bc295ed2e785f5a"
+    },
+    {
+      "path": "js/selectZone.js",
+      "sha": "b0eeb831524ee5ab4118d820396ef55e7da5630b"
+    },
+    {
+      "path": "js/student-catalog.js",
+      "sha": "30cd7fba94d9970be744a72bf4b42ae57d55e8b5"
+    },
+    {
+      "path": "js/student-notices.js",
+      "sha": "826e8d1684e4d8ebd46f5a03d87dd8d3d1f603a1"
+    },
+    {
+      "path": "js/student-preferences.js",
+      "sha": "5bd23b712dfb08d80603e9e72fa3c5e124e4a8e6"
+    },
+    {
+      "path": "js/student-profile-bar.js",
+      "sha": "b4d144468e8ccce729be1af5820a9259e1004895"
+    },
+    {
+      "path": "js/vsugang-fit.js",
+      "sha": "85ab95d5d8f38f1ea2a3ad354e8dc07e2ef9ce52"
+    },
+    {
+      "path": "js/vsugang.js",
+      "sha": "de143d3e416de633074530694f6507b9c4b8fdac"
+    }
+  ],
+  "policyRevision": "2026-11-23-hufs-written-restrictions"
+}

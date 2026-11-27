@@ -1,0 +1,206 @@
+name: Repository checks
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: 'Deploy the original Hanmo domain (original repository only)'
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - 'CNAME'
+      - 'js/**'
+      - 'html/**'
+      - 'css/**'
+      - 'img/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'data/**'
+      - 'docs/architecture.md'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
+      - '.npmrc'
+      - 'playwright.config.mjs'
+      - 'e2e/**'
+      - 'jsconfig.json'
+      - '.github/workflows/**'
+permissions:
+  contents: read
+jobs:
+  student-site:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HANMO_SITE_TARGET: ${{ github.repository == 'chny0n/Hanmo' && github.event_name == 'workflow_dispatch' && inputs.deploy_production && 'production' || 'preview' }}
+    concurrency:
+      group: hanmo-student-site-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    outputs:
+      pages-artifact-name: ${{ steps.pages-artifact.outputs.name }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: node scripts/assert-protected.mjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check:student
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hanmo-root-static-preview
+          path: dist
+          retention-days: 3
+          overwrite: true
+      - name: Validate original domain and isolate fork preview
+        run: |
+          test "$(cat CNAME)" = tofuhanmo.com
+          if [ "$HANMO_SITE_TARGET" = production ]; then
+            test "$GITHUB_REPOSITORY" = chny0n/Hanmo
+            test "$(cat dist/CNAME)" = tofuhanmo.com
+          else
+            test ! -e dist/CNAME
+          fi
+          test -f dist/index.html
+          test -f dist/html/academic-timeline.html
+          test -f dist/html/planner.html
+          test -f dist/js/student-entry.js
+      - name: Name the Pages artifact for this build attempt
+        if: ${{ github.ref == 'refs/heads/main' && ((github.repository == 'ot4562-glitch/Hanmo_develop' && github.event_name != 'pull_request') || (github.repository == 'chny0n/Hanmo' && github.event_name == 'workflow_dispatch' && inputs.deploy_production)) }}
+        id: pages-artifact
+        run: echo "name=github-pages-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+      - name: Upload the verified student site for Pages
+        if: ${{ steps.pages-artifact.outcome == 'success' }}
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: dist
+          name: ${{ steps.pages-artifact.outputs.name }}
+
+  core-and-site:
+    if: ${{ !cancelled() && github.event_name != 'workflow_dispatch' }}
+    needs: student-site
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: hanmo-academic-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Require student verification to pass
+        env:
+          STUDENT_RESULT: ${{ needs.student-site.result }}
+        run: test "$STUDENT_RESULT" = success
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Fetch the original UI baseline for browser QA
+        run: git fetch --depth=1 --no-tags origin 0df1c0dafd23939f48b35aa68614e8461bb83b31
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - name: Install locked dependencies
+        id: dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download the verified student site for browser tests
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: hanmo-root-static-preview
+          path: dist
+      - name: Install Chromium for real browser tests
+        id: chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run Chromium end-to-end scenarios
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() }}
+        with:
+          name: hanmo-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+      - name: Run feature browser QA and capture four radio states
+        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
+        run: npx playwright test --config tests/playwright-feature.config.mjs --output=test-results/feature
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
+        with:
+          name: hanmo-feature-browser-qa
+          path: |
+            e2e-artifacts/
+            test-results/feature/
+          retention-days: 7
+      - name: Run academic and strategy research tests
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: npm run test:research
+
+  deploy-pages:
+    if: ${{ github.ref == 'refs/heads/main' && ((github.repository == 'ot4562-glitch/Hanmo_develop' && github.event_name != 'pull_request') || (github.repository == 'chny0n/Hanmo' && github.event_name == 'workflow_dispatch' && inputs.deploy_production)) }}
+    needs: student-site
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages-qa
+      cancel-in-progress: false
+    env:
+      PAGES_ARTIFACT_NAME: ${{ needs.student-site.outputs.pages-artifact-name }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages for the selected repository
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      # REST에 먼저 나타난 산출물이 deploy-pages의 별도 조회에도 반영될 시간을 둔다.
+      - name: Wait for the exact Pages artifact to become visible
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -n "$PAGES_ARTIFACT_NAME"
+          for attempt in $(seq 1 12); do
+            if names="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" --jq '.artifacts[].name')"; then
+              count="$(printf '%s\n' "$names" | grep -Fxc -- "$PAGES_ARTIFACT_NAME" || true)"
+              if [ "$count" -eq 1 ]; then
+                echo "Exactly one verified Pages artifact is visible."
+                sleep 20
+                exit 0
+              fi
+              if [ "$count" -gt 1 ]; then
+                echo "::error::Duplicate names for the verified Pages artifact; not deploying."
+                exit 1
+              fi
+            else
+              echo "::warning::Artifact metadata API not ready (attempt $attempt)."
+            fi
+            sleep 3
+          done
+          echo "::error::Verified Pages artifact did not become visible."
+          exit 1
+      - name: Check the candidate against current main
+        shell: bash
+        run: |
+          current_main="$(git ls-remote --exit-code "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f 1)"
+          if [[ -z "$current_main" || "$current_main" != "$GITHUB_SHA" ]]; then
+            echo '::error::The preview candidate is no longer the current main revision.'
+            exit 1
+          fi
+      - name: Deploy verified site
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}

@@ -1,0 +1,233 @@
+/* 모의신청 모드 메뉴에만 적용한다. */
+html:has(body.hanmo-vsugang){height:100%;overflow:hidden}
+body.hanmo-vsugang{box-sizing:border-box;display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:0;margin:0;overflow:hidden;overscroll-behavior:none;font-family:var(--hm-font)}
+body.hanmo-vsugang :is(header,button,input){font-family:var(--hm-font)}
+body.hanmo-vsugang>.hanmo-topbar{box-sizing:border-box;flex:0 0 auto;width:100%;z-index:120}
+body.hanmo-vsugang>main{box-sizing:border-box;position:relative;flex:1 1 auto;height:auto;min-height:0;width:100%;margin:0;padding:10px 16px;overflow:hidden}
+body.hanmo-vsugang .f-dirt-down{position:absolute;top:50%;left:50%;width:max-content;max-width:none;transform:translate(-50%,-50%) scale(var(--vsugang-fit-scale,1));transform-origin:center}
+body.hanmo-vsugang .titleContainer{top:0;margin:0}
+body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
+body.hanmo-vsugang .grid{margin-top:0;--vsugang-narrow-areas:"b b" "b b" "s t" "set t"}
+body.hanmo-vsugang .grid > :is(.setting,#incident-options){border:1px solid #000912;background:#06111c;transition:0.3s}
+/* 주변 칸을 갑자기 어둡게 하지 않고 선택한 칸의 빛만 천천히 밝힌다. */
+/* BASIC의 오른쪽 아래를 실제로 비워 돌발상황 버튼과 겹치지 않게 한다. */
+body.hanmo-vsugang .grid > .basic-mode-tile {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 50%, 50% 100%, 0 100%);
+}
+/* BASIC의 비운 모서리에 돌발상황 버튼을 별도의 조작 영역으로 배치한다. */
+body.hanmo-vsugang #incident-options{
+  grid-area:2 / 2 / 3 / 3;z-index:1;display:flex;flex-direction:column;align-items:flex-start;
+  padding:0;color:inherit;text-align:left;cursor:pointer;
+}
+body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){margin:5px 20px;font-size:40px;font-weight:100;line-height:normal}
+body.hanmo-vsugang .grid .mode-tile-description{margin:0 20px;font-size:12px}
+body.hanmo-vsugang #incident-options:focus-visible{outline:3px solid #ffcf76;outline-offset:-4px}
+@media(max-width:1000px){
+  body.hanmo-vsugang .grid{grid-template-rows:repeat(4,200px);grid-template-areas:var(--vsugang-narrow-areas)}
+  body.hanmo-vsugang .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:36px}
+  body.hanmo-vsugang .grid .mode-tile-description{display:none}
+}
+/* SETTING은 상단 메뉴 아래에 표시하고 내부에서 스크롤한다. */
+body.hanmo-vsugang :is(.settingSection,#scenario-settings){
+  box-sizing:border-box;position:fixed;inset:var(--vsugang-topbar-bottom,66px) 0 0;
+  height:auto;max-height:none;z-index:110;overflow-y:auto;background:rgba(0,10,18,.87);padding:20px;
+}
+body.hanmo-vsugang .settingPanel{
+  box-sizing:border-box;width:min(480px,100%);height:auto;max-height:calc(100dvh - var(--vsugang-topbar-bottom,66px) - 32px);
+  margin:auto;overflow-y:auto;align-items:stretch;justify-content:flex-start;padding:28px;
+  gap:16px;border:1px solid #567084;
+}
+.settingPanel .textbox{height:37px;color:#f2f5f8;background:#0f2535;border:1px solid #66849c;border-radius:7px;padding:5px 10px}
+.settingPanel .settingButton{align-self:flex-end;margin-top:20px;min-height:44px;border:0;flex:none}
+
+/* 두 개의 접속 대기 옵션은 각각 독립적으로 선택할 수 있습니다. */
+.settingPanel .waiting-setting-groups{display:grid;gap:12px;list-style:none}
+.settingPanel .waiting-setting-title{color:#fff;font-weight:700}
+.settingPanel .waiting-setting-group{
+  display:flex;flex-wrap:wrap;align-items:center;column-gap:20px;row-gap:9px;
+  min-width:0;margin:0;padding:12px 16px;border:1px solid #57778d;
+  border-radius:8px;background:#0e2535
+}
+.settingPanel .waiting-setting-group legend{padding:0 5px;color:#f0f5fa;font-weight:600}
+/* 원본 한모의 두 칸 선택 모양을 SETTING·돌발상황에 공통 적용한다. */
+.settingPanel .waiting-setting-group .segmented{
+  box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:4px;flex:1 1 100%;width:100%;min-width:0;
+  padding:4px;background:#000d18;border:1px solid #2a3a4c;border-radius:10px
+}
+.settingPanel .waiting-setting-group .segmented label{
+  display:block;position:relative;min-width:0;margin:0;padding:0;
+  border:0;border-radius:7px;background:transparent;cursor:pointer
+}
+.settingPanel .waiting-setting-group .segmented input[type="radio"]{
+  position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;
+  cursor:pointer;z-index:1;pointer-events:auto
+}
+.settingPanel .waiting-setting-group .segmented span{
+  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:36px;padding:4px 8px;border-radius:7px;
+  background:transparent;color:#8a9bb0;font-size:14px;font-weight:500;
+  transition:background-color .2s ease-out,color .2s ease-out
+}
+.settingPanel .waiting-setting-group .segmented input:checked + span{
+  background:#1c2d40;color:#fff;font-weight:700
+}
+.settingPanel .waiting-setting-group .segmented input:focus-visible{
+  outline:none
+}
+.settingPanel .waiting-setting-group .segmented input:focus-visible + span{
+  outline:2px solid #ffd27a;outline-offset:1px
+}
+#scenario-settings{width:100%;max-width:none;margin:0;border:0;color:inherit}
+#scenario-settings[open]{display:flex;align-items:center;justify-content:center}
+#scenario-settings::backdrop{background:transparent}
+.settingPanel fieldset{min-width:0}
+.incident-option-group{margin:0}
+.incident-option-group .waiting-setting-group small{
+  display:block;flex:0 0 100%;margin-top:0;
+  color:#bacbd7;font-size:12px;line-height:1.65
+}
+.incident-option-actions{justify-content:stretch}
+.settingPanel :is(button,input):focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
+/* 높은 확대율에서는 본문만 스크롤한다. */
+body.hanmo-vsugang.vsugang-compact-scroll>main{display:block;overflow-y:auto;overscroll-behavior:contain}
+body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-down{position:relative;top:auto;left:auto;width:min(600px,100%);max-width:100%;margin:0 auto 20px;transform:none}
+body.hanmo-vsugang.vsugang-compact-scroll .container{width:100%;margin-top:15px}
+body.hanmo-vsugang.vsugang-compact-scroll .grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(110px,auto));grid-template-areas:var(--vsugang-narrow-areas)}
+body.hanmo-vsugang.vsugang-compact-scroll .grid > :is(div,button) > :is(h2,.mode-tile-title){font-size:clamp(20px,4vw,32px)}
+body.hanmo-vsugang.vsugang-compact-scroll .grid :is(p,.mode-tile-description){display:none}
+
+
+/* 다섯 칸을 같은 느린 빛 효과로 묶는다. 역 ㄱ자 모서리는 부모에서 잘린다. */
+body.hanmo-vsugang .grid:has(:hover) > div:not(.setting):not(:hover) {
+  background-color: #06111c;
+}
+body.hanmo-vsugang .grid > :is(div, button) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: background-color .78s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-vsugang .grid > :is(div, button)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 92% 86% at 50% 48%,
+              rgba(111, 179, 209, .17) 0%,
+              rgba(84, 150, 183, .075) 48%,
+              transparent 84%);
+  box-shadow: inset 0 0 0 1px rgba(128, 179, 204, .22),
+              inset 0 0 27px rgba(96, 156, 183, .12);
+  opacity: 0;
+  transition: opacity 1.08s var(--hm-glow-ease, ease-in-out);
+}
+body.hanmo-vsugang .grid > :is(div, button) > :is(h2, p, span) {
+  position: relative;
+  z-index: 1;
+}
+body.hanmo-vsugang .grid > :is(div, button):is(:hover, :focus-visible)::before {
+  opacity: .88;
+  transition-duration: .78s;
+}
+body.hanmo-vsugang .grid > :is(div:not(.setting), button):hover {
+  background-color: #071a27;
+}
+/* 잘린 BASIC도 키보드 포커스를 구별할 수 있게 내부 윤곽을 유지한다. */
+body.hanmo-vsugang .grid > .basic-mode-tile:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--hm-gold, #f4c76c);
+}
+body.hanmo-vsugang .grid > :is(div[role="button"], button):focus-visible {
+  outline: 3px solid var(--hm-gold, #f4c76c);
+  outline-offset: -4px;
+}
+body.hanmo-vsugang .grid > :is(div, button) > :is(h2, .mode-tile-title) {
+  font-weight: 300;
+  letter-spacing: .012em;
+}
+body.hanmo-vsugang .grid .setting .printValue {
+  color: #e9c7a8;
+  line-height: 1.5;
+}
+/* 설정과 돌발상황 창에만 선택적으로 배경 흐림을 적용한다. */
+body.hanmo-vsugang :is(.settingSection, #scenario-settings) {
+  background: rgba(0, 10, 18, .67);
+  -webkit-backdrop-filter: blur(7px) saturate(110%);
+  backdrop-filter: blur(7px) saturate(110%);
+}
+body.hanmo-vsugang .settingPanel {
+  background: linear-gradient(160deg, rgba(12, 34, 48, .97), rgba(5, 19, 30, .98));
+  border-color: rgba(140, 176, 198, .54);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, .32),
+              inset 0 1px 0 rgba(255, 255, 255, .055);
+}
+body.hanmo-vsugang .settingSection[style*="flex"] .settingPanel,
+body.hanmo-vsugang #scenario-settings[open] .settingPanel {
+  animation: hanmo-panel-enter .18s var(--hm-ease-soft, ease-out) both;
+}
+@keyframes hanmo-panel-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.hanmo-vsugang .grid > :is(div, button),
+  body.hanmo-vsugang .grid > :is(div, button)::before,
+  .settingPanel .waiting-setting-group .segmented span { transition: none; }
+  body.hanmo-vsugang .settingSection .settingPanel,
+  body.hanmo-vsugang #scenario-settings[open] .settingPanel { animation: none; }
+}
+
+/* 두 설정창의 제목·입력·간격·버튼을 하나의 스타일로 통일합니다. */
+body.hanmo-vsugang .settingPanel .settingTitle { margin: 0; font-size: 24px; font-weight: 700; }
+body.hanmo-vsugang .settingPanel .settingDesc { margin: 0; color: #cad8e2; font-size: 13px; line-height: 1.55; }
+body.hanmo-vsugang .settingPanel .settingField { display: flex; flex-direction: column; gap: 7px; margin: 0; }
+body.hanmo-vsugang .settingPanel .settingLabel { color: #e2ecf2; font-size: 14px; font-weight: 600; }
+body.hanmo-vsugang .settingPanel .textbox { box-sizing: border-box; width: 100%; height: 44px; font-size: 16px; }
+body.hanmo-vsugang .settingPanel .settingActions { display: flex; gap: 10px; margin-top: 2px; }
+body.hanmo-vsugang .settingPanel .settingActions button {
+  min-height: 44px; flex: 1; border: 0; border-radius: 9px;
+  padding: 10px; font: inherit; font-weight: 700; cursor: pointer;
+}
+body.hanmo-vsugang .settingPanel .settingActions .settingCancel { background: #253b4a; color: #eef4f7; }
+body.hanmo-vsugang .settingPanel .settingActions .settingButton {
+  margin: 0; align-self: stretch; background: #ffd27a; color: #071827;
+}
+@media (max-width: 500px) {
+  body.hanmo-vsugang .settingPanel { padding: 18px; }
+}
+
+/* 돌발상황은 SETTING과 정확히 같은 단위 정사각형을 사용합니다. */
+body.hanmo-vsugang .grid > :is(.setting,#incident-options) {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #000912;
+  border-radius: 0;
+  background: #06111c;
+  color: inherit;
+  font-family: var(--hm-font);
+  font-size: inherit;
+  line-height: normal;
+}
+body.hanmo-vsugang .grid > .setting { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+body.hanmo-vsugang .grid > .setting > h2 { flex: 0 0 auto; }
+body.hanmo-vsugang #incident-options { justify-content: flex-start; }
+body.hanmo-vsugang #incident-options .mode-tile-title { display: block; }
+
+/* 일반 PC에서는 설정·돌발상황도 한 화면에 표시합니다. 작은 화면과 확대의 접근성 스크롤은 유지합니다. */
+@media(min-width:1100px) and (min-height:680px){
+ body.hanmo-vsugang :is(.settingSection,#scenario-settings){overflow:visible;padding:16px}
+ body.hanmo-vsugang .settingPanel{width:min(760px,100%);max-height:none;overflow:visible;padding:18px 24px;gap:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+ body.hanmo-vsugang .settingPanel>:is(.settingTitle,.settingDesc,.waiting-setting-groups,.settingActions){grid-column:1/-1}
+ body.hanmo-vsugang .settingPanel .waiting-setting-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
+ body.hanmo-vsugang .settingPanel .waiting-setting-title{grid-column:1/-1}
+ body.hanmo-vsugang .settingPanel .waiting-setting-group{padding:8px 10px;gap:5px 10px}
+ body.hanmo-vsugang .settingPanel .settingButton{margin-top:0}
+ body.hanmo-vsugang .settingPanel .textbox{box-sizing:border-box;width:100%;min-width:0}
+}

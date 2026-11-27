@@ -1,0 +1,358 @@
+// @ts-check
+/** @import { AcademicDegreePathVNext, MajorWhatIfDeltaRow, MajorWhatIfRequirementProgress, OwnerMajorWhatIfRequest } from "../../contracts/index.js" */
+/** @import { DoubleMajorAttempt, MajorRulePack, OverlapRowImpact, OverlapRule } from "./double-major.js" */
+/** @import { LedgerRequirement } from "./ledger.js" */
+/** @typedef {OwnerMajorWhatIfRequest['scenario']} WhatIfScenario */
+/** @typedef {AcademicDegreePathVNext} DegreePath */
+/** @typedef {'MAJOR_DEEPENING'|'MAJOR_DEEPENING_MINOR'} LegacyDegreePath */
+/** @typedef {'DOUBLE_MAJOR'|'MINOR'} SecondaryRole */
+/** @typedef {{ primaryProgramId:string; secondary?:{role:SecondaryRole; programId:string}; }} ProgramEnrollment */
+/** @typedef {| {role:'PRIMARY_MAJOR'; programId:string; degreePath:DegreePath|LegacyDegreePath; pack:MajorRulePack} | { role:SecondaryRole; programId:string; primaryProgramId?:string; pack:MajorRulePack & {overlapRule?:OverlapRule}; }} ProgramOffer */
+/** @typedef {{ asOf:string; attempts:readonly DoubleMajorAttempt[]; current:ProgramEnrollment; scenario:WhatIfScenario; programs:readonly ProgramOffer[]; }} MajorWhatIfRequest */
+/** @typedef {'CURRENT_RULEPACK_NOT_APPROVED'|'RULEPACK_NOT_APPROVED'|'TARGET_PROGRAM_UNAVAILABLE'} MajorWhatIfBlocker */
+/** @typedef {{ role:'CURRENT'|'HYPOTHETICAL'; asOf:string; enrollment:ProgramEnrollment; degreePath:DegreePath; rulePackVersions:string[]; earnedCreditUnits:number; remainingCreditUnits:number; requirements:MajorWhatIfRequirementProgress[]; reviewRequirementIds:string[]; }} WhatIfProjection */
+/** @typedef {| {state:'BLOCKED_DEPENDENCY'; asOf:string; scenario:WhatIfScenario; blockers:MajorWhatIfBlocker[]; coreVersion:string} | { state:'READY'; asOf:string; scenario:WhatIfScenario; coreVersion:string; current:WhatIfProjection; hypothetical:WhatIfProjection; delta:(MajorWhatIfDeltaRow & {evidenceRefs:string[]})[]; }} MajorWhatIfResult */
+/** @typedef {{ primary?:Extract<ProgramOffer, {role:'PRIMARY_MAJOR'}>; secondary?:Extract<ProgramOffer, {role:SecondaryRole}>; unavailable:boolean; }} Resolved */
+import { AcademicDegreePathVNextSchema, isConsistentMajorWhatIfDelta, OwnerMajorWhatIfScenarioSchema, } from '../../contracts/index.js';
+import { buildDoubleMajorAudit } from './double-major.js';
+import { assertId } from './ledger.js';
+/**
+ * 같은 학생의 성적표로 현재 전공 구성과 한 가지 가상 변경(주전공·이중전공·부전공)을 비교한다(#11, #82).
+ * 두 쪽 모두 같은 수강 기록을 사용하므로 총 취득 학점에서 과목을 중복 계산하지 않는다.
+ * 전공 경로나 주전공에 따라 다른 RulePack을 선택할 수 있으며, 승인된 조합이 없으면 임의로 대체하지 않는다.
+ * 결과는 현재·가상 상태의 투영과 요건 차이이며 실제 전공 변경이나 졸업 판정이 아니다.
+ */
+export const MAJOR_WHAT_IF_CORE_VERSION = 'hufs-major-what-if-2';
+/**
+ * @param {unknown} value
+ * @param {string} programId
+ * @returns {DegreePath}
+ */
+function canonicalDegreePath(value, programId) {
+    // 허용된 별칭만 정확히 정규화한다. 알 수 없는 값이 다른 학위 경로로 조용히 바뀌어서는 안 된다.
+    if (value === 'MAJOR_DEEPENING')
+        return 'ADVANCED_SINGLE';
+    if (value === 'MAJOR_DEEPENING_MINOR')
+        return 'ADVANCED_PLUS_MINOR';
+    const parsed = AcademicDegreePathVNextSchema.safeParse(value);
+    if (!parsed.success)
+        throw new TypeError(`Primary pack ${programId} needs a supported degree path`);
+    return parsed.data;
+}
+const MAX_REQUIREMENTS = 200;
+const MAX_DELTA_EVIDENCE = 20;
+/** @param {ProgramEnrollment} enrollment @returns {DegreePath} */
+const pathOf = (enrollment) => !enrollment.secondary ? 'ADVANCED_SINGLE' : enrollment.secondary.role === 'DOUBLE_MAJOR' ? 'DOUBLE_MAJOR' : 'ADVANCED_PLUS_MINOR';
+/**
+ * @param {ProgramEnrollment} enrollment
+ * @param {string} label
+ */
+function checkEnrollment(enrollment, label) {
+    assertId(enrollment.primaryProgramId, `${label} primaryProgramId`);
+    if (enrollment.secondary === undefined)
+        return;
+    if (enrollment.secondary.role !== 'DOUBLE_MAJOR' && enrollment.secondary.role !== 'MINOR') {
+        throw new TypeError(`${label} second program role must be DOUBLE_MAJOR or MINOR`);
+    }
+    assertId(enrollment.secondary.programId, `${label} second programId`);
+    if (enrollment.secondary.programId === enrollment.primaryProgramId) {
+        throw new TypeError(`${label} second program cannot be the primary major`);
+    }
+}
+/** 가정이 적용된 전공 구성이며 현재 구성과 양립할 수 없으면 undefined다. */
+/**
+ * @param {ProgramEnrollment} current
+ * @param {WhatIfScenario} scenario
+ * @returns {ProgramEnrollment|undefined}
+ */
+function applyScenario(current, scenario) {
+    const second = current.secondary;
+    const target = 'targetMajorId' in scenario ? scenario.targetMajorId : undefined;
+    /** @param {string} id */
+    const fresh = (id) => id !== current.primaryProgramId && id !== second?.programId;
+    switch (scenario.action) {
+        case 'CHANGE_PRIMARY_MAJOR':
+            return fresh(target) ? { primaryProgramId: target, ...(second ? { secondary: second } : {}) } : undefined;
+        case 'ADD_DOUBLE_MAJOR':
+        case 'ADD_MINOR': {
+            /** @type {SecondaryRole} */
+            const role = scenario.action === 'ADD_DOUBLE_MAJOR' ? 'DOUBLE_MAJOR' : 'MINOR';
+            return !second && fresh(target) ? { primaryProgramId: current.primaryProgramId, secondary: { role, programId: target } } : undefined;
+        }
+        case 'CHANGE_DOUBLE_MAJOR':
+        case 'CHANGE_MINOR': {
+            /** @type {SecondaryRole} */
+            const role = scenario.action === 'CHANGE_DOUBLE_MAJOR' ? 'DOUBLE_MAJOR' : 'MINOR';
+            return second?.role === role && fresh(target)
+                ? { primaryProgramId: current.primaryProgramId, secondary: { role, programId: target } } : undefined;
+        }
+        case 'REMOVE_DOUBLE_MAJOR':
+            return second?.role === 'DOUBLE_MAJOR' ? { primaryProgramId: current.primaryProgramId } : undefined;
+        case 'REMOVE_MINOR':
+            return second?.role === 'MINOR' ? { primaryProgramId: current.primaryProgramId } : undefined;
+    }
+}
+/**
+ * @param {ProgramEnrollment} enrollment
+ * @param {readonly ProgramOffer[]} programs
+ * @returns {Resolved}
+ */
+function resolve(enrollment, programs) {
+    const path = pathOf(enrollment);
+    const primaries = programs.filter((offer) => offer.role === 'PRIMARY_MAJOR' && offer.programId === enrollment.primaryProgramId && canonicalDegreePath(offer.degreePath, offer.programId) === path);
+    const second = enrollment.secondary;
+    // 다른 주전공에 승인된 규칙집은 현재 주전공의 규칙을 대신할 수 없다.
+    const secondaries = second ? programs.filter((offer) => offer.role === second.role && offer.programId === second.programId
+        && (offer.primaryProgramId === undefined || offer.primaryProgramId === enrollment.primaryProgramId)) : [];
+    /** @type {Resolved} */
+    const resolved = { unavailable: primaries.length === 0 || (second !== undefined && secondaries.length === 0) };
+    const primary = primaries[0], secondary = secondaries[0];
+    if (primary?.role === 'PRIMARY_MAJOR')
+        resolved.primary = primary;
+    if (secondary && secondary.role !== 'PRIMARY_MAJOR')
+        resolved.secondary = secondary;
+    return resolved;
+}
+/** @param {Resolved} resolved @param {ProgramEnrollment} enrollment */
+const approved = (resolved, enrollment) => resolved.primary?.pack.rulePackState === 'APPROVED'
+    && (!enrollment.secondary || resolved.secondary?.pack.rulePackState === 'APPROVED');
+/**
+ * @param {readonly ProgramOffer[]} programs
+ */
+function checkCatalog(programs) {
+    if (!Array.isArray(programs))
+        throw new TypeError('programs must be an array');
+    /** @type {Set<string>} */
+    const keys = new Set();
+    /** @type {Set<string>} */
+    const versions = new Set();
+    /** @type {Map<string, boolean>} */
+    const scoping = new Map();
+    for (const offer of programs) {
+        if (offer.role !== 'PRIMARY_MAJOR' && offer.role !== 'DOUBLE_MAJOR' && offer.role !== 'MINOR') {
+            throw new TypeError('program role must be PRIMARY_MAJOR, DOUBLE_MAJOR or MINOR');
+        }
+        assertId(offer.programId, 'programId');
+        /** @type {string|null} */
+        let scope;
+        if (offer.role === 'PRIMARY_MAJOR') {
+            if (/** @type {{primaryProgramId?:unknown}} */ (offer).primaryProgramId !== undefined) {
+                throw new TypeError(`primary pack ${offer.programId} cannot name a primaryProgramId`);
+            }
+            // 동일한 선택지를 뜻하는 정식·이전 표기를 서로 다른 후보로 중복 계산하지 않는다.
+            scope = canonicalDegreePath(offer.degreePath, offer.programId);
+        }
+        else {
+            scope = offer.primaryProgramId ?? null;
+            if (scope !== null) {
+                assertId(scope, `${offer.programId} primaryProgramId`);
+                if (scope === offer.programId)
+                    throw new TypeError(`${offer.role} ${offer.programId} cannot be scoped to itself`);
+            }
+            const program = JSON.stringify([offer.role, offer.programId]);
+            const scoped = scoping.get(program);
+            if (scoped !== undefined && scoped !== (scope !== null)) {
+                throw new TypeError(`${offer.role} ${offer.programId} mixes a program-wide pack with packs for one primary major`);
+            }
+            scoping.set(program, scope !== null);
+        }
+        const key = JSON.stringify([offer.role, offer.programId, scope]);
+        if (keys.has(key))
+            throw new TypeError(`the catalog lists ${offer.role} ${offer.programId} more than once`);
+        keys.add(key);
+        assertId(offer.pack.rulePackVersion, `${offer.programId} rulePackVersion`);
+        if (versions.has(offer.pack.rulePackVersion))
+            throw new TypeError(`rule pack ${offer.pack.rulePackVersion} is listed twice`);
+        versions.add(offer.pack.rulePackVersion);
+    }
+}
+/**
+ * @param {WhatIfProjection['role']} role
+ * @param {MajorWhatIfRequest} input
+ * @param {ProgramEnrollment} enrollment
+ * @param {Resolved} resolved
+ * @returns {WhatIfProjection}
+ */
+function project(role, input, enrollment, resolved) {
+    const primary = resolved.primary.pack;
+    const secondary = resolved.secondary?.pack;
+    const totals = primary.requirements.filter(requirement => requirement.kind === 'CREDIT_TOTAL');
+    if (totals.length !== 1)
+        throw new TypeError(`${primary.rulePackVersion} needs exactly one CREDIT_TOTAL row`);
+    const audit = buildDoubleMajorAudit({
+        asOf: input.asOf, attempts: input.attempts, primary,
+        doubleMajor: secondary ? { status: 'SELECTED', pack: secondary } : { status: 'NONE' },
+    });
+    const second = audit.doubleMajor.status === 'CHECKED' ? audit.doubleMajor.audit : undefined;
+    const rows = [...audit.primary.requirements, ...(second?.requirements ?? [])];
+    /** @type {Map<string, LedgerRequirement>} */
+    const definitions = new Map();
+    /** @type {Map<string, MajorRulePack>} */
+    const owner = new Map();
+    for (const pack of [primary, ...(secondary ? [secondary] : [])]) {
+        for (const requirement of pack.requirements) {
+            if (definitions.has(requirement.id)) {
+                throw new TypeError(`requirement ${requirement.id} appears in both the primary and the second program pack`);
+            }
+            definitions.set(requirement.id, requirement);
+            owner.set(requirement.id, pack);
+        }
+    }
+    if (rows.length > MAX_REQUIREMENTS)
+        throw new RangeError('too many requirements for one projection');
+    /** @type {Map<string, OverlapRowImpact>} */
+    const impacts = new Map();
+    for (const impact of [...audit.overlap.rowImpacts.primary, ...audit.overlap.rowImpacts.doubleMajor])
+        impacts.set(impact.requirementId, impact);
+    // 원장이 인정 보류, 미종료 학기, 미승인·분기 재수강, 중복 충돌 등으로 판정을 보류한 시도다.
+    // 이 기록이 충족시킬 수 있는 요건은 확정된 부족 학점이 아니므로 MISSING 표시는 유지하되 검토 대상으로 표시한다.
+    // 공식 제외, 중복, 승인 재수강으로 확정 제외된 기록은 경고 대상으로 삼지 않는다.
+    const byToken = new Map(input.attempts.map(attempt => [attempt.attemptToken, attempt]));
+    const undecided = audit.primary.excludedAttempts
+        .filter(row => row.reason === 'PENDING_RECOGNITION' || row.reason === 'NEEDS_REVIEW')
+        .map(row => byToken.get(row.attemptToken))
+        .filter(attempt => attempt.creditUnits > 0);
+    /** @param {LedgerRequirement} definition @returns {boolean} */
+    const touchedByUndecided = (definition) => {
+        const pack = owner.get(definition.id);
+        return undecided.some(attempt => {
+            const course = attempt.canonicalCourseId;
+            switch (definition.kind) {
+                case 'CREDIT_TOTAL': return true;
+                case 'CATEGORY_MINIMUM': return (pack.courseAreas[course] ?? []).includes(definition.areaId);
+                case 'REQUIRED_COURSE': return definition.canonicalCourseId === course;
+                case 'K_OF_N': return definition.courseIds.includes(course);
+                case 'AREA_SPREAD': return (pack.courseAreas[course] ?? []).some(area => definition.areaIds.includes(area));
+                case 'GROUP_CHOICE': return definition.groups.some(group => group.includes(course));
+                case 'NON_CREDIT': return false;
+            }
+        });
+    };
+    /** @type {MajorWhatIfRequirementProgress[]} */
+    const requirements = [];
+    /** @type {string[]} */
+    const reviewRequirementIds = [];
+    for (const row of rows) {
+        const definition = definitions.get(row.requirementId);
+        if (row.state === 'SATISFIED') {
+            requirements.push({ requirementId: row.requirementId, state: 'SATISFIED' });
+            continue;
+        }
+        if (row.state === 'NEEDS_REVIEW' || row.state === 'NOT_CHECKED' || touchedByUndecided(definition)) {
+            reviewRequirementIds.push(row.requirementId);
+        }
+        /** @type {MajorWhatIfRequirementProgress} */
+        const progress = { requirementId: row.requirementId, state: 'MISSING' };
+        if (definition.kind === 'CREDIT_TOTAL' || definition.kind === 'CATEGORY_MINIMUM') {
+            // 공유 과목 때문에 보류된 요건은 중복 인정 불허를 가정한 보수적 수치를 보여준다.
+            const impact = impacts.get(row.requirementId);
+            const missing = impact && !impact.decided && impact.remainingCreditUnitsWithoutShared !== undefined
+                ? impact.remainingCreditUnitsWithoutShared : row.remainingCreditUnits;
+            if (missing === undefined)
+                throw new Error(`${row.requirementId} has no remaining credit figure`);
+            progress.missingCreditUnits = missing;
+        }
+        requirements.push(progress);
+    }
+    const totalRow = audit.primary.requirements.find(row => row.requirementId === totals[0].id);
+    return {
+        role, asOf: input.asOf, enrollment, degreePath: pathOf(enrollment),
+        rulePackVersions: [primary.rulePackVersion, ...(secondary ? [secondary.rulePackVersion] : [])],
+        earnedCreditUnits: audit.uniqueCredits.earnedCreditUnits,
+        remainingCreditUnits: totalRow.remainingCreditUnits,
+        requirements, reviewRequirementIds,
+    };
+}
+/**
+ * @param {ReadonlyMap<string, LedgerRequirement>} definitions
+ * @param {string} id
+ * @returns {string[]}
+ */
+function evidenceOf(definitions, id) {
+    return [...(definitions.get(id)?.evidenceRefs ?? [])];
+}
+/**
+ * @param {MajorWhatIfRequest} input
+ * @returns {MajorWhatIfResult}
+ */
+export function buildMajorWhatIf(input) {
+    const parsed = OwnerMajorWhatIfScenarioSchema.safeParse(input.scenario);
+    if (!parsed.success)
+        throw new TypeError('scenario is not a valid #107 What-if scenario');
+    const scenario = parsed.data;
+    checkEnrollment(input.current, 'current');
+    checkCatalog(input.programs);
+    const coreVersion = MAJOR_WHAT_IF_CORE_VERSION;
+    /** @type {Set<MajorWhatIfBlocker>} */
+    const blockers = new Set();
+    const now = resolve(input.current, input.programs);
+    if (!approved(now, input.current))
+        blockers.add('CURRENT_RULEPACK_NOT_APPROVED');
+    const next = applyScenario(input.current, scenario);
+    /** @type {Resolved|undefined} */
+    let then;
+    if (!next)
+        blockers.add('TARGET_PROGRAM_UNAVAILABLE');
+    else {
+        then = resolve(next, input.programs);
+        if (then.unavailable)
+            blockers.add('TARGET_PROGRAM_UNAVAILABLE');
+        else {
+            // 양쪽에서 같은 규칙집을 쓰는 경우는 CURRENT_RULEPACK_NOT_APPROVED로 이미 보고했다.
+            const used = new Set([now.primary, now.secondary].flatMap(offer => (offer ? [offer.pack.rulePackVersion] : [])));
+            const fresh = [then.primary, ...(then.secondary ? [then.secondary] : [])].filter(offer => !used.has(offer.pack.rulePackVersion));
+            if (fresh.some(offer => offer.pack.rulePackState !== 'APPROVED'))
+                blockers.add('RULEPACK_NOT_APPROVED');
+        }
+    }
+    if (blockers.size > 0) {
+        /** @type {MajorWhatIfBlocker[]} */
+        const order = ['CURRENT_RULEPACK_NOT_APPROVED', 'RULEPACK_NOT_APPROVED', 'TARGET_PROGRAM_UNAVAILABLE'];
+        return { state: 'BLOCKED_DEPENDENCY', asOf: input.asOf, scenario, blockers: order.filter(code => blockers.has(code)), coreVersion };
+    }
+    const current = project('CURRENT', input, input.current, now);
+    const hypothetical = project('HYPOTHETICAL', input, next, then);
+    if (current.earnedCreditUnits !== hypothetical.earnedCreditUnits) {
+        throw new Error('both sides must read the same unique earned ledger');
+    }
+    /** @type {Map<string, LedgerRequirement>} */
+    const definitionsBefore = new Map();
+    /** @type {Map<string, LedgerRequirement>} */
+    const definitionsAfter = new Map();
+    for (const offer of [now.primary, now.secondary].filter(Boolean)) {
+        for (const requirement of offer.pack.requirements)
+            definitionsBefore.set(requirement.id, requirement);
+    }
+    for (const offer of [then.primary, then.secondary].filter(Boolean)) {
+        for (const requirement of offer.pack.requirements)
+            definitionsAfter.set(requirement.id, requirement);
+    }
+    const before = new Map(current.requirements.map(row => [row.requirementId, row]));
+    const after = new Map(hypothetical.requirements.map(row => [row.requirementId, row]));
+    const ids = [...before.keys(), ...[...after.keys()].filter(id => !before.has(id))];
+    if (ids.length > MAX_REQUIREMENTS)
+        throw new RangeError('too many requirements for one What-if diff');
+    const delta = ids.map(requirementId => {
+        const previous = before.get(requirementId);
+        const next = after.get(requirementId);
+        /** @type {MajorWhatIfDeltaRow['change']} */
+        let change;
+        if (!previous)
+            change = next.state === 'SATISFIED' ? 'ALREADY_SATISFIED' : 'NEW_REQUIREMENT';
+        else if (!next)
+            change = 'REMOVED_REQUIREMENT';
+        else
+            change = previous.state === next.state && (previous.missingCreditUnits ?? 0) === (next.missingCreditUnits ?? 0)
+                ? 'UNCHANGED' : 'PROGRESS_CHANGED';
+        const evidenceRefs = [...new Set([...evidenceOf(definitionsBefore, requirementId), ...evidenceOf(definitionsAfter, requirementId)])];
+        if (evidenceRefs.length === 0)
+            throw new TypeError(`${requirementId} has no evidence; an approved pack must cite each requirement`);
+        if (evidenceRefs.length > MAX_DELTA_EVIDENCE)
+            throw new RangeError(`${requirementId} cites more than ${MAX_DELTA_EVIDENCE} evidence refs`);
+        return { requirementId, change, evidenceRefs };
+    });
+    if (!isConsistentMajorWhatIfDelta({ current: current.requirements, hypothetical: hypothetical.requirements, delta })) {
+        throw new Error('internal: the What-if diff does not match its projections');
+    }
+    return { state: 'READY', asOf: input.asOf, scenario, coreVersion, current, hypothetical, delta };
+}
