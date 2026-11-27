@@ -462,3 +462,27 @@ test('개발자 소개의 이름·소속·역할은 정확하며 역할은 세 P
     expect(hasDocumentOverflow).toBe(false);
   }
 });
+
+test('전체 PC 페이지의 푸터는 practice 및 selectZone과 같은 높이·세로 여백·하단 좌표를 유지한다',async({page})=>{
+  await preparePage(page);
+  const allRoutes=[...routes,['readiness','/html/readiness.html'],['reaction','/html/reaction-test.html'],['strategy','/html/strategy-lab.html']];
+  for(const viewport of [...viewports,{width:1920,height:1080}]){
+    await page.setViewportSize(viewport);
+    const measure=()=>page.locator('body > .hanmo-policy-footer').evaluate(el=>{
+      const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+      return {x:r.x,top:r.top,width:r.width,height:r.height,bottom:r.bottom,
+        paddingTop:style.paddingTop,paddingBottom:style.paddingBottom,minHeight:style.minHeight};
+    });
+    await visit(page,'/html/practice.html');
+    const reference=await measure();
+    expect(reference.height).toBe(48);
+    expect(reference.bottom).toBe(viewport.height);
+    for(const [name,path] of allRoutes){
+      await visit(page,path);
+      expect(await measure(),name+' '+viewport.width+'×'+viewport.height).toEqual(reference);
+      await expect(page.locator('body > .hanmo-policy-footer strong')).toBeInViewport({ratio:1});
+      const mainBottom=await page.evaluate(()=>document.querySelector('body > .half, body > main')?.getBoundingClientRect().bottom);
+      expect(mainBottom,name).toBeLessThanOrEqual(reference.top+1);
+    }
+  }
+});

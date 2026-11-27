@@ -355,7 +355,6 @@ body.hanmo-refined .hanmo-topbar .hanmo-profile-summary{
    height:100dvh;min-height:0;max-height:100dvh;overflow:hidden;
  }
  body.hanmo-refined>.hanmo-topbar{flex:0 0 auto;}
- body.hanmo-refined>.hanmo-policy-footer{flex:0 0 auto;min-height:40px;padding-block:5px;}
  body.hanmo-refined>main{box-sizing:border-box;flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;}
  body.hanmo-ui.hanmo-refined>main.hanmo-main{padding-top:12px;padding-bottom:8px;}
  body.hanmo-home.hanmo-refined>main{padding-top:10px;padding-bottom:10px;}

@@ -47,3 +47,13 @@ test('모의신청·달력·지원 기기에서 독립된 하단 표시를 보�
  assert.ok(css.includes('body.hanmo-policy-legacy > main'));
  assert.ok(css.includes('body.hanmo-synthetic-404.hanmo-practice-layout .half'));
 });
+
+test('모든 화면의 푸터는 연습 페이지와 동일한 공통 최소 높이와 세로 여백을 사용한다',()=>{
+ const common=fs.readFileSync(path.join(root,'css/hanmo-policy-footer.css'),'utf8');
+ const refined=fs.readFileSync(path.join(root,'css/hanmo-refined.css'),'utf8');
+ const rule=common.match(/\.hanmo-policy-footer\s*\{([^}]+)\}/)?.[1];
+ assert.ok(rule);
+ assert.match(rule,/min-height:\s*48px/);
+ assert.match(rule,/padding:\s*10px 24px 12px/);
+ assert.doesNotMatch(refined,/\.hanmo-policy-footer\s*\{[^}]*(?:min-height|padding(?:-block)?|height)\s*:/);
+});
