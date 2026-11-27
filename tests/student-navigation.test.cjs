@@ -427,15 +427,33 @@ test('학사공지·강의검색 안내·링크 버튼은 검색 영역과 같�
  }
 });
 
-test('3차 김채윤 담당과 최종 원개발자 인수가 문서에서 일관되게 별도 게이트로 표시된다',()=>{
- for(const name of ['README.md','AGENTS.md','docs/architecture.md','docs/pending-issues.md']){
+test('내부 개발 문서는 3차 김채윤 담당과 최종 현장 검증·인수 게이트를 보존한다',()=>{
+ for(const name of ['AGENTS.md','docs/architecture.md','docs/pending-issues.md']){
   const content=fs.readFileSync(path.join(ROOT,name),'utf8');
   assert.match(content,/qamarrchae|김채윤/,name);
   assert.match(content,/#125/,name);
   assert.match(content,/2차|#71/,name);
  }
  assert.match(fs.readFileSync(path.join(ROOT,'agent.md'),'utf8'),/\[AGENTS\.md\]\(AGENTS\.md\)/);
- assert.match(fs.readFileSync(path.join(ROOT,'README.md'),'utf8'),/<div align="center">/);
+});
+
+test('공개 README와 SVG는 통합 한모를 소개하고 내부 검증 문서 및 미연결 상태를 보존한다',()=>{
+ const readme=fs.readFileSync(path.join(ROOT,'README.md'),'utf8');
+ assert.match(readme,/<div align="center">/);
+ assert.match(readme,/<h1>한모 · Hanmo<\/h1>/);
+ assert.match(readme,/https:\/\/tofuhanmo\.com\//);
+ assert.match(readme,/qamarrchae|김채윤/);
+ assert.match(readme,/\[미결 이슈\]\(docs\/pending-issues\.md\)/);
+ assert.match(readme,/학사 정보와 강의 검색 메뉴는 현재 비활성 상태/);
+ assert.match(readme,/mode: disabled/);
+ assert.doesNotMatch(readme,/Hanmo Develop|Hanmo_develop|원작에서 이어받은 것|Based on/);
+ for(const image of ['hanmo-hero-hufs','hanmo-experience-landscape','hanmo-basic-flow-compact']){
+  const asset='docs/images/'+image+'.svg';
+  assert.ok(readme.includes(asset),asset);
+  const svg=fs.readFileSync(path.join(ROOT,asset),'utf8');
+  assert.match(svg,/<svg\b[^>]*\bviewBox=/,asset);
+  assert.doesNotMatch(svg,/Hanmo Develop|>DEVELOP<\/text>/,asset);
+ }
 });
 
 
