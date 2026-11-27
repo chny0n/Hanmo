@@ -4,7 +4,7 @@ const HEAD_REQUESTS=5;
 const DOWNLOAD_REQUESTS=2;
 function orderedSamples(samples){
   if(!Array.isArray(samples)||!samples.length||samples.some(v=>!Number.isFinite(v)||v<0))
-    throw new RangeError('측정 표본이 올바르지 않습니다.');
+    throw new RangeError('측정 표본이 올바르지 않아요.');
   return [...samples].sort((a,b)=>a-b);
 }
 function interpolate(sorted,ratio){
@@ -12,7 +12,7 @@ function interpolate(sorted,ratio){
   return sorted[low]+(sorted[high]-sorted[low])*(position-low);
 }
 export function percentile(samples,ratio){
-  if(!Number.isFinite(ratio)||ratio<0||ratio>1)throw new RangeError('측정 표본이 올바르지 않습니다.');
+  if(!Number.isFinite(ratio)||ratio<0||ratio>1)throw new RangeError('측정 표본이 올바르지 않아요.');
   return interpolate(orderedSamples(samples),ratio);
 }
 export function summarizeFrames(samples){
@@ -117,11 +117,11 @@ export function gradeAdvice(grades){
  */
 export function findings({frame,longTasks,network,drift}){
   const messages=[];
-  if(frame.interruptions>=3)messages.push('화면 갱신이 여러 번 끊겼습니다.');
-  if(frame.median>=30)messages.push('이 탭의 화면 갱신 간격이 길었습니다.');
-  if(longTasks!==null&&longTasks>=3)messages.push('브라우저 긴 작업이 반복되었습니다.');
-  if(network!==null&&network.failures>=2)messages.push('한모 정적 파일 요청에서 반복 오류가 발생했습니다.');
-  if(drift!=null&&drift>=100)messages.push('브라우저 타이머가 크게 지연되었습니다.');
+  if(frame.interruptions>=3)messages.push('화면 갱신이 여러 번 끊겼어요.');
+  if(frame.median>=30)messages.push('이 탭의 화면 갱신 간격이 길었어요.');
+  if(longTasks!==null&&longTasks>=3)messages.push('브라우저 긴 작업이 반복되었어요.');
+  if(network!==null&&network.failures>=2)messages.push('한모 정적 파일 요청에서 반복 오류가 발생했어요.');
+  if(drift!=null&&drift>=100)messages.push('브라우저 타이머가 크게 지연되었어요.');
   return messages;
 }
 const text=(value)=>typeof value==='number'?value.toFixed(1):'측정 불가';
@@ -148,7 +148,7 @@ async function fetchWithTimeout(url,method,signal){
     const bytes=(await response.arrayBuffer()).byteLength;
     if(method==='GET'){
       // Windows 체크아웃에서는 마지막 줄바꿈이 1바이트 더 길 수 있습니다.
-      guard(bytes!==PROBE_BYTES&&bytes!==PROBE_BYTES+1,'시험 파일이 불완전합니다.');
+      guard(bytes!==PROBE_BYTES&&bytes!==PROBE_BYTES+1,'시험 파일이 불완전해요.');
     }
     const timing=performance.getEntriesByName(url.href,'resource').at(-1);
     return networkSample(timing,method);
@@ -161,7 +161,7 @@ async function measureNetwork(signal,progress){
   let failures=0;
   const runId=crypto.randomUUID?.()??String(performance.now());
   for(let i=0;i<HEAD_REQUESTS;i++){
-    guard(signal.aborted,'검사가 중단되었습니다.');
+    guard(signal.aborted,'검사가 중단되었어요.');
     progress('연결 응답시간 검사 '+(i+1)+'/'+HEAD_REQUESTS);
     const url=new URL('../img/favicon.png',import.meta.url);
     url.searchParams.set('probe','head-'+i+'-'+runId);
@@ -169,7 +169,7 @@ async function measureNetwork(signal,progress){
     catch(e){if(signal.aborted)throw e;failures++;latency.push(null);}
   }
   for(let i=0;i<DOWNLOAD_REQUESTS;i++){
-    guard(signal.aborted,'검사가 중단되었습니다.');
+    guard(signal.aborted,'검사가 중단되었어요.');
     progress('다운로드 처리량 검사 '+(i+1)+'/'+DOWNLOAD_REQUESTS);
     const url=new URL('../data/network-probe.txt',import.meta.url);
     url.searchParams.set('probe','download-'+i+'-'+runId);
@@ -220,7 +220,7 @@ function frames(signal){
       if(time>=end){
         if(longTasks!==null&&observer)countTasks(observer.takeRecords());
         if(cleanup()){
-          if(samples.length<25)reject(new Error('유효한 프레임 표본이 부족합니다.'));
+          if(samples.length<25)reject(new Error('유효한 프레임 표본이 부족해요.'));
           else resolve({frame:summarizeFrames(samples),longTasks,timerCount:drifts.length,
             drift:drifts.length?percentile(drifts,.95):null});
         }
@@ -242,7 +242,7 @@ if(typeof document!=='undefined'){
     const adviceList=document.getElementById('readiness-advice-list');
     const networkEnabled=document.getElementById('readiness-network');
     const redo=document.getElementById('readiness-back');
-    let controller=null,interruption='진단이 취소되었습니다.';
+    let controller=null,interruption='진단이 취소되었어요.';
     // 값·세부 설명·등급을 분리하되 원래 관측값은 모두 보존합니다.
     const value=(id,content,detail='')=>{
       const node=document.getElementById(id);
@@ -268,17 +268,17 @@ if(typeof document!=='undefined'){
     }
     const abort=(reason)=>{if(controller){interruption=reason;controller.abort();}};
     document.addEventListener('visibilitychange',()=>{
-      if(document.hidden)abort('탭이 숨겨져 측정이 중단되었습니다.');
+      if(document.hidden)abort('탭이 숨겨져 측정이 중단되었어요.');
     });
-    cancel.addEventListener('click',()=>abort('사용자가 진단을 취소했습니다.'));
+    cancel.addEventListener('click',()=>abort('사용자가 진단을 취소했어요.'));
     redo.addEventListener('click',()=>{result.hidden=true;inputs.hidden=false;start.focus();});
     start.addEventListener('click',async()=>{
       if(controller)return;
       controller=new AbortController();const signal=controller.signal;
-      start.disabled=true;cancel.hidden=false;interruption='진단이 취소되었습니다.';
+      start.disabled=true;cancel.hidden=false;interruption='진단이 취소되었어요.';
       try{
-        guard(!('requestAnimationFrame' in window),'프레임 측정을 지원하지 않는 브라우저입니다.');
-        status.textContent='현재 화면의 프레임과 이벤트 루프를 3초간 관측합니다.';
+        guard(!('requestAnimationFrame' in window),'프레임 측정을 지원하지 않는 브라우저예요.');
+        status.textContent='현재 화면의 프레임과 이벤트 루프를 3초간 관측해요.';
         const {frame,longTasks,drift,timerCount}=await frames(signal);
         let network=null;
         if(networkEnabled.checked)network=await measureNetwork(signal,message=>{status.textContent=message;});
@@ -311,14 +311,14 @@ if(typeof document!=='undefined'){
         advice.hidden=actions.length===0;
         const low=Object.values(grades).some(item=>item.grade==='D'||item.grade==='F');
         summary.textContent=messages.join(' ')||(low
-          ?'참고 기준에서 개선이 필요한 항목이 있습니다. 항목별 등급과 관측값을 확인하세요.'
-          :'이번 관측에서 뚜렷한 이상을 발견하지 못했습니다.');
+          ?'참고 기준에서 개선이 필요한 항목이 있어요. 항목별 등급과 관측값을 확인하세요.'
+          :'이번 관측에서 뚜렷한 이상을 발견하지 못했어요.');
         document.getElementById('readiness-grade-criteria').open=false;
         result.hidden=false;inputs.hidden=true;
         // 길어진 결과를 처음부터 읽고 키보드로 스크롤할 수 있도록 합니다.
         result.scrollTop=0;
         result.focus({preventScroll:true});
-        status.textContent='완료 · 본 결과는 브라우저 및 한모 정적 배포 서버에 대한 관측값입니다.';
+        status.textContent='완료 · 본 결과는 브라우저 및 한모 정적 배포 서버에 대한 관측값이에요.';
       }catch(error){
         status.textContent=signal.aborted?interruption:
           (error instanceof Error?error.message:'진단 오류');

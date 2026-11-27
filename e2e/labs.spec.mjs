@@ -94,7 +94,7 @@ test('PC 진단은 실행 전 요청이 없고 PC 지표 10개의 독립 등급�
   await expect(criteria).toHaveJSProperty('open',false);
   await criteria.locator('summary').click();
   await expect(criteria).toHaveJSProperty('open',true);
-  await expect(criteria).toContainText('미측정·미지원은 F가 아닙니다.');
+  await expect(criteria).toContainText('미측정·미지원은 F가 아니에요.');
   for(const viewport of [{width:1280,height:720},{width:1440,height:900}]){
     await page.setViewportSize(viewport);
     await expectOneScreen(page,'#readiness-result');
@@ -211,8 +211,8 @@ test('저장에 실패해도 8회 반응 결과를 보여 준다',async({page})=
     await page.clock.runFor(350);
   }
   await expect(page.locator('#reaction-report')).toBeVisible();
-  await expect(page.locator('#reaction-report')).toHaveText(/^사용자님의 반응속도는 중앙값 \d+ms 입니다\.$/);
-  await expect(page.locator('#reaction-status')).toHaveText('브라우저에 이번 반응속도 결과를 저장하지 못했습니다.');
+  await expect(page.locator('#reaction-report')).toHaveText(/^사용자님의 반응속도는 중앙값 \d+ms예요\.$/);
+  await expect(page.locator('#reaction-status')).toHaveText('브라우저에 이번 반응속도 결과를 저장하지 못했어요.');
   await expect(page.locator('#reaction-result a')).toHaveCount(0);
   expect(await page.evaluate(()=>localStorage.getItem('hanmo.reaction.profile.v1'))).toBeNull();
 });
@@ -264,7 +264,7 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('.strategy-course-rate').first()).toHaveAttribute('title',/가정별.*평균 처리 시각/);
   await expectOneScreen(page,'#strategy-result');
   await expect(page.locator('#strategy-wait-summary')).toHaveText(/평균 누적 대기시간 \d+\.\d초 \(혼잡 대기 \d+\.\d초 포함\) · 전체 신청 시도 평균 소요시간 \d+\.\d초/);
-  await expect(page.locator('#strategy-result')).toContainText('실제 학교 서버의 대기시간을 측정한 값은 아닙니다.');
+  await expect(page.locator('#strategy-result')).toContainText('실제 학교 서버의 대기시간을 측정한 값은 아니에요.');
   await expect(page.locator('#strategy-result')).not.toContainText('경쟁자 중복');
   await expect(page.locator('#strategy-input')).toBeHidden();
   await expect(page.locator('#strategy-result')).toContainText('가상 처리율은 시작 후 2초까지 초당 50건, 5초까지 80건, 이후 100건이며 혼잡이 없는 기본 응답시간은 1~3초');
@@ -290,7 +290,7 @@ test('전략 실험은 네 개의 과목 입력만 요구하고 자동 행동시
   await expect(page.locator('#strategy-formula-values')).toContainText('τ_min = 10ms');
   await expect(formulas.locator('code')).toHaveCount(0);
   await expect(formulas.locator('math')).toHaveCount(39);
-  await expect(page.locator('#strategy-result')).toContainText('240~300ms 사이에서 변합니다');
+  await expect(page.locator('#strategy-result')).toContainText('240~300ms 사이에서 변해요');
   for(const id of ['rival-group','rival-reaction','rival-lognormal','rival-jitter','rival-tail','rival-action','fitts','fitts-geometry','population','overlap','membership','workload','background-urgency','preference','choice','entry','entry-share','service','base-delay','queue-start','queue-end','queue-wait','objective','all-success','evaluated-course','expected-courses']){
     await expect(formulas.locator('math[data-formula="'+id+'"]')).toBeVisible();
   }
@@ -368,9 +368,9 @@ test('전략 계산을 취소해도 최소 과목 수를 유지한다',async({pa
   await rows.last().getByRole('button').click();
   await expect(rows).toHaveCount(2);
   await page.locator('#strategy-run').click();
-  await expect(page.locator('#strategy-status')).toHaveText('1,000회 반복 실험 중입니다.');
+  await expect(page.locator('#strategy-status')).toHaveText('1,000회 반복 실험 중이에요.');
   await page.locator('#strategy-cancel').click();
-  await expect(page.locator('#strategy-status')).toHaveText('계산을 취소했습니다.');
+  await expect(page.locator('#strategy-status')).toHaveText('계산을 취소했어요.');
   for(const button of await rows.getByRole('button').all()) await expect(button).toBeDisabled({timeout:1000});
   await expect(page.locator('#strategy-run')).toBeEnabled();
 });
@@ -413,7 +413,7 @@ test('달력은 학사 달력 탭을 처음 열 때 한 번만 불러온다',asy
 test('달력 스타일을 받지 못해도 학교 일정 원문과 공지 탭을 열 수 있다',async({page})=>{
   await page.route('**/css/academic-calendar-vendor.css',route=>route.abort());
   await page.goto('/html/academic-timeline.html#calendar');
-  await expect(page.locator('#calendar-status')).toContainText('달력을 불러오지 못했습니다.');
+  await expect(page.locator('#calendar-status')).toContainText('달력을 불러오지 못했어요.');
   await expect(page.locator('#calendar-view [role="table"]')).toHaveCount(0);
   await expect(page.getByRole('link',{name:/학교 학사일정 원문/})).toBeVisible();
   await page.getByRole('tab',{name:'학사 공지'}).click();
@@ -450,7 +450,7 @@ test('반응속도 측정 결과는 중앙값만 한 줄로 표시된다',async(
   await seedProfile(page);
   await page.goto('/html/reaction-test.html');
   await expect(page.locator('#reaction-result')).toBeVisible();
-  await expect(page.locator('#reaction-report')).toHaveText('저장된 사용자님의 반응속도는 중앙값 250ms 입니다.');
+  await expect(page.locator('#reaction-report')).toHaveText('저장된 사용자님의 반응속도는 중앙값 250ms예요.');
   await expect(page.locator('#reaction-result a')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'내 반응시간'})).toHaveCount(0);
   await expect(page.locator('#reaction-result .lab-footnote')).toHaveCount(0);

@@ -273,7 +273,8 @@ test('홈과 학업 제목 장식은 유지하고 세 연습 화면에서는 제
   'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
   'html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
- const original=new Set(['html/result.html']);
+ // 결과 보고서도 제목 위치·구분선 통일을 위해 공통 구분선을 사용합니다.
+ const original=new Set();
  const noDivider=new Set(['html/practice.html','html/selectZone.html','html/incident-404.html']);
  for(const page of pages){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
@@ -376,9 +377,9 @@ test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정
  const body=html.match(/<ul class="hanmo-contributor-list">([\s\S]*?)<\/ul>/)?.[1];
  assert.ok(body);
  const names=[...body.matchAll(/<li><strong>([^<]+)/g)].map(x=>x[1].trim());
- assert.deepEqual(names,['ZetBe','심민성','이의상','김채윤']);
+ assert.deepEqual(names,['서희원','심민성','이의상','김채윤']);
  const roles=[...body.matchAll(/<small class="hanmo-contributor-role">([^<]+)<\/small>/g)].map(x=>x[1]);
- assert.deepEqual(roles,['· 한모(2026) 업데이트 총괄','· 한모(2026) 업데이트 nlp 담당','· 한모(2026) 업데이트 데이터 및 품질 보증 담당']);
+ assert.deepEqual(roles,['· 한모(2023-1) 일부 기능 추가','· 한모(2027-1) 업데이트 총괄','· 한모(2027-1) 업데이트 nlp 담당','· 한모(2027-1) 업데이트 데이터 및 품질 보증 담당']);
  for(const affiliation of ['한국외국어대학교 컴퓨터전자시스템공학부',"한국외국어대학교 경제학전공 '24","한국외국어대학교 ELLT '23","한국외국어대학교 아랍어과 '23"]){
   assert.ok(body.includes(affiliation),affiliation);
  }

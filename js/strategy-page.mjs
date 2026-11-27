@@ -71,7 +71,7 @@ if(form){
   }
   function scenario(seed){
     const profile=refreshProfile();
-    if(!profile)throw new RangeError('반응속도 테스트를 먼저 완료해야 전략을 계산할 수 있습니다.');
+    if(!profile)throw new RangeError('반응속도 테스트를 먼저 완료해야 전략을 계산할 수 있어요.');
     return validateScenario({
       courses:readRows(),seed,trials:1000,...deriveActionTimes(profile),
     });
@@ -102,7 +102,7 @@ if(form){
   cancel.addEventListener('click',()=>{
     if(!worker)return;
     worker.terminate();worker=null;busy(false);
-    status.textContent='계산을 취소했습니다.';
+    status.textContent='계산을 취소했어요.';
   });
   redo.addEventListener('click',()=>{
     result.hidden=true;inputPanel.hidden=false;refreshProfile();
@@ -115,13 +115,13 @@ if(form){
     try{input=scenario(seed);}
     catch(error){status.textContent=error instanceof Error?error.message:'입력값을 확인하세요.';return;}
     if(typeof Worker!=='function'){
-      status.textContent='이 브라우저는 별도 계산 스레드를 지원하지 않습니다.';return;
+      status.textContent='이 브라우저는 별도 계산 스레드를 지원하지 않아요.';return;
     }
     try{worker=new Worker(new URL('./strategy-worker.mjs',import.meta.url),{type:'module'});}
-    catch{status.textContent='계산 스레드를 실행하지 못했습니다.';return;}
+    catch{status.textContent='계산 스레드를 실행하지 못했어요.';return;}
     const active=worker;busy(true);
     clock.textContent=label;
-    status.textContent='1,000회 반복 실험 중입니다.';
+    status.textContent='1,000회 반복 실험 중이에요.';
     active.addEventListener('message',event=>{
       if(worker!==active)return;
       const message=event.data;
@@ -188,7 +188,7 @@ if(form){
     active.addEventListener('error',()=>{
       if(worker!==active)return;
       active.terminate();worker=null;busy(false);
-      status.textContent='계산 중 오류가 발생했습니다.';
+      status.textContent='계산 중 오류가 발생했어요.';
     });
     active.postMessage(input);
   });

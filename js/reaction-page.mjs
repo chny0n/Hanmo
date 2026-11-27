@@ -11,7 +11,7 @@ if(start){
   const result=document.getElementById('reaction-result');
   const reset=document.getElementById('reaction-reset');
   const showResult=(median,saved)=>{
-    report.textContent=(saved?'저장된 ':'')+'사용자님의 반응속도는 중앙값 '+median+'ms 입니다.';
+    report.textContent=(saved?'저장된 ':'')+'사용자님의 반응속도는 중앙값 '+median+'ms예요.';
     result.hidden=false;
   };
   const p=readProfile();
@@ -19,10 +19,10 @@ if(start){
   let state=initialReactionState(),timer=0,frame=0;
   /** 결과 코드별 안내 문구. 기존 화면 문구를 그대로 유지한다. */
   const MESSAGES={
-    EARLY:'너무 빨리 눌렀습니다. 다시 시작하세요.',
-    OUT_OF_RANGE:'반응시간이 유효 범위를 벗어났습니다. 처음부터 다시 측정하세요.',
-    HIDDEN:'탭이 숨겨져 결과를 폐기했습니다. 다시 측정하세요.',
-    CANCELLED:'테스트가 취소되었습니다.',
+    EARLY:'너무 빨리 눌렀어요. 다시 시작하세요.',
+    OUT_OF_RANGE:'반응시간이 유효 범위를 벗어났어요. 처음부터 다시 측정하세요.',
+    HIDDEN:'탭이 숨겨져 결과를 폐기했어요. 다시 측정하세요.',
+    CANCELLED:'테스트가 취소되었어요.',
   };
   /** @param {string} message @param {boolean} [resultReady] */
   function showIdle(message,resultReady=false){
@@ -62,7 +62,7 @@ if(start){
   function complete(samples){
     const profile=profileFromSamples(samples);
     const saved=saveProfile(null,profile);
-    const message=saved?'':'브라우저에 이번 반응속도 결과를 저장하지 못했습니다.';
+    const message=saved?'':'브라우저에 이번 반응속도 결과를 저장하지 못했어요.';
     showResult(profile.medianMs,saved);
     state=initialReactionState();
     showIdle(message,true);
@@ -85,7 +85,7 @@ if(start){
     result.hidden=true;
     start.disabled=true;target.disabled=false;reset.hidden=false;
     target.focus({preventScroll:true});
-    status.textContent='화면 색이 바뀔 때 클릭·Space·Enter로 입력하세요. 빠른 입력은 무효입니다.';
+    status.textContent='화면 색이 바뀔 때 클릭·Space·Enter로 입력하세요. 빠른 입력은 무효예요.';
     dispatch({type:'start'});
   });
   reset.addEventListener('click',()=>dispatch({type:'cancel'}));

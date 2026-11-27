@@ -294,6 +294,11 @@ body.hanmo-developer.hanmo-refined .info > h2 { font-size: 20px; margin: 0; }
 body.hanmo-developer.hanmo-refined .info > hr { width: 100%; background: var(--hm-line); margin: 16px 0; }
 .hanmo-refined .developer-bio h3 { margin: 0 0 6px; font-size: 20px; }
 .hanmo-refined .developer-bio p { margin: 0; font-size: 13px; color: var(--hm-readable); }
+/* 원개발자 문의 이메일은 소속 아래에 같은 크기로 두고 링크임을 밑줄로 구별합니다. */
+.hanmo-refined .developer-bio .developer-email { margin-top: -2px; }
+.hanmo-refined .developer-bio .developer-email a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+/* 원개발자 사진은 끌어서 저장하거나 길게 눌러 선택하지 않도록 합니다. 우클릭은 HTML에서 막습니다. */
+.hanmo-refined .developer-photo { -webkit-user-drag: none; user-select: none; -webkit-touch-callout: none; }
 body.hanmo-developer.hanmo-refined .card { justify-content: flex-start; width: 100%; }
 body.hanmo-developer.hanmo-refined .hanmo-contributor-list { width: 100%; }
 body.hanmo-developer.hanmo-refined .container > .button { grid-column: 1 / -1; justify-self: center; width: 180px; margin: 0; }
@@ -377,10 +382,10 @@ body.hanmo-refined #planner-go-notices:disabled {
 body.hanmo-refined #planner-go-notices:disabled::before{opacity:0;transition:none}
 
 /* 홈·모드 선택·개발자 소개의 제목을 기능 페이지의 동일한 상단 기준선과 구분선에 맞춥니다. */
-body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer).hanmo-refined .titleContainer {
+body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer,.hanmo-result).hanmo-refined .titleContainer {
   top:auto;width:100%;margin:12px 0 16px;align-items:center;text-align:center;
 }
-body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer).hanmo-refined .titleContainer h1 {
+body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer,.hanmo-result).hanmo-refined .titleContainer h1 {
   margin:0 0 5px;font-size:28px;line-height:1.35;letter-spacing:-.025em;font-weight:700;
 }
 body.hanmo-home.hanmo-refined > main {justify-content:flex-start;padding-top:12px;padding-bottom:8px}
@@ -391,6 +396,21 @@ body.hanmo-developer.hanmo-refined main > .f-dirt-down {
   justify-content:flex-start;
 }
 body.hanmo-developer.hanmo-refined .container {margin-top:0}
+/* 결과 보고서도 창 높이와 무관하게 제목을 같은 상단 기준선에 둡니다. */
+body.hanmo-result.hanmo-refined > main {justify-content:flex-start;padding-top:12px}
+body.hanmo-result.hanmo-refined main > .f-dirt-down {justify-content:flex-start}
+body.hanmo-result.hanmo-refined .container {margin-top:0}
+/* 학업 화면은 창 크기와 무관하게 제목을 홈과 같은 상단 기준선에 둡니다. */
+@media(min-width:701px){
+  body.hanmo-ui.hanmo-refined > main.hanmo-main,
+  body.hanmo-ui.hanmo-refined > main.hanmo-main.lab-layout {padding-top:12px}
+}
+/* 제목 왼쪽 도움말과 같은 폭을 오른쪽에 비워 제목 글자를 화면 가운데에 둡니다. */
+.hanmo-refined .hanmo-title-line:has(> .hanmo-title-help)::after {
+  content:"";flex:0 0 21px;
+}
+/* 도움말 줄이 없는 제목도 제목과 구분선 사이 거리를 같게 둡니다. 마진은 구분선 마진과 겹치므로 안쪽 여백을 씁니다. */
+body.hanmo-ui .hanmo-schoolmark > h1 {margin-bottom:0;padding-bottom:5px}
 /* 낮은 PC 화면의 제목 기준선과 푸터를 유지하면서 본문 여백만 줄입니다. */
 @media(min-width:701px) and (max-height:800px){
   body.hanmo-developer.hanmo-refined .container{row-gap:12px}
@@ -412,7 +432,7 @@ body.hanmo-home.hanmo-refined .buttonContainer{justify-content:center}
     position:relative;top:auto;left:auto;width:min(1184px,100%);max-width:100%;margin:0 auto;
     transform:none;align-items:center;
   }
-  body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll) .container{margin-top:8px}
+  body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll) .container{margin-top:8px;transform:none}
   body.hanmo-vsugang.hanmo-refined:not(.vsugang-compact-scroll) .grid {
     --mode-tile-size:min(280px,calc((100vw - 64px)/4),calc((100dvh - 234px)/2));
     grid-template-columns:repeat(4,var(--mode-tile-size));

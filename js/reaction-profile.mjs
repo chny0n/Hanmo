@@ -10,7 +10,7 @@ function percentile(sorted,ratio){
 export function profileFromSamples(samples,at=Date.now()){
   if(!Array.isArray(samples)||samples.length!==REACTION_COUNT||
      samples.some(value=>!Number.isFinite(value)||value<80||value>3000))
-    throw new RangeError('유효한 반응시간 8개가 필요합니다.');
+    throw new RangeError('유효한 반응시간 8개가 필요해요.');
   const sorted=[...samples].sort((a,b)=>a-b);
   const median=Math.round(percentile(sorted,.5));
   const p90=Math.round(percentile(sorted,.9));

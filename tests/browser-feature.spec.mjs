@@ -33,7 +33,7 @@ test('모든 화면에서 비공식 안내는 화면 안의 최하단에 나타�
    '/html/selectZone.html','/html/result.html','/html/developer.html',
    '/html/academic-timeline.html','/html/catalog.html','/html/readiness.html','/html/reaction-test.html','/html/strategy-lab.html',
    '/html/planner.html','/html/pc-only.html'];
- const exact='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.';
+ const exact='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인해 주세요.';
  for(const path of paths){
   await page.goto(path);
   await expect(page).toHaveURL(new URL(path,baseURL).href);
@@ -142,11 +142,11 @@ test('개발자 페이지는 네 명의 Contributor를 나란히 표기한다',a
  await page.goto('/html/developer.html');
  await expect(page.locator('.hanmo-contributor-list > li')).toHaveCount(4);
  await expect(page.locator('.hanmo-contributor-list strong')).toHaveText([
-   'ZetBe','심민성 · 한모(2026) 업데이트 총괄','이의상 · 한모(2026) 업데이트 nlp 담당',
-   '김채윤 · 한모(2026) 업데이트 데이터 및 품질 보증 담당',
+   '서희원 · 한모(2023-1) 일부 기능 추가','심민성 · 한모(2027-1) 업데이트 총괄','이의상 · 한모(2027-1) 업데이트 nlp 담당',
+   '김채윤 · 한모(2027-1) 업데이트 데이터 및 품질 보증 담당',
  ]);
  const roles=page.locator('.hanmo-contributor-role');
- await expect(roles).toHaveText(['· 한모(2026) 업데이트 총괄','· 한모(2026) 업데이트 nlp 담당','· 한모(2026) 업데이트 데이터 및 품질 보증 담당']);
+ await expect(roles).toHaveText(['· 한모(2023-1) 일부 기능 추가','· 한모(2027-1) 업데이트 총괄','· 한모(2027-1) 업데이트 nlp 담당','· 한모(2027-1) 업데이트 데이터 및 품질 보증 담당']);
  expect(await roles.evaluateAll(items=>items.every(item=>parseFloat(getComputedStyle(item).fontSize)<parseFloat(getComputedStyle(item.parentElement).fontSize)))).toBe(true);
  await expect(page.locator('.hanmo-contributor-list span')).toHaveCount(4);
 });

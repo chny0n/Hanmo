@@ -24,7 +24,7 @@ function render(value,missing=false){
 test('unset profile shows neutral setup text, not fake authentication',()=>{
  const {item}=render(null,true);
  assert.equal(item.textContent,'내정보 미설정');
- assert.match(item.title,/로그인한 상태가 아닙니다/);
+ assert.match(item.title,/로그인한 상태가 아니에요/);
 });
 test('campus major double major and admission-year 학번 appear in right header',()=>{
  const {item}=render({campus:'SEOUL',major:'경제학전공',secondaryKind:'DOUBLE',

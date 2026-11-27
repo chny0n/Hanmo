@@ -5,12 +5,12 @@ const requireInteger=(value,min,max,label)=>{
   if(!Number.isSafeInteger(value)||value<min||value>max)throw new RangeError(label+' 입력값을 확인하세요.');
 };
 export function validateScenario(input){
-  if(!input||!Array.isArray(input.courses))throw new RangeError('과목이 없습니다.');
+  if(!input||!Array.isArray(input.courses))throw new RangeError('과목이 없어요.');
   const c=input.courses;
   requireInteger(c.length,2,MAX_COURSES,'과목 수');
   const ranks=new Set(),ids=new Set();
   for(const course of c){
-    if(typeof course?.id!=='string'||!course.id||ids.has(course.id))throw new RangeError('과목 ID가 중복되었습니다.');
+    if(typeof course?.id!=='string'||!course.id||ids.has(course.id))throw new RangeError('과목 ID가 중복되었어요.');
     ids.add(course.id);
     if(typeof course.name!=='string'||!course.name.trim()||course.name.length>30)
       throw new RangeError('과목 이름은 1~30자로 입력하세요.');
@@ -295,7 +295,7 @@ export function bestOrder(weights,probability){
   const order=[];let mask=size-1;
   while(mask){
     const step=parent[mask];
-    if(!step)throw new Error('전략 순서를 계산하지 못했습니다.');
+    if(!step)throw new Error('전략 순서를 계산하지 못했어요.');
     order.push(step.index);mask=step.mask;
   }
   return order.reverse();

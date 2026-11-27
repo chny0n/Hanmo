@@ -41,7 +41,7 @@
     const value=summary(profile);
     for(const item of items){
       item.textContent=value;
-      item.title='본인이 이 브라우저에 저장한 정보입니다. 학교에 로그인한 상태가 아닙니다.';
+      item.title='본인이 이 브라우저에 저장한 정보예요. 학교에 로그인한 상태가 아니에요.';
     }
     const values={
       cohort:profile.cohort?profile.cohort+'년':'미입력',

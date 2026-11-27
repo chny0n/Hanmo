@@ -9,7 +9,7 @@ const pages=['index.html','html/readiness.html','html/reaction-test.html','html/
  'html/forecast.html','html/incident-404.html','html/pc-only.html',
  'html/planner.html','html/practice.html','html/result.html',
  'html/selectZone.html','html/vsugang.html'];
-const sentence='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.';
+const sentence='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인해 주세요.';
 test('모든 HTML은 비공식 고지를 굵게 한 번만, 마지막 콘텐츠에 표시한다',()=>{
  for(const page of pages){
   const html=fs.readFileSync(path.join(root,page),'utf8');

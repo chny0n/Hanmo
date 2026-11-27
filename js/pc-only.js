@@ -84,7 +84,7 @@
     content.append(logo,heading,desc,site);
     const policy=document.createElement('p');
     policy.className='mbPolicy';
-    policy.textContent='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인하시기 바랍니다.';
+    policy.textContent='본 서비스는 한국외국어대학교의 공식 서비스가 아니며, 정확한 정보는 학교 원문을 확인해 주세요.';
     block.append(content,policy);
     document.body.append(block);
     const disableBackground=()=>{

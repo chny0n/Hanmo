@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤. 연습·신청 화면 내정보 표시 및 두 표의 테두리 없는 제한된 스크롤 규격 반영. 공통 상단 내정보 말줄임 제거 및 좁은 창 줄바꿈. 양쪽 연습 화면의 상시 경고 표지 및 홈 상단 바 아래의 원본 훕또기 배너 추가. 배너와 홈 본문의 간격 축소. 연습 좌측 내정보 행간 축소 및 내부 스크롤 제거. 전략 실험의 경쟁자 가정 문구와 신청별 대기시간 모형·결과 안내. 전략 실험 전용 1~3초 대기와 접힌 수식·가정 설명. 전략 실험 공통 선착순 대기열 및 MathML 수식 표기. 전략 실험의 회차별 경쟁자 평균 이동·개인 속도 유지·신청별 변동 및 수식 갱신. #71·#72 접근성 예외: 진단 접힌 기준 표시·전략 8과목 결과 배치와 합성 신청/삭제/재수강 접근 가능한 이름만 변경. 2026-11-27 사용자 검토: B 이하 개선 안내 강조, 학사 메뉴 비활성화, 홈·모드 제목 및 배너 배치, 브라우저 제목 통일. 2026-11-27 사용자 지정: 브라우저 제목은 한모 | 페이지명. 개발자 소개의 공통 제목 기준선과 구분선 적용. 2026-11-27 사용자 지정: i 도움말 옆 다섯 기능 H1만 한모 | 페이지명으로 통일. 전략 실험 본문 제목에 베타 표시. 원본 1620fce 모바일 안내 동기화: 공개 URL 유지, 기존 기기 확인 띠 제거, 세션 보호와 포크 주소 유지. 원본 PR용 도메인 반영, 404 청색 사용자 패널 통일, 개발자 소개 저높이 여백 조정. 전 페이지 공통 푸터를 연습 페이지와 동일한 48px 최소 높이·세로 여백으로 통일. 2026-11-27 원개발자 승인: 6개 페이지 GTM 태그 교체, 모바일 차단 안내 주소 tofuhanmo.com 고정, favicon.png·hanmo.png 이미지 교체 및 hanmo_color·hanmo_purple 삭제, 이용 제한 안내 빨간색 깜빡임, 대기창 로고 원형 자르기 제거, 돌발상황 타일·창을 SETTING 창에 통합하고 BASIC 타일 복원, 설정 타일 이름 SETTINGS, BASIC 돌발상황 (신규) 표시, 채널톡을 메인 페이지에만 유지.",
+  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤. 연습·신청 화면 내정보 표시 및 두 표의 테두리 없는 제한된 스크롤 규격 반영. 공통 상단 내정보 말줄임 제거 및 좁은 창 줄바꿈. 양쪽 연습 화면의 상시 경고 표지 및 홈 상단 바 아래의 원본 훕또기 배너 추가. 배너와 홈 본문의 간격 축소. 연습 좌측 내정보 행간 축소 및 내부 스크롤 제거. 전략 실험의 경쟁자 가정 문구와 신청별 대기시간 모형·결과 안내. 전략 실험 전용 1~3초 대기와 접힌 수식·가정 설명. 전략 실험 공통 선착순 대기열 및 MathML 수식 표기. 전략 실험의 회차별 경쟁자 평균 이동·개인 속도 유지·신청별 변동 및 수식 갱신. #71·#72 접근성 예외: 진단 접힌 기준 표시·전략 8과목 결과 배치와 합성 신청/삭제/재수강 접근 가능한 이름만 변경. 2026-11-27 사용자 검토: B 이하 개선 안내 강조, 학사 메뉴 비활성화, 홈·모드 제목 및 배너 배치, 브라우저 제목 통일. 2026-11-27 사용자 지정: 브라우저 제목은 한모 | 페이지명. 개발자 소개의 공통 제목 기준선과 구분선 적용. 2026-11-27 사용자 지정: i 도움말 옆 다섯 기능 H1만 한모 | 페이지명으로 통일. 전략 실험 본문 제목에 베타 표시. 원본 1620fce 모바일 안내 동기화: 공개 URL 유지, 기존 기기 확인 띠 제거, 세션 보호와 포크 주소 유지. 원본 PR용 도메인 반영, 404 청색 사용자 패널 통일, 개발자 소개 저높이 여백 조정. 전 페이지 공통 푸터를 연습 페이지와 동일한 48px 최소 높이·세로 여백으로 통일. 2026-11-27 원개발자 승인: 6개 페이지 GTM 태그 교체, 모바일 차단 안내 주소 tofuhanmo.com 고정, favicon.png·hanmo.png 이미지 교체 및 hanmo_color·hanmo_purple 삭제, 이용 제한 안내 빨간색 깜빡임, 대기창 로고 원형 자르기 제거, 돌발상황 타일·창을 SETTING 창에 통합하고 BASIC 타일 복원, 설정 타일 이름 SETTINGS, BASIC 돌발상황 (신규) 표시, 채널톡을 메인 페이지에만 유지, 모든 페이지 제목의 위치·크기·구분선을 창 크기와 무관하게 통일, 개발자 소개 역할 표기(ZetBe 2023-1, 업데이트 2027-1) 갱신, Contributor 서희원 표기, 원개발자 이메일 추가, 채널톡 폐기 및 홈 문의 안내를 이메일로 변경, 비공식 고지·안내 문구를 해요체로 통일(원작 연습 화면 제외), 원개발자 전공 표기·사진 우클릭 방지·이메일 간격 조정, 연습 화면 AdFit 광고 제거.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -37,7 +37,7 @@
     },
     {
       "path": "css/hanmo-refined.css",
-      "sha": "5b151c935b01fb1ee8c8d1e1e83a4d89d391cb43"
+      "sha": "226beeeba5665f3515a3c7895d865baef971f33b"
     },
     {
       "path": "css/hanmo-title-divider.css",
@@ -85,7 +85,7 @@
     },
     {
       "path": "css/vsugang-fit.css",
-      "sha": "cc12a8c11dd864073db3cc81a34b8017759e6abd"
+      "sha": "8e6e21e68bc84a042cdaf2b92032d7dbd94b6fd4"
     },
     {
       "path": "css/vsugang.css",
@@ -93,59 +93,59 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "ac7642104e58183a3a7f7821b68349ab9ad2f957"
+      "sha": "a262eebbef0679c0c4cb61f187caead14bb3340e"
     },
     {
       "path": "html/catalog.html",
-      "sha": "db316390166cf2f4241356b6d39bd363f4c804a3"
+      "sha": "c63fe7a56bb8a3db0e11c74bee2bd082ef20636d"
     },
     {
       "path": "html/developer.html",
-      "sha": "b95316bc380724fe1553feec8e93500860871468"
+      "sha": "35ae96f3a0e93ffebc7553807729228b97ba6573"
     },
     {
       "path": "html/forecast.html",
-      "sha": "4b25ee53d7fc7c561b901fe60fcdb2c36b5c743f"
+      "sha": "46e3acd91d652c30e01ca3b5c75aecdb2b5c7d87"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "eda4a32aa2a3f08a6c68f9e08c67c27876088d2b"
+      "sha": "cacb76229d3ab5ce5cd262d33c024098f3c6fba3"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "91581d57fa5672f4fd13a1376f2f679366e1c729"
+      "sha": "759866e9bba829bfaac2e516f57daf61cd70aab5"
     },
     {
       "path": "html/planner.html",
-      "sha": "64e16baf66dc65d0c14c038ccc4e0a74a4f8dda7"
+      "sha": "8726b8e52875f5b9ed0f3eaf8f49eb475ab8fb31"
     },
     {
       "path": "html/practice.html",
-      "sha": "72066adb59e4c83a3f67816b7ce54ad8a6a1cea4"
+      "sha": "f7b208b51287527dc6a6887f76c7320dbfdd9a4f"
     },
     {
       "path": "html/reaction-test.html",
-      "sha": "6d857c3f815717fe79387197cdcf63652d62db49"
+      "sha": "08d68b71f465f241d0be630bc7d9ef56ea220b0f"
     },
     {
       "path": "html/readiness.html",
-      "sha": "3b4bdfdfc81f6553b4f00a477edf66e00287f9ab"
+      "sha": "f7f39a5fb4761575496fa8dc7440ebeace4637be"
     },
     {
       "path": "html/result.html",
-      "sha": "7d19dc421a70166cc1334de88fcb1bc3d1240450"
+      "sha": "52d1c24220ff461c4eceada7dfc1d5be2bc9a362"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "92b3d25a952f9ff61f5d1709716585c7ed511d43"
+      "sha": "35c9be7a61a93727208cf47269e7ff0c47eb709e"
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "92a4c264ce86983a109040a715d49720f3145b1c"
+      "sha": "60f4289beaf701e7063bf96884dcd173f9bc343c"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "a2d7bb65a8912dc8398ebfcec1f3e8faa327cca0"
+      "sha": "0a2597c290f5f86976ec1f2b2cc25b8f6d81e5f9"
     },
     {
       "path": "img/background.svg",
@@ -197,7 +197,7 @@
     },
     {
       "path": "index.html",
-      "sha": "202a1caca27ad470858b32a4b0bd5a74d143de27"
+      "sha": "ed6b5a8bce78ad6b96620e5c93d95abce600b06d"
     },
     {
       "path": "js/academic-data-source.js",
@@ -205,7 +205,7 @@
     },
     {
       "path": "js/academic-unified.js",
-      "sha": "10d22e51f01af62ea988805e69d77a530503c9bd"
+      "sha": "447dcf01f232c81d422b672c5ecf161c0557c648"
     },
     {
       "path": "js/capacity-settings.js",
@@ -237,7 +237,7 @@
     },
     {
       "path": "js/pc-only.js",
-      "sha": "e9f5f2a84cb59be5e96dc9ad300c7818d6722862"
+      "sha": "31883d742cd7f4f4690a1fb67b67eac251697161"
     },
     {
       "path": "js/practice.js",
@@ -257,19 +257,19 @@
     },
     {
       "path": "js/student-catalog.js",
-      "sha": "30cd7fba94d9970be744a72bf4b42ae57d55e8b5"
+      "sha": "c8a9f164f8d784b7295b170769390986347c3542"
     },
     {
       "path": "js/student-notices.js",
-      "sha": "826e8d1684e4d8ebd46f5a03d87dd8d3d1f603a1"
+      "sha": "effceba0986a3bff04b32b31b53cef1a7739828c"
     },
     {
       "path": "js/student-preferences.js",
-      "sha": "5bd23b712dfb08d80603e9e72fa3c5e124e4a8e6"
+      "sha": "db8e7857f50fc53ab2964e3ec3d0f10b23adc4bf"
     },
     {
       "path": "js/student-profile-bar.js",
-      "sha": "b4d144468e8ccce729be1af5820a9259e1004895"
+      "sha": "439be34078c41e67bb5e5936733cecc9356ac1a8"
     },
     {
       "path": "js/vsugang-fit.js",

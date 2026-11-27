@@ -40,10 +40,10 @@
          :typeof value.doubleMajor==='string'?value.doubleMajor.slice(0,100):'';
        cohort.value=Number.isSafeInteger(value.cohort)&&value.cohort>=2010&&value.cohort<=maxCohort
          ?String(value.cohort):'';
-       message.textContent='이 브라우저의 저장된 정보를 불러왔습니다. 학교 로그인 정보가 아닙니다.';
+       message.textContent='이 브라우저의 저장된 정보를 불러왔어요. 학교 로그인 정보가 아니에요.';
      }
    }
- }catch{message.textContent='저장된 정보를 읽지 못했습니다. 입력 없이도 다른 기능을 이용할 수 있습니다.';}
+ }catch{message.textContent='저장된 정보를 읽지 못했어요. 입력 없이도 다른 기능을 이용할 수 있어요.';}
  syncSecond();
  kind.addEventListener('change',()=>{
    second.value='';
@@ -70,16 +70,16 @@
    };
    try{
      localStorage.setItem(key,JSON.stringify(data));
-     message.textContent='내정보를 이 브라우저에 저장했습니다. 학교 계정이나 학적과 연결되지 않습니다.';
+     message.textContent='내정보를 이 브라우저에 저장했어요. 학교 계정이나 학적과 연결되지 않아요.';
      announce();
-   }catch{message.textContent='이 브라우저에 저장할 수 없습니다. 다른 메뉴는 그대로 이용할 수 있습니다.';}
+   }catch{message.textContent='이 브라우저에 저장할 수 없어요. 다른 메뉴는 그대로 이용할 수 있어요.';}
  });
  clear.addEventListener('click',()=>{
    try{localStorage.removeItem(key);}catch{/* 브라우저 저장이 거부되더라도 화면 초기화는 유지한다. */}
    form.reset();
    second.value='';
    syncSecond();
-   message.textContent='저장된 내정보를 지웠습니다.';
+   message.textContent='저장된 내정보를 지웠어요.';
    announce();
  });
 })();

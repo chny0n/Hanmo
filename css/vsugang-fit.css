@@ -4,7 +4,10 @@ body.hanmo-vsugang{box-sizing:border-box;display:flex;flex-direction:column;heig
 body.hanmo-vsugang :is(header,button,input){font-family:var(--hm-font)}
 body.hanmo-vsugang>.hanmo-topbar{box-sizing:border-box;flex:0 0 auto;width:100%;z-index:120}
 body.hanmo-vsugang>main{box-sizing:border-box;position:relative;flex:1 1 auto;height:auto;min-height:0;width:100%;margin:0;padding:10px 16px;overflow:hidden}
-body.hanmo-vsugang .f-dirt-down{position:absolute;top:50%;left:50%;width:max-content;max-width:none;transform:translate(-50%,-50%) scale(var(--vsugang-fit-scale,1));transform-origin:center}
+/* 제목은 다른 페이지와 같은 상단 기준선·크기를 유지하고, 공간이 부족하면 아래 타일 영역만 축소한다. */
+body.hanmo-vsugang .f-dirt-down{position:absolute;top:12px;left:50%;width:max-content;max-width:none;transform:translateX(-50%)}
+body.hanmo-vsugang .f-dirt-down>.container{transform:scale(var(--vsugang-fit-scale,1));transform-origin:top center}
+body.hanmo-vsugang .titleContainer .hanmo-title-divider{width:min(560px,90vw)}
 body.hanmo-vsugang .titleContainer{top:0;margin:0}
 body.hanmo-vsugang .container{margin-top:clamp(12px,2.5vh,30px)}
 body.hanmo-vsugang .grid{margin-top:0;--vsugang-narrow-areas:"b b" "b b" "s t" "set t"}
@@ -78,7 +81,7 @@ body.hanmo-vsugang .settingPanel{
 }
 .settingPanel :is(button,input):focus-visible{outline:3px solid #ffcf76;outline-offset:2px}
 /* 높은 확대율에서는 본문만 스크롤한다. */
-body.hanmo-vsugang.vsugang-compact-scroll>main{display:block;overflow-y:auto;overscroll-behavior:contain}
+body.hanmo-vsugang.vsugang-compact-scroll>main{display:block;overflow-y:auto;overscroll-behavior:contain;padding-top:12px}
 body.hanmo-vsugang.vsugang-compact-scroll .f-dirt-down{position:relative;top:auto;left:auto;width:min(600px,100%);max-width:100%;margin:0 auto 20px;transform:none}
 body.hanmo-vsugang.vsugang-compact-scroll .container{width:100%;margin-top:15px}
 body.hanmo-vsugang.vsugang-compact-scroll .grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(110px,auto));grid-template-areas:var(--vsugang-narrow-areas)}

@@ -229,7 +229,7 @@ test('선택한 가상 404는 청색 사용자 패널을 유지하고 새로고�
   await page.waitForTimeout(10_250);
   await page.locator('.sugang').click();
   await expect(page).toHaveURL(/\/html\/incident-404\.html$/);
-  await expect(page.getByText('페이지를 표시할 수 없습니다.')).toBeVisible();
+  await expect(page.getByText('페이지를 표시할 수 없어요.')).toBeVisible();
   await expect(page.locator('.navigation')).toHaveAttribute('inert','');
   expect(await snapshot()).toEqual(originalPanel);
   await page.reload();

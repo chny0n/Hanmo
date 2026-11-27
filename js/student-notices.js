@@ -28,11 +28,11 @@
    return 'OTHER';
  }
  const messages={
-   LOADING:'공지 자료를 확인하고 있습니다.',
-   NOT_CONNECTED:'공지 자료 연결 전입니다. 학교 원문에서 확인해 주세요.',
-   EMPTY:'현재 표시할 공지 자료가 없습니다.',
-   OFFLINE:'자료 연결에 실패했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.',
-   INVALID:'자료 검증에 실패해 표시를 중단했습니다. 학교 원문을 확인해 주세요.'
+   LOADING:'공지 자료를 확인하고 있어요.',
+   NOT_CONNECTED:'공지 자료 연결 전이에요. 학교 원문에서 확인해 주세요.',
+   EMPTY:'현재 표시할 공지 자료가 없어요.',
+   OFFLINE:'자료 연결에 실패했어요. 연결 상태를 확인한 뒤 다시 시도해 주세요.',
+   INVALID:'자료 검증에 실패해 표시를 중단했어요. 학교 원문을 확인해 주세요.'
  };
  const node=(tag,message,cls)=>{
    const el=document.createElement(tag);el.textContent=message;

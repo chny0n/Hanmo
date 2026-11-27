@@ -428,21 +428,22 @@ test('개발자 소개의 이름·소속·역할은 정확하며 역할은 세 P
       "한국외국어대학교 아랍어과 '23",
     ]);
     await expect(roles).toHaveText([
-      '· 한모(2026) 업데이트 총괄',
-      '· 한모(2026) 업데이트 nlp 담당',
-      '· 한모(2026) 업데이트 데이터 및 품질 보증 담당',
+      '· 한모(2023-1) 일부 기능 추가',
+      '· 한모(2027-1) 업데이트 총괄',
+      '· 한모(2027-1) 업데이트 nlp 담당',
+      '· 한모(2027-1) 업데이트 데이터 및 품질 보증 담당',
     ]);
     const nameTypography=await names.evaluateAll(nodes=>nodes.map(node=>({
       name:[...node.childNodes].filter(child=>child.nodeType===Node.TEXT_NODE)
         .map(child=>child.textContent).join('').trim(),
       size:getComputedStyle(node).fontSize,weight:getComputedStyle(node).fontWeight,
     })));
-    expect(nameTypography).toEqual(['ZetBe','심민성','이의상','김채윤']
+    expect(nameTypography).toEqual(['서희원','심민성','이의상','김채윤']
       .map(name=>({name,size:'16px',weight:'700'})));
     const roleTypography=await roles.evaluateAll(nodes=>nodes.map(node=>({
       size:getComputedStyle(node).fontSize,weight:getComputedStyle(node).fontWeight,
     })));
-    expect(roleTypography).toEqual(Array.from({length:3},()=>({size:'12px',weight:'400'})));
+    expect(roleTypography).toEqual(Array.from({length:4},()=>({size:'12px',weight:'400'})));
 
     // 줄바꿈 조각의 실제 좌표를 확인해 내부 행이 여전히 맞아 보이는 잘림을 놓치지 않는다.
     const geometry=await entries.evaluateAll(rows=>rows.map(row=>{

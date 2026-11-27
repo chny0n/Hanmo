@@ -47,7 +47,7 @@ test('구형 내정보를 복원하고 저장·삭제를 다른 탭에 반영하
   await expect(summary).toContainText(legacyProfile.doubleMajor);
   await page.locator('#planner-major').fill('QA-UPDATED-MAJOR');
   await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
-  await expect(page.locator('#planner-message')).toContainText('이 브라우저에 저장했습니다');
+  await expect(page.locator('#planner-message')).toContainText('이 브라우저에 저장했어요');
   await expect(summary).toContainText('QA-UPDATED-MAJOR');
   await page.reload();
   await expect(page.locator('#planner-major')).toHaveValue('QA-UPDATED-MAJOR');
@@ -69,7 +69,7 @@ test('손상된 내정보는 표시하지 않고 직접 입력한 정보로 복�
   await page.goto('/html/planner.html');
   await page.evaluate(key=>localStorage.setItem(key,'{손상된 합성 프로필'),profileKey);
   await page.reload();
-  await expect(page.locator('#planner-message')).toContainText('저장된 정보를 읽지 못했습니다');
+  await expect(page.locator('#planner-message')).toContainText('저장된 정보를 읽지 못했어요');
   await expect(page.locator('[data-profile-summary]')).toHaveText('내정보 미설정');
   await expect(page.locator('#planner-major')).toHaveValue('');
   await page.locator('#planner-campus').selectOption('GLOBAL');
@@ -94,7 +94,7 @@ test('브라우저가 내정보 저장을 거부하면 실패를 알리고 작�
   await page.locator('#planner-major').fill('저장 실패 검증용 합성 전공');
   await page.locator('#planner-cohort').fill('2024');
   await page.getByRole('button',{name:'이 브라우저에 저장'}).click();
-  await expect(page.locator('#planner-message')).toContainText('이 브라우저에 저장할 수 없습니다');
+  await expect(page.locator('#planner-message')).toContainText('이 브라우저에 저장할 수 없어요');
   await expect(page.locator('#planner-major')).toHaveValue('저장 실패 검증용 합성 전공');
   await expect(page.locator('[data-profile-summary]')).toHaveText('내정보 미설정');
   expect(await page.evaluate(key=>localStorage.getItem(key),profileKey)).toBeNull();

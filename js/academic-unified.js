@@ -26,7 +26,7 @@
         calendarStatus.textContent=calendarStatusText;
         return true;
       },()=>{
-        calendarStatus.textContent='달력을 불러오지 못했습니다. 학교 학사일정 원문에서 확인해 주세요.';
+        calendarStatus.textContent='달력을 불러오지 못했어요. 학교 학사일정 원문에서 확인해 주세요.';
         return false;
       });
     }

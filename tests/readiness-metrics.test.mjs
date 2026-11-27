@@ -44,18 +44,18 @@ test('지터는 실패 또는 제외된 요청을 건너뛰어 비교하지 않�
 test('모든 이상 기준을 만족하면 다섯 관측을 순서대로 요약한다',()=>{
   const measurement={frame:{interruptions:3,median:30},longTasks:3,network:{failures:2},drift:100};
   assert.deepEqual(findings(measurement),[
-    '화면 갱신이 여러 번 끊겼습니다.',
-    '이 탭의 화면 갱신 간격이 길었습니다.',
-    '브라우저 긴 작업이 반복되었습니다.',
-    '한모 정적 파일 요청에서 반복 오류가 발생했습니다.',
-    '브라우저 타이머가 크게 지연되었습니다.',
+    '화면 갱신이 여러 번 끊겼어요.',
+    '이 탭의 화면 갱신 간격이 길었어요.',
+    '브라우저 긴 작업이 반복되었어요.',
+    '한모 정적 파일 요청에서 반복 오류가 발생했어요.',
+    '브라우저 타이머가 크게 지연되었어요.',
   ]);
 });
 test('개별 판정은 실제로 관측한 항목만 요약한다',()=>{
   const normal={frame:{interruptions:2,median:29.9},longTasks:2,network:null,drift:99.9};
   assert.deepEqual(findings(normal),[]);
   for(const [change,expected] of [
-    [{frame:{interruptions:3,median:16}},/끊겼습니다/],
+    [{frame:{interruptions:3,median:16}},/끊겼어요/],
     [{frame:{interruptions:0,median:30}},/갱신 간격/],
     [{longTasks:3},/긴 작업/],
     [{drift:100},/타이머/],
