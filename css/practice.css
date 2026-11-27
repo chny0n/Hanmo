@@ -300,8 +300,8 @@ th {
 .waitingLogo {
 	width: 56px;
 	height: 56px;
-	border-radius: 50%;
-	object-fit: cover;
+	/* 정사각형 로고 전체를 원형 자르기 없이 그대로 보여 줍니다. */
+	object-fit: contain;
 	margin-bottom: 10px;
 }
 

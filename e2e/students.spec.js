@@ -150,7 +150,7 @@ test('모바일은 공개 주소를 유지하고 로고·PC 주소·비공식 �
         await expect(block.getByRole('heading',{name:'현재 한모를 사용할 수 없는 환경이에요.'})).toBeVisible();
         await expect(block.locator('.mbLogo img')).toBeVisible();
         await expect.poll(()=>block.locator('.mbLogo img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
-        await expect(block.locator('.mbSite')).toContainText(new URL(baseURL).host);
+        await expect(block.locator('.mbSite')).toContainText('tofuhanmo.com');
         await expect(block.locator('.mbPolicy')).toContainText('공식 서비스가 아니며');
         expect(await page.evaluate(()=>[...document.body.children].filter(el=>!['SCRIPT','STYLE'].includes(el.tagName)&&el.id!=='hanmo-mobile-block').every(el=>el.inert))).toBe(true);
         await page.keyboard.press('Tab');

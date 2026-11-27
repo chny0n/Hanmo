@@ -382,22 +382,17 @@ test('개발자 Contributor 네 명을 소속 정보의 임의 추측 없이 정
  assert.ok(html.includes('class="hanmo-policy-footer"'));
 });
 
-test('보라 원본을 투명 정사각형 안에 비율대로 넣은 favicon을 전체 화면에서 사용한다',()=>{
- const purple=fs.readFileSync(path.join(ROOT,'img/hanmo_purple.png'));
- const svg=fs.readFileSync(path.join(ROOT,'img/favicon-purple.svg'),'utf8');
- assert.equal(purple.toString('ascii',1,4),'PNG');
- assert.equal(purple.readUInt32BE(16),550);
- assert.equal(purple.readUInt32BE(20),218);
- assert.equal(purple.readUInt8(25),6);
- assert.match(svg,/viewBox="0 0 550 550"/);
- assert.match(svg,/x="0" y="166" width="550" height="218"/);
- assert.ok(svg.includes('data:image/png;base64,'+purple.toString('base64')));
- assert.doesNotMatch(svg,/<rect\b|<path\b/);
+test('투명 배경 PNG favicon을 전체 화면에서 사용한다',()=>{
+ const icon=fs.readFileSync(path.join(ROOT,'img/favicon.png'));
+ assert.equal(icon.toString('ascii',1,4),'PNG');
+ assert.equal(icon.readUInt8(25),6);
+ assert.equal(fs.existsSync(path.join(ROOT,'img/favicon-purple.svg')),false);
  for(const page of ['index.html',...student.map(name=>'html/'+name+'.html'),
   'html/practice.html','html/vsugang.html','html/developer.html','html/result.html',
   'html/selectZone.html','html/incident-404.html','html/pc-only.html']){
   const html=fs.readFileSync(path.join(ROOT,page),'utf8');
-  assert.match(html,/favicon-purple\.svg/,page);
+  assert.match(html,/<link rel="icon"[^>]*href="[^"]*favicon\.png"/,page);
+  assert.doesNotMatch(html,/favicon-purple\.svg/,page);
   assert.doesNotMatch(html,/rel="icon"[^>]*hanmo_color\\.png/,page);
  }
 });

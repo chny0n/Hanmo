@@ -1,6 +1,6 @@
 <div align="center">
 
-  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo_purple.png" width="78" alt="한모 로고"></a>
+  <a href="https://github.com/ot4562-glitch/Hanmo_develop"><img src="img/hanmo.png" width="78" alt="한모 로고"></a>
 
   <h1>한모 · Hanmo Develop</h1>
 

@@ -423,22 +423,16 @@ test('삭제된 학교 문의처와 독립 학사 달력 URL은 404다',async({p
  }
 });
 
-test('보라색 원본 favicon은 투명 정사각형 중앙에 550:218 비율을 유지한다',async({page})=>{
- const icon=(await page.request.get('/img/favicon-purple.svg'));
+test('투명 배경 PNG favicon을 전체 화면에서 사용한다',async({page})=>{
+ const icon=await page.request.get('/img/favicon.png');
  expect(icon.ok()).toBe(true);
- const png=readFileSync(new URL('../img/hanmo_purple.png',import.meta.url)),svg=await icon.text();
+ const png=await icon.body();
  expect(png.toString('ascii',1,4)).toBe('PNG');
- expect(png.readUInt32BE(16)).toBe(550);
- expect(png.readUInt32BE(20)).toBe(218);
  expect(png.readUInt8(25)).toBe(6);
- expect(svg).toContain('viewBox="0 0 550 550"');
- expect(svg).toContain('x="0" y="166" width="550" height="218"');
- expect(svg).toContain('data:image/png;base64,'+png.toString('base64'));
- expect(svg).not.toMatch(/<(?:rect|path|circle|polygon)\b/);
  await page.goto('/index.html');
  const rendered=await page.evaluate(async()=>{
   const img=new Image();
-  img.src='/img/favicon-purple.svg';
+  img.src='/img/favicon.png';
   await img.decode();
   const canvas=document.createElement('canvas');
   canvas.width=canvas.height=128;
@@ -447,11 +441,10 @@ test('보라색 원본 favicon은 투명 정사각형 중앙에 550:218 비율�
   const px=ctx.getImageData(0,0,128,128).data;
   let visible=0;
   for(let i=3;i<px.length;i+=4)if(px[i]>16)visible++;
-  return {w:img.naturalWidth,h:img.naturalHeight,
-   cornerAlpha:px[3],topAlpha:px[(10*128+64)*4+3],
+  return {cornerAlpha:px[3],topAlpha:px[(10*128+64)*4+3],
    bottomAlpha:px[(118*128+64)*4+3],visible};
  });
- expect(rendered.w).toBe(rendered.h);
+ // 글자 바깥 여백이 투명해야 탭 배경색 위에서 사각형 테두리가 보이지 않습니다.
  expect(rendered.cornerAlpha).toBe(0);
  expect(rendered.topAlpha).toBe(0);
  expect(rendered.bottomAlpha).toBe(0);
@@ -462,8 +455,8 @@ test('보라색 원본 favicon은 투명 정사각형 중앙에 550:218 비율�
   '/html/strategy-lab.html','/html/planner.html','/html/incident-404.html','/html/pc-only.html']){
   await page.goto(path);
   const href=page.locator('link[rel="icon"]');
-  await expect(href).toHaveAttribute('href',/favicon-purple\.svg$/);
-  await expect(href).toHaveAttribute('type','image/svg+xml');
+  await expect(href).toHaveAttribute('href',/favicon\.png$/);
+  await expect(href).toHaveAttribute('type','image/png');
  }
 });
 

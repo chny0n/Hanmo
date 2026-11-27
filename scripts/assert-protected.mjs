@@ -31,7 +31,7 @@ if(changed.includes('html/practice.html')){
     {cwd:root,encoding:'utf8',maxBuffer:4*1024*1024});
   const withFavicon=original.replace(
     '<link href="../img/hanmo_color.png" rel="shortcut icon" type="image/x-icon">',
-    '<link rel="icon" type="image/svg+xml" sizes="any" href="../img/favicon-purple.svg">'
+    '<link rel="icon" type="image/png" href="../img/favicon.png">'
   );
   const variants=new Set([original,withFavicon]);
   // 원본의 타이머·버튼·연습 로직을 수정하지 않고 두 승인된 삽입 위치만 허용합니다.
@@ -72,7 +72,7 @@ const labScripts=new Set([
 const allowed=p=>labScripts.has(p)||p.startsWith('degree-rescue/')||p.startsWith('js/academic/')||(p.startsWith('js/scenario-')||['js/capacity-settings.js','js/academic-calendar.js','js/academic-unified.js','js/academic-faq.js','js/academic-support.js','js/selectZone.js','js/student-preferences.js','js/student-profile-bar.js','js/incident-options.js','js/incident-404.js','js/hanmo-policy-footer.js','js/pc-only.js','js/gnb.js','js/hanmoSys.js','js/index.js','js/home-fit.js','js/result.js','js/vsugang-fit.js','js/academic-data-source.js','js/student-notices.js','js/student-catalog.js','js/vsugang.js'].includes(p))
  ||p.startsWith('docs/')||p.startsWith('scripts/')||p.startsWith('data/')
  ||p.startsWith('tests/')||p.startsWith('e2e/')||p.startsWith('css/')||p.startsWith('html/')
- ||['img/background.svg','img/hanmo_color.png','img/watermark.png','img/favicon.svg','img/hanmo_purple.png','img/favicon-purple.svg','img/boo.png'].includes(p)
+ ||['img/background.svg','img/watermark.png','img/favicon.svg','img/favicon.png','img/hanmo.png','img/boo.png'].includes(p)
  ||p.startsWith('img/lucide/')
  ||p.startsWith('.github/workflows/')||['index.html','package.json','jsconfig.json','tsconfig.json',
  '.gitignore','README.md','AGENTS.md','agent.md','sitemap.xml','robots.txt','CNAME',

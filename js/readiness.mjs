@@ -163,7 +163,7 @@ async function measureNetwork(signal,progress){
   for(let i=0;i<HEAD_REQUESTS;i++){
     guard(signal.aborted,'검사가 중단되었습니다.');
     progress('연결 응답시간 검사 '+(i+1)+'/'+HEAD_REQUESTS);
-    const url=new URL('../img/favicon-purple.svg',import.meta.url);
+    const url=new URL('../img/favicon.png',import.meta.url);
     url.searchParams.set('probe','head-'+i+'-'+runId);
     try{latency.push(await fetchWithTimeout(url,'HEAD',signal));}
     catch(e){if(signal.aborted)throw e;failures++;latency.push(null);}

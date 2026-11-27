@@ -78,7 +78,8 @@
     const site=document.createElement('div');
     site.className='mbSite';
     const address=document.createElement('b');
-    address.textContent=root.host+root.pathname;
+    // 접속 주소(IP·미리보기 도메인)와 관계없이 공식 운영 주소만 안내합니다.
+    address.textContent='tofuhanmo.com';
     site.append('PC에서 ',address);
     content.append(logo,heading,desc,site);
     const policy=document.createElement('p');

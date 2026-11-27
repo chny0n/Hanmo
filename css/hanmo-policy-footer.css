@@ -30,8 +30,18 @@
 .hanmo-policy-footer .hanmo-restriction-notice:not(:empty) {
   display: inline-block;
   margin-inline-start: .65em;
-  color: #fda4af;
+  color: #ff4d4f;
   font-weight: 750;
+  /* 곧 이용 제한·이용 제한 중에는 빨간 글씨를 1초 주기로 깜빡여 눈에 띄게 합니다. */
+  animation: hanmo-restriction-blink 1s ease-in-out infinite;
+}
+@keyframes hanmo-restriction-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .2; }
+}
+/* 움직임 줄이기를 설정한 사용자에게는 깜빡임 없이 빨간 글씨만 보여 줍니다. */
+@media (prefers-reduced-motion: reduce) {
+  .hanmo-policy-footer .hanmo-restriction-notice:not(:empty) { animation: none; }
 }
 
 /* 홈은 광고가 main에만 위치하고 마지막 안내는 별도 flex 행에 놓입니다. */
