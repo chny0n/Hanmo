@@ -377,14 +377,24 @@ body.hanmo-refined #planner-go-notices:disabled {
 }
 body.hanmo-refined #planner-go-notices:disabled::before{opacity:0;transition:none}
 
-/* 홈과 모드 선택의 제목을 기능 페이지의 동일한 상단 기준선과 구분선에 맞춥니다. */
-body:is(.hanmo-home,.hanmo-vsugang).hanmo-refined .titleContainer {
+/* 홈·모드 선택·개발자 소개의 제목을 기능 페이지의 동일한 상단 기준선과 구분선에 맞춥니다. */
+body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer).hanmo-refined .titleContainer {
   top:auto;width:100%;margin:12px 0 16px;align-items:center;text-align:center;
 }
-body:is(.hanmo-home,.hanmo-vsugang).hanmo-refined .titleContainer h1 {
+body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer).hanmo-refined .titleContainer h1 {
   margin:0 0 5px;font-size:28px;line-height:1.35;letter-spacing:-.025em;font-weight:700;
 }
 body.hanmo-home.hanmo-refined > main {justify-content:flex-start;padding-top:12px;padding-bottom:8px}
+body.hanmo-developer.hanmo-refined > main {
+  justify-content:flex-start;padding:12px 32px 8px;
+}
+body.hanmo-developer.hanmo-refined main > .f-dirt-down {
+  justify-content:flex-start;
+}
+body.hanmo-developer.hanmo-refined .container {margin-top:0}
+@media(max-width:700px){
+  body.hanmo-developer.hanmo-refined > main{padding-inline:16px}
+}
 body.hanmo-home.hanmo-refined .home-fit-content{width:min(702px,100%)}
 body.hanmo-home.hanmo-refined .mainNotice {padding-block:clamp(12px,2.2vh,24px)}
 body.hanmo-home.hanmo-refined .container{margin-top:0}
@@ -405,7 +415,7 @@ body.hanmo-home.hanmo-refined .buttonContainer{justify-content:center}
   }
 }
 @media(max-width:700px){
-  body:is(.hanmo-home,.hanmo-vsugang).hanmo-refined .titleContainer h1{font-size:clamp(20px,4vw,28px)}
+  body:is(.hanmo-home,.hanmo-vsugang,.hanmo-developer).hanmo-refined .titleContainer h1{font-size:clamp(20px,4vw,28px)}
 }
 
 /* 보통 PC에서 검색 결과 목록만 독립 스크롤하고 필터·탭·안내·푸터는 고정합니다. */

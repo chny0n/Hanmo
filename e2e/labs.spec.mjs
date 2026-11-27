@@ -594,13 +594,13 @@ test('학사정보와 강의 검색은 결과 목록만 세로 스크롤 예외�
   for(const name of ['이전','다음','오늘'])await expect(page.locator('#calendar-view').getByRole('button',{name,exact:true})).toBeInViewport({ratio:1});
 });
 
-test('홈과 모드 선택의 제목은 같은 문구와 기능 화면의 구분선 기준을 사용한다',async({page})=>{
+test('홈·모드 선택·개발자 소개는 기능 화면과 동일한 제목 및 구분선 기준을 사용한다',async({page})=>{
   await page.clock.setFixedTime(new Date('2026-11-27T12:00:00+09:00'));
   for(const viewport of [{width:1280,height:720},{width:1440,height:900},{width:1920,height:1080}]){
     await page.setViewportSize(viewport);
     const positions=[];
     const titles=[];
-    for(const route of ['/index.html','/html/vsugang.html','/html/readiness.html']){
+    for(const route of ['/index.html','/html/vsugang.html','/html/developer.html','/html/readiness.html']){
       await page.goto(route);
       await page.evaluate(()=>document.fonts.ready);
       const title=page.locator('main h1').first();
@@ -612,6 +612,18 @@ test('홈과 모드 선택의 제목은 같은 문구와 기능 화면의 구분
       titles.push((await title.innerText()).replace(/\s+/g,' ').trim());
       if(route.includes('vsugang'))await expect(page.locator('.grid')).toBeInViewport({ratio:1});
       if(route==='/index.html')await expect(page.locator('.buttonContainer')).toBeInViewport({ratio:1});
+      if(route==='/html/developer.html'){
+        await expect(page.locator('.hanmo-contributor-list li').last()).toBeInViewport({ratio:1});
+        await expect(page.locator('.container > .button')).toBeInViewport({ratio:1});
+        const geometry=await page.evaluate(()=>{
+          const main=document.querySelector('main');
+          const footer=document.querySelector('body > footer').getBoundingClientRect();
+          const button=document.querySelector('.container > .button').getBoundingClientRect();
+          return {height:main.clientHeight,scroll:main.scrollHeight,footerTop:footer.top,buttonBottom:button.bottom};
+        });
+        expect(geometry.scroll).toBeLessThanOrEqual(geometry.height+1);
+        expect(geometry.buttonBottom).toBeLessThanOrEqual(geometry.footerTop+1);
+      }
       await expect(page.locator('body > footer')).toBeInViewport({ratio:1});
     }
     expect(titles[0]).toBe(titles[1]);

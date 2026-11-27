@@ -73,7 +73,7 @@ test('좁은 데스크톱 홈에서도 주요 조작과 안내를 스크롤로 �
 
 test('페이지 제목 아래 한모 구분 장식의 선·로고가 잘 보인다',async({page})=>{
  const routes=['/html/academic-timeline.html','/html/catalog.html',
-  '/index.html','/html/vsugang.html','/html/planner.html','/html/pc-only.html',
+  '/index.html','/html/vsugang.html','/html/developer.html','/html/planner.html','/html/pc-only.html',
   '/html/forecast.html'];
  for(const route of routes){
   await page.goto(route);

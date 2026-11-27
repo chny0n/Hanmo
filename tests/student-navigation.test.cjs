@@ -270,7 +270,7 @@ test('홈과 학업 제목 장식은 유지하고 practice·selectZone에서만 
   'html/readiness.html','html/reaction-test.html','html/strategy-lab.html',
   'html/planner.html','html/forecast.html',
   'html/practice.html','html/selectZone.html','html/incident-404.html','html/pc-only.html'];
- const original=new Set(['html/developer.html','html/result.html']);
+ const original=new Set(['html/result.html']);
  const sidebar=new Set(['html/incident-404.html']);
  const noDivider=new Set(['html/practice.html','html/selectZone.html']);
  for(const page of pages){
