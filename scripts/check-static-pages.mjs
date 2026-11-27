@@ -45,6 +45,8 @@ for(const route of publicRoutes){
 }
 
 const pages=new Map(await Promise.all(htmlRoutes.map(async page=>[page,await readFile(join(dist,page),'utf8')])));
+const pcOnlyPage=await readFile(join(dist,'html/pc-only.html'),'utf8');
+if(!/<title>한모 \| [^<|]+<\/title>/.test(pcOnlyPage))throw Error('Page title format: html/pc-only.html');
 let linkCount=0,ariaCount=0;
 for(const [page,body] of pages){
   const pc=page==='index.html'?'./js/pc-only.js':'../js/pc-only.js';
@@ -112,7 +114,7 @@ for(const path of studentPages.filter(path=>!['html/forecast.html','html/academi
   if(!root.includes('href="./'+path+'"'))throw Error('Root main menu does not link to '+path);
 }
 for(const [page,body] of pages){
-  if(!/<title>[^<|]+ \| 한모<\/title>/.test(body))throw Error('Page title format: '+page);
+  if(!/<title>한모 \| [^<|]+<\/title>/.test(body))throw Error('Page title format: '+page);
   const bar=body.match(/<(?:header|nav) class="hanmo-topbar"[\s\S]*?<\/(?:header|nav)>/)?.[0];
   if(!bar)continue;
   for(const label of ['학사 정보','강의 검색']){

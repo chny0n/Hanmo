@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineCommit": "da30a87510f1cdac282600fa4e914da2585a6031",
-  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤. 연습·신청 화면 내정보 표시 및 두 표의 테두리 없는 제한된 스크롤 규격 반영. 공통 상단 내정보 말줄임 제거 및 좁은 창 줄바꿈. 양쪽 연습 화면의 상시 경고 표지 및 홈 상단 바 아래의 원본 훕또기 배너 추가. 배너와 홈 본문의 간격 축소. 연습 좌측 내정보 행간 축소 및 내부 스크롤 제거. 전략 실험의 경쟁자 가정 문구와 신청별 대기시간 모형·결과 안내. 전략 실험 전용 1~3초 대기와 접힌 수식·가정 설명. 전략 실험 공통 선착순 대기열 및 MathML 수식 표기. 전략 실험의 회차별 경쟁자 평균 이동·개인 속도 유지·신청별 변동 및 수식 갱신. #71·#72 접근성 예외: 진단 접힌 기준 표시·전략 8과목 결과 배치와 합성 신청/삭제/재수강 접근 가능한 이름만 변경. 2026-11-27 사용자 검토: B 이하 개선 안내 강조, 학사 메뉴 비활성화, 홈·모드 제목 및 배너 배치, 브라우저 제목 통일.",
+  "purpose": "사용자 지정 5개 페이지의 제목·도움말·ㅎㅁ 구분선 위치 통일, 지정 문구 제거, 반응속도 한 줄 안내, 연습 결과 PNG 저장 제거. 기존 연습 계산 및 다른 화면 보호. PC 진단 결과에 한정한 권장 조치 표시 및 결과 영역 스크롤. 연습·신청 화면 내정보 표시 및 두 표의 테두리 없는 제한된 스크롤 규격 반영. 공통 상단 내정보 말줄임 제거 및 좁은 창 줄바꿈. 양쪽 연습 화면의 상시 경고 표지 및 홈 상단 바 아래의 원본 훕또기 배너 추가. 배너와 홈 본문의 간격 축소. 연습 좌측 내정보 행간 축소 및 내부 스크롤 제거. 전략 실험의 경쟁자 가정 문구와 신청별 대기시간 모형·결과 안내. 전략 실험 전용 1~3초 대기와 접힌 수식·가정 설명. 전략 실험 공통 선착순 대기열 및 MathML 수식 표기. 전략 실험의 회차별 경쟁자 평균 이동·개인 속도 유지·신청별 변동 및 수식 갱신. #71·#72 접근성 예외: 진단 접힌 기준 표시·전략 8과목 결과 배치와 합성 신청/삭제/재수강 접근 가능한 이름만 변경. 2026-11-27 사용자 검토: B 이하 개선 안내 강조, 학사 메뉴 비활성화, 홈·모드 제목 및 배너 배치, 브라우저 제목 통일. 2026-11-27 사용자 지정: 브라우저 제목은 한모 | 페이지명.",
   "files": [
     {
       "path": "css/academic-calendar.css",
@@ -93,59 +93,59 @@
     },
     {
       "path": "html/academic-timeline.html",
-      "sha": "5e1402d16ab5a105bf9f8afd05f91e5ab60e146c"
+      "sha": "f02332246284de05d5ea507a2d56d5168a335ff6"
     },
     {
       "path": "html/catalog.html",
-      "sha": "7f04e77b98c78fb5cb4d15df3ed609da36dfc93e"
+      "sha": "44126b16b354fb19c940aa06ef4e110fee2f4c71"
     },
     {
       "path": "html/developer.html",
-      "sha": "b7936319cad5dc23df9ef51f4740a9e6d11e2e37"
+      "sha": "361d78373093787247d76e90f2f0858cb8bae537"
     },
     {
       "path": "html/forecast.html",
-      "sha": "575b6abe965c8d01d29bc9e4f0e19f4246e44075"
+      "sha": "adf57b3a862bdffb994bd53ba3f637dde6138ec6"
     },
     {
       "path": "html/incident-404.html",
-      "sha": "70fcdd057c1a12bf7cd817a01943706ef91ca286"
+      "sha": "628c36c0091eceadefd241a10330159452a14e9c"
     },
     {
       "path": "html/pc-only.html",
-      "sha": "b8b0f71a434e8662b30ec24a799b56c4d094d40b"
+      "sha": "a9d4618508546167bc378dfe41d35354ab063048"
     },
     {
       "path": "html/planner.html",
-      "sha": "d1aab4794848ea6cd6c03dc028059164cbde07e2"
+      "sha": "349b5443c8eb210680d7e49d22a0f88c3ed4c19a"
     },
     {
       "path": "html/practice.html",
-      "sha": "bfe3ba382355183259b2dd88cb3e9fb1f690325c"
+      "sha": "f54db9ebcc5f680ed40fa436f2baf1ecbceb8beb"
     },
     {
       "path": "html/reaction-test.html",
-      "sha": "6a7544d1231ae552366c30384bc0df3b5f3f0103"
+      "sha": "400dca1ed5f7ab06443d3b234ce7ed26a344eefd"
     },
     {
       "path": "html/readiness.html",
-      "sha": "dfeab9535e4db816c93d982958416ed996780658"
+      "sha": "f2ed0ef59894488263fd02cf30ef7a590bf64b77"
     },
     {
       "path": "html/result.html",
-      "sha": "27b9a23467f7a5072e8999f34c6d95fa880e2aa7"
+      "sha": "a409383a3723420e71a3a213047de5a3c3873db8"
     },
     {
       "path": "html/selectZone.html",
-      "sha": "14d8230cb6b05edee55f5f37645f548e1e0160a1"
+      "sha": "46f90cf0de9c6511ef8fd73425be5c269b2acecb"
     },
     {
       "path": "html/strategy-lab.html",
-      "sha": "225ccff2612697ac65b0e362df627af4ff8aba36"
+      "sha": "266846f3967e7e263dfb353b8732343a4d53903d"
     },
     {
       "path": "html/vsugang.html",
-      "sha": "e2c93a892b6c3ac14bc93e44fc0608faf51d7c41"
+      "sha": "00191aec4b428c5c1a94c428bce11a0e47ebdad8"
     },
     {
       "path": "img/background.svg",
@@ -201,7 +201,7 @@
     },
     {
       "path": "index.html",
-      "sha": "ff3b1a5e8acf665e46aba1b2b00eb181adfe4bf2"
+      "sha": "e2bc1a3cbabfce2f7cce2f7a64cfc361ee5d5491"
     },
     {
       "path": "js/academic-data-source.js",

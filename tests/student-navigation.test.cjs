@@ -223,7 +223,7 @@ test('academic pages have no repeated marketing introduction or rounded section 
  const profile=fs.readFileSync(path.join(ROOT,'html/planner.html'),'utf8');
  for(const id of ['planner-profile','planner-secondary-kind','planner-cohort','planner-double'])
   assert.ok(profile.includes('id="'+id+'"'));
- assert.match(profile,/<title>내정보 \| 한모<\/title>/);
+ assert.match(profile,/<title>한모 \| 내정보<\/title>/);
  assert.match(profile,/id="planner-cohort"[^>]*required/);
  assert.doesNotMatch(profile,/CAMPUS LIFE|ACADEMIC PLANNER|내 전공 공지를 찾고/);
  const blocker=fs.readFileSync(path.join(ROOT,'html/pc-only.html'),'utf8');
@@ -448,9 +448,9 @@ test('모의수강신청 결과의 PNG 저장 기능이 제거됐다',()=>{
  assert.equal(fs.existsSync(path.join(ROOT,'js/practice-report-share.mjs')),false);
 });
 
-test('모든 페이지의 브라우저 제목은 페이지명 | 한모 형식이다',()=>{
+test('모든 페이지의 브라우저 제목은 한모 | 페이지명 형식이다',()=>{
  for(const page of ['index.html',...fs.readdirSync(path.join(ROOT,'html')).filter(name=>name.endsWith('.html')).map(name=>'html/'+name)]){
    const html=fs.readFileSync(path.join(ROOT,page),'utf8');
-   assert.match(html,/<title>[^<|]+ \| 한모<\/title>/,page);
+   assert.match(html,/<title>한모 \| [^<|]+<\/title>/,page);
  }
 });

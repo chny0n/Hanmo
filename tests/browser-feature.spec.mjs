@@ -802,3 +802,25 @@ test('SETTING과 돌발상황의 배경·테두리·느린 빛이 일치한다',
   await page.waitForTimeout(1150);
   expect((await style(setting)).opacity).toBeGreaterThan(0.6);
 });
+
+test('브라우저 탭 제목은 한모를 먼저 표시한다',async({page})=>{
+ const routes=[
+  ['/index.html','비공식 모의수강신청 서비스'],
+  ['/html/vsugang.html','모의수강신청 메뉴'],
+  ['/html/readiness.html','PC 진단'],
+  ['/html/reaction-test.html','반응속도 테스트'],
+  ['/html/strategy-lab.html','전략 실험'],
+  ['/html/academic-timeline.html','학사 정보'],
+  ['/html/catalog.html','강의 검색'],
+  ['/html/planner.html','내정보'],
+  ['/html/developer.html','개발자 소개'],
+  ['/html/practice.html','모의수강신청 연습'],
+  ['/html/selectZone.html','모의수강신청 과목 신청'],
+  ['/html/result.html','모의수강신청 결과'],
+  ['/html/pc-only.html','PC에서 이용해 주세요'],
+ ];
+ for(const [route,title] of routes){
+   await page.goto(route);
+   await expect(page).toHaveTitle('한모 | '+title);
+ }
+});
