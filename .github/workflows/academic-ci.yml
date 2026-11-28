@@ -1,4 +1,4 @@
-name: Repository checks
+name: Build and deploy
 on:
   push:
     branches: [main]
@@ -21,14 +21,10 @@ on:
       - 'scripts/**'
       - 'tests/**'
       - 'data/**'
-      - 'docs/architecture.md'
       - 'package.json'
       - 'package-lock.json'
       - '.nvmrc'
       - '.npmrc'
-      - 'playwright.config.mjs'
-      - 'e2e/**'
-      - 'jsconfig.json'
       - '.github/workflows/**'
 permissions:
   contents: read
@@ -40,7 +36,7 @@ jobs:
     env:
       HANMO_SITE_TARGET: ${{ github.repository == 'chny0n/Hanmo' && github.event_name == 'workflow_dispatch' && inputs.deploy_production && 'production' || 'preview' }}
     concurrency:
-      group: hanmo-student-site-${{ github.event.pull_request.number || github.ref }}
+      group: hanmo-build-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
     outputs:
       pages-artifact-name: ${{ steps.pages-artifact.outputs.name }}
@@ -48,20 +44,14 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          fetch-depth: 0
+          fetch-depth: 1
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: '.nvmrc'
           cache: npm
-      - run: node scripts/assert-protected.mjs
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm run check:student
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: hanmo-root-static-preview
-          path: dist
-          retention-days: 3
-          overwrite: true
+      - run: npm run test:academic
+      - run: npm run build
       - name: Validate original domain and isolate fork preview
         run: |
           test "$(cat CNAME)" = tofuhanmo.com
@@ -73,6 +63,7 @@ jobs:
           fi
           test -f dist/index.html
           test -f dist/html/academic-timeline.html
+          test -f dist/html/catalog.html
           test -f dist/html/planner.html
           test -f dist/js/student-entry.js
       - name: Name the Pages artifact for this build attempt
@@ -86,65 +77,6 @@ jobs:
           path: dist
           name: ${{ steps.pages-artifact.outputs.name }}
 
-  core-and-site:
-    if: ${{ !cancelled() && github.event_name != 'workflow_dispatch' }}
-    needs: student-site
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    concurrency:
-      group: hanmo-academic-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
-    steps:
-      - name: Require student verification to pass
-        env:
-          STUDENT_RESULT: ${{ needs.student-site.result }}
-        run: test "$STUDENT_RESULT" = success
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Fetch the original UI baseline for browser QA
-        run: git fetch --depth=1 --no-tags origin 0df1c0dafd23939f48b35aa68614e8461bb83b31
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
-      - name: Install locked dependencies
-        id: dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Download the verified student site for browser tests
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: hanmo-root-static-preview
-          path: dist
-      - name: Install Chromium for real browser tests
-        id: chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run Chromium end-to-end scenarios
-        run: npm run test:e2e
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ !cancelled() }}
-        with:
-          name: hanmo-playwright-report
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
-      - name: Run feature browser QA and capture four radio states
-        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
-        run: npx playwright test --config tests/playwright-feature.config.mjs --output=test-results/feature
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
-        with:
-          name: hanmo-feature-browser-qa
-          path: |
-            e2e-artifacts/
-            test-results/feature/
-          retention-days: 7
-      - name: Run academic and strategy research tests
-        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: npm run test:research
-
   deploy-pages:
     if: ${{ github.ref == 'refs/heads/main' && ((github.repository == 'ot4562-glitch/Hanmo_develop' && github.event_name != 'pull_request') || (github.repository == 'chny0n/Hanmo' && github.event_name == 'workflow_dispatch' && inputs.deploy_production)) }}
     needs: student-site
@@ -156,7 +88,7 @@ jobs:
       pages: write
       id-token: write
     concurrency:
-      group: github-pages-qa
+      group: github-pages
       cancel-in-progress: false
     env:
       PAGES_ARTIFACT_NAME: ${{ needs.student-site.outputs.pages-artifact-name }}

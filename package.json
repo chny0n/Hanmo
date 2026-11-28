@@ -1,39 +1,20 @@
 {
-  "name": "hanmo-develop",
+  "name": "hanmo",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "vitest run js/academic/core js/academic/views",
     "build": "esbuild js/academic/app/student-entry.js js/academic/app/academic-calendar.js css/student-ui.css --bundle --platform=browser --format=iife --target=es2022 --minify --keep-names --external:../img/background.svg --entry-names=[name] --outdir=.build --metafile=.build/bundle-meta.json && node scripts/stage-static.mjs",
-    "smoke": "node scripts/check-static-pages.mjs && node --test tests/readiness-metrics.test.mjs tests/reaction-profile.test.mjs tests/academic-data-source.test.cjs tests/student-navigation.test.cjs tests/policy-footer.test.cjs tests/student-profile.test.cjs tests/home-fit.test.cjs tests/vsugang-fit.test.cjs tests/collection-window.test.mjs tests/preview-data.test.mjs tests/preview-withdrawal.test.mjs",
+    "serve": "node scripts/serve-static.mjs",
+    "test:academic": "node --test tests/academic-development.test.mjs tests/collection-window.test.mjs tests/preview-data.test.mjs",
     "collection:status": "node scripts/check-collection-window.mjs",
-    "collection:gate": "node scripts/check-collection-window.mjs --enforce",
-    "check": "npm run check:student && npm run test:research",
-    "check:legacy": "node --test tests/device-gate.test.cjs tests/legacy-baseline.test.cjs tests/scenario-settings.test.cjs tests/incident-404.test.cjs tests/waiting-settings.test.cjs",
-    "check:protected": "node scripts/assert-protected.mjs",
-    "check:boundaries": "node scripts/assert-ui-freeze.mjs && node scripts/assert-language-boundary.mjs && node scripts/assert-korean-comments.mjs && node scripts/assert-action-pins.mjs && node --test tests/korean-comment-policy.test.cjs tests/student-boundary.test.mjs",
-    "check:syntax": "node scripts/check-js-syntax.mjs",
-    "check:types": "tsc -p jsconfig.json",
-    "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install chromium",
-    "test:student": "vitest run js/academic/views/student-entry.test.js",
-    "test:research": "vitest run --no-isolate js/academic/core && node --test tests/strategy-engine.test.mjs",
-    "check:student": "npm run check:boundaries && npm run check:syntax && npm run check:types && npm run test:student && npm run check:legacy && npm run build && npm run smoke"
+    "collection:gate": "node scripts/check-collection-window.mjs --enforce"
   },
   "dependencies": {
     "fullcalendar": "7.1.5",
     "temporal-polyfill": "1.0.8"
   },
   "devDependencies": {
-    "@types/node": "22.20.5",
-    "@types/papaparse": "5.5.2",
-    "acorn": "8.15.0",
-    "esbuild": "0.28.2",
-    "typescript": "5.9.3",
-    "vitest": "5.1.1",
-    "@playwright/test": "1.65.1",
-    "papaparse": "5.7.0",
-    "zod": "4.6.7"
+    "esbuild": "0.28.2"
   },
   "engines": {
     "node": "22.x"

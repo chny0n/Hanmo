@@ -12,10 +12,10 @@
 <text x="1160" y="53" fill="#BFDAD8" font-size="19" font-weight="740" text-anchor="middle">기본값 OFF</text>
 <rect x="38" y="107" width="211" height="110" rx="15" fill="#0E3145" stroke="#3A718C" stroke-width="1.5"/>
 <text x="56" y="132" fill="#9BC4D7" font-size="15" font-weight="750" letter-spacing="1.1">STEP 01</text>
-<text x="56" y="168" fill="#F4F9FC" font-size="24" font-weight="780" >기존 연습</text>
+<text x="56" y="168" fill="#F4F9FC" font-size="24" font-weight="780" >모의수강신청</text>
 <text x="56" y="195" fill="#BFD7E4" font-size="17" font-weight="510" >BASIC 시작</text>
 <rect x="285" y="107" width="205" height="110" rx="15" fill="#322C28" stroke="#C49B55" stroke-width="1.5"/>
-<text x="303" y="132" fill="#F9D592" font-size="15" font-weight="750" letter-spacing="1.1">STEP 02 · ON</text>
+<text x="303" y="132" fill="#F9D592" font-size="15" font-weight="750" letter-spacing="1.1">RECONNECT · ON</text>
 <text x="303" y="168" fill="#F4F9FC" font-size="24" font-weight="780" >가상 404</text>
 <text x="303" y="195" fill="#BFD7E4" font-size="17" font-weight="510" >한 번만 표시</text>
 <rect x="526" y="107" width="213" height="110" rx="15" fill="#0E3145" stroke="#3A718C" stroke-width="1.5"/>
@@ -29,7 +29,7 @@
 <rect x="1020" y="107" width="220" height="110" rx="15" fill="#0E3145" stroke="#3A718C" stroke-width="1.5"/>
 <text x="1038" y="132" fill="#9BC4D7" font-size="15" font-weight="750" letter-spacing="1.1">STEP 05</text>
 <text x="1038" y="168" fill="#F4F9FC" font-size="24" font-weight="780" >신청 계속</text>
-<text x="1038" y="195" fill="#BFD7E4" font-size="17" font-weight="510" >기존 결과 흐름</text>
+<text x="1038" y="195" fill="#BFD7E4" font-size="17" font-weight="510" >결과 확인</text>
 <path d="M252 162 H280" stroke="#75A9BD" stroke-width="2.5" marker-end="url(#arr)"/><path d="M490 162 H521" stroke="#75A9BD" stroke-width="2.5" marker-end="url(#arr)"/><path d="M739 162 H770" stroke="#75A9BD" stroke-width="2.5" marker-end="url(#arr)"/><path d="M984 162 H1015" stroke="#75A9BD" stroke-width="2.5" marker-end="url(#arr)"/>
 <rect x="38" y="238" width="1202" height="98" rx="15" fill="#112C3B" stroke="#B49255" stroke-width="1.4"/>
 <rect x="55" y="254" width="199" height="29" rx="14.5" fill="#473923"/>
@@ -38,6 +38,6 @@
 <text x="447" y="280" fill="#D7EBF3" font-size="20" font-weight="620">신청 버튼 제거 · 전공/교양/기초 합성 후보 Search</text>
 <text x="447" y="313" fill="#BFD7E4" font-size="17" font-weight="540">RECONNECT와 독립 · 학교의 실제 정원·강좌와 무관</text>
 <path d="M38 354 H1240" stroke="#426477" stroke-width="1"/>
-<text x="40" y="381" fill="#C9DFE8" font-size="18" font-weight="570">두 옵션 모두 OFF → 기존 BASIC/TIME/SELECT 흐름 유지</text>
+<text x="40" y="381" fill="#C9DFE8" font-size="18" font-weight="570">두 옵션 모두 OFF → 일반 BASIC 연습</text>
 <text x="1240" y="381" fill="#E7CB8D" font-size="17" font-weight="550" text-anchor="end">404 복구 후 접속 대기는 설정이 ON일 때만</text>
 </g></svg>

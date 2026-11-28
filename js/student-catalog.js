@@ -22,7 +22,7 @@
    const el=document.createElement(tag);el.textContent=message;
    if(cls)el.className=cls;return el;
  };
- /** 검수된 동일 학수번호 묶음의 확인된 분반만 표시합니다. */
+ /** 검수된 동일 학수번호 묶음의 확인된 개설 관측만 표시합니다. */
  function render(){
    results.replaceChildren();
    if(state!=='READY')return;
@@ -31,8 +31,8 @@
      (campus.value==='ALL'||campus.value===item.campus)&&
      (!q||item.courseId.toLocaleLowerCase('ko').includes(q)||
        item.title.toLocaleLowerCase('ko').includes(q)));
-   status.textContent='검수된 공개 강좌 '+matches.length+'개 분반 / '+offerings.length+
-     '개 분반 · 출처 검수일 '+meta.sourceCheckedAt.slice(0,10)+
+   status.textContent='검수된 공개 강좌 '+matches.length+'개 관측 / '+offerings.length+
+     '개 관측 · 출처 검수일 '+meta.sourceCheckedAt.slice(0,10)+
      ' · 실제 학사일정·신청 자격은 학교 원문 확인';
    if(!matches.length){
      results.append(text('p','검색 결과 없음','hanmo-empty'));
@@ -50,20 +50,18 @@
      const card=text('article','','hanmo-item');
      card.append(text('h3',first.courseId+' · '+first.title));
      const campusName=first.campus==='SEOUL'?'서울':'글로벌';
-     card.append(text('p',campusName+'캠퍼스 · 검수된 자료 '+rows.length+'개 분반'));
+     card.append(text('p',campusName+'캠퍼스 · 검수된 자료 '+rows.length+'개 관측'));
      const byTerm=new Map();
      for(const item of rows){
        if(!byTerm.has(item.term))byTerm.set(item.term,[]);
        byTerm.get(item.term).push(item);
      }
      for(const [academicTerm,termRows] of [...byTerm].sort((a,b)=>b[0].localeCompare(a[0]))){
-       const teachers=[...new Set(termRows.map(x=>x.instructor).filter(Boolean))].join(' / ');
-       card.append(text('p',academicTerm+' 확인된 개설 자료 · '+termRows.length+
-         '개 분반'+(teachers?' · '+teachers:'')));
+       card.append(text('p',academicTerm+' 확인된 개설 자료 · '+termRows.length+'개 관측'));
      }
      const inTerm=byTerm.get(target);
      const assessment=inTerm?
-       target+' 확인된 자료에 개설 기록 '+inTerm.length+'개 분반이 있어요. 학교 원문 확인 필요.':
+       target+' 확인된 자료에 개설 기록 '+inTerm.length+'개 관측이 있어요. 학교 원문 확인 필요.':
        target+' 전망(보장 아님): 검수된 동일과목 판본·전체학기 관측 범위가 없어 판단 보류(UNKNOWN). 누락 학기를 미개설로 간주하지 않아요.';
      const note=text('p',assessment,'hanmo-status');
      card.append(note);

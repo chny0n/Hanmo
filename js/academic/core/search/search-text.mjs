@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * 검색과 답변 근거 검사에서 공유하는 한국어 텍스트 처리 함수다.
+ * 공지와 강의 메타데이터 검색에 사용하는 한국어 텍스트 처리 함수다.
  * 형태소 모델 대신 흔한 조사·어미 하나를 제거하고 문자 2그램을 비교한다.
  * '교환학생은'과 '교환학생'을 매칭하고 한 글자 오타에는 대부분의 2그램을 유지한다.
  */
@@ -19,10 +19,10 @@ const SUFFIXES=[
   '니다','해요','해야','해도','돼요','려면','어야','아야','하면','으면','나요','는데','에서','부터','까지','으로','이랑',
   '하고','예요','은','는','이','가','을','를','에','의','도','야','요','로','랑','만',
 ].sort((a,b)=>b.length-a.length);
-/** FAQ 주제를 구별하지 않는 공통 단어다. 점수 계산에는 참여해도 관련성 문턱값을 만족시키지는 못한다. */
+/** 검색 주제를 구별하지 않는 공통 단어다. 점수 계산에는 참여해도 관련성 문턱값을 만족시키지는 못한다. */
 const GENERIC=new Set(['과목','수업','학교','학생','대학','대학교','우리','학과','관련','정보','내용','문의']);
 /** @param {string} w @returns {boolean} 공통 검색어 여부 */
-export function isGenericFaqWord(w){return GENERIC.has(w);}
+export function isGenericSearchWord(w){return GENERIC.has(w);}
 /** 학내 표현의 작은 동의어 목록이다. 원래 질의어나 동의어 중 하나가 맞으면 일치로 본다. */
 /** @type {Readonly<Record<string,readonly string[]>>} */
 const SYNONYMS={
@@ -33,7 +33,7 @@ const SYNONYMS={
 
 /** 문자열 비교 시 NFKC 정규화, 소문자화, 단일 공백으로 처리해 줄바꿈과 공백 차이에 영향받지 않게 한다. */
 /** @param {string} s @returns {string} 비교용 정규 문자열 */
-export function normalizeFaqText(s){
+export function normalizeSearchText(s){
   return s.normalize('NFKC').toLocaleLowerCase('ko').replace(/\s+/g,' ').trim();
 }
 /** 강의·평가·진로·제도·추가 같은 두 글자 단어는 조사 결합보다 명사일 가능성이 높으므로 한 글자를 버리지 않는다. */
@@ -50,8 +50,8 @@ function stem(w){
 }
 /** 불용어와 한 글자 어간을 제거한 내용어 목록이다. 긴 숫자 식별자는 검색 주제로 취급하지 않는다. */
 /** @param {string} s @returns {string[]} 질문의 내용어 목록 */
-export function faqWords(s){
-  return normalizeFaqText(s).replace(/[^\p{L}\p{N}\s]/gu,' ').split(' ')
+export function searchWords(s){
+  return normalizeSearchText(s).replace(/[^\p{L}\p{N}\s]/gu,' ').split(' ')
     .filter(w=>w&&!STOP.has(w)).map(stem)
     .filter(w=>w.length>=2&&!STOP.has(w)&&!/^\d{5,}$/.test(w));
 }
@@ -64,7 +64,7 @@ export function wordBigrams(w){
 }
 /** @param {string} s @returns {string[]} 질문 내용어의 2그램 */
 export function textBigrams(s){
-  return faqWords(s).flatMap(wordBigrams);
+  return searchWords(s).flatMap(wordBigrams);
 }
 /** @param {string} w @returns {readonly string[]} 질의어와 동의어 */
 export function synonymsOf(w){
@@ -79,22 +79,7 @@ export function wordMatches(w,doc){
     return grams.length<=2?hit===grams.length:hit/grams.length>=2/3;
   });
 }
-/** a의 중복 제거된 2그램 중 b에도 있는 비율이다. a가 비어 있으면 0을 반환한다. */
-/** @param {string} a @param {string} b @returns {number} 앞 문자열의 2그램 포함 비율 */
-export function bigramCoverage(a,b){
-  const left=new Set(textBigrams(a)),right=new Set(textBigrams(b));
-  if(left.size===0)return 0;
-  let hit=0;
-  for(const g of left)if(right.has(g))hit++;
-  return hit/left.size;
-}
-/** 3.0·1,000처럼 소수점과 천 단위 구분자를 고려한 숫자 토큰이다. */
-/** @param {string} s @returns {string[]} 질문의 숫자 토큰 */
-export function faqNumbers(s){
-  return normalizeFaqText(s).match(/\d+(?:[.,]\d+)*/g)||[];
-}
-/** 복합 질문을 절별로 나눠 두 번째 요청이 첫 번째 요청의 관련성 기준을 희석하지 못하게 한다. */
-/** @param {string} s @returns {string[]} 분리한 질문 절 */
-export function faqClauses(s){
-  return normalizeFaqText(s).split(/[.?!\n]+|그리고|또한/).map(x=>x.trim()).filter(Boolean);
+/** 검색 구문을 분리합니다. */
+export function searchClauses(s){
+  return normalizeSearchText(s).split(/[.?!\n]+|그리고|또한/).map(x=>x.trim()).filter(Boolean);
 }
