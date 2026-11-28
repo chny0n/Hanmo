@@ -335,3 +335,7 @@ body.hanmo-ui.hanmo-refined .hanmo-main.lab-layout{width:min(1184px,100%);max-wi
   .hanmo-readiness #readiness-advice h3{font-size:14px;margin-bottom:2px}
   .hanmo-readiness #readiness-advice ul{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 12px}
 }
+
+/* 개선 안내를 여러 칸으로 나눌 때 각 항목이 자기 점(•) 자리를 갖게 해 옆 칸 글자와 붙지 않게 합니다. */
+.hanmo-readiness #readiness-advice ul{padding-inline-start:0;column-gap:28px}
+.hanmo-readiness #readiness-advice li{margin-inline-start:16px}
